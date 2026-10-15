@@ -13,7 +13,7 @@ Work proceeds issue by issue from `docs/issues/`, starting at issue 01.
 - `CONTEXT.md` - the glossary. Use its terms exactly (Organisation, Camp, Turnus, Registration, Participant, ...) in code, tests, issues and commits; never the words listed under _Avoid_.
 - `docs/spec.md` - the v1 spec: user stories, implementation decisions, testing decisions, out of scope.
 - `docs/plan.md` - episodes, issue numbers, blockers, stage split (1a February 2027, 1b April 2027, 2 May, 3 late June).
-- `docs/adr/` - decisions that must not be silently reversed. ADR-0003 fixes the stack versions and the toolchain rules that follow from them.
+- `docs/adr/` - decisions that must not be silently reversed. ADR-0003 fixes the stack versions and toolchain rules, ADR-0004 the backend layering, ADR-0005 the shared endpoint contracts.
 - `docs/issues/NN-*.md` - the issue you are working on, including its `Blocked by` line. Do not start a blocked issue.
 - The `AGENTS.md` of the workspace you work in (below).
 

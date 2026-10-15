@@ -28,4 +28,4 @@ Tooling follows the workspace guides (`AGENTS.md` in the root and in each worksp
 - Spec sections: Architecture, Other (public repository)
 - Port from Domino: monorepo layout in `pnpm-workspace.yaml`, `turbo.json` (structure only)
 - Versions come from ADR-0003 (issue 01); TypeScript 7 means no NestJS CLI and no typescript-eslint
-- Prettier config from the template (`.prettierrc.json`: 4 spaces, 120 columns, single quotes, trailing commas, `@ianvs/prettier-plugin-sort-imports`)
+- Prettier: 2 spaces (as in the artspect repositories), 120 columns, single quotes, trailing commas, imports sorted with `@ianvs/prettier-plugin-sort-imports` as in the template

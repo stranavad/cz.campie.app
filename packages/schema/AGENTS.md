@@ -1,6 +1,6 @@
 # Schema
 
-`@repo/schema`: what `apps/api` and `apps/app` must agree on, written once.
+`@repo/schema`: what `apps/api` and `apps/app` must agree on, written once. Why contracts shape every response: ADR-0005.
 
 1. **Contracts**: the API's wire format and the endpoints that use it. The API routes by them, validates requests and shapes responses; the app calls them and validates responses.
 2. **Pure domain modules** both sides must compute identically: pricing (issue 26) and the form engine (issue 28). The public form shows the same price the API stores.

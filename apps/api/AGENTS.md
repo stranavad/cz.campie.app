@@ -1,6 +1,6 @@
 # API
 
-NestJS 12 (ES modules, Express) + Drizzle 1.0 RC + PostgreSQL 18 with row-level security per Organisation. Wire shapes and endpoints come from [`@repo/schema`](../../packages/schema/AGENTS.md). Versions and toolchain rules: ADR-0003. Single source of truth for humans and agents working in this app; `apps/app` is out of scope here.
+NestJS 12 (ES modules, Express) + Drizzle 1.0 RC + PostgreSQL 18 with row-level security per Organisation. Wire shapes and endpoints come from [`@repo/schema`](../../packages/schema/AGENTS.md). Versions and toolchain rules: ADR-0003; layering: ADR-0004; contracts and response shaping: ADR-0005. Single source of truth for humans and agents working in this app; `apps/app` is out of scope here.
 
 | Doc                                  | Read when you...                                     |
 | ------------------------------------ | ---------------------------------------------------- |
@@ -195,7 +195,7 @@ if (!turnus) throw new NotFoundException();
 
 // yes
 if (!turnus) {
-    throw new NotFoundException();
+  throw new NotFoundException();
 }
 ```
 

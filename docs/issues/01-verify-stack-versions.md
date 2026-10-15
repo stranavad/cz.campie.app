@@ -1,6 +1,6 @@
 # 01 - Verify stack versions, record as ADR
 
-Status: in-progress
+Status: done
 Stage: 1a
 Episode: E0 Foundation
 Blocked by: -
