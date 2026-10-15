@@ -1,0 +1,24 @@
+{
+  "name": "@repo/oxlint-config",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint --type-aware --deny-warnings",
+    "lint-staged": "lint-staged"
+  },
+  "peerDependencies": {
+    "oxlint": "^1.88.0"
+  },
+  "devDependencies": {
+    "@oxlint/plugins": "^1.88.0",
+    "@types/node": "^26.6.5",
+    "oxlint": "^1.88.0",
+    "oxlint-tsgolint": "^7.0.2004",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,21 @@
+import type { OxlintConfig } from 'oxlint';
+
+export const vitest = {
+  plugins: ['vitest'],
+  rules: {
+    'vitest/no-focused-tests': 'error',
+    'vitest/no-disabled-tests': 'error',
+  },
+  overrides: [
+    {
+      files: ['**/*.test.ts', '**/*.test.tsx'],
+      rules: {
+        'typescript/no-unsafe-assignment': 'off',
+        'typescript/no-unsafe-call': 'off',
+        'typescript/no-unsafe-member-access': 'off',
+        'typescript/no-unsafe-argument': 'off',
+        'typescript/no-unsafe-return': 'off',
+      },
+    },
+  ],
+} satisfies OxlintConfig;

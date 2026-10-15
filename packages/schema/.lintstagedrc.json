@@ -1,0 +1,7 @@
+{
+  "*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}": [
+    "prettier --write --ignore-path ../../.prettierignore",
+    "oxlint --type-aware --deny-warnings --no-error-on-unmatched-pattern"
+  ],
+  "*.{json,css,md,html,yml,yaml}": "prettier --write --ignore-path ../../.prettierignore"
+}

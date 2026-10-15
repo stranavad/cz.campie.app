@@ -1,0 +1,52 @@
+{
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(!.env.example)",
+      "Read(!.env.test)",
+
+      "Bash(git push --force *)",
+      "Bash(git push * --force)",
+      "Bash(git push * --force *)",
+      "Bash(git push -f *)",
+      "Bash(git push * -f)",
+      "Bash(git push * -f *)",
+      "Bash(git push --force-with-lease *)",
+      "Bash(git push * --force-with-lease)",
+      "Bash(git push * --force-with-lease *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean *)",
+
+      "Bash(git * --no-verify)",
+      "Bash(git * --no-verify *)",
+      "Bash(git commit -n *)",
+      "Bash(HUSKY=0 *)",
+
+      "Bash(sudo *)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~*)",
+
+      "Bash(npm publish *)",
+      "Bash(pnpm publish *)",
+      "Bash(gh pr merge *)",
+
+      "Edit(.claude/settings.json)",
+      "Edit(.agents/hooks/**)",
+      "Edit(.husky/**)",
+      "Edit(commitlint.config.mjs)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Grep|Bash",
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR\"/.agents/hooks/block-env-files.mjs" }]
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@repo/schema",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./shared": {
+      "types": "./dist/shared/index.d.ts",
+      "default": "./dist/shared/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint --type-aware --deny-warnings",
+    "lint-staged": "lint-staged",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@repo/oxlint-config": "workspace:*",
+    "@types/node": "^26.6.5",
+    "oxlint": "^1.88.0",
+    "oxlint-tsgolint": "^7.0.2004",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

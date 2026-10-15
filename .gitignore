@@ -1,0 +1,27 @@
+# dependencies
+node_modules
+
+# turbo
+.turbo
+
+# build output
+dist
+
+# env
+.env
+.env*.local
+
+# logs
+*.log
+
+# Claude Code worktrees
+.claude/worktrees/
+.claude/settings.local.json
+
+# misc
+.DS_Store
+coverage
+
+# VS Code: share only team files
+.vscode/*
+!.vscode/extensions.json
