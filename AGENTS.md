@@ -50,17 +50,17 @@ Every "Port from Domino" path in an issue is relative to that repository. Read i
 
 From the root; Turborepo runs the task in every workspace.
 
-| Command             | Purpose                                      |
-| ------------------- | -------------------------------------------- |
-| `pnpm dev`          | dev servers                                  |
-| `pnpm build`        | production build                             |
-| `pnpm check-types`  | TypeScript                                   |
-| `pnpm lint`         | Oxlint, type-aware, warnings fail            |
-| `pnpm test`         | Vitest once                                  |
-| `pnpm format`       | Prettier write                               |
-| `pnpm format:check` | Prettier check                               |
-| `pnpm docker:up`    | local stack (PostgreSQL, Redis, RustFS, ...) |
-| `pnpm docker:down`  | stop the local stack                         |
+| Command             | Purpose                                     |
+| ------------------- | ------------------------------------------- |
+| `pnpm dev`          | dev servers                                 |
+| `pnpm build`        | production build                            |
+| `pnpm check-types`  | TypeScript                                  |
+| `pnpm lint`         | Oxlint, type-aware, warnings fail           |
+| `pnpm test`         | Vitest once                                 |
+| `pnpm format`       | Prettier write                              |
+| `pnpm format:check` | Prettier check                              |
+| `pnpm docker:up`    | whole local stack on `http://app.localhost` |
+| `pnpm docker:down`  | stop the local stack                        |
 
 ## Working with agents
 

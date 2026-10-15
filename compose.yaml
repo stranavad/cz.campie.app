@@ -1,0 +1,169 @@
+# The whole platform locally, with no cloud accounts: `pnpm docker:up`, then http://app.localhost.
+# Credentials here are local-only and not secret. Services are published on their usual port
+# prefixed with 1 (PostgreSQL on 15432), clear of other projects' stacks.
+name: campie
+
+# The API and the app run from the mounted source. Their node_modules and build output live in
+# volumes, so packages installed for Linux never mix with the host's and a `pnpm dev` on the host
+# doesn't share a dist folder with the containers.
+x-node: &node
+  build:
+    context: .
+    target: dev
+  volumes:
+    - .:/repo
+    - node-modules:/repo/node_modules
+    - api-node-modules:/repo/apps/api/node_modules
+    - app-node-modules:/repo/apps/app/node_modules
+    - schema-node-modules:/repo/packages/schema/node_modules
+    - oxlint-config-node-modules:/repo/packages/oxlint-config/node_modules
+    - api-dist:/repo/apps/api/dist
+    - schema-dist:/repo/packages/schema/dist
+
+x-service-healthcheck: &service-healthcheck
+  interval: 5s
+  start_interval: 1s
+  start_period: 30s
+
+x-node-healthcheck: &node-healthcheck
+  interval: 10s
+  start_interval: 2s
+  start_period: 120s
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_USER: campie
+      POSTGRES_PASSWORD: campie
+      POSTGRES_DB: campie
+    ports:
+      - 127.0.0.1:15432:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      <<: *service-healthcheck
+      test: [CMD-SHELL, pg_isready -U campie -d campie]
+
+  redis:
+    image: redis:8.8.3-alpine
+    ports:
+      - 127.0.0.1:16379:6379
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      <<: *service-healthcheck
+      test: [CMD, redis-cli, ping]
+
+  rustfs:
+    image: rustfs/rustfs:1.0.1
+    environment:
+      RUSTFS_ACCESS_KEY: campie-local
+      RUSTFS_SECRET_KEY: campie-local-secret
+      RUSTFS_CONSOLE_ENABLE: 'true'
+    ports:
+      - 127.0.0.1:19000:9000
+      - 127.0.0.1:19001:9001
+    volumes:
+      - rustfs-data:/data
+    healthcheck:
+      <<: *service-healthcheck
+      test: [CMD, curl, -fsS, -o, /dev/null, http://localhost:9000/health/ready]
+
+  # Creates the bucket the API uses; creating an existing bucket succeeds, so it runs on every start.
+  storage-init:
+    image: rustfs/rustfs:1.0.1
+    entrypoint:
+      - curl
+      - -fsS
+      - --aws-sigv4
+      - aws:amz:us-east-1:s3
+      - --user
+      - campie-local:campie-local-secret
+      - -X
+      - PUT
+      - http://rustfs:9000/campie
+    depends_on:
+      rustfs:
+        condition: service_healthy
+
+  gotenberg:
+    image: gotenberg/gotenberg:8.38.1
+    ports:
+      - 127.0.0.1:13000:3000
+    healthcheck:
+      <<: *service-healthcheck
+      test: [CMD, curl, -fsS, -o, /dev/null, http://localhost:3000/health]
+
+  # Installs dependencies and builds the schema once, before the API and the app start.
+  deps:
+    <<: *node
+    environment:
+      CI: 'true'
+    command: sh -c 'pnpm install --frozen-lockfile && pnpm --filter @repo/schema build'
+
+  api:
+    <<: *node
+    # Watches the schema too, so a contract change reaches the running API and app.
+    command: pnpm --parallel --filter api --filter @repo/schema run dev
+    environment:
+      APP_ENV: local
+      DATABASE_URL: postgres://campie:campie@postgres:5432/campie
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT: http://rustfs:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: campie
+      S3_ACCESS_KEY_ID: campie-local
+      S3_SECRET_ACCESS_KEY: campie-local-secret
+      GOTENBERG_URL: http://gotenberg:3000
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+      storage-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      gotenberg:
+        condition: service_healthy
+    # Healthy only once the API reaches every service above.
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:3000/api/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+
+  app:
+    <<: *node
+    command: pnpm --filter app run dev --host 0.0.0.0
+    environment:
+      API_PROXY_TARGET: http://api:3000
+    # Browsers resolve every *.localhost name to this machine, so app.localhost and any
+    # <subdomain>.localhost reach the app without hosts file entries.
+    ports:
+      - 127.0.0.1:80:5173
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:5173/').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+
+volumes:
+  postgres-data:
+  redis-data:
+  rustfs-data:
+  node-modules:
+  api-node-modules:
+  app-node-modules:
+  schema-node-modules:
+  oxlint-config-node-modules:
+  api-dist:
+  schema-dist:

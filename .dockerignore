@@ -1,0 +1,3 @@
+# The image needs only package.json; the source is mounted at runtime.
+*
+!package.json

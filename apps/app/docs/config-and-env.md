@@ -20,6 +20,6 @@ Lint bans `env` property access elsewhere (destructuring included), keeping raw 
 
 Locally the platform runs on `*.localhost` (Docker Compose): the main host is `app.localhost`, an Organisation's pages are `<subdomain>.localhost`. Browsers resolve `*.localhost` without `/etc/hosts` entries, and host-only cookies keep each subdomain's sessions apart, as in production.
 
-The dev server proxies `/api` to the API (`vite.config.ts`), forwarding the original host so the API can resolve the Organisation (ADR-0001). Personal overrides go in `apps/app/.env.local` (gitignored).
+The dev server proxies `/api` to the API (`vite.config.ts`), forwarding the original host so the API can resolve the Organisation (ADR-0001). It targets `http://localhost:3000` unless `API_PROXY_TARGET` says otherwise, as Docker Compose does. Personal overrides go in `apps/app/.env.local` (gitignored).
 
 New variable: add it to the schema, set it in the env files that need it, expose it through `config`.

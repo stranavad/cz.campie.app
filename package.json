@@ -12,6 +12,8 @@
     "test": "turbo run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "docker:up": "docker compose up --detach --build --wait",
+    "docker:down": "docker compose down",
     "prepare": "husky"
   },
   "packageManager": "pnpm@12.11.2",

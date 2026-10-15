@@ -23,7 +23,7 @@ In `apps/api`, or from the root `pnpm --filter api <script>`.
 | `pnpm db:migrate`  | apply migrations                                   |
 | `pnpm db:studio`   | Drizzle Studio                                     |
 
-First run: root `pnpm docker:up`, `cp .env.example .env`, `pnpm db:migrate`, `pnpm dev`.
+First run: root `pnpm docker:up` starts the whole stack, this API included (`http://app.localhost/api/health`). To run the API on the host instead: `cp .env.example .env`, `pnpm db:migrate`, `pnpm dev`; it reaches the Compose services on their published ports.
 
 ## Architectural layering
 
@@ -173,7 +173,7 @@ public remove(id: string): Promise<void>                    // throws NotFoundEx
 
 ## Config
 
-- `main.ts` validates the env with Zod (`core/config/env.schema.ts`) before importing `AppModule`, so a misconfigured app never boots half-working. The schema is the single source of truth for what the app needs.
+- `AppConfigModule` (`core/config/`) validates the env with Zod (`env.schema.ts`) while Nest loads `AppModule`, before any module initialises, so a misconfigured app never boots half-working. The schema is the single source of truth for what the app needs.
 - `APP_ENV` (`local` | `test` | `production`) selects the source: `local` reads `.env` (gitignored, from `.env.example`), `test` reads `.env.test` (committed, secret-free), `production` reads deployment env vars. Real env vars always win over a file.
 - Code depends on typed `ConfigService<Env, true>`, never `process.env` (lint-enforced outside config and tooling files).
 - Port adapters are chosen by configuration; an invalid or mixed combination refuses to boot (issue 06).
