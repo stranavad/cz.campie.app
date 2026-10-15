@@ -1,6 +1,6 @@
 # 02 - Repo scaffold: pnpm + Turborepo, api/app/schema, AGPL, lint, CI
 
-Status: in-progress
+Status: done
 Stage: 1a
 Episode: E0 Foundation
 Blocked by: 01
@@ -15,10 +15,10 @@ Tooling follows the workspace guides (`AGENTS.md` in the root and in each worksp
 ## Acceptance criteria
 
 - [x] `pnpm install && pnpm build` succeeds from a clean clone, building `schema` before `api` and `app`
-- [ ] CI runs typecheck, lint and test and fails on any error
+- [x] CI runs typecheck, lint and test and fails on any error
 - [x] LICENSE is AGPL-3.0; README states the license and the local start command
 - [x] A trivial schema exported from `schema` is imported by both `api` and `app` and type-checks
-- [ ] A secret scanner or equivalent CI step guards against committed credentials
+- [x] A secret scanner or equivalent CI step guards against committed credentials
 - [x] A file violating a workspace lint group (e.g. `new Date()` in an API service, a controller importing a repository) fails `pnpm lint`
 - [x] A commit with a non-conventional message is rejected by the `commit-msg` hook
 - [x] Every workspace has its `AGENTS.md` with `CLAUDE.md` as a symlink
@@ -38,6 +38,6 @@ Tooling follows the workspace guides (`AGENTS.md` in the root and in each worksp
 - `errorResponseSchema` from `@repo/schema/shared` is used by the API's global `HttpErrorFilter`, tested over HTTP with Supertest (an unexpected error becomes a bare 500, an HTTP exception keeps its status and `code`), and by the app's `readErrorResponse`, which the API client of issue 13 will use.
 - Lint groups checked with throwaway violating files: `new Date()`, `Date.now()` and `process.env` in a service, a controller importing a repository, a repository importing a service, a missing `curly`; in `schema` a `node:` import and imports bypassing a module's `index.ts`; in `app` a feature importing another feature, `import.meta.env` outside `src/config/env/` and raw JSX text.
 - commitlint rejects `added stuff`, an uppercase subject, a free-form body and a `Co-Authored-By` line, and accepts a `Relates: docs/issues/NN-slug.md` body. The env hook blocks env files except the committed, secret-free `.env.example` and `.env.test`.
-- Open until the first push: the CI workflow (format, build, types, lint, test, and gitleaks over the full history) has not run on GitHub yet; the two unticked criteria close once it has, including one deliberately failing run.
+- CI (format, build, types, lint, test, and gitleaks over the full history) passes on GitHub. The first run failed because `actions/setup-node` tried to cache pnpm before it was installed, which showed a failing step fails the run; fixed in a follow-up commit.
 - Left to later issues: app lint exceptions that need issue 13's folders (routes, shadcn), the root Docker scripts (issue 03), config and the API port (issue 06).
 - pnpm 12 added `minimumReleaseAgeExclude` entries for the ADR-0003 versions younger than its default release-age gate (React 19.3.1, Vitest 5.0.5).
