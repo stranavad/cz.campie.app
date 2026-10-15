@@ -18,34 +18,34 @@ In `apps/app`, or from the root `pnpm --filter app <script>`.
 
 Versions: ADR-0003. Rows marked * come from the Koala42 template and are confirmed when issue 13 scaffolds the app.
 
-| Area         | Tech                                                   |
-| ------------ | ------------------------------------------------------ |
-| UI           | React 19 + React Compiler (Babel)                      |
-| Build        | Vite 8, TypeScript 7                                   |
-| Routing      | TanStack Router 1, file-based (`src/routes/`)          |
-| Server state | TanStack Query 5                                       |
-| Forms        | TanStack Form 1 *                                      |
-| Validation   | Zod 4                                                  |
-| Styling      | Tailwind CSS 4, shadcn/ui on Base UI, Lucide icons *   |
-| i18n         | i18next + react-i18next *, Czech only                  |
-| Dates        | dayjs *                                                |
-| Lint/format  | Oxlint (this app), Prettier (root)                     |
+| Area         | Tech                                                 |
+| ------------ | ---------------------------------------------------- |
+| UI           | React 19 + React Compiler (Babel)                    |
+| Build        | Vite 8, TypeScript 7                                 |
+| Routing      | TanStack Router 1, file-based (`src/routes/`)        |
+| Server state | TanStack Query 5                                     |
+| Forms        | TanStack Form 1 *                                    |
+| Validation   | Zod 4                                                |
+| Styling      | Tailwind CSS 4, shadcn/ui on Base UI, Lucide icons * |
+| i18n         | i18next + react-i18next *, Czech only                |
+| Dates        | dayjs *                                              |
+| Lint/format  | Oxlint (this app), Prettier (root)                   |
 
 ## Documentation
 
-| Doc                                              | Read when you...                                          |
-| ------------------------------------------------ | --------------------------------------------------------- |
-| [docs/architecture.md](docs/architecture.md)     | place code: folders, layers, imports, naming, components  |
-| [docs/routing.md](docs/routing.md)               | add a page or route, work with host modes                 |
-| [docs/api.md](docs/api.md)                       | call the API, add queries and mutations                   |
-| [docs/error-handling.md](docs/error-handling.md) | handle failures, retries, error UI                        |
-| [docs/forms.md](docs/forms.md)                   | build a form or form field                                |
-| [docs/state-management.md](docs/state-management.md) | decide where state lives, add a context               |
-| [docs/translations.md](docs/translations.md)     | add texts, namespaces                                     |
-| [docs/styling.md](docs/styling.md)               | style, theme tokens, branding, shadcn components          |
-| [docs/config-and-env.md](docs/config-and-env.md) | read config, add an env var, local hosts                  |
-| [docs/react-compiler.md](docs/react-compiler.md) | memoization questions, odd behaviour after compiling      |
-| [docs/generated-code.md](docs/generated-code.md) | route tree, shadcn files, stale output                    |
+| Doc                                                  | Read when you...                                         |
+| ---------------------------------------------------- | -------------------------------------------------------- |
+| [docs/architecture.md](docs/architecture.md)         | place code: folders, layers, imports, naming, components |
+| [docs/routing.md](docs/routing.md)                   | add a page or route, work with host modes                |
+| [docs/api.md](docs/api.md)                           | call the API, add queries and mutations                  |
+| [docs/error-handling.md](docs/error-handling.md)     | handle failures, retries, error UI                       |
+| [docs/forms.md](docs/forms.md)                       | build a form or form field                               |
+| [docs/state-management.md](docs/state-management.md) | decide where state lives, add a context                  |
+| [docs/translations.md](docs/translations.md)         | add texts, namespaces                                    |
+| [docs/styling.md](docs/styling.md)                   | style, theme tokens, branding, shadcn components         |
+| [docs/config-and-env.md](docs/config-and-env.md)     | read config, add an env var, local hosts                 |
+| [docs/react-compiler.md](docs/react-compiler.md)     | memoization questions, odd behaviour after compiling     |
+| [docs/generated-code.md](docs/generated-code.md)     | route tree, shadcn files, stale output                   |
 
 ## Testing
 

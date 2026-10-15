@@ -2,12 +2,12 @@
 
 [i18next](https://www.i18next.com) + [react-i18next](https://react.i18next.com) ([i18next LLM index](https://www.i18next.com/llms.txt), [react-i18next LLM index](https://react.i18next.com/llms.txt)). Czech is the only language in v1, and the source of truth for keys; the layer exists so adding Slovak or English is not a rewrite (story 193).
 
-| Path                              | Holds                                       |
-| --------------------------------- | ------------------------------------------- |
-| `src/locales/cs/<namespace>.json` | translations                                |
-| `src/lib/i18n/index.ts`           | setup, sync of dayjs and Zod locale         |
-| `src/lib/i18n/resources.ts`       | registers namespaces                        |
-| `src/lib/i18n/i18next.d.ts`       | typed keys                                  |
+| Path                              | Holds                               |
+| --------------------------------- | ----------------------------------- |
+| `src/locales/cs/<namespace>.json` | translations                        |
+| `src/lib/i18n/index.ts`           | setup, sync of dayjs and Zod locale |
+| `src/lib/i18n/resources.ts`       | registers namespaces                |
+| `src/lib/i18n/i18next.d.ts`       | typed keys                          |
 
 ## How it's designed
 

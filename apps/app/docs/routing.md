@@ -10,10 +10,10 @@ The router plugin in `vite.config.ts` generates `src/routeTree.gen.ts` and code-
 
 One build serves two kinds of host; `core/host` resolves the mode from the hostname and the configured platform domain (issue 13):
 
-| Host                      | Mode         | Serves                                                                                       |
-| ------------------------- | ------------ | -------------------------------------------------------------------------------------------- |
-| `<subdomain>.<platform>`  | Organisation | `/` landing, `/{camp-slug}` Turnusy, `/{camp-slug}/prihlaska?turnus={id}` form, `/portal` guardian portal |
-| `<platform>` (main host)  | Platform     | signup, admin interface, operator console                                                    |
+| Host                     | Mode         | Serves                                                                                                    |
+| ------------------------ | ------------ | --------------------------------------------------------------------------------------------------------- |
+| `<subdomain>.<platform>` | Organisation | `/` landing, `/{camp-slug}` Turnusy, `/{camp-slug}/prihlaska?turnus={id}` form, `/portal` guardian portal |
+| `<platform>` (main host) | Platform     | signup, admin interface, operator console                                                                 |
 
 - Routes of one mode are unreachable in the other; the route tree guards it in one place.
 - Features never read the hostname; they get the mode and the current Organisation from `core/host`.

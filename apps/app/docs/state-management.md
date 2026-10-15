@@ -2,13 +2,13 @@
 
 No state library: most "state" already has a better owner. Pick the first that fits:
 
-| State                                          | Owner                                          |
-| ---------------------------------------------- | ---------------------------------------------- |
-| API data                                       | TanStack Query ([api.md](api.md))              |
-| Form values, validation                        | TanStack Form ([forms.md](forms.md))           |
-| URL-worthy (filters, selected Turnus, paging)  | route search params ([routing.md](routing.md)) |
-| One component                                  | `useState` / `useReducer` in its hook          |
-| Shared client state (host mode, Organisation)  | React context                                  |
+| State                                         | Owner                                          |
+| --------------------------------------------- | ---------------------------------------------- |
+| API data                                      | TanStack Query ([api.md](api.md))              |
+| Form values, validation                       | TanStack Form ([forms.md](forms.md))           |
+| URL-worthy (filters, selected Turnus, paging) | route search params ([routing.md](routing.md)) |
+| One component                                 | `useState` / `useReducer` in its hook          |
+| Shared client state (host mode, Organisation) | React context                                  |
 
 - Never copy API data into state or context: two copies drift, and the cache already shares it.
 - If a user would expect a reload or a shared link to keep it, it belongs in the URL.

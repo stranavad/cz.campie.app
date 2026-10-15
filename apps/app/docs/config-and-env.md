@@ -2,11 +2,11 @@
 
 The app reads everything through one typed `config` object (`@/config`), built from Zod-validated env. A bad value fails at startup instead of surfacing as a runtime bug.
 
-| File                           | Holds                                  |
-| ------------------------------ | -------------------------------------- |
-| `src/config/index.ts`          | builds `config`                        |
-| `src/config/env/env.schema.ts` | env variable schema                    |
-| `src/config/env/index.ts`      | the only reader of `import.meta.env`   |
+| File                           | Holds                                |
+| ------------------------------ | ------------------------------------ |
+| `src/config/index.ts`          | builds `config`                      |
+| `src/config/env/env.schema.ts` | env variable schema                  |
+| `src/config/env/index.ts`      | the only reader of `import.meta.env` |
 
 Lint bans `env` property access elsewhere (destructuring included), keeping raw env out of the app.
 

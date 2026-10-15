@@ -2,26 +2,26 @@
 
 NestJS 12 (ES modules, Express) + Drizzle 1.0 RC + PostgreSQL 18 with row-level security per Organisation. Wire shapes and endpoints come from [`@repo/schema`](../../packages/schema/AGENTS.md). Versions and toolchain rules: ADR-0003; layering: ADR-0004; contracts and response shaping: ADR-0005. Single source of truth for humans and agents working in this app; `apps/app` is out of scope here.
 
-| Doc                                  | Read when you...                                     |
-| ------------------------------------ | ---------------------------------------------------- |
-| [docs/testing.md](docs/testing.md)   | write or change a test, add a fake, check isolation  |
+| Doc                                | Read when you...                                    |
+| ---------------------------------- | --------------------------------------------------- |
+| [docs/testing.md](docs/testing.md) | write or change a test, add a fake, check isolation |
 
 ## Scripts
 
 In `apps/api`, or from the root `pnpm --filter api <script>`.
 
-| Script             | Purpose                                                   |
-| ------------------ | --------------------------------------------------------- |
-| `pnpm dev`         | `tsc --watch` + `node --watch dist/main.js`               |
-| `pnpm build`       | `tsc` into `dist/`                                        |
-| `pnpm start`       | run the last build                                        |
-| `pnpm check-types` | TypeScript                                                |
-| `pnpm lint`        | Oxlint, type-aware, warnings fail, layer rules            |
-| `pnpm test`        | Vitest once                                               |
-| `pnpm test:watch`  | Vitest watch                                              |
-| `pnpm db:generate` | migration from the schema: `--name <what-changed>`        |
-| `pnpm db:migrate`  | apply migrations                                          |
-| `pnpm db:studio`   | Drizzle Studio                                            |
+| Script             | Purpose                                            |
+| ------------------ | -------------------------------------------------- |
+| `pnpm dev`         | `tsc --watch` + `node --watch dist/main.js`        |
+| `pnpm build`       | `tsc` into `dist/`                                 |
+| `pnpm start`       | run the last build                                 |
+| `pnpm check-types` | TypeScript                                         |
+| `pnpm lint`        | Oxlint, type-aware, warnings fail, layer rules     |
+| `pnpm test`        | Vitest once                                        |
+| `pnpm test:watch`  | Vitest watch                                       |
+| `pnpm db:generate` | migration from the schema: `--name <what-changed>` |
+| `pnpm db:migrate`  | apply migrations                                   |
+| `pnpm db:studio`   | Drizzle Studio                                     |
 
 First run: root `pnpm docker:up`, `cp .env.example .env`, `pnpm db:migrate`, `pnpm dev`.
 
@@ -98,13 +98,13 @@ kebab-case throughout: `camp.entity.ts`, `camp.repository.ts`, `camp.service.ts`
 
 ### Classes
 
-| Concept    | Name                                                                   |
-| ---------- | ---------------------------------------------------------------------- |
-| Entity     | `XxxEntity`                                                            |
-| Repository | `XxxRepository`                                                        |
-| Service    | `XxxService`                                                           |
-| Controller | `XxxController`                                                        |
-| Port       | the capability: `Clock`, `MailSender`, `FileStorage`                   |
+| Concept    | Name                                                                     |
+| ---------- | ------------------------------------------------------------------------ |
+| Entity     | `XxxEntity`                                                              |
+| Repository | `XxxRepository`                                                          |
+| Service    | `XxxService`                                                             |
+| Controller | `XxxController`                                                          |
+| Port       | the capability: `Clock`, `MailSender`, `FileStorage`                     |
 | Adapter    | technology + port: `ResendMailSender`, `LogMailSender`, `FakeMailSender` |
 
 Request, response and endpoint names come from `@repo/schema` (`Camp`, `CreateCampBody`, `createCampEndpoint`); no DTO classes.

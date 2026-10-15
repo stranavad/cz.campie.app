@@ -21,12 +21,12 @@ Work proceeds issue by issue from `docs/issues/`, starting at issue 01.
 
 Each workspace has its own `AGENTS.md` (with `CLAUDE.md` as a symlink); load it when working there. Its `docs/` hold topic guides, read only the one for your task.
 
-| Path                     | What                                                    | Index                                                                  |
-| ------------------------ | ------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `apps/api`               | backend (NestJS, Drizzle, PostgreSQL with RLS)          | [`apps/api/AGENTS.md`](apps/api/AGENTS.md)                             |
-| `apps/app`               | frontend (React, Vite, TanStack)                        | [`apps/app/AGENTS.md`](apps/app/AGENTS.md)                             |
-| `packages/schema`        | contracts and pure domain modules, shared by both apps  | [`packages/schema/AGENTS.md`](packages/schema/AGENTS.md)               |
-| `packages/oxlint-config` | shared Oxlint rule groups                               | [`packages/oxlint-config/AGENTS.md`](packages/oxlint-config/AGENTS.md) |
+| Path                     | What                                                   | Index                                                                  |
+| ------------------------ | ------------------------------------------------------ | ---------------------------------------------------------------------- |
+| `apps/api`               | backend (NestJS, Drizzle, PostgreSQL with RLS)         | [`apps/api/AGENTS.md`](apps/api/AGENTS.md)                             |
+| `apps/app`               | frontend (React, Vite, TanStack)                       | [`apps/app/AGENTS.md`](apps/app/AGENTS.md)                             |
+| `packages/schema`        | contracts and pure domain modules, shared by both apps | [`packages/schema/AGENTS.md`](packages/schema/AGENTS.md)               |
+| `packages/oxlint-config` | shared Oxlint rule groups                              | [`packages/oxlint-config/AGENTS.md`](packages/oxlint-config/AGENTS.md) |
 
 The workspaces are scaffolded by issue 02; until then their `AGENTS.md` describe the target.
 
@@ -50,17 +50,17 @@ Every "Port from Domino" path in an issue is relative to that repository. Read i
 
 From the root; Turborepo runs the task in every workspace.
 
-| Command             | Purpose                                     |
-| ------------------- | ------------------------------------------- |
-| `pnpm dev`          | dev servers                                 |
-| `pnpm build`        | production build                            |
-| `pnpm check-types`  | TypeScript                                  |
-| `pnpm lint`         | Oxlint, type-aware, warnings fail           |
-| `pnpm test`         | Vitest once                                 |
-| `pnpm format`       | Prettier write                              |
-| `pnpm format:check` | Prettier check                              |
+| Command             | Purpose                                      |
+| ------------------- | -------------------------------------------- |
+| `pnpm dev`          | dev servers                                  |
+| `pnpm build`        | production build                             |
+| `pnpm check-types`  | TypeScript                                   |
+| `pnpm lint`         | Oxlint, type-aware, warnings fail            |
+| `pnpm test`         | Vitest once                                  |
+| `pnpm format`       | Prettier write                               |
+| `pnpm format:check` | Prettier check                               |
 | `pnpm docker:up`    | local stack (PostgreSQL, Redis, RustFS, ...) |
-| `pnpm docker:down`  | stop the local stack                        |
+| `pnpm docker:down`  | stop the local stack                         |
 
 ## Working with agents
 

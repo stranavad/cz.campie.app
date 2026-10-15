@@ -13,25 +13,25 @@ No build: Oxlint loads the TypeScript source through Node's type stripping, so o
 
 ## Groups
 
-| Group        | What                                                                                     |
-| ------------ | ---------------------------------------------------------------------------------------- |
+| Group        | What                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------ |
 | `base`       | every workspace: `eqeqeq`, `curly`, no `console`, no `any`, no import cycles or duplicates |
-| `type-aware` | floating and misused promises, exhaustive switches, no unsafe `any` flow, no deprecated  |
-| `node`       | Node plugin and globals                                                                  |
-| `react`      | React, hooks, Fast Refresh exports                                                       |
-| `a11y`       | jsx-a11y                                                                                 |
-| `vitest`     | Vitest plugin, no `.only` or `.skip`                                                     |
-| `time`       | `time/no-current-time` (JS plugin in `src/plugins/`), configured per app                 |
+| `type-aware` | floating and misused promises, exhaustive switches, no unsafe `any` flow, no deprecated    |
+| `node`       | Node plugin and globals                                                                    |
+| `react`      | React, hooks, Fast Refresh exports                                                         |
+| `a11y`       | jsx-a11y                                                                                   |
+| `vitest`     | Vitest plugin, no `.only` or `.skip`                                                       |
+| `time`       | `time/no-current-time` (JS plugin in `src/plugins/`), configured per app                   |
 
 ## Workspace groups
 
 Rules tied to one app's folders or messages live in that workspace's `oxlint/`, not here.
 
-| Workspace         | Groups                                                                                                               |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Workspace         | Groups                                                                                                                     |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `apps/api`        | layer boundaries, `Clock` only (`time/no-current-time` outside the clock adapters and tests), `process.env` only in config |
-| `apps/app`        | feature boundaries, `import.meta.env` only in `src/config/env/`, no raw JSX text, only `*.service.ts` imports `apiClient` |
-| `packages/schema` | no Node, Nest, React or Drizzle imports; module API through `index.ts`                                               |
+| `apps/app`        | feature boundaries, `import.meta.env` only in `src/config/env/`, no raw JSX text, only `*.service.ts` imports `apiClient`  |
+| `packages/schema` | no Node, Nest, React or Drizzle imports; module API through `index.ts`                                                     |
 
 ## Approach
 

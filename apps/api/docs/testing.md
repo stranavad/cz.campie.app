@@ -2,10 +2,10 @@
 
 Vitest 5 with Supertest against the real app and a real PostgreSQL 18 (Testcontainers, needs Docker). The spec allows two seams and no others:
 
-| Seam            | Files                                                      | What runs                                                   |
-| --------------- | ---------------------------------------------------------- | ----------------------------------------------------------- |
-| API over HTTP   | `*.integration.test.ts`, next to the controller            | the real `AppModule`, real PostgreSQL with RLS, port fakes |
-| Pure modules    | `*.test.ts`, next to the code                              | plain functions, no app, no database, no env               |
+| Seam          | Files                                           | What runs                                                  |
+| ------------- | ----------------------------------------------- | ---------------------------------------------------------- |
+| API over HTTP | `*.integration.test.ts`, next to the controller | the real `AppModule`, real PostgreSQL with RLS, port fakes |
+| Pure modules  | `*.test.ts`, next to the code                   | plain functions, no app, no database, no env               |
 
 The pure domain modules both apps share (pricing, form engine) live in `packages/schema` and are tested there. In the API, `*.test.ts` covers only pure helpers (placement rules, checklist status) that need no database.
 
@@ -32,9 +32,9 @@ Run one kind: `pnpm exec vitest --project integration` or `--project unit`.
 
 ## Infrastructure
 
-| Kind                           | Examples                         | How                                                          |
-| ------------------------------ | -------------------------------- | ------------------------------------------------------------ |
-| external service, once per run | PostgreSQL, Redis                | a test service in `src/testing/services/` with `start()` and `isolate()` |
-| outside world, faked           | mail, storage, payments, PDF     | the port's fake adapter, selected by the test config         |
+| Kind                           | Examples                     | How                                                                      |
+| ------------------------------ | ---------------------------- | ------------------------------------------------------------------------ |
+| external service, once per run | PostgreSQL, Redis            | a test service in `src/testing/services/` with `start()` and `isolate()` |
+| outside world, faked           | mail, storage, payments, PDF | the port's fake adapter, selected by the test config                     |
 
 A test service starts once per run and returns env values (`DATABASE_URL`); `isolate()` runs per test and returns env overrides plus cleanup. Isolation is part of the type, so no service can skip it.

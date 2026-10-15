@@ -8,52 +8,52 @@ Exact versions at the time of the decision. The lockfile is authoritative afterw
 
 ### Runtime and tooling
 
-| Item | Version | Note |
-|---|---|---|
-| Node.js | 26 (26.12.0) | Chosen over 24 LTS (24.22.0). 26 is Current today and becomes LTS in late October 2026 per the Node release schedule, well before the February 2027 launch, with support until about April 2029. |
-| pnpm | 12.11.2 | |
-| Turborepo | 2.11.8 | |
-| TypeScript | 7.0.2 | Native compiler, used for typechecking and building every package. See Consequences. |
-| Vitest | 5.0.5 | Test runner for `api`, `app` and `schema`. |
-| oxlint + oxlint-tsgolint | 1.88.0 + 7.0.2004 | Linter with type-aware rules. Replaces ESLint with typescript-eslint, which requires `typescript <6.1.0`. |
-| Prettier | 3.9.10 | Formatter; does not depend on the TypeScript compiler API. |
+| Item                     | Version           | Note                                                                                                                                                                                             |
+| ------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Node.js                  | 26 (26.12.0)      | Chosen over 24 LTS (24.22.0). 26 is Current today and becomes LTS in late October 2026 per the Node release schedule, well before the February 2027 launch, with support until about April 2029. |
+| pnpm                     | 12.11.2           |                                                                                                                                                                                                  |
+| Turborepo                | 2.11.8            |                                                                                                                                                                                                  |
+| TypeScript               | 7.0.2             | Native compiler, used for typechecking and building every package. See Consequences.                                                                                                             |
+| Vitest                   | 5.0.5             | Test runner for `api`, `app` and `schema`.                                                                                                                                                       |
+| oxlint + oxlint-tsgolint | 1.88.0 + 7.0.2004 | Linter with type-aware rules. Replaces ESLint with typescript-eslint, which requires `typescript <6.1.0`.                                                                                        |
+| Prettier                 | 3.9.10            | Formatter; does not depend on the TypeScript compiler API.                                                                                                                                       |
 
 ### Backend
 
-| Item | Version | Note |
-|---|---|---|
-| NestJS | 12.1.3 (`@nestjs/core`, `common`, `platform-express`, `testing`) | Named version, released 2026-08-27. Express platform, as in Tábor Domino. NestJS 12 ships as ES modules. |
-| `@nestjs/config` / `schedule` / `throttler` | 12.0.1 / 12.0.2 / 6.7.1 | All declare NestJS 12 support. |
-| `@nestjs/cli` | not used | Refuses TypeScript 7 (see Consequences). |
-| Zod | 4.6.7 | Shared schemas in `packages/schema`. Validated in NestJS by the built-in `StandardSchemaValidationPipe`, no `nestjs-zod` and no class-validator. |
-| Drizzle ORM / drizzle-kit | 1.0.0-rc.4 / 1.0.0-rc.4, **exact pin** | Fallback considered and rejected, see below. |
-| `pg` | 8.23.1 | Local and test database adapter. |
-| `@neondatabase/serverless` | 1.2.0 | Production database adapter (WebSocket `Pool`, via `drizzle-orm/neon-serverless`). Transactions with `set_config` are proven in issue 05. |
-| BullMQ / `@nestjs/bullmq` | 6.3.15 / 12.0.0 | `@nestjs/bullmq` 12 accepts BullMQ 6. |
-| Resend | 6.33.0 | |
-| React Email | `@react-email/components` 1.0.12, `@react-email/render` 2.1.0, `react-email` 6.11.2 (dev preview only) | Tábor Domino is on components 0.5.7; ported templates are updated to 1.x. |
-| AWS SDK S3 / Tigris | `@aws-sdk/client-s3` 3.1152.0 / `@tigrisdata/storage` 3.23.0 | Storage adapters; RustFS fit is proven in issue 04. |
+| Item                                        | Version                                                                                                | Note                                                                                                                                             |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| NestJS                                      | 12.1.3 (`@nestjs/core`, `common`, `platform-express`, `testing`)                                       | Named version, released 2026-08-27. Express platform, as in Tábor Domino. NestJS 12 ships as ES modules.                                         |
+| `@nestjs/config` / `schedule` / `throttler` | 12.0.1 / 12.0.2 / 6.7.1                                                                                | All declare NestJS 12 support.                                                                                                                   |
+| `@nestjs/cli`                               | not used                                                                                               | Refuses TypeScript 7 (see Consequences).                                                                                                         |
+| Zod                                         | 4.6.7                                                                                                  | Shared schemas in `packages/schema`. Validated in NestJS by the built-in `StandardSchemaValidationPipe`, no `nestjs-zod` and no class-validator. |
+| Drizzle ORM / drizzle-kit                   | 1.0.0-rc.4 / 1.0.0-rc.4, **exact pin**                                                                 | Fallback considered and rejected, see below.                                                                                                     |
+| `pg`                                        | 8.23.1                                                                                                 | Local and test database adapter.                                                                                                                 |
+| `@neondatabase/serverless`                  | 1.2.0                                                                                                  | Production database adapter (WebSocket `Pool`, via `drizzle-orm/neon-serverless`). Transactions with `set_config` are proven in issue 05.        |
+| BullMQ / `@nestjs/bullmq`                   | 6.3.15 / 12.0.0                                                                                        | `@nestjs/bullmq` 12 accepts BullMQ 6.                                                                                                            |
+| Resend                                      | 6.33.0                                                                                                 |                                                                                                                                                  |
+| React Email                                 | `@react-email/components` 1.0.12, `@react-email/render` 2.1.0, `react-email` 6.11.2 (dev preview only) | Tábor Domino is on components 0.5.7; ported templates are updated to 1.x.                                                                        |
+| AWS SDK S3 / Tigris                         | `@aws-sdk/client-s3` 3.1152.0 / `@tigrisdata/storage` 3.23.0                                           | Storage adapters; RustFS fit is proven in issue 04.                                                                                              |
 
 ### Frontend
 
-| Item | Version | Note |
-|---|---|---|
-| React / React DOM | 19.3.1 | Also used server-side for emails and PDFs. |
-| Vite | 8.3.4 | Named "latest Vite". |
-| `@vitejs/plugin-react` | 6.1.2 | |
-| React Compiler | `babel-plugin-react-compiler` 1.0.0 through `@rolldown/plugin-babel` 0.2.4 and `reactCompilerPreset()` | The stable Babel compiler, not the plugin's native `compiler: true` option, which its README marks experimental. |
-| TanStack Router / router plugin | 1.170.44 / 1.168.46 | File-based routes with `autoCodeSplitting`. |
-| TanStack Query | 5.104.3 | |
-| Tailwind CSS | 4.3.3 with `@tailwindcss/vite` 4.3.3 | |
+| Item                            | Version                                                                                                | Note                                                                                                             |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| React / React DOM               | 19.3.1                                                                                                 | Also used server-side for emails and PDFs.                                                                       |
+| Vite                            | 8.3.4                                                                                                  | Named "latest Vite".                                                                                             |
+| `@vitejs/plugin-react`          | 6.1.2                                                                                                  |                                                                                                                  |
+| React Compiler                  | `babel-plugin-react-compiler` 1.0.0 through `@rolldown/plugin-babel` 0.2.4 and `reactCompilerPreset()` | The stable Babel compiler, not the plugin's native `compiler: true` option, which its README marks experimental. |
+| TanStack Router / router plugin | 1.170.44 / 1.168.46                                                                                    | File-based routes with `autoCodeSplitting`.                                                                      |
+| TanStack Query                  | 5.104.3                                                                                                |                                                                                                                  |
+| Tailwind CSS                    | 4.3.3 with `@tailwindcss/vite` 4.3.3                                                                   |                                                                                                                  |
 
 ### Services (Docker Compose and production)
 
-| Item | Version | Note |
-|---|---|---|
-| PostgreSQL | 18 (18.6) | Neon's default for new projects since June 2026 and generally available since May 2026. Local matches production. PostgreSQL 18 also offers a native `uuidv7()`. |
-| Redis | 8.8 (8.8.3) | |
-| Gotenberg | 8.38.1 | |
-| RustFS | 1.0.1 | |
+| Item       | Version     | Note                                                                                                                                                             |
+| ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PostgreSQL | 18 (18.6)   | Neon's default for new projects since June 2026 and generally available since May 2026. Local matches production. PostgreSQL 18 also offers a native `uuidv7()`. |
+| Redis      | 8.8 (8.8.3) |                                                                                                                                                                  |
+| Gotenberg  | 8.38.1      |                                                                                                                                                                  |
+| RustFS     | 1.0.1       |                                                                                                                                                                  |
 
 ## Drizzle: 1.0 release candidate, not the 0.45 fallback
 

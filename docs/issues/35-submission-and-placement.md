@@ -7,9 +7,11 @@ Blocked by: 10, 31, 34
 Stories: 63, 64, 67, 69, 70, 71, 72, 77
 
 ## What to build
+
 Submitting the public form creates a Registration in one Turnus with its Participants, guardians, answers (core as typed columns, standard under platform keys, custom under field ids, sensitive ones encrypted), the form version, the declaration answers with time and IP address, the payment choice and the frozen price lines from the pricing module. The server re-checks everything: the Turnus is inside its Registration window, not manually closed, age limits, form validation. In one serialised step per Turnus it checks capacity against Registered Participants and inserts, and in the same step it takes a Discount code use, locking the code so the limit cannot be exceeded. A Variable symbol is generated (two digits of the Prague year plus six random digits, unique within the Organisation, regenerated on a clash). An idempotency key from the form prevents an accidental double submit from creating two Registrations. A rejected submission returns field-level reasons so the form keeps its data. Background jobs for the PDF and emails are enqueued (issues 36, 37).
 
 ## Acceptance criteria
+
 - [ ] Concurrent submissions for the last place: exactly one succeeds, the other gets "full" (API seam test with real PostgreSQL).
 - [ ] Concurrent submissions with a code that has one use left: exactly one gets the discount, the other is rejected at the code field.
 - [ ] Window, manual close and age limits block submission with specific error keys; window boundaries tested with the Clock.
@@ -23,6 +25,7 @@ Submitting the public form creates a Registration in one Turnus with its Partici
 - [ ] Jobs enqueued; the HTTP response does not wait for them.
 
 ## Notes
+
 - Spec sections: Registration, placement and declarations; Pricing; Payments (Variable symbol).
 - Port from Domino: `apps/api/src/registration/services/registration.service.ts` (generateVariableSymbol, clash retry) and `registration-process.service.ts`.
 - Serialisation: e.g. `SELECT ... FOR UPDATE` on the Turnus row and the code row inside the unit of work.

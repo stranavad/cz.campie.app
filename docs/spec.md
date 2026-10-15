@@ -26,13 +26,13 @@ A hosted, multi-tenant platform where any camp organisation signs up, describes 
 
 Delivery is in three stages tied to the 2027 camp season:
 
-| Stage | Ready by | Contents |
-|---|---|---|
-| 1a | Registration opening, February 2027 | Signup and approval, admin auth, permissions and invitations, Organisation settings and branding, Camp and Turnus setup, pricing, form engine and builder, Registration declarations, email texts, public registration with placement, Přihláška PDF with QR platba, confirmation emails, manual payment ledger, guardian portal (login, Registrations, balance, contact edits), admin Registration list, detail, manual create, edit and cancel, a simple export, audit log, encryption |
-| 1b | April 2027 | Comgate card payments, Consents, Documents, checklist, payment and open-item reminders, export presets and payments export, Turnus overview and filters, support access, feedback routing, audit log browser, erasure |
-| 2 | Around May 2027 | Configurable Health record, Potvrzení o účasti, Posudek o zdravotní způsobilosti, Prohlášení o bezinfekčnosti, free-form message to guardians |
-| 3 | Late June 2027 | Oddíly, Vedoucí, Camp health log with Ticks, Nástupní listina, Declined item overview, Oddíly overview, health summary, Bezinfekčnost vedoucích |
-| After the season | Autumn 2027 | Post-Turnus cleanup and its reminder, the Owner's full export, platform usage counts |
+| Stage            | Ready by                            | Contents                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1a               | Registration opening, February 2027 | Signup and approval, admin auth, permissions and invitations, Organisation settings and branding, Camp and Turnus setup, pricing, form engine and builder, Registration declarations, email texts, public registration with placement, Přihláška PDF with QR platba, confirmation emails, manual payment ledger, guardian portal (login, Registrations, balance, contact edits), admin Registration list, detail, manual create, edit and cancel, a simple export, audit log, encryption |
+| 1b               | April 2027                          | Comgate card payments, Consents, Documents, checklist, payment and open-item reminders, export presets and payments export, Turnus overview and filters, support access, feedback routing, audit log browser, erasure                                                                                                                                                                                                                                                                    |
+| 2                | Around May 2027                     | Configurable Health record, Potvrzení o účasti, Posudek o zdravotní způsobilosti, Prohlášení o bezinfekčnosti, free-form message to guardians                                                                                                                                                                                                                                                                                                                                            |
+| 3                | Late June 2027                      | Oddíly, Vedoucí, Camp health log with Ticks, Nástupní listina, Declined item overview, Oddíly overview, health summary, Bezinfekčnost vedoucích                                                                                                                                                                                                                                                                                                                                          |
+| After the season | Autumn 2027                         | Post-Turnus cleanup and its reminder, the Owner's full export, platform usage counts                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 Stage 1 is split by when a feature is first needed: bank transfer alone carries the opening, and Consents and documents are due weeks after registration. Built by one developer with agents.
 
@@ -302,15 +302,15 @@ The data model is designed for all three stages from the start, so later modules
 
 Every external service sits behind a port with two implementations chosen by configuration:
 
-| Port | Production | Local and tests |
-|---|---|---|
-| Database | Neon adapter (WebSocket driver, since transactions are required) | Standard `pg` driver |
-| File storage | Tigris library | AWS SDK against RustFS |
-| Mail | Resend | Log-only sender |
-| Payment gateway | Comgate | Fake provider |
-| PDF renderer | Gotenberg | Gotenberg locally, fake in tests |
-| Key provider | Master key from a deployment secret | Fixed test key |
-| Clock | System | Controllable |
+| Port            | Production                                                       | Local and tests                  |
+| --------------- | ---------------------------------------------------------------- | -------------------------------- |
+| Database        | Neon adapter (WebSocket driver, since transactions are required) | Standard `pg` driver             |
+| File storage    | Tigris library                                                   | AWS SDK against RustFS           |
+| Mail            | Resend                                                           | Log-only sender                  |
+| Payment gateway | Comgate                                                          | Fake provider                    |
+| PDF renderer    | Gotenberg                                                        | Gotenberg locally, fake in tests |
+| Key provider    | Master key from a deployment secret                              | Fixed test key                   |
+| Clock           | System                                                           | Controllable                     |
 
 The file storage port needs only put, get, delete and existence; see Files below for why no presigning is required.
 
