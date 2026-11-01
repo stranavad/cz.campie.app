@@ -1,6 +1,6 @@
 # 03 - Docker Compose local stack
 
-Status: in-progress
+Status: done
 Stage: 1a
 Episode: E0 Foundation
 Blocked by: 02
