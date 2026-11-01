@@ -23,7 +23,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 11  | Background jobs with Organisation context                       | ready-for-agent | 08         |
 | 12  | Encrypted file service and short-lived download links           | ready-for-agent | 06, 09     |
 | 13  | Frontend scaffold: hostname mode, i18n, `/api` proxy            | done            | 02         |
-| 14  | Cookie sessions, CSRF, Organisation resolution                  | ready-for-agent | 08, 13     |
+| 14  | Cookie sessions, CSRF, Organisation resolution                  | done            | 08, 13     |
 | 15  | PDF pipeline                                                    | ready-for-agent | 06, 11     |
 | 16  | Email pipeline: React templates, two streams                    | ready-for-agent | 11         |
 
