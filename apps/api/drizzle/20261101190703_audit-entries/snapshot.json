@@ -1,0 +1,299 @@
+{
+  "version": "8",
+  "dialect": "postgres",
+  "id": "ff58aa15-57de-4c89-b81d-a1f57757fcba",
+  "prevIds": [
+    "d1ea5d8e-366a-4055-bc16-11ee84864bf7"
+  ],
+  "ddl": [
+    {
+      "values": [
+        "admin",
+        "guardian",
+        "operator",
+        "system"
+      ],
+      "name": "audit_actor_kind",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": true,
+      "name": "audit_entries",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "organisation_keys",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "organisations",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "uuidv7()",
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "organisation_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "occurred_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "type": "audit_actor_kind",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "actor_kind",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "actor_identity",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "type": "inet",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "ip_address",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "action",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "target_type",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "target_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "changes",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 1,
+      "default": "'{}'",
+      "generated": null,
+      "identity": null,
+      "name": "encrypted_fields",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "organisation_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "organisation_keys"
+    },
+    {
+      "type": "bytea",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "wrapped_key",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "organisation_keys"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "uuidv7()",
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "organisations"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "organisation_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "organisations",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "audit_entries_organisation_id_organisations_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "audit_entries"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "organisation_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "organisations",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "organisation_keys_organisation_id_organisations_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "organisation_keys"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "audit_entries_pkey",
+      "schema": "public",
+      "table": "audit_entries",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "organisation_id"
+      ],
+      "nameExplicit": false,
+      "name": "organisation_keys_pkey",
+      "schema": "public",
+      "table": "organisation_keys",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "organisations_pkey",
+      "schema": "public",
+      "table": "organisations",
+      "entityType": "pks"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "ALL",
+      "roles": [
+        "campie_app"
+      ],
+      "using": "organisation_id = nullif(current_setting('app.organisation_id', true), '')::uuid",
+      "withCheck": "organisation_id = nullif(current_setting('app.organisation_id', true), '')::uuid",
+      "name": "organisation_isolation",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "audit_entries"
+    }
+  ],
+  "renames": []
+}

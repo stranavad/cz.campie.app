@@ -62,6 +62,13 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 - Encrypted columns are `encrypted()` from `db/helpers/encrypted.ts`, typed `Encrypted`, which only `cipher.encrypt()` produces. Never filter, sort or index them.
 - Files go through `cipher.encryptStream()` and `cipher.decryptStream()`: authenticated segments, so a download only ever emits verified plaintext. Every stored value starts with its scheme version.
 
+## Audit
+
+- Every change, every view of health data and every export with sensitive columns calls `AuditService.record(actor, { action, target, change })` inside the unit of work of the change, so the entry commits or rolls back with it. Pass `change: { before, after }` with the rows (`null` for a created or removed one); a view or an export has none.
+- The entry keeps old and new values of plain fields and only the names of encrypted ones: any byte value is treated as encrypted, and counts as changed whenever its ciphertext differs, so re-encrypt only values that changed.
+- `audit_entries` is append-only: the application role may insert and read but not update, delete or truncate. Actor identity, IP address and changes are nullable so erasure can scrub an entry without removing it.
+- The `Actor` (kind, identity, IP address; `system` has neither) is passed explicitly by the caller; services need it for permission checks anyway.
+
 ## Folder layout
 
 ```
