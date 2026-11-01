@@ -90,7 +90,7 @@ describe('ports', () => {
         email: 'guardian@example.test',
       }),
     ).rejects.toThrow('not implemented');
-    await expect(app.get(PaymentGateway).getPaymentStatus(credentials, 'ABCD-1234-EFGH')).rejects.toThrow(
+    await expect(app.get(PaymentGateway).getPaymentStatus(credentials, 'fake-transaction')).rejects.toThrow(
       'not implemented',
     );
   });

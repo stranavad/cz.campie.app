@@ -1,0 +1,2 @@
+# False positive: a made-up payment gateway transaction id in a test, since replaced.
+2ec29286ac6f34efd9a8c82422bdf1a6d8c9c38c:apps/api/src/core/ports/ports.integration.test.ts:generic-api-key:93
