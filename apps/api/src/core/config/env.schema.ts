@@ -5,6 +5,11 @@ const nonEmpty = z.string().min(1);
 // Each port is chosen by one `<PORT>_ADAPTER` variable; only the chosen adapter's variables are required.
 // The parsed value is nested per port, so an adapter's settings are typed by the adapter it belongs to.
 
+// Both adapters take the same URL, as the application role.
+const database = z
+  .object({ DATABASE_ADAPTER: z.enum(['neon', 'pg']), DATABASE_URL: z.url() })
+  .transform((env) => ({ database: { adapter: env.DATABASE_ADAPTER, url: env.DATABASE_URL } }));
+
 const clock = z
   .discriminatedUnion('CLOCK_ADAPTER', [
     z.object({ CLOCK_ADAPTER: z.literal('system') }),
@@ -107,9 +112,9 @@ export const envSchema = z
   .object({
     APP_ENV: z.enum(['local', 'test', 'production']),
 
-    DATABASE_URL: z.url(),
     REDIS_URL: z.url(),
   })
+  .and(database)
   .and(clock)
   .and(mail)
   .and(fileStorage)
@@ -123,6 +128,7 @@ export const envSchema = z
 
     // The adapter each port must use in production; every other adapter is local or test only.
     const ports = [
+      { variable: 'DATABASE_ADAPTER', chosen: env.database.adapter, required: 'neon' },
       { variable: 'CLOCK_ADAPTER', chosen: env.clock.adapter, required: 'system' },
       { variable: 'MAIL_ADAPTER', chosen: env.mail.adapter, required: 'resend' },
       { variable: 'FILE_STORAGE_ADAPTER', chosen: env.fileStorage.adapter, required: 'tigris' },

@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
-import pg from 'pg';
 
 import type { Env } from '../config/env.schema.ts';
+import { Database } from '../database/database.port.ts';
 import { FileStorage } from '../ports/file-storage/file-storage.port.ts';
 import { PdfRenderer } from '../ports/pdf-renderer/pdf-renderer.port.ts';
 
@@ -26,6 +26,7 @@ export class HealthService {
 
   constructor(
     private readonly config: ConfigService<Env, true>,
+    private readonly database: Database,
     private readonly fileStorage: FileStorage,
     private readonly pdfRenderer: PdfRenderer,
   ) {}
@@ -35,7 +36,7 @@ export class HealthService {
    */
   public async check(): Promise<HealthReport> {
     const pings: Record<Service, (signal: AbortSignal) => Promise<void>> = {
-      database: () => this.pingDatabase(),
+      database: () => this.database.ping(),
       redis: () => this.pingRedis(),
       fileStorage: (signal) => this.fileStorage.ping(signal),
       pdfRenderer: (signal) => this.pdfRenderer.ping(signal),
@@ -73,24 +74,6 @@ export class HealthService {
       this.logger.warn(`${service} is down: ${error instanceof Error ? error.message : String(error)}`);
 
       return 'down';
-    }
-  }
-
-  /**
-   * Connect to PostgreSQL and run a trivial query.
-   */
-  private async pingDatabase(): Promise<void> {
-    const client = new pg.Client({
-      connectionString: this.config.get('DATABASE_URL', { infer: true }),
-      connectionTimeoutMillis: PROBE_TIMEOUT_MS,
-      query_timeout: PROBE_TIMEOUT_MS,
-    });
-
-    try {
-      await client.connect();
-      await client.query('SELECT 1');
-    } finally {
-      await client.end();
     }
   }
 

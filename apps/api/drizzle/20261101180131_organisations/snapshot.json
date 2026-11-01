@@ -1,0 +1,40 @@
+{
+  "version": "8",
+  "dialect": "postgres",
+  "id": "ce463478-2791-4e52-aea8-0dc710b98623",
+  "prevIds": [
+    "41072020-de3d-4423-a618-93883841f513"
+  ],
+  "ddl": [
+    {
+      "isRlsEnabled": false,
+      "name": "organisations",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "uuidv7()",
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "organisations"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "organisations_pkey",
+      "schema": "public",
+      "table": "organisations",
+      "entityType": "pks"
+    }
+  ],
+  "renames": []
+}

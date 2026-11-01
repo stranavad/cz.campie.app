@@ -12,7 +12,10 @@
     "lint": "oxlint --type-aware --deny-warnings",
     "lint-staged": "lint-staged",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1161.0",
@@ -23,6 +26,7 @@
     "@nestjs/platform-express": "^12.1.3",
     "@repo/schema": "workspace:*",
     "@tigrisdata/storage": "^3.23.0",
+    "drizzle-orm": "1.0.0-rc.4",
     "ioredis": "^6.0.0",
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
@@ -33,11 +37,13 @@
   "devDependencies": {
     "@nestjs/testing": "^12.1.3",
     "@repo/oxlint-config": "workspace:*",
+    "@testcontainers/postgresql": "^12.2.1",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.5",
     "@types/pg": "^8.23.1",
     "@types/supertest": "^7.2.1",
     "concurrently": "^10.0.6",
+    "drizzle-kit": "1.0.0-rc.4",
     "oxlint": "^1.88.0",
     "oxlint-tsgolint": "^7.0.2004",
     "supertest": "^7.3.1",

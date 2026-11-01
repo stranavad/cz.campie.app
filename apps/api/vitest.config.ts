@@ -12,7 +12,10 @@ export default defineConfig({
     env: { APP_ENV: 'test' },
     projects: [
       { extends: true, test: { name: 'unit', include: ['src/**/*.test.ts'], exclude: [INTEGRATION_TESTS] } },
-      { extends: true, test: { name: 'integration', include: [INTEGRATION_TESTS] } },
+      {
+        extends: true,
+        test: { name: 'integration', include: [INTEGRATION_TESTS], globalSetup: ['src/testing/global-setup.ts'] },
+      },
     ],
   },
 });

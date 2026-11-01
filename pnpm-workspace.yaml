@@ -8,3 +8,11 @@ minimumReleaseAgeExclude:
   - react@19.3.1
   - vitest@5.0.5
   - '@aws-sdk/client-s3@3.1152.0'
+# None of these install scripts is needed: esbuild's only checks the binary its platform package
+# brings; cpu-features and ssh2 (under Testcontainers) build optional native speedups; protobufjs's
+# only checks versions.
+allowBuilds:
+  cpu-features: false
+  esbuild: false
+  protobufjs: false
+  ssh2: false

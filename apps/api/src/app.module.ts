@@ -1,6 +1,7 @@
 import { Module, type DynamicModule } from '@nestjs/common';
 
 import { appConfigModule } from './core/config/config.module.ts';
+import { DatabaseModule } from './core/database/database.module.ts';
 import { HealthModule } from './core/health/health.module.ts';
 import { ClockModule } from './core/ports/clock/clock.module.ts';
 import { FileStorageModule } from './core/ports/file-storage/file-storage.module.ts';
@@ -18,6 +19,7 @@ export class AppModule {
       module: AppModule,
       imports: [
         appConfigModule(),
+        DatabaseModule,
         ClockModule,
         MailSenderModule,
         FileStorageModule,
