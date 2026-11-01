@@ -16,7 +16,7 @@ In `apps/app`, or from the root `pnpm --filter app <script>`.
 
 ## Stack
 
-Versions: ADR-0003. Rows marked * come from the Koala42 template and are confirmed when issue 13 scaffolds the app.
+Versions: ADR-0003. Rows marked * come from the Koala42 template and are installed with their first use.
 
 | Area         | Tech                                                 |
 | ------------ | ---------------------------------------------------- |
@@ -27,7 +27,7 @@ Versions: ADR-0003. Rows marked * come from the Koala42 template and are confirm
 | Forms        | TanStack Form 1 *                                    |
 | Validation   | Zod 4                                                |
 | Styling      | Tailwind CSS 4, shadcn/ui on Base UI, Lucide icons * |
-| i18n         | i18next + react-i18next *, Czech only                |
+| i18n         | i18next + react-i18next, Czech only                  |
 | Dates        | dayjs *                                              |
 | Lint/format  | Oxlint (this app), Prettier (root)                   |
 

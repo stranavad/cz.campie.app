@@ -8,14 +8,15 @@ The router plugin in `vite.config.ts` generates `src/routeTree.gen.ts` and code-
 
 ## Host modes
 
-One build serves two kinds of host; `core/host` resolves the mode from the hostname and the configured platform domain (issue 13):
+One build serves two kinds of host; `core/host` resolves the mode once at startup from the hostname and the configured platform domain. The main host is `app.<platform>` (`app.localhost` locally); `app` is a reserved subdomain.
 
-| Host                     | Mode         | Serves                                                                                                    |
-| ------------------------ | ------------ | --------------------------------------------------------------------------------------------------------- |
-| `<subdomain>.<platform>` | Organisation | `/` landing, `/{camp-slug}` Turnusy, `/{camp-slug}/prihlaska?turnus={id}` form, `/portal` guardian portal |
-| `<platform>` (main host) | Platform     | signup, admin interface, operator console                                                                 |
+| Host                         | Mode         | Serves                                                                                                    |
+| ---------------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
+| `<subdomain>.<platform>`     | Organisation | `/` landing, `/{camp-slug}` Turnusy, `/{camp-slug}/prihlaska?turnus={id}` form, `/portal` guardian portal |
+| `app.<platform>` (main host) | Platform     | signup, admin interface, operator console                                                                 |
 
-- Routes of one mode are unreachable in the other; the route tree guards it in one place.
+- Each mode is a branch of the route tree: `routes/organisation/`, `routes/platform/`, and `routes/unknown/` for any other host (the bare domain, nested subdomains, foreign hosts). The router's `rewrite` (`hostRewrite` in `core/host`) prefixes every URL with the current mode and strips it from links and history, so both modes own `/`, the browser never sees the prefix, and routes of one mode are unreachable from the other.
+- Links use the prefixed route paths (`to="/organisation/$campSlug"`); a link to the other mode's routes is a cross-host link and needs a full URL.
 - Features never read the hostname; they get the mode and the current Organisation from `core/host`.
 - Public paths are part of the product (camps link to them from their websites); changing one is a breaking change.
 
@@ -25,5 +26,5 @@ Routes are thin: a route file maps a URL to a feature's page component (exported
 
 - Pages that replace each other (list, detail) share a folder: `routes/.../turnusy/index.tsx` + `routes/.../turnusy/$turnusId.tsx`.
 - Search params that a reload or a shared link should keep (filters, selected Turnus, paging) are validated with a Zod schema in the route.
-- `__root.tsx` only renders `Application` from `@/core/application` (providers, devtools, outlet); app-wide wrappers belong in `core/application`.
+- `__root.tsx` only renders `Application` from `@/core/application` (providers, outlet); app-wide wrappers belong in `core/application`.
 - Features never import `src/routes/` (lint-enforced); they read params through router hooks with a `from` path, which keeps them typed without the dependency.

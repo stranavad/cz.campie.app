@@ -1,0 +1,16 @@
+{
+  "organisationShell": {
+    "poweredBy": "Přihlášky běží na {{productName}}"
+  },
+  "platformShell": {
+    "tagline": "Přihlášky na tábory"
+  },
+  "notFound": {
+    "title": "Stránka nenalezena",
+    "description": "Zkontrolujte adresu, kterou jste zadali."
+  },
+  "unknownHost": {
+    "title": "Neznámá adresa",
+    "description": "Tato adresa nepatří k {{productName}}. Stránky organizací najdete na adrese ve tvaru nazev-organizace.{{platformDomain}}."
+  }
+}

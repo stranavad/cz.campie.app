@@ -11,5 +11,5 @@ import { translations } from './oxlint/translations.ts';
 
 export default defineConfig({
   extends: [base, typeAware, react, a11y, env, translations, boundaries],
-  ignorePatterns: ['dist'],
+  ignorePatterns: ['dist', 'src/routeTree.gen.ts'],
 });

@@ -27,11 +27,11 @@ No build: Oxlint loads the TypeScript source through Node's type stripping, so o
 
 Rules tied to one app's folders or messages live in that workspace's `oxlint/`, not here.
 
-| Workspace         | Groups                                                                                                                     |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api`        | layer boundaries, `Clock` only (`time/no-current-time` outside the clock adapters and tests), `process.env` only in config |
-| `apps/app`        | feature boundaries, `import.meta.env` only in `src/config/env/`, no raw JSX text, only `*.service.ts` imports `apiClient`  |
-| `packages/schema` | no Node, Nest, React or Drizzle imports; module API through `index.ts`                                                     |
+| Workspace         | Groups                                                                                                                                                         |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/api`        | layer boundaries, `Clock` only (`time/no-current-time` outside the clock adapters and tests), `process.env` only in config                                     |
+| `apps/app`        | feature boundaries, `import.meta.env` only in `src/config/env/`, no literal text in JSX children or user-facing props, only `*.service.ts` imports `apiClient` |
+| `packages/schema` | no Node, Nest, React or Drizzle imports; module API through `index.ts`                                                                                         |
 
 ## Approach
 

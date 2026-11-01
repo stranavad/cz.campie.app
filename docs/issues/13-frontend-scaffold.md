@@ -1,6 +1,6 @@
 # 13 - Frontend scaffold: hostname mode, i18n, /api proxy
 
-Status: ready-for-agent
+Status: in-progress
 Stage: 1a
 Episode: E0 Foundation
 Blocked by: 02
