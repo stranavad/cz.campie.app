@@ -1,6 +1,7 @@
 import { generateDrizzleJson, generateMigration } from 'drizzle-kit/api-postgres';
 import * as p from 'drizzle-orm/pg-core';
 
+import { encrypted } from '../db/helpers/encrypted.ts';
 import { id } from '../db/helpers/ids.ts';
 import { organisationId, organisationPolicy } from '../db/helpers/organisation.ts';
 import * as schema from '../db/schema.ts';
@@ -14,6 +15,7 @@ export const notes = p.snakeCase.table.withRLS(
     id: id(),
     organisationId: organisationId().references(() => schema.organisations.id),
     text: p.text().notNull(),
+    secret: encrypted(),
   },
   () => [organisationPolicy()],
 );

@@ -55,6 +55,13 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 - Platform-level tables (Organisations themselves, admin identities, operator records) are listed in `db/platform-tables.ts` and have no policy: every unit of work reaches them, so their services decide who may read or change what. A platform table the API must not change in some way revokes that privilege in a custom migration.
 - Views over Organisation tables are declared `security_invoker`, or they read as their owner, past RLS; the tenancy check rejects any other view and every materialized view.
 
+## Encryption
+
+- Each Organisation's data key is created with it (`OrganisationService.create`) and stored in `organisation_keys`, wrapped by the `KeyProvider` master key and bound to the Organisation. The API may delete that row, which destroys every encrypted value of the Organisation, but never update it.
+- `EncryptionService.cipher()` returns an `OrganisationCipher` for the current unit of work's Organisation. Get it once per unit of work, not per value; it holds the key in memory, so a stream keeps working after the unit of work ends.
+- Encrypted columns are `encrypted()` from `db/helpers/encrypted.ts`, typed `Encrypted`, which only `cipher.encrypt()` produces. Never filter, sort or index them.
+- Files go through `cipher.encryptStream()` and `cipher.decryptStream()`: authenticated segments, so a download only ever emits verified plaintext. Every stored value starts with its scheme version.
+
 ## Folder layout
 
 ```
@@ -62,6 +69,7 @@ apps/api/src/
   core/                              infrastructure, no domain logic
     config/                          env schema + loader, validated before Nest starts
     database/                        Drizzle setup, pg and Neon adapters, unit of work
+    encryption/                      Organisation data keys, field and file encryption
     ports/<port>/                    <port>.port.ts, <technology>-<port>.adapter.ts, <port>.module.ts
     http/                            global pipe, @Endpoint decorators, exception filters
     health/
