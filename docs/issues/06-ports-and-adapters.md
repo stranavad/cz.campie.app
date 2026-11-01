@@ -1,6 +1,6 @@
 # 06 - Ports and adapters skeleton
 
-Status: in-progress
+Status: done
 Stage: 1a
 Episode: E0 Foundation
 Blocked by: 02, 04
