@@ -13,7 +13,7 @@ export const env = {
   },
   overrides: [
     {
-      files: ['src/core/config/**', 'src/testing/**', 'drizzle.config.ts', 'vitest.config.ts'],
+      files: ['src/core/config/**', 'src/testing/**', 'spikes/**', 'drizzle.config.ts', 'vitest.config.ts'],
       rules: { 'no-restricted-properties': 'off' },
     },
   ],
