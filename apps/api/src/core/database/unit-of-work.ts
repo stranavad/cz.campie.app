@@ -10,6 +10,7 @@ interface Scope {
   // null in a platform unit of work, which sees no Organisation's rows.
   readonly organisationId: string | null;
   readonly afterCommit: (() => Promise<void>)[];
+  readonly afterRollback: (() => Promise<void>)[];
 }
 
 // The only way to Organisation data. Each unit of work is one transaction on one connection; the current
@@ -71,6 +72,16 @@ export class UnitOfWork {
   }
 
   /**
+   * Run work after the current unit of work rolls back, to undo an effect outside the database; never when
+   * it commits.
+   * @param work runs outside any unit of work, before the rollback's error reaches the caller; it must not
+   * throw, or its error replaces that one
+   */
+  public afterRollback(work: () => Promise<void>): void {
+    this.current().afterRollback.push(work);
+  }
+
+  /**
    * Open the transaction, set the Organisation if there is one, and run work with it as the current scope.
    * @param organisationId the Organisation, or null for a platform unit of work
    * @param work runs inside the transaction
@@ -82,14 +93,25 @@ export class UnitOfWork {
     }
 
     const afterCommit: (() => Promise<void>)[] = [];
-    const result = await this.database.drizzle.transaction(async (db) => {
-      if (organisationId !== null) {
-        // set_config, unlike SET LOCAL, takes the id as a bound parameter.
-        await db.execute(sql`select set_config(${ORGANISATION_SETTING}, ${organisationId}, true)`);
+    const afterRollback: (() => Promise<void>)[] = [];
+    let result: T;
+
+    try {
+      result = await this.database.drizzle.transaction(async (db) => {
+        if (organisationId !== null) {
+          // set_config, unlike SET LOCAL, takes the id as a bound parameter.
+          await db.execute(sql`select set_config(${ORGANISATION_SETTING}, ${organisationId}, true)`);
+        }
+
+        return this.scope.run({ db, organisationId, afterCommit, afterRollback }, work);
+      });
+    } catch (error) {
+      for (const callback of afterRollback) {
+        await callback();
       }
 
-      return this.scope.run({ db, organisationId, afterCommit }, work);
-    });
+      throw error;
+    }
 
     for (const callback of afterCommit) {
       await callback();

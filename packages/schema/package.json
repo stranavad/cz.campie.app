@@ -8,6 +8,10 @@
     "./shared": {
       "types": "./dist/shared/index.d.ts",
       "default": "./dist/shared/index.js"
+    },
+    "./files": {
+      "types": "./dist/files/index.d.ts",
+      "default": "./dist/files/index.js"
     }
   },
   "scripts": {

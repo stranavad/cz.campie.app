@@ -4,6 +4,7 @@ import { AuditModule } from './core/audit/audit.module.ts';
 import { appConfigModule } from './core/config/config.module.ts';
 import { DatabaseModule } from './core/database/database.module.ts';
 import { EncryptionModule } from './core/encryption/encryption.module.ts';
+import { FilesModule } from './core/files/files.module.ts';
 import { HealthModule } from './core/health/health.module.ts';
 import { JobsModule } from './core/jobs/jobs.module.ts';
 import { ClockModule } from './core/ports/clock/clock.module.ts';
@@ -35,6 +36,7 @@ export class AppModule {
         EncryptionModule,
         AuditModule,
         JobsModule,
+        FilesModule,
         HealthModule,
         OrganisationsModule,
       ],
