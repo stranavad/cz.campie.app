@@ -26,4 +26,4 @@ New variable: add it to the schema with its production default, expose it throug
 
 ## Vercel
 
-`vercel.json` rewrites `/api/*` to the API host (`api.campie.cz`, a reserved subdomain) and every other path to `index.html`. The dev proxy keeps `Host` and adds `X-Forwarded-Host`, as Vercel's external rewrites are expected to; issue 14 confirms which header the API reads in production.
+`vercel.json` rewrites `/api/*` to the API host (`api.campie.cz`, a reserved subdomain) and every other path to `index.html`. The dev proxy keeps `Host` and adds `X-Forwarded-Host`, as Vercel's external rewrites are expected to. The API reads `X-Forwarded-Host` first and falls back to `Host`; that Vercel sends `X-Forwarded-Host` on an external rewrite is still to be checked on the first deployment.

@@ -114,6 +114,9 @@ const keyProvider = z
 export const envSchema = z
   .object({
     APP_ENV: z.enum(['local', 'test', 'production']),
+    // The registrable domain the platform runs on: app.<domain> is the main host, every other single
+    // label below it an Organisation's subdomain.
+    PLATFORM_DOMAIN: z.string().regex(/^[a-z0-9-]+(\.[a-z0-9-]+)*$/, 'must be a bare lowercase hostname'),
 
     REDIS_URL: z.url(),
     // auto runs queued jobs in this process; manual leaves them queued until a test drains them.

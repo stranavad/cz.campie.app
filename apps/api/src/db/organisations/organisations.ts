@@ -4,4 +4,5 @@ import { id } from '../helpers/ids.ts';
 
 export const organisations = p.snakeCase.table('organisations', {
   id: id(),
+  subdomain: p.text().notNull().unique(),
 });

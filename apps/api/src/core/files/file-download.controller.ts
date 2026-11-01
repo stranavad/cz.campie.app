@@ -2,9 +2,11 @@ import { pipeline } from 'node:stream/promises';
 import { Controller, Get, Logger, Param, Res } from '@nestjs/common';
 import type { Response } from 'express';
 
+import { Access } from '../access/access.decorator.ts';
 import { FileService } from './file.service.ts';
 
-// Public: the signed token is the permission, checked by whoever handed out the link.
+// The signed token is the permission, checked by whoever handed out the link, and names the Organisation.
+@Access('unscoped')
 @Controller()
 export class FileDownloadController {
   private readonly logger = new Logger(FileDownloadController.name);

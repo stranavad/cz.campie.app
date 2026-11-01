@@ -13,9 +13,10 @@ export class OrganisationService {
 
   /**
    * Create an Organisation with its data key, in the current platform unit of work.
+   * @param input the Organisation
    */
-  public async create(): Promise<OrganisationEntity> {
-    const organisation = await this.organisations.create();
+  public async create(input: { subdomain: string }): Promise<OrganisationEntity> {
+    const organisation = await this.organisations.create(input);
 
     await this.encryption.createDataKey(organisation.id);
 

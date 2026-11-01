@@ -1,26 +1,24 @@
-import { Body, Controller, Headers, HttpCode, Ip, NotFoundException, Param, Patch } from '@nestjs/common';
+import { Body, Controller, HttpCode, NotFoundException, Param, Patch } from '@nestjs/common';
 import { eq, sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { auditEntries } from '../../db/schema.ts';
-import { createOrganisation } from '../../testing/fixtures.ts';
+import { createAdmin, createOrganisation } from '../../testing/fixtures.ts';
 import { withClient } from '../../testing/services/postgres.ts';
 import { createNotesTable, notes } from '../../testing/tenant-table.ts';
 import { useTestApp } from '../../testing/test-app.ts';
+import { Access } from '../access/access.decorator.ts';
+import { RequestActor } from '../access/request-actor.decorator.ts';
 import { UnitOfWork } from '../database/unit-of-work.ts';
 import { EncryptionService } from '../encryption/encryption.service.ts';
+import type { Actor } from './actor.ts';
 import { AuditService } from './audit.service.ts';
 
-// Test only: stand in for a session until sessions exist. Real routes never take the Organisation or the
-// actor from client input.
-const ORGANISATION = 'x-test-organisation';
-const ADMIN = 'x-test-admin';
-
-const ADMIN_ID = '01900000-0000-7000-8000-0000000000ad';
 // Obviously fake: no real person has this rodné číslo.
 const RODNE_CISLO = '000101/0000';
 
 // A sample endpoint that changes an Organisation-owned row and audits the change in the same unit of work.
+@Access('admin')
 @Controller('test-notes')
 class NotesController {
   constructor(
@@ -32,35 +30,32 @@ class NotesController {
   @Patch(':id')
   @HttpCode(204)
   public async update(
-    @Headers(ORGANISATION) organisationId: string,
-    @Headers(ADMIN) adminId: string,
-    @Ip() ipAddress: string,
+    @RequestActor() actor: Actor,
     @Param('id') id: string,
     @Body() body: { text?: string; secret?: string; fail?: boolean },
   ): Promise<void> {
-    await this.unitOfWork.run(organisationId, async () => {
-      const [before] = await this.unitOfWork.db.select().from(notes).where(eq(notes.id, id));
+    const [before] = await this.unitOfWork.db.select().from(notes).where(eq(notes.id, id));
 
-      if (before === undefined) {
-        throw new NotFoundException();
-      }
+    if (before === undefined) {
+      throw new NotFoundException();
+    }
 
-      const cipher = await this.encryption.cipher();
-      const [after] = await this.unitOfWork.db
-        .update(notes)
-        .set({ text: body.text, secret: body.secret === undefined ? undefined : cipher.encrypt(body.secret) })
-        .where(eq(notes.id, id))
-        .returning();
+    const cipher = await this.encryption.cipher();
+    const [after] = await this.unitOfWork.db
+      .update(notes)
+      .set({ text: body.text, secret: body.secret === undefined ? undefined : cipher.encrypt(body.secret) })
+      .where(eq(notes.id, id))
+      .returning();
 
-      await this.audit.record(
-        { kind: 'admin', identity: adminId, ipAddress },
-        { action: 'note.update', target: { type: 'note', id }, change: { before, after: after ?? null } },
-      );
-
-      if (body.fail === true) {
-        throw new Error('The change failed after it was audited');
-      }
+    await this.audit.record(actor, {
+      action: 'note.update',
+      target: { type: 'note', id },
+      change: { before, after: after ?? null },
     });
+
+    if (body.fail === true) {
+      throw new Error('The change failed after it was audited');
+    }
   }
 }
 
@@ -81,6 +76,7 @@ describe('audit log', () => {
   const { app, http, clock, database } = useTestApp({ controllers: [NotesController] });
   let organisationId: string;
   let noteId: string;
+  let admin: Awaited<ReturnType<typeof createAdmin>>;
 
   const auditRows = () =>
     withClient(
@@ -90,7 +86,7 @@ describe('audit log', () => {
 
   // Change the note through the sample endpoint, as an admin of its Organisation.
   const patchNote = (body: { text?: string; secret?: string; fail?: boolean }) =>
-    http().patch(`/api/test-notes/${noteId}`).set(ORGANISATION, organisationId).set(ADMIN, ADMIN_ID).send(body);
+    http().patch(`/api/test-notes/${noteId}`).set(admin.headers(organisationId)).send(body);
 
   // Run a statement as the application role in the Organisation's unit of work, expecting it refused.
   const expectDenied = async (statement: () => Promise<unknown>) => {
@@ -104,6 +100,7 @@ describe('audit log', () => {
   beforeEach(async () => {
     await createNotesTable(database().ownerUrl);
     organisationId = await createOrganisation(app());
+    admin = await createAdmin(app(), { memberOf: [organisationId] });
 
     const unitOfWork = app().get(UnitOfWork);
     const [note] = await unitOfWork.run(organisationId, () =>
@@ -119,6 +116,8 @@ describe('audit log', () => {
 
   it('records a change with its actor, action, target, time, IP address and old and new values', async () => {
     clock().set(new Date('2027-02-01T09:30:00Z'));
+    // Signed in again: the session from before the clock moved has expired.
+    admin = await createAdmin(app(), { memberOf: [organisationId] });
 
     await patchNote({ text: 'packing list, with torch' }).expect(204);
 
@@ -127,7 +126,7 @@ describe('audit log', () => {
         organisation_id: organisationId,
         occurred_at: new Date('2027-02-01T09:30:00Z'),
         actor_kind: 'admin',
-        actor_identity: ADMIN_ID,
+        actor_identity: admin.id,
         ip_address: expect.stringMatching(/127\.0\.0\.1$/),
         action: 'note.update',
         target_type: 'note',

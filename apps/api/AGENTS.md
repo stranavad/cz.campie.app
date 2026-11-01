@@ -49,11 +49,23 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 - **All Organisation data access runs inside a unit of work.** `UnitOfWork.run(organisationId, work)` opens a transaction, sets the current Organisation in it (`set_config('app.organisation_id', ..., true)`), commits when `work` resolves and rolls back when it throws. Inside, `unitOfWork.db` is the transaction and `unitOfWork.organisationId` the Organisation; outside, both throw. Units of work do not nest. Repositories inject `UnitOfWork` and use only `db` and `organisationId`.
 - Outside a unit of work, RLS returns no rows and rejects writes. `UnitOfWork.runForPlatform(work)` is a transaction without an Organisation, for platform tables: every Organisation-owned table looks empty there.
 - The `Database` port (`DATABASE_ADAPTER=neon|pg`) holds the pool; only the unit of work and the health check use it.
-- The unit of work is opened by request infrastructure (issue 14: host, admin header, gateway path) or by a job from its payload, never by a controller or repository.
+- The unit of work is opened by request infrastructure (see Access and sessions) or by a job from its payload, never by a controller or repository.
 - **The Organisation never comes from client input.** Inserts take `organisationId` from the unit of work; a body or query carrying it is a bug.
 - **RLS is the second line, not the first.** Services still check permissions; RLS stops whatever a missed check lets through. A row of another Organisation is invisible, so lookups by its id end as not-found.
 - Platform-level tables (Organisations themselves, admin identities, operator records) are listed in `db/platform-tables.ts` and have no policy: every unit of work reaches them, so their services decide who may read or change what. A platform table the API must not change in some way revokes that privilege in a custom migration.
 - Views over Organisation tables are declared `security_invoker`, or they read as their owner, past RLS; the tenancy check rejects any other view and every materialized view.
+
+## Access and sessions
+
+`core/access/` resolves every request before its route runs; `core/sessions/` (`SessionsModule`, global) issues and reads the sessions and their cookies.
+
+- **`@Access(kind)` on every controller** says who may call it and where its Organisation comes from: `public` (an Organisation's subdomain), `guardian` (a guardian session of the subdomain's Organisation), `admin` (an admin session on the main host, the Organisation named in the `x-organisation-id` header and checked against the admin's memberships), `platform` (the main host, outside any Organisation: signup, login), `gateway` (the Organisation in the `:organisationId` path parameter; the route checks the gateway's signature) and `unscoped` (the route opens its own unit of work: health, download links). A controller with mixed access splits in two.
+- The host is the one the frontend's proxy forwarded (`X-Forwarded-Host`, last entry, since a proxy appends to what the client sent), else `Host`. `app.<PLATFORM_DOMAIN>` is the main host, `<subdomain>.<PLATFORM_DOMAIN>` an Organisation. A public or guardian request on any other host, or on a subdomain no Organisation has, answers 404 `organisation_unknown`; an admin or platform request off the main host a plain 404.
+- The global `AccessGuard` refuses a mutating request (not GET, HEAD, OPTIONS) without the `x-csrf-protection` header with 403 `csrf_header_missing`, except `gateway`. A missing or expired session is 401; an admin naming an Organisation they are no member of, or none, is 403. Header names and error codes are in `@repo/schema/shared` (`ACCESS_HEADERS`, `ACCESS_ERROR_CODES`).
+- The global `UnitOfWorkInterceptor` then runs the route in the resolved Organisation's unit of work (a platform one for `platform`), so the route commits or rolls back as one. Route interceptors run inside it, an upload's parsing included.
+- `@RequestActor()` gives the admin (identity: admin id) or guardian (identity: email) making the request, for permission checks and audit.
+- Sessions live in the database; the cookie carries a random token and only its SHA-256 is stored. `SessionService.startAdmin(adminId)` / `startGuardian(email)` (in the guardian's Organisation's unit of work) return the token, and `writeSessionCookie(response, kind, session)` sets it: `__Host-admin_session` / `__Host-guardian_session`, httpOnly, Secure, SameSite=Lax, Path=/, no Domain, so it stays on the exact host. Admin sessions last 12 hours, guardian sessions 7 days, not extended by use.
+- Guardian sessions are an Organisation table, looked up in the host's Organisation, so another Organisation's session is invisible; the guard also compares the session's Organisation with the host's. Admins, memberships and admin sessions are platform tables: an admin identity is global, and the membership decides the Organisation before one is current.
 
 ## Encryption
 
@@ -91,11 +103,13 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 ```
 apps/api/src/
   core/                              infrastructure, no domain logic
+    access/                          @Access, host and session resolution, the request's unit of work
     config/                          env schema + loader, validated before Nest starts
     database/                        Drizzle setup, pg and Neon adapters, unit of work
     encryption/                      Organisation data keys, field and file encryption
     files/                           encrypted file storage, uploads, download links
     jobs/                            job queue, runner and worker; jobs and handlers live with their feature
+    sessions/                        admin and guardian sessions, their cookies
     ports/<port>/                    <port>.port.ts, <technology>-<port>.adapter.ts, <port>.module.ts
     http/                            global pipe, @Endpoint decorators, exception filters
     health/
@@ -192,7 +206,7 @@ public remove(id: string): Promise<void>                    // throws NotFoundEx
 - **Route by the contract.** The controller has no path (`@Controller()`); each route is `@Endpoint(createCampEndpoint)` with the endpoint from `@repo/schema`, which sets method, path, status and response shaping. Inputs come through `@EndpointParams(e)`, `@EndpointQuery(e)` and `@EndpointBody(e)`. Never `@Get`, `@Post` or `@HttpCode` by hand for a contract route.
 - **Return types are checked.** `@Endpoint` only compiles on a method returning `Promise<EndpointResponse<typeof e>>` (`Promise<void>` without a response).
 - **Return `entity.toDto()`.** The endpoint then passes the response through its schema, which drops unknown keys, so a field nobody declared can't leak (health data, rodná čísla). A response that doesn't match its schema is a server bug and fails as 500.
-- Access is declared on every controller (admin, guardian, operator, public; issue 14), with the permission area where it applies. No route is reachable by accident.
+- Access is declared on every controller with `@Access(kind)` (see Access and sessions); the app refuses to boot with a controller that has none.
 - No JSDoc on controller methods; the contract documents the route.
 
 ## Validation

@@ -1,5 +1,6 @@
 import { Module, type DynamicModule } from '@nestjs/common';
 
+import { AccessModule } from './core/access/access.module.ts';
 import { AuditModule } from './core/audit/audit.module.ts';
 import { appConfigModule } from './core/config/config.module.ts';
 import { DatabaseModule } from './core/database/database.module.ts';
@@ -13,6 +14,8 @@ import { KeyProviderModule } from './core/ports/key-provider/key-provider.module
 import { MailSenderModule } from './core/ports/mail-sender/mail-sender.module.ts';
 import { PaymentGatewayModule } from './core/ports/payment-gateway/payment-gateway.module.ts';
 import { PdfRendererModule } from './core/ports/pdf-renderer/pdf-renderer.module.ts';
+import { SessionsModule } from './core/sessions/sessions.module.ts';
+import { AdminsModule } from './modules/admins/admins.module.ts';
 import { OrganisationsModule } from './modules/organisations/organisations.module.ts';
 import { RepositoriesModule } from './repositories/repositories.module.ts';
 
@@ -35,10 +38,13 @@ export class AppModule {
         RepositoriesModule,
         EncryptionModule,
         AuditModule,
+        SessionsModule,
+        AccessModule,
         JobsModule,
         FilesModule,
         HealthModule,
         OrganisationsModule,
+        AdminsModule,
       ],
     };
   }

@@ -1,53 +1,45 @@
-import { ConflictException, Controller, Delete, Headers, HttpCode, Param, Post, UseInterceptors } from '@nestjs/common';
-import { describe, expect, it } from 'vitest';
+import { ConflictException, Controller, Delete, HttpCode, Param, Post, UseInterceptors } from '@nestjs/common';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { fileLinkSchema, type FileLink } from '@repo/schema/files';
 
-import { createOrganisation } from '../../testing/fixtures.ts';
+import { createAdmin, createOrganisation, type RequestHeaders } from '../../testing/fixtures.ts';
 import { withClient } from '../../testing/services/postgres.ts';
 import { useTestApp } from '../../testing/test-app.ts';
-import { UnitOfWork } from '../database/unit-of-work.ts';
+import { Access } from '../access/access.decorator.ts';
 import { FileUploadInterceptor, UploadedFile, type FileUpload } from './file-upload.ts';
 import { FileService } from './file.service.ts';
 
-// Test only: stands in for a session until sessions exist. Real routes never take the Organisation from
-// client input.
-const ORGANISATION = 'x-test-organisation';
-
 // Stands in for the features that will upload, link and delete files, each after its own permission check.
+@Access('admin')
 @Controller('test-files')
 class TestFilesController {
-  constructor(
-    private readonly unitOfWork: UnitOfWork,
-    private readonly files: FileService,
-  ) {}
+  constructor(private readonly files: FileService) {}
 
   @Post()
   @UseInterceptors(FileUploadInterceptor)
-  public upload(@Headers(ORGANISATION) organisationId: string, @UploadedFile() upload: FileUpload) {
-    return this.unitOfWork.run(organisationId, async () => ({ id: await this.files.store(upload) }));
+  public async upload(@UploadedFile() upload: FileUpload) {
+    return { id: await this.files.store(upload) };
   }
 
   // A feature that stores a file and then fails, rolling its unit of work back.
   @Post('failing')
   @UseInterceptors(FileUploadInterceptor)
-  public uploadThenFail(@Headers(ORGANISATION) organisationId: string, @UploadedFile() upload: FileUpload) {
-    return this.unitOfWork.run(organisationId, async () => {
-      await this.files.store(upload);
+  public async uploadThenFail(@UploadedFile() upload: FileUpload) {
+    await this.files.store(upload);
 
-      throw new ConflictException();
-    });
+    throw new ConflictException();
   }
 
   @Post(':id/link')
-  public link(@Headers(ORGANISATION) organisationId: string, @Param('id') id: string) {
-    return this.unitOfWork.run(organisationId, () => this.files.link(id));
+  public link(@Param('id') id: string) {
+    return this.files.link(id);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  public remove(@Headers(ORGANISATION) organisationId: string, @Param('id') id: string) {
-    return this.unitOfWork.run(organisationId, () => this.files.remove(id));
+  public remove(@Param('id') id: string) {
+    return this.files.remove(id);
   }
 }
 
@@ -61,8 +53,31 @@ describe('files', () => {
     controllers: [TestFilesController],
   });
 
-  const send = (organisationId: string, bytes: Buffer, name: string) =>
-    http().post('/api/test-files').set(ORGANISATION, organisationId).attach('file', bytes, name);
+  let signedIn: Map<string, RequestHeaders>;
+
+  beforeEach(() => {
+    signedIn = new Map();
+  });
+
+  // The headers of an admin of the Organisation, signed in once per test.
+  const asAdminOf = async (organisationId: string): Promise<RequestHeaders> => {
+    const known = signedIn.get(organisationId);
+
+    if (known !== undefined) {
+      return known;
+    }
+
+    const headers = (await createAdmin(app(), { memberOf: [organisationId] })).headers(organisationId);
+    signedIn.set(organisationId, headers);
+
+    return headers;
+  };
+
+  const send = async (organisationId: string, bytes: Buffer, name: string) =>
+    http()
+      .post('/api/test-files')
+      .set(await asAdminOf(organisationId))
+      .attach('file', bytes, name);
 
   const upload = async (organisationId: string, bytes: Buffer, name: string): Promise<string> => {
     const response = await send(organisationId, bytes, name);
@@ -72,7 +87,9 @@ describe('files', () => {
   };
 
   const requestLink = async (organisationId: string, fileId: string): Promise<FileLink> => {
-    const response = await http().post(`/api/test-files/${fileId}/link`).set(ORGANISATION, organisationId);
+    const response = await http()
+      .post(`/api/test-files/${fileId}/link`)
+      .set(await asAdminOf(organisationId));
     expect(response.status).toBe(201);
 
     return fileLinkSchema.parse(response.body);
@@ -151,7 +168,10 @@ describe('files', () => {
   it('rejects a request without a file', async () => {
     const organisationId = await createOrganisation(app());
 
-    const response = await http().post('/api/test-files').set(ORGANISATION, organisationId).field('label', 'zpráva');
+    const response = await http()
+      .post('/api/test-files')
+      .set(await asAdminOf(organisationId))
+      .field('label', 'zpráva');
 
     expect(response.status).toBe(400);
     expect(response.body).toMatchObject({ code: 'file_missing' });
@@ -234,8 +254,9 @@ describe('files', () => {
     const fileOfA = await upload(organisationA, PDF, 'zprava.pdf');
     const fileOfB = await upload(organisationB, PDF, 'zprava.pdf');
     const linkOfB = await requestLink(organisationB, fileOfB);
+    const asB = await asAdminOf(organisationB);
 
-    await expectIsolated(() => http().post(`/api/test-files/${fileOfA}/link`).set(ORGANISATION, organisationB));
+    await expectIsolated(() => http().post(`/api/test-files/${fileOfA}/link`).set(asB));
     // B's valid link with A's file id swapped in.
     await expectIsolated(() => http().get(linkOfB.url.replace(fileOfB, fileOfA)));
     await expectIsolated(() => http().get(linkOfB.url.replace(fileOfB, fileOfA).replace(organisationB, organisationA)));
@@ -247,7 +268,9 @@ describe('files', () => {
     const fileId = await upload(organisationId, PDF, 'zprava.pdf');
     const link = await requestLink(organisationId, fileId);
 
-    const response = await http().delete(`/api/test-files/${fileId}`).set(ORGANISATION, organisationId);
+    const response = await http()
+      .delete(`/api/test-files/${fileId}`)
+      .set(await asAdminOf(organisationId));
 
     expect(response.status).toBe(204);
     expect(await countFileRecords()).toBe(0);
@@ -260,8 +283,9 @@ describe('files', () => {
     const organisationA = await createOrganisation(app());
     const organisationB = await createOrganisation(app());
     const fileOfA = await upload(organisationA, PDF, 'zprava.pdf');
+    const asB = await asAdminOf(organisationB);
 
-    await expectIsolated(() => http().delete(`/api/test-files/${fileOfA}`).set(ORGANISATION, organisationB));
+    await expectIsolated(() => http().delete(`/api/test-files/${fileOfA}`).set(asB));
     expect(await jobs().drain()).toEqual([]);
     expect(files().objects.size).toBe(1);
   });
@@ -271,7 +295,7 @@ describe('files', () => {
 
     const response = await http()
       .post('/api/test-files/failing')
-      .set(ORGANISATION, organisationId)
+      .set(await asAdminOf(organisationId))
       .attach('file', PDF, 'zprava.pdf');
 
     expect(response.status).toBe(409);

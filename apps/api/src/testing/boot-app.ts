@@ -12,6 +12,7 @@ const UNREACHABLE = 'http://127.0.0.1:1';
 // A complete production configuration with dummy credentials. Booting it reaches no service.
 export const PRODUCTION_ENV = {
   APP_ENV: 'production',
+  PLATFORM_DOMAIN: 'campie.cz',
   DATABASE_ADAPTER: 'neon',
   DATABASE_URL: 'postgres://campie:campie@127.0.0.1:1/campie',
   REDIS_URL: 'redis://127.0.0.1:1',

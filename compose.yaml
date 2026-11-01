@@ -121,6 +121,7 @@ services:
     command: pnpm --parallel --filter api --filter @repo/schema run dev
     environment:
       APP_ENV: local
+      PLATFORM_DOMAIN: localhost
       DATABASE_ADAPTER: pg
       DATABASE_URL: postgres://campie_app:campie_app@postgres:5432/campie
       REDIS_URL: redis://redis:6379

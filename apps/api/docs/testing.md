@@ -20,7 +20,7 @@ Run one kind: `pnpm exec vitest --project integration` or `--project unit`.
 - **Time is controlled.** Code reads time only from the `Clock` port; `useTestApp().clock()` is a fake clock, frozen until the test moves it. Prague-calendar rules are tested near midnight UTC.
 - **Jobs run when the test says so.** The queue is real Redis, but nothing runs on its own (`JOB_WORKER=manual`): `jobs().drain()` runs every queued job through the app's runner, one at a time and in order, including jobs they enqueue, and returns each attempt; a retry runs at once and reports the backoff it skipped. `jobs().failed()` lists what ended failed.
 - **Fakes at every port, inspectable**: `mail().sent`, `files().objects`, `payments().created`, `pdfs().rendered`, and a fixed test key. A fake records; it never reimplements the service.
-- **Fixtures create the world through the app's own seams** (`src/testing/fixtures.ts`): Organisations now; Camps, Turnusy, admins with given permissions and guardian sessions join as their features land. Data is obviously fake; never a real person, rodné číslo or health record.
+- **Fixtures create the world through the app's own seams** (`src/testing/fixtures.ts`): Organisations, signed-in admins (`createAdmin(app, { memberOf })`, whose `headers(organisationId)` carry host, cookie, Organisation and CSRF headers) and guardian sessions (`createGuardianSession(app, organisationId, email)`); Camps, Turnusy and permissions join as their features land. Data is obviously fake; never a real person, rodné číslo or health record.
 - **Migrations stay in sync.** A test fails with the missing SQL when the schema changed without `pnpm db:generate`.
 - `.only` and `.skip` are lint errors.
 

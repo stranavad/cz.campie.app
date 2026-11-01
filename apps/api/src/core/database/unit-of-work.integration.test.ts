@@ -19,7 +19,10 @@ describe('unit of work', () => {
   beforeEach(async () => {
     await createNotesTable(database().ownerUrl);
     await withClient(database().ownerUrl, async (client) => {
-      await client.query('INSERT INTO organisations (id) VALUES ($1), ($2)', [ORG_A, ORG_B]);
+      await client.query("INSERT INTO organisations (id, subdomain) VALUES ($1, 'tabor-a'), ($2, 'tabor-b')", [
+        ORG_A,
+        ORG_B,
+      ]);
       await client.query(
         `INSERT INTO test_notes (id, organisation_id, text) VALUES ($1, $2, 'note of A'), ($3, $4, 'note of B')`,
         [NOTE_A, ORG_A, NOTE_B, ORG_B],
@@ -92,8 +95,8 @@ describe('unit of work', () => {
     const unitOfWork = app().get(UnitOfWork);
 
     await unitOfWork.runForPlatform(async () => {
-      const created = await unitOfWork.db.insert(organisations).values({}).returning();
-      expect(created).toEqual([{ id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-7/) }]);
+      const created = await unitOfWork.db.insert(organisations).values({ subdomain: 'tabor-c' }).returning();
+      expect(created).toEqual([{ id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-7/), subdomain: 'tabor-c' }]);
       expect(await unitOfWork.db.select().from(organisations)).toHaveLength(3);
       expect(await unitOfWork.db.select().from(notes)).toEqual([]);
       expect(() => unitOfWork.organisationId).toThrow('A platform unit of work has no Organisation');
