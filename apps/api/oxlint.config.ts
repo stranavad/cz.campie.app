@@ -13,4 +13,6 @@ import { env } from './oxlint/env.ts';
 export default defineConfig({
   extends: [base, node, typeAware, vitest, time, clock, env, boundaries],
   ignorePatterns: ['dist', 'drizzle'],
+  // Spikes are scripts run by hand; their console output is the result.
+  overrides: [{ files: ['spikes/**'], rules: { 'no-console': 'off' } }],
 });
