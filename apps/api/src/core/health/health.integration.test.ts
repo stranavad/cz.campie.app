@@ -1,9 +1,8 @@
 import type { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { setupApp } from '../../app.setup.ts';
+import { bootApp, restoreEnv } from '../../testing/boot-app.ts';
 
 // Nothing listens on port 1, so every connection is refused at once instead of waiting for a timeout.
 const UNREACHABLE = '127.0.0.1:1';
@@ -12,21 +11,18 @@ describe('health', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    vi.stubEnv('DATABASE_URL', `postgres://campie:campie@${UNREACHABLE}/campie`);
-    vi.stubEnv('REDIS_URL', `redis://${UNREACHABLE}`);
-    vi.stubEnv('S3_ENDPOINT', `http://${UNREACHABLE}`);
-    vi.stubEnv('GOTENBERG_URL', `http://${UNREACHABLE}`);
-
-    // The config is read when AppModule is first imported, so the import has to follow the stubs.
-    const { AppModule } = await import('../../app.module.ts');
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    app = setupApp(moduleRef.createNestApplication({ logger: false }));
-    await app.init();
+    app = await bootApp({
+      DATABASE_URL: `postgres://campie:campie@${UNREACHABLE}/campie`,
+      REDIS_URL: `redis://${UNREACHABLE}`,
+      S3_ENDPOINT: `http://${UNREACHABLE}`,
+      PDF_RENDERER_ADAPTER: 'gotenberg',
+      GOTENBERG_URL: `http://${UNREACHABLE}`,
+    });
   });
 
   afterAll(async () => {
     await app.close();
-    vi.unstubAllEnvs();
+    restoreEnv();
   });
 
   it('reports every unreachable service as down with 503', async () => {

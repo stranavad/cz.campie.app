@@ -110,6 +110,12 @@ services:
       APP_ENV: local
       DATABASE_URL: postgres://campie:campie@postgres:5432/campie
       REDIS_URL: redis://redis:6379
+      CLOCK_ADAPTER: system
+      MAIL_ADAPTER: log
+      FILE_STORAGE_ADAPTER: s3
+      PDF_RENDERER_ADAPTER: gotenberg
+      PAYMENT_GATEWAY_ADAPTER: fake
+      KEY_PROVIDER_ADAPTER: fixed
       S3_ENDPOINT: http://rustfs:9000
       S3_REGION: us-east-1
       S3_BUCKET: campie

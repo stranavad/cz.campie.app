@@ -1,0 +1,17 @@
+export interface MailMessage {
+  // An address, optionally with a display name: `Tábor Example <prihlasky@mail.example.test>`.
+  from: string;
+  to: string[];
+  replyTo?: string;
+  subject: string;
+  html: string;
+  text: string;
+}
+
+export abstract class MailSender {
+  /**
+   * Hand a message to the mail provider; rejects when the provider refuses it.
+   * @param message the message to send
+   */
+  public abstract send(message: MailMessage): Promise<void>;
+}

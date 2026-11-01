@@ -7,5 +7,5 @@ import { setupApp } from './app.setup.ts';
 
 const PORT = 3000;
 
-const app = setupApp(await NestFactory.create(AppModule));
+const app = setupApp(await NestFactory.create(AppModule.forRoot()));
 await app.listen(PORT);

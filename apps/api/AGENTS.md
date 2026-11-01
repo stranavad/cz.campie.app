@@ -173,10 +173,11 @@ public remove(id: string): Promise<void>                    // throws NotFoundEx
 
 ## Config
 
-- `AppConfigModule` (`core/config/`) validates the env with Zod (`env.schema.ts`) while Nest loads `AppModule`, before any module initialises, so a misconfigured app never boots half-working. The schema is the single source of truth for what the app needs.
+- `appConfigModule()` (`core/config/`) validates the env with Zod (`env.schema.ts`) while Nest loads `AppModule`, before any module initialises, so a misconfigured app never boots half-working. The schema is the single source of truth for what the app needs.
 - `APP_ENV` (`local` | `test` | `production`) selects the source: `local` reads `.env` (gitignored, from `.env.example`), `test` reads `.env.test` (committed, secret-free), `production` reads deployment env vars. Real env vars always win over a file.
 - Code depends on typed `ConfigService<Env, true>`, never `process.env` (lint-enforced outside config and tooling files).
-- Port adapters are chosen by configuration; an invalid or mixed combination refuses to boot (issue 06).
+- Each port's adapter is chosen by one `<PORT>_ADAPTER` variable (`MAIL_ADAPTER=resend|log`, ...); only the chosen adapter's variables are required. The parsed config is nested per port, so `config.get('mail')` is typed by the adapter it holds. `APP_ENV=production` refuses any local or test adapter.
+- `AppModule.forRoot()` reads the configuration when the app starts, not when the file is imported, so tests boot it with different environments in one process.
 - A new variable is a schema change first, then a value in `.env.example`, `.env.test` and the deployment.
 
 ## Code conventions
@@ -238,6 +239,8 @@ Required on every service and repository method:
 ### Logging
 
 Nest's `Logger`, in controllers, services and infrastructure. Log ids, never personal data: no names, emails, rodná čísla, health data or document contents. Requests are logged by infrastructure.
+
+The one exception is `LogMailSender`, which logs whole messages so local mail can be read; production refuses it.
 
 ## Database
 

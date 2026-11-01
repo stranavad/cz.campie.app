@@ -1,10 +1,11 @@
-import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import pg from 'pg';
 
 import type { Env } from '../config/env.schema.ts';
+import { FileStorage } from '../ports/file-storage/file-storage.port.ts';
+import { PdfRenderer } from '../ports/pdf-renderer/pdf-renderer.port.ts';
 
 // A health check must answer even when a service hangs, so no probe waits longer than this.
 const PROBE_TIMEOUT_MS = 2000;
@@ -23,17 +24,21 @@ export interface HealthReport {
 export class HealthService {
   private readonly logger = new Logger(HealthService.name);
 
-  constructor(private readonly config: ConfigService<Env, true>) {}
+  constructor(
+    private readonly config: ConfigService<Env, true>,
+    private readonly fileStorage: FileStorage,
+    private readonly pdfRenderer: PdfRenderer,
+  ) {}
 
   /**
    * Probe every external service the API depends on.
    */
   public async check(): Promise<HealthReport> {
-    const pings: Record<Service, () => Promise<void>> = {
+    const pings: Record<Service, (signal: AbortSignal) => Promise<void>> = {
       database: () => this.pingDatabase(),
       redis: () => this.pingRedis(),
-      fileStorage: () => this.pingFileStorage(),
-      pdfRenderer: () => this.pingPdfRenderer(),
+      fileStorage: (signal) => this.fileStorage.ping(signal),
+      pdfRenderer: (signal) => this.pdfRenderer.ping(signal),
     };
 
     const results = await Promise.all(
@@ -51,11 +56,17 @@ export class HealthService {
   /**
    * Run one probe, logging why a service is down.
    * @param service name in the report
-   * @param ping resolves when the service answers
+   * @param ping resolves when the service answers; should give up once the signal aborts
    */
-  private async probe(service: Service, ping: () => Promise<void>): Promise<ServiceHealth> {
+  private async probe(service: Service, ping: (signal: AbortSignal) => Promise<void>): Promise<ServiceHealth> {
+    const timeout = AbortSignal.timeout(PROBE_TIMEOUT_MS);
+    // Raced as well, for a probe that cannot be cancelled.
+    const timedOut = new Promise<never>((_, reject) => {
+      timeout.addEventListener('abort', () => reject(new Error(`no answer within ${PROBE_TIMEOUT_MS} ms`)));
+    });
+
     try {
-      await ping();
+      await Promise.race([ping(timeout), timedOut]);
 
       return 'up';
     } catch (error) {
@@ -102,44 +113,6 @@ export class HealthService {
       await redis.ping();
     } finally {
       redis.disconnect();
-    }
-  }
-
-  /**
-   * Check that the configured bucket exists and the credentials can reach it.
-   */
-  private async pingFileStorage(): Promise<void> {
-    const s3 = new S3Client({
-      endpoint: this.config.get('S3_ENDPOINT', { infer: true }),
-      region: this.config.get('S3_REGION', { infer: true }),
-      credentials: {
-        accessKeyId: this.config.get('S3_ACCESS_KEY_ID', { infer: true }),
-        secretAccessKey: this.config.get('S3_SECRET_ACCESS_KEY', { infer: true }),
-      },
-      forcePathStyle: true,
-      maxAttempts: 1,
-    });
-
-    try {
-      await s3.send(new HeadBucketCommand({ Bucket: this.config.get('S3_BUCKET', { infer: true }) }), {
-        abortSignal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
-      });
-    } finally {
-      s3.destroy();
-    }
-  }
-
-  /**
-   * Ask Gotenberg for its own health.
-   * @throws {Error} when Gotenberg answers with a non-success status
-   */
-  private async pingPdfRenderer(): Promise<void> {
-    const response = await fetch(new URL('/health', this.config.get('GOTENBERG_URL', { infer: true })), {
-      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Gotenberg answered ${response.status}`);
     }
   }
 }
