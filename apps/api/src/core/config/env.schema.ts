@@ -116,6 +116,8 @@ export const envSchema = z
     APP_ENV: z.enum(['local', 'test', 'production']),
 
     REDIS_URL: z.url(),
+    // auto runs queued jobs in this process; manual leaves them queued until a test drains them.
+    JOB_WORKER: z.enum(['auto', 'manual']),
   })
   .and(database)
   .and(clock)
@@ -127,6 +129,14 @@ export const envSchema = z
   .superRefine((env, context) => {
     if (env.APP_ENV !== 'production') {
       return;
+    }
+
+    if (env.JOB_WORKER !== 'auto') {
+      context.addIssue({
+        code: 'custom',
+        path: ['JOB_WORKER'],
+        message: `${env.JOB_WORKER} never runs a job; production requires auto`,
+      });
     }
 
     // The adapter each port must use in production; every other adapter is local or test only.

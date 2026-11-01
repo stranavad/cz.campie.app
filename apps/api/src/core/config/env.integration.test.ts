@@ -19,4 +19,10 @@ describe('configuration', () => {
     await expect(boot).rejects.toThrow(/MAIL_ADAPTER: log is a local adapter/);
     await expect(boot).rejects.toThrow(/PAYMENT_GATEWAY_ADAPTER: fake is a local adapter/);
   });
+
+  it('refuses to boot production with a job worker that never runs a job', async () => {
+    await expect(bootApp({ env: { ...PRODUCTION_ENV, JOB_WORKER: 'manual' } })).rejects.toThrow(
+      /JOB_WORKER: manual never runs a job/,
+    );
+  });
 });

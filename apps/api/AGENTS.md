@@ -69,6 +69,15 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 - `audit_entries` is append-only: the application role may insert and read but not update, delete or truncate. Actor identity, IP address and changes are nullable so erasure can scrub an entry without removing it.
 - The `Actor` (kind, identity, IP address; `system` has neither) is passed explicitly by the caller; services need it for permission checks anyway.
 
+## Jobs
+
+- Mail, PDFs and exports run as jobs from the Redis queue (BullMQ), so a request never waits for them. BullMQ is used directly in `core/jobs/`, not behind a port: Redis runs for real in every environment, tests included. Declare one with `defineJob({ name, scope, payload })` next to the code that enqueues it, and handle it with an `@Injectable()` provider extending `JobHandler<typeof job>`, registered in its feature module; the runner finds every handler when the app starts.
+- `JobQueue.enqueue(job, payload)` is called inside a unit of work and sends the job once it commits (`unitOfWork.afterCommit`); a rollback sends nothing. An Organisation job takes the unit of work's Organisation and throws outside one; a job with `scope: 'platform'` (notifying the Platform operator) carries none. A send that fails or waits for Redis longer than 2 s is logged, never thrown: the change is committed by then.
+- The runner re-enters a unit of work from the job: its Organisation's, or a platform one. A job without an Organisation and a malformed payload fail at once, without retries; a job no handler knows is retried, since another version of the app may know it.
+- The handler runs inside that unit of work and commits with it; a throw rolls back and retries: 8 attempts, the delay doubling from 30 s. The last failure stays in the queue's failed set for 30 days and is logged as an error, earlier ones as warnings. Effects outside the database (a sent mail) repeat on a retry, so make them safe to repeat.
+- Payloads are ids in JSON, never personal data: Redis is outside the encryption and erasure.
+- `JOB_WORKER=auto` runs jobs in the API process (production requires it); `manual` leaves them queued for a test to drain.
+
 ## Folder layout
 
 ```
@@ -77,6 +86,7 @@ apps/api/src/
     config/                          env schema + loader, validated before Nest starts
     database/                        Drizzle setup, pg and Neon adapters, unit of work
     encryption/                      Organisation data keys, field and file encryption
+    jobs/                            job queue, runner and worker; jobs and handlers live with their feature
     ports/<port>/                    <port>.port.ts, <technology>-<port>.adapter.ts, <port>.module.ts
     http/                            global pipe, @Endpoint decorators, exception filters
     health/

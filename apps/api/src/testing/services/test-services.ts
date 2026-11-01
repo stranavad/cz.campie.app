@@ -1,7 +1,8 @@
 import { postgres } from './postgres.ts';
+import { redis } from './redis.ts';
 import type { ServiceEnv, Started, TestService } from './test-service.ts';
 
-const TEST_SERVICES: TestService[] = [postgres];
+const TEST_SERVICES: TestService[] = [postgres, redis];
 
 // Runs step for every service, merging their env; when one fails, cleans up the ones already done.
 async function runAll(step: (service: TestService) => Promise<Started>): Promise<Started> {

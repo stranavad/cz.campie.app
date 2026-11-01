@@ -9,6 +9,7 @@ interface Scope {
   readonly db: Transaction;
   // null in a platform unit of work, which sees no Organisation's rows.
   readonly organisationId: string | null;
+  readonly afterCommit: (() => Promise<void>)[];
 }
 
 // The only way to Organisation data. Each unit of work is one transaction on one connection; the current
@@ -61,6 +62,15 @@ export class UnitOfWork {
   }
 
   /**
+   * Run work after the current unit of work commits; never when it rolls back.
+   * @param work runs outside any unit of work, before the unit of work resolves; its change is committed
+   * by then, so work that throws rejects a unit of work whose change stands
+   */
+  public afterCommit(work: () => Promise<void>): void {
+    this.current().afterCommit.push(work);
+  }
+
+  /**
    * Open the transaction, set the Organisation if there is one, and run work with it as the current scope.
    * @param organisationId the Organisation, or null for a platform unit of work
    * @param work runs inside the transaction
@@ -71,14 +81,21 @@ export class UnitOfWork {
       throw new Error('A unit of work is already open; units of work do not nest');
     }
 
-    return this.database.drizzle.transaction(async (db) => {
+    const afterCommit: (() => Promise<void>)[] = [];
+    const result = await this.database.drizzle.transaction(async (db) => {
       if (organisationId !== null) {
         // set_config, unlike SET LOCAL, takes the id as a bound parameter.
         await db.execute(sql`select set_config(${ORGANISATION_SETTING}, ${organisationId}, true)`);
       }
 
-      return this.scope.run({ db, organisationId }, work);
+      return this.scope.run({ db, organisationId, afterCommit }, work);
     });
+
+    for (const callback of afterCommit) {
+      await callback();
+    }
+
+    return result;
   }
 
   /**

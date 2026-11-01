@@ -1,5 +1,5 @@
 import type { Server } from 'node:http';
-import type { INestApplication, LoggerService, Type } from '@nestjs/common';
+import type { INestApplication, LoggerService, Provider, Type } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { vi } from 'vitest';
 
@@ -15,6 +15,7 @@ export const PRODUCTION_ENV = {
   DATABASE_ADAPTER: 'neon',
   DATABASE_URL: 'postgres://campie:campie@127.0.0.1:1/campie',
   REDIS_URL: 'redis://127.0.0.1:1',
+  JOB_WORKER: 'auto',
   CLOCK_ADAPTER: 'system',
   MAIL_ADAPTER: 'resend',
   RESEND_API_KEY: 're_dummy',
@@ -39,17 +40,26 @@ export interface BootOptions {
   logger?: LoggerService | false;
   // Test-only controllers mounted next to the app's own, for proving infrastructure without a real route.
   controllers?: Type[];
+  // Test-only providers next to the app's own, such as job handlers.
+  providers?: Provider[];
 }
 
 // Boots the real AppModule as main.ts does.
-export async function bootApp({ env = {}, logger = false, controllers = [] }: BootOptions = {}): Promise<
-  INestApplication<Server>
-> {
+export async function bootApp({
+  env = {},
+  logger = false,
+  controllers = [],
+  providers = [],
+}: BootOptions = {}): Promise<INestApplication<Server>> {
   for (const [name, value] of Object.entries(env)) {
     vi.stubEnv(name, value);
   }
 
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule.forRoot()], controllers }).compile();
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule.forRoot()],
+    controllers,
+    providers,
+  }).compile();
   const app = setupApp(moduleRef.createNestApplication<INestApplication<Server>>({ logger }));
   await app.init();
 

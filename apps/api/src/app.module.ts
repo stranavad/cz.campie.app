@@ -5,6 +5,7 @@ import { appConfigModule } from './core/config/config.module.ts';
 import { DatabaseModule } from './core/database/database.module.ts';
 import { EncryptionModule } from './core/encryption/encryption.module.ts';
 import { HealthModule } from './core/health/health.module.ts';
+import { JobsModule } from './core/jobs/jobs.module.ts';
 import { ClockModule } from './core/ports/clock/clock.module.ts';
 import { FileStorageModule } from './core/ports/file-storage/file-storage.module.ts';
 import { KeyProviderModule } from './core/ports/key-provider/key-provider.module.ts';
@@ -33,6 +34,7 @@ export class AppModule {
         RepositoriesModule,
         EncryptionModule,
         AuditModule,
+        JobsModule,
         HealthModule,
         OrganisationsModule,
       ],

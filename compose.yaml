@@ -124,6 +124,7 @@ services:
       DATABASE_ADAPTER: pg
       DATABASE_URL: postgres://campie_app:campie_app@postgres:5432/campie
       REDIS_URL: redis://redis:6379
+      JOB_WORKER: auto
       CLOCK_ADAPTER: system
       MAIL_ADAPTER: log
       FILE_STORAGE_ADAPTER: s3

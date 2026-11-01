@@ -14,6 +14,7 @@ import { PaymentGateway } from '../core/ports/payment-gateway/payment-gateway.po
 import { FakePdfRenderer } from '../core/ports/pdf-renderer/fake-pdf-renderer.adapter.ts';
 import { PdfRenderer } from '../core/ports/pdf-renderer/pdf-renderer.port.ts';
 import { bootApp, restoreEnv, type BootOptions } from './boot-app.ts';
+import { testJobs } from './jobs.ts';
 import { testDatabase } from './services/postgres.ts';
 import type { ServiceEnv } from './services/test-service.ts';
 import { isolateTestServices } from './services/test-services.ts';
@@ -27,16 +28,16 @@ interface Running {
 /**
  * Boot the real app for every test in the calling suite, on the test's own copy of every test service,
  * and tear it down after. Read the accessors inside a test or a hook.
- * @param options env over the test configuration and test-only controllers
+ * @param options env over the test configuration, test-only controllers and providers
  */
-export function useTestApp({ env = {}, controllers }: Omit<BootOptions, 'logger'> = {}) {
+export function useTestApp({ env = {}, controllers, providers }: Omit<BootOptions, 'logger'> = {}) {
   let running: Running | undefined;
   let cleanup: (() => Promise<void>) | undefined;
 
   beforeEach(async () => {
     const isolated = await isolateTestServices(inject('testServiceEnv'));
     cleanup = isolated.cleanup;
-    running = { app: await bootApp({ env: { ...isolated.env, ...env }, controllers }), env: isolated.env };
+    running = { app: await bootApp({ env: { ...isolated.env, ...env }, controllers, providers }), env: isolated.env };
   });
 
   afterEach(async () => {
@@ -70,6 +71,17 @@ export function useTestApp({ env = {}, controllers }: Omit<BootOptions, 'logger'
 
   const database = () => testDatabase(current().env);
 
+  const jobs = () => {
+    const { app, env } = current();
+    const redisUrl = env.REDIS_URL;
+
+    if (redisUrl === undefined) {
+      throw new Error('The redis test service has not isolated a database for this test');
+    }
+
+    return testJobs(app, redisUrl);
+  };
+
   return {
     app: () => current().app,
     http: () => request(current().app.getHttpServer()),
@@ -81,6 +93,8 @@ export function useTestApp({ env = {}, controllers }: Omit<BootOptions, 'logger'
     // The test's database: as its owner, for arranging and inspecting data around what the app does,
     // and as the application role the app connects with.
     database,
+    // The job queue, which runs nothing on its own in tests: drain() runs what is queued, in order.
+    jobs,
     // Sends attempt, which reaches for another Organisation's data, and asserts it is refused and
     // changes nothing; one call per endpoint and identifier.
     expectIsolated: (attempt: Parameters<typeof expectIsolated>[1]) => expectIsolated(database().ownerUrl, attempt),
