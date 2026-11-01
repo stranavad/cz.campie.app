@@ -12,11 +12,18 @@ describe('health', () => {
 
   beforeAll(async () => {
     app = await bootApp({
-      DATABASE_URL: `postgres://campie:campie@${UNREACHABLE}/campie`,
-      REDIS_URL: `redis://${UNREACHABLE}`,
-      S3_ENDPOINT: `http://${UNREACHABLE}`,
-      PDF_RENDERER_ADAPTER: 'gotenberg',
-      GOTENBERG_URL: `http://${UNREACHABLE}`,
+      env: {
+        DATABASE_URL: `postgres://campie:campie@${UNREACHABLE}/campie`,
+        REDIS_URL: `redis://${UNREACHABLE}`,
+        FILE_STORAGE_ADAPTER: 's3',
+        S3_ENDPOINT: `http://${UNREACHABLE}`,
+        S3_REGION: 'us-east-1',
+        S3_BUCKET: 'campie',
+        S3_ACCESS_KEY_ID: 'dummy',
+        S3_SECRET_ACCESS_KEY: 'dummy',
+        PDF_RENDERER_ADAPTER: 'gotenberg',
+        GOTENBERG_URL: `http://${UNREACHABLE}`,
+      },
     });
   });
 

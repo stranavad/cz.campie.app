@@ -6,12 +6,12 @@ import { Clock } from './clock/clock.port.ts';
 import { ControllableClock } from './clock/controllable-clock.adapter.ts';
 import { SystemClock } from './clock/system-clock.adapter.ts';
 import { FileStorage } from './file-storage/file-storage.port.ts';
-import { S3FileStorage } from './file-storage/s3-file-storage.adapter.ts';
+import { MemoryFileStorage } from './file-storage/memory-file-storage.adapter.ts';
 import { TigrisFileStorage } from './file-storage/tigris-file-storage.adapter.ts';
 import { FixedKeyProvider } from './key-provider/fixed-key-provider.adapter.ts';
 import { KeyProvider } from './key-provider/key-provider.port.ts';
 import { SecretKeyProvider } from './key-provider/secret-key-provider.adapter.ts';
-import { LogMailSender } from './mail-sender/log-mail-sender.adapter.ts';
+import { FakeMailSender } from './mail-sender/fake-mail-sender.adapter.ts';
 import { MailSender } from './mail-sender/mail-sender.port.ts';
 import { ResendMailSender } from './mail-sender/resend-mail-sender.adapter.ts';
 import { ComgatePaymentGateway } from './payment-gateway/comgate-payment-gateway.adapter.ts';
@@ -32,7 +32,7 @@ describe('ports', () => {
   });
 
   it('wires every port to its production adapter in production', async () => {
-    app = await bootApp(PRODUCTION_ENV);
+    app = await bootApp({ env: PRODUCTION_ENV });
 
     expect(app.get(Clock)).toBeInstanceOf(SystemClock);
     expect(app.get(MailSender)).toBeInstanceOf(ResendMailSender);
@@ -42,12 +42,12 @@ describe('ports', () => {
     expect(app.get(KeyProvider)).toBeInstanceOf(SecretKeyProvider);
   });
 
-  it('wires every port to its local adapter in the test configuration', async () => {
+  it('wires every port to its fake in the test configuration', async () => {
     app = await bootApp();
 
     expect(app.get(Clock)).toBeInstanceOf(ControllableClock);
-    expect(app.get(MailSender)).toBeInstanceOf(LogMailSender);
-    expect(app.get(FileStorage)).toBeInstanceOf(S3FileStorage);
+    expect(app.get(MailSender)).toBeInstanceOf(FakeMailSender);
+    expect(app.get(FileStorage)).toBeInstanceOf(MemoryFileStorage);
     expect(app.get(PdfRenderer)).toBeInstanceOf(FakePdfRenderer);
     expect(app.get(PaymentGateway)).toBeInstanceOf(FakePaymentGateway);
     expect(app.get(KeyProvider)).toBeInstanceOf(FixedKeyProvider);
@@ -58,7 +58,7 @@ describe('ports', () => {
     const record = (message: unknown) => {
       logged.push(String(message));
     };
-    app = await bootApp({}, { log: record, error: record, warn: record });
+    app = await bootApp({ env: { MAIL_ADAPTER: 'log' }, logger: { log: record, error: record, warn: record } });
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
 
     await app.get(MailSender).send({
@@ -78,7 +78,7 @@ describe('ports', () => {
   });
 
   it('has only a Comgate stub, which refuses every call', async () => {
-    app = await bootApp(PRODUCTION_ENV);
+    app = await bootApp({ env: PRODUCTION_ENV });
     const credentials = { merchantId: '123456', secret: 'dummy' };
 
     await expect(

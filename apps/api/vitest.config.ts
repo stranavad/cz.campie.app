@@ -14,7 +14,12 @@ export default defineConfig({
       { extends: true, test: { name: 'unit', include: ['src/**/*.test.ts'], exclude: [INTEGRATION_TESTS] } },
       {
         extends: true,
-        test: { name: 'integration', include: [INTEGRATION_TESTS], globalSetup: ['src/testing/global-setup.ts'] },
+        test: {
+          name: 'integration',
+          include: [INTEGRATION_TESTS],
+          globalSetup: ['src/testing/global-setup.ts'],
+          setupFiles: ['src/testing/integration.setup.ts'],
+        },
       },
     ],
   },

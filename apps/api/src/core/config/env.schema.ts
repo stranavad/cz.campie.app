@@ -20,7 +20,7 @@ const clock = z
 const mail = z
   .discriminatedUnion('MAIL_ADAPTER', [
     z.object({ MAIL_ADAPTER: z.literal('resend'), RESEND_API_KEY: nonEmpty }),
-    z.object({ MAIL_ADAPTER: z.literal('log') }),
+    z.object({ MAIL_ADAPTER: z.enum(['log', 'fake']) }),
   ])
   .transform((env) => ({
     mail:
@@ -46,6 +46,7 @@ const fileStorage = z
       S3_ACCESS_KEY_ID: nonEmpty,
       S3_SECRET_ACCESS_KEY: nonEmpty,
     }),
+    z.object({ FILE_STORAGE_ADAPTER: z.literal('memory') }),
   ])
   .transform((env) => ({
     fileStorage:
@@ -57,14 +58,16 @@ const fileStorage = z
             accessKeyId: env.TIGRIS_STORAGE_ACCESS_KEY_ID,
             secretAccessKey: env.TIGRIS_STORAGE_SECRET_ACCESS_KEY,
           }
-        : {
-            adapter: env.FILE_STORAGE_ADAPTER,
-            endpoint: env.S3_ENDPOINT,
-            region: env.S3_REGION,
-            bucket: env.S3_BUCKET,
-            accessKeyId: env.S3_ACCESS_KEY_ID,
-            secretAccessKey: env.S3_SECRET_ACCESS_KEY,
-          },
+        : env.FILE_STORAGE_ADAPTER === 's3'
+          ? {
+              adapter: env.FILE_STORAGE_ADAPTER,
+              endpoint: env.S3_ENDPOINT,
+              region: env.S3_REGION,
+              bucket: env.S3_BUCKET,
+              accessKeyId: env.S3_ACCESS_KEY_ID,
+              secretAccessKey: env.S3_SECRET_ACCESS_KEY,
+            }
+          : { adapter: env.FILE_STORAGE_ADAPTER },
   }));
 
 const pdfRenderer = z

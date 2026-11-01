@@ -1,12 +1,11 @@
 import { setTimeout as sleep } from 'node:timers/promises';
-import type { INestApplication } from '@nestjs/common';
 import { eq, sql } from 'drizzle-orm';
-import { afterEach, beforeEach, describe, expect, inject, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { organisations } from '../../db/schema.ts';
-import { bootApp, restoreEnv } from '../../testing/boot-app.ts';
-import { isolatePostgres, withClient, type IsolatedDatabase } from '../../testing/services/postgres.ts';
+import { withClient } from '../../testing/services/postgres.ts';
 import { createNotesTable, notes } from '../../testing/tenant-table.ts';
+import { useTestApp } from '../../testing/test-app.ts';
 import { UnitOfWork } from './unit-of-work.ts';
 
 const ORG_A = '01900000-0000-7000-8000-00000000000a';
@@ -15,30 +14,21 @@ const NOTE_A = '01900000-0000-7000-8000-0000000000a1';
 const NOTE_B = '01900000-0000-7000-8000-0000000000b1';
 
 describe('unit of work', () => {
-  let database: IsolatedDatabase;
-  let app: INestApplication;
+  const { app, database } = useTestApp();
 
   beforeEach(async () => {
-    database = await isolatePostgres(inject('postgres'));
-    await createNotesTable(database.ownerUrl);
-    await withClient(database.ownerUrl, async (client) => {
+    await createNotesTable(database().ownerUrl);
+    await withClient(database().ownerUrl, async (client) => {
       await client.query('INSERT INTO organisations (id) VALUES ($1), ($2)', [ORG_A, ORG_B]);
       await client.query(
         `INSERT INTO test_notes (id, organisation_id, text) VALUES ($1, $2, 'note of A'), ($3, $4, 'note of B')`,
         [NOTE_A, ORG_A, NOTE_B, ORG_B],
       );
     });
-    app = await bootApp({ DATABASE_URL: database.appUrl });
-  });
-
-  afterEach(async () => {
-    await app.close();
-    restoreEnv();
-    await database.drop();
   });
 
   it('shows no Organisation rows and rejects inserts outside a unit of work', async () => {
-    await withClient(database.appUrl, async (client) => {
+    await withClient(database().appUrl, async (client) => {
       const { rows } = await client.query('SELECT * FROM test_notes');
       expect(rows).toEqual([]);
 
@@ -49,7 +39,7 @@ describe('unit of work', () => {
   });
 
   it('admits only the current Organisation, even for writes naming another one by id', async () => {
-    const unitOfWork = app.get(UnitOfWork);
+    const unitOfWork = app().get(UnitOfWork);
 
     await unitOfWork.run(ORG_A, async () => {
       const { db } = unitOfWork;
@@ -62,14 +52,14 @@ describe('unit of work', () => {
       unitOfWork.run(ORG_A, () => unitOfWork.db.insert(notes).values({ organisationId: ORG_B, text: 'planted' })),
     ).rejects.toMatchObject({ cause: { message: expect.stringMatching(/row-level security/) } });
 
-    await withClient(database.ownerUrl, async (client) => {
+    await withClient(database().ownerUrl, async (client) => {
       const { rows } = await client.query('SELECT text FROM test_notes WHERE organisation_id = $1', [ORG_B]);
       expect(rows).toEqual([{ text: 'note of B' }]);
     });
   });
 
   it('keeps concurrent units of work for different Organisations apart', async () => {
-    const unitOfWork = app.get(UnitOfWork);
+    const unitOfWork = app().get(UnitOfWork);
     const readAfterOthersStart = (organisationId: string, delay: number) =>
       unitOfWork.run(organisationId, async () => {
         await sleep(delay);
@@ -85,7 +75,7 @@ describe('unit of work', () => {
   });
 
   it('rolls back everything when its work throws', async () => {
-    const unitOfWork = app.get(UnitOfWork);
+    const unitOfWork = app().get(UnitOfWork);
 
     await expect(
       unitOfWork.run(ORG_A, async () => {
@@ -99,7 +89,7 @@ describe('unit of work', () => {
   });
 
   it('reaches platform tables but no Organisation rows in a platform unit of work', async () => {
-    const unitOfWork = app.get(UnitOfWork);
+    const unitOfWork = app().get(UnitOfWork);
 
     await unitOfWork.runForPlatform(async () => {
       const created = await unitOfWork.db.insert(organisations).values({}).returning();
@@ -112,13 +102,13 @@ describe('unit of work', () => {
   });
 
   it('connects as a role that cannot bypass row-level security and owns no table', async () => {
-    const unitOfWork = app.get(UnitOfWork);
+    const unitOfWork = app().get(UnitOfWork);
     const [connected] = await unitOfWork.run(ORG_A, () =>
       unitOfWork.db.select({ role: sql<string>`current_user` }).from(notes),
     );
     const role = connected?.role;
 
-    await withClient(database.ownerUrl, async (client) => {
+    await withClient(database().ownerUrl, async (client) => {
       const { rows } = await client.query(
         `SELECT r.rolsuper, r.rolbypassrls,
            (SELECT count(*)::int FROM pg_class c WHERE c.relowner = r.oid) AS owned,

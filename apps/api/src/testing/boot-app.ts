@@ -1,4 +1,5 @@
-import type { INestApplication, LoggerService } from '@nestjs/common';
+import type { Server } from 'node:http';
+import type { INestApplication, LoggerService, Type } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { vi } from 'vitest';
 
@@ -31,18 +32,25 @@ export const PRODUCTION_ENV = {
 
 const initialEnv = new Set(Object.keys(process.env));
 
-// Boots the real AppModule as main.ts does, with `env` over the test configuration (undefined
-// removes a variable). The logger receives everything the app logs; silent when omitted.
-export async function bootApp(
-  env: Record<string, string | undefined> = {},
-  logger: LoggerService | false = false,
-): Promise<INestApplication> {
+export interface BootOptions {
+  // Over the test configuration; undefined removes a variable.
+  env?: Record<string, string | undefined>;
+  // Receives everything the app logs; silent when omitted.
+  logger?: LoggerService | false;
+  // Test-only controllers mounted next to the app's own, for proving infrastructure without a real route.
+  controllers?: Type[];
+}
+
+// Boots the real AppModule as main.ts does.
+export async function bootApp({ env = {}, logger = false, controllers = [] }: BootOptions = {}): Promise<
+  INestApplication<Server>
+> {
   for (const [name, value] of Object.entries(env)) {
     vi.stubEnv(name, value);
   }
 
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule.forRoot()] }).compile();
-  const app = setupApp(moduleRef.createNestApplication({ logger }));
+  const moduleRef = await Test.createTestingModule({ imports: [AppModule.forRoot()], controllers }).compile();
+  const app = setupApp(moduleRef.createNestApplication<INestApplication<Server>>({ logger }));
   await app.init();
 
   return app;

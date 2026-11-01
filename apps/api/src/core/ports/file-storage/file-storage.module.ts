@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 import type { Env } from '../../config/env.schema.ts';
 import { FileStorage } from './file-storage.port.ts';
+import { MemoryFileStorage } from './memory-file-storage.adapter.ts';
 import { S3FileStorage } from './s3-file-storage.adapter.ts';
 import { TigrisFileStorage } from './tigris-file-storage.adapter.ts';
 
@@ -15,7 +16,14 @@ import { TigrisFileStorage } from './tigris-file-storage.adapter.ts';
       useFactory: (config: ConfigService<Env, true>): FileStorage => {
         const fileStorage = config.get('fileStorage', { infer: true });
 
-        return fileStorage.adapter === 'tigris' ? new TigrisFileStorage(fileStorage) : new S3FileStorage(fileStorage);
+        switch (fileStorage.adapter) {
+          case 'tigris':
+            return new TigrisFileStorage(fileStorage);
+          case 's3':
+            return new S3FileStorage(fileStorage);
+          case 'memory':
+            return new MemoryFileStorage();
+        }
       },
     },
   ],
