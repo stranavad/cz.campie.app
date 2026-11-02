@@ -31,7 +31,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 
 | #   | Issue                                         | Status          | Blocked by |
 | --- | --------------------------------------------- | --------------- | ---------- |
-| 17  | Organisation signup                           | ready-for-agent | 10, 14, 16 |
+| 17  | Organisation signup                           | done            | 10, 14, 16 |
 | 18  | Admin password auth                           | ready-for-agent | 14, 16     |
 | 19  | Memberships, permission areas, Owners         | ready-for-agent | 17, 18     |
 | 20  | Invitations and user management               | ready-for-agent | 19         |
