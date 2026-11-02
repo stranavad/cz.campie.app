@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 
 import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
 import type { OrganisationEntity } from '../../../../repositories/organisations/organisation/organisation.entity.ts';
-import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
+import {
+  OrganisationRepository,
+  type CreateOrganisation,
+} from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 
 @Injectable()
 export class OrganisationService {
@@ -15,7 +18,7 @@ export class OrganisationService {
    * Create an Organisation with its data key, in the current platform unit of work.
    * @param input the Organisation
    */
-  public async create(input: { subdomain: string }): Promise<OrganisationEntity> {
+  public async create(input: CreateOrganisation): Promise<OrganisationEntity> {
     const organisation = await this.organisations.create(input);
 
     await this.encryption.createDataKey(organisation.id);

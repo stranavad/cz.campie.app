@@ -15,6 +15,10 @@ export class GotenbergPdfRenderer extends PdfRenderer {
   public async render(html: string): Promise<Buffer> {
     const form = new FormData();
     form.append('files', new Blob([html], { type: 'text/html' }), 'index.html');
+    // The document's @page rule sets paper and margins, not Gotenberg's Letter default; the accent colour
+    // prints only with backgrounds on.
+    form.append('preferCssPageSize', 'true');
+    form.append('printBackground', 'true');
 
     const response = await fetch(`${this.baseUrl}/forms/chromium/convert/html`, { method: 'POST', body: form });
 

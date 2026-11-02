@@ -19,10 +19,12 @@ describe('unit of work', () => {
   beforeEach(async () => {
     await createNotesTable(database().ownerUrl);
     await withClient(database().ownerUrl, async (client) => {
-      await client.query("INSERT INTO organisations (id, subdomain) VALUES ($1, 'tabor-a'), ($2, 'tabor-b')", [
-        ORG_A,
-        ORG_B,
-      ]);
+      await client.query(
+        `INSERT INTO organisations (id, subdomain, legal_name, ico, address, display_name)
+         VALUES ($1, 'tabor-a', 'Spolek A z. s.', '12345678', 'Smyšlená 1, 123 45 Testov', 'Tábor A'),
+                ($2, 'tabor-b', 'Spolek B z. s.', '87654321', 'Smyšlená 2, 123 45 Testov', 'Tábor B')`,
+        [ORG_A, ORG_B],
+      );
       await client.query(
         `INSERT INTO test_notes (id, organisation_id, text) VALUES ($1, $2, 'note of A'), ($3, $4, 'note of B')`,
         [NOTE_A, ORG_A, NOTE_B, ORG_B],
@@ -95,7 +97,16 @@ describe('unit of work', () => {
     const unitOfWork = app().get(UnitOfWork);
 
     await unitOfWork.runForPlatform(async () => {
-      const created = await unitOfWork.db.insert(organisations).values({ subdomain: 'tabor-c' }).returning();
+      const created = await unitOfWork.db
+        .insert(organisations)
+        .values({
+          subdomain: 'tabor-c',
+          legalName: 'Spolek C z. s.',
+          ico: '11223344',
+          address: 'Smyšlená 3, 123 45 Testov',
+          displayName: 'Tábor C',
+        })
+        .returning({ id: organisations.id, subdomain: organisations.subdomain });
       expect(created).toEqual([{ id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-7/), subdomain: 'tabor-c' }]);
       expect(await unitOfWork.db.select().from(organisations)).toHaveLength(3);
       expect(await unitOfWork.db.select().from(notes)).toEqual([]);

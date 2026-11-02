@@ -7,6 +7,7 @@ import { FILE_CONTENT_TYPES, type FileContentType, type FileLink } from '@repo/s
 
 import { FileRepository } from '../../repositories/files/file/file.repository.ts';
 import { UnitOfWork } from '../database/unit-of-work.ts';
+import type { OrganisationCipher } from '../encryption/cipher.ts';
 import { EncryptionService } from '../encryption/encryption.service.ts';
 import { JobQueue } from '../jobs/job-queue.ts';
 import { Clock } from '../ports/clock/clock.port.ts';
@@ -116,16 +117,28 @@ export class FileService {
       file: await this.files.getByIdOrThrow(grant.fileId),
       cipher: await this.encryption.cipher(),
     }));
-    const ciphertext = await this.storage.get(objectKey(grant.organisationId, file.id));
 
     return {
       id: file.id,
       contentType: file.contentType,
       name: cipher.decrypt(file.name),
       size: file.size,
-      // The decrypting stream carries the errors of both, so the response sees any failure.
-      content: pipeline(ciphertext, cipher.decryptStream(), () => undefined),
+      content: await this.decrypted(grant.organisationId, file.id, cipher),
     };
+  }
+
+  /**
+   * Read a whole file of the current Organisation, decrypted, for the server's own use (a logo in a
+   * generated document). Call it only for files the reader may see.
+   * @param fileId the file's id
+   */
+  public async read(fileId: string): Promise<{ contentType: FileContentType; bytes: Buffer }> {
+    const file = await this.files.getByIdOrThrow(fileId);
+    const cipher = await this.encryption.cipher();
+
+    const content = await this.decrypted(this.unitOfWork.organisationId, file.id, cipher);
+
+    return { contentType: file.contentType, bytes: await buffer(content) };
   }
 
   /**
@@ -136,6 +149,19 @@ export class FileService {
     await this.files.remove(fileId);
 
     this.jobs.enqueue(deleteStoredFileJob, { fileId });
+  }
+
+  /**
+   * Stream a stored file's plaintext.
+   * @param organisationId the file's Organisation
+   * @param fileId the file's id
+   * @param cipher the Organisation's cipher
+   */
+  private async decrypted(organisationId: string, fileId: string, cipher: OrganisationCipher): Promise<Readable> {
+    const ciphertext = await this.storage.get(objectKey(organisationId, fileId));
+
+    // The decrypting stream carries the errors of both, so the reader sees any failure.
+    return pipeline(ciphertext, cipher.decryptStream(), () => undefined);
   }
 
   /**

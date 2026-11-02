@@ -4,6 +4,7 @@ import { AccessModule } from './core/access/access.module.ts';
 import { AuditModule } from './core/audit/audit.module.ts';
 import { appConfigModule } from './core/config/config.module.ts';
 import { DatabaseModule } from './core/database/database.module.ts';
+import { DocumentsModule } from './core/documents/documents.module.ts';
 import { EncryptionModule } from './core/encryption/encryption.module.ts';
 import { FilesModule } from './core/files/files.module.ts';
 import { HealthModule } from './core/health/health.module.ts';
@@ -42,6 +43,7 @@ export class AppModule {
         AccessModule,
         JobsModule,
         FilesModule,
+        DocumentsModule,
         HealthModule,
         OrganisationsModule,
         AdminsModule,

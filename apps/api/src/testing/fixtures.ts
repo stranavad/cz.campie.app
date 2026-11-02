@@ -6,12 +6,16 @@ import { ACCESS_HEADERS } from '@repo/schema/shared';
 
 import type { Env } from '../core/config/env.schema.ts';
 import { UnitOfWork } from '../core/database/unit-of-work.ts';
+import { FileService } from '../core/files/file.service.ts';
 import { SESSION_COOKIES } from '../core/sessions/session-cookie.ts';
 import { SessionService } from '../core/sessions/session.service.ts';
 import { AdminService } from '../modules/admins/admin/services/admin.service.ts';
 import { MembershipService } from '../modules/admins/membership/services/membership.service.ts';
 import { OrganisationService } from '../modules/organisations/organisation/services/organisation.service.ts';
-import { OrganisationRepository } from '../repositories/organisations/organisation/organisation.repository.ts';
+import {
+  OrganisationRepository,
+  type CreateOrganisation,
+} from '../repositories/organisations/organisation/organisation.repository.ts';
 
 // Fixtures create the world through the app's own seams, so the data is what the app itself would hold.
 
@@ -22,17 +26,44 @@ export type RequestHeaders = Record<string, string>;
 /**
  * Create an Organisation, with its data key.
  * @param app the running test app
- * @param options the subdomain, unique and made up when omitted
+ * @param options the subdomain, legal identity and branding; unique and made up where omitted
  */
 export async function createOrganisation(
   app: INestApplication,
-  { subdomain = `tabor-${randomUUID().slice(0, 8)}` }: { subdomain?: string } = {},
+  options: Partial<Omit<CreateOrganisation, 'logoFileId'>> = {},
 ): Promise<string> {
-  const organisation = await app
-    .get(UnitOfWork)
-    .runForPlatform(() => app.get(OrganisationService).create({ subdomain }));
+  const suffix = randomUUID().slice(0, 8);
+  const organisation = await app.get(UnitOfWork).runForPlatform(() =>
+    app.get(OrganisationService).create({
+      subdomain: `tabor-${suffix}`,
+      legalName: `Testovací spolek ${suffix} z. s.`,
+      ico: '12345678',
+      address: 'Smyšlená 1, 123 45 Testov',
+      displayName: `Tábor ${suffix}`,
+      ...options,
+    }),
+  );
 
   return organisation.id;
+}
+
+/**
+ * Change an Organisation's legal name, accent colour or logo, as its Owner would in its settings.
+ * @param app the running test app
+ * @param organisationId the Organisation
+ * @param changes the new values; the logo as the bytes of a PNG
+ */
+export async function brandOrganisation(
+  app: INestApplication,
+  organisationId: string,
+  { logo, ...changes }: { legalName?: string; accentColour?: string; logo?: Buffer },
+): Promise<void> {
+  await app.get(UnitOfWork).run(organisationId, async () => {
+    const logoFileId =
+      logo === undefined ? undefined : await app.get(FileService).store({ name: 'logo.png', bytes: logo });
+
+    await app.get(OrganisationRepository).update(organisationId, { ...changes, logoFileId });
+  });
 }
 
 /**

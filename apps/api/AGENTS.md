@@ -98,6 +98,13 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 - Downloads: `files.link(fileId)` returns a `FileLink` to `/api/downloads/<token>`, valid 5 minutes, signed with a key derived from the master key. The download route opens the token's Organisation's unit of work, decrypts and streams the file inline, and aborts the response if decryption fails. Never expose a storage key or hand out storage URLs.
 - `files.remove(fileId)` deletes the record; a job deletes the object once that commits. Delete a file through it, never by cascade from its owner's row, or the object stays in storage.
 
+## Generated documents
+
+- One pipeline (`core/documents/`): a React template, rendered to static markup, sent to the `PdfRenderer` port. A template is a `DocumentTemplate<Props>`: a component that wraps its content in `DocumentLayout` and receives the `letterhead` (display name, accent colour, logo, legal name, IČO, address) from `DocumentService`, which loads it from the current Organisation. A template never names an Organisation, address or logo itself.
+- `documents.store(template, props, name)` renders and stores the PDF through `FileService` and returns the file id for the owning record; `documents.render(template, props)` returns the bytes. Call either from a job declared by the feature, never from a request.
+- Wording is fixed by the platform and Czech. Camp data follows a label (`<Fact label="Tábor">`), never sits inside a sentence, so it needs no declension.
+- Paper and margins are the layout's `@page` rule; the logo is inlined as a data URL, since the renderer fetches nothing. Tests read the HTML from `pdfs().rendered`; `src/testing/sample-document.tsx` is the sample template.
+
 ## Folder layout
 
 ```
@@ -106,6 +113,7 @@ apps/api/src/
     access/                          @Access, host and session resolution, the request's unit of work
     config/                          env schema + loader, validated before Nest starts
     database/                        Drizzle setup, pg and Neon adapters, unit of work
+    documents/                       generated documents: layout, letterhead, React to PDF
     encryption/                      Organisation data keys, field and file encryption
     files/                           encrypted file storage, uploads, download links
     jobs/                            job queue, runner and worker; jobs and handlers live with their feature
