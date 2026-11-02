@@ -68,6 +68,7 @@ describe('ports', () => {
       subject: 'Potvrzení přihlášky',
       html: '<p>Děkujeme za přihlášku.</p>',
       text: 'Děkujeme za přihlášku.',
+      attachments: [],
     });
 
     const mail = logged.find((entry) => entry.includes('Potvrzení přihlášky'));

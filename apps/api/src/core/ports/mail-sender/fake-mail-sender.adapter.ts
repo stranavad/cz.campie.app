@@ -5,7 +5,14 @@ export class FakeMailSender extends MailSender {
   public readonly sent: MailMessage[] = [];
 
   public send(message: MailMessage): Promise<void> {
-    this.sent.push(structuredClone(message));
+    // A structured clone would turn the attachments' Buffers into plain byte arrays.
+    this.sent.push({
+      ...structuredClone({ ...message, attachments: [] }),
+      attachments: message.attachments.map((attachment) => ({
+        ...attachment,
+        content: Buffer.from(attachment.content),
+      })),
+    });
 
     return Promise.resolve();
   }

@@ -13,6 +13,9 @@ export class LogMailSender extends MailSender {
       `To: ${message.to.join(', ')}`,
       ...(message.replyTo === undefined ? [] : [`Reply-To: ${message.replyTo}`]),
       `Subject: ${message.subject}`,
+      ...message.attachments.map(
+        ({ filename, contentType, content }) => `Attachment: ${filename} (${contentType}, ${content.length} B)`,
+      ),
     ];
 
     this.logger.log([...headers, '', message.text, '', message.html].join('\n'));

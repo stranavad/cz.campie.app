@@ -13,6 +13,12 @@ describe('configuration', () => {
     await expect(bootApp({ env: { MAIL_ADAPTER: 'smtp' } })).rejects.toThrow(/MAIL_ADAPTER/);
   });
 
+  it('refuses to boot with both mail streams on one domain, which would share their reputation', async () => {
+    await expect(
+      bootApp({ env: { MAIL_AUTH_FROM: 'prihlaseni@campie.test', MAIL_NOTIFICATION_FROM: 'info@CAMPIE.test' } }),
+    ).rejects.toThrow(/MAIL_NOTIFICATION_FROM: must be on another domain than MAIL_AUTH_FROM/);
+  });
+
   it('refuses to boot production with a local adapter, naming every one', async () => {
     const boot = bootApp({ env: { ...PRODUCTION_ENV, MAIL_ADAPTER: 'log', PAYMENT_GATEWAY_ADAPTER: 'fake' } });
 

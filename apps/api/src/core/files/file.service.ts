@@ -129,16 +129,16 @@ export class FileService {
 
   /**
    * Read a whole file of the current Organisation, decrypted, for the server's own use (a logo in a
-   * generated document). Call it only for files the reader may see.
+   * generated document, an email's attachment). Call it only for files the reader may see.
    * @param fileId the file's id
    */
-  public async read(fileId: string): Promise<{ contentType: FileContentType; bytes: Buffer }> {
+  public async read(fileId: string): Promise<{ name: string; contentType: FileContentType; bytes: Buffer }> {
     const file = await this.files.getByIdOrThrow(fileId);
     const cipher = await this.encryption.cipher();
 
     const content = await this.decrypted(this.unitOfWork.organisationId, file.id, cipher);
 
-    return { contentType: file.contentType, bytes: await buffer(content) };
+    return { name: cipher.decrypt(file.name), contentType: file.contentType, bytes: await buffer(content) };
   }
 
   /**

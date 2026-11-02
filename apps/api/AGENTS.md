@@ -105,6 +105,14 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 - Wording is fixed by the platform and Czech. Camp data follows a label (`<Fact label="Tábor">`), never sits inside a sentence, so it needs no declension.
 - Paper and margins are the layout's `@page` rule; the logo is inlined as a data URL, since the renderer fetches nothing. Tests read the HTML from `pdfs().rendered`; `src/testing/sample-document.tsx` is the sample template.
 
+## Emails
+
+- One pipeline (`core/emails/`): a React template, rendered with React Email, sent through the `MailSender` port. A template is `defineEmail({ stream, subject, render })`; `render` wraps its content in `EmailLayout` and receives the `brand` (sender name, contact, the Organisation's accent colour) from `EmailService`. A template never names a Camp or address itself.
+- `emails.send(template, props, { to, sender, attachments })` sends one message from the current Organisation's unit of work: `sender` is the Camp's name and contact (the From display name and Reply-To), `attachments` file ids read through `FileService`. Call it from a job declared by the feature, never from a request; one job sends one message, so a retry never repeats a mail that went out.
+- The template's `stream` picks the From address: `auth` (login links, email verification, invitations) or `notification` (everything else), `MAIL_AUTH_FROM` and `MAIL_NOTIFICATION_FROM`, on different domains. A suspended Organisation's mail is skipped, not failed, so the job completes without retrying.
+- Admin-edited texts go through `EmailText`, which fills placeholders (`{{name}}`, from `@repo/schema/emails`) as escaped text and keeps paragraphs and line breaks. Unknown placeholders are rejected when a text is saved, with `unknownPlaceholders`. Functional parts are fixed: `EmailAction` for the button, the layout's `payment` slot for the payment block.
+- Tests read `mail().sent`; `src/testing/sample-emails.tsx` holds a sample template per stream.
+
 ## Folder layout
 
 ```
@@ -114,6 +122,7 @@ apps/api/src/
     config/                          env schema + loader, validated before Nest starts
     database/                        Drizzle setup, pg and Neon adapters, unit of work
     documents/                       generated documents: layout, letterhead, React to PDF
+    emails/                          emails: layout, brand, React to the mail port, two streams
     encryption/                      Organisation data keys, field and file encryption
     files/                           encrypted file storage, uploads, download links
     jobs/                            job queue, runner and worker; jobs and handlers live with their feature

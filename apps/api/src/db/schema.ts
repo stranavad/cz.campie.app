@@ -4,6 +4,6 @@ export { auditActorKind, auditEntries } from './audit/audit-entries.ts';
 export { fileContentType, files } from './files/files.ts';
 export { appRole } from './helpers/organisation.ts';
 export { organisationKeys } from './organisations/organisation-keys.ts';
-export { organisations } from './organisations/organisations.ts';
+export { organisations, organisationStatus } from './organisations/organisations.ts';
 export { adminSessions } from './sessions/admin-sessions.ts';
 export { guardianSessions } from './sessions/guardian-sessions.ts';

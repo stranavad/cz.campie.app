@@ -1,5 +1,7 @@
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
+import type { OrganisationStatus } from '@repo/schema/organisations';
+
 import type { organisations } from '../../../db/schema.ts';
 
 export type OrganisationSelectModel = InferSelectModel<typeof organisations>;
@@ -8,6 +10,7 @@ export type OrganisationInsertModel = InferInsertModel<typeof organisations>;
 export class OrganisationEntity {
   public readonly id: string;
   public readonly subdomain: string;
+  public readonly status: OrganisationStatus;
   public readonly legalName: string;
   public readonly ico: string;
   public readonly address: string;
@@ -18,6 +21,7 @@ export class OrganisationEntity {
   constructor(row: OrganisationSelectModel) {
     this.id = row.id;
     this.subdomain = row.subdomain;
+    this.status = row.status;
     this.legalName = row.legalName;
     this.ico = row.ico;
     this.address = row.address;

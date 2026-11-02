@@ -29,6 +29,21 @@ const mail = z
         : { adapter: env.MAIL_ADAPTER },
   }));
 
+// Mail goes from the platform's domain on two streams, each on its own subdomain: login links, email
+// verification and invitations on auth, everything else on notification, so bulk mail's reputation never
+// holds back a login.
+const mailStreams = z
+  .object({ MAIL_AUTH_FROM: z.email(), MAIL_NOTIFICATION_FROM: z.email() })
+  .refine((env) => domainOf(env.MAIL_AUTH_FROM) !== domainOf(env.MAIL_NOTIFICATION_FROM), {
+    path: ['MAIL_NOTIFICATION_FROM'],
+    message: 'must be on another domain than MAIL_AUTH_FROM',
+  })
+  .transform((env) => ({ mailStreams: { auth: env.MAIL_AUTH_FROM, notification: env.MAIL_NOTIFICATION_FROM } }));
+
+function domainOf(address: string): string {
+  return address.slice(address.lastIndexOf('@') + 1).toLowerCase();
+}
+
 const fileStorage = z
   .discriminatedUnion('FILE_STORAGE_ADAPTER', [
     z.object({
@@ -125,6 +140,7 @@ export const envSchema = z
   .and(database)
   .and(clock)
   .and(mail)
+  .and(mailStreams)
   .and(fileStorage)
   .and(pdfRenderer)
   .and(paymentGateway)

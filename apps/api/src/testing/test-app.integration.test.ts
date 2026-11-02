@@ -25,6 +25,7 @@ describe('test app', () => {
       subject: 'Potvrzení přihlášky',
       html: '<p>Děkujeme.</p>',
       text: 'Děkujeme.',
+      attachments: [],
     };
 
     await app().get(MailSender).send(message);

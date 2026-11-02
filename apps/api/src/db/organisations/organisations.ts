@@ -1,13 +1,18 @@
 import { sql } from 'drizzle-orm';
 import * as p from 'drizzle-orm/pg-core';
 
+import { ORGANISATION_STATUSES } from '@repo/schema/organisations';
+
 import { id } from '../helpers/ids.ts';
+
+export const organisationStatus = p.pgEnum('organisation_status', ORGANISATION_STATUSES);
 
 export const organisations = p.snakeCase.table(
   'organisations',
   {
     id: id(),
     subdomain: p.text().notNull().unique(),
+    status: organisationStatus().notNull().default('pending'),
     legalName: p.text().notNull(),
     ico: p.text().notNull(),
     address: p.text().notNull(),

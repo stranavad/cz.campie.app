@@ -20,6 +20,8 @@ export const PRODUCTION_ENV = {
   CLOCK_ADAPTER: 'system',
   MAIL_ADAPTER: 'resend',
   RESEND_API_KEY: 're_dummy',
+  MAIL_AUTH_FROM: 'prihlaseni@auth.campie.cz',
+  MAIL_NOTIFICATION_FROM: 'info@posta.campie.cz',
   FILE_STORAGE_ADAPTER: 'tigris',
   TIGRIS_STORAGE_ENDPOINT: UNREACHABLE,
   TIGRIS_STORAGE_BUCKET: 'campie',

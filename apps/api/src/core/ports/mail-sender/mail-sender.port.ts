@@ -1,3 +1,9 @@
+export interface MailAttachment {
+  filename: string;
+  contentType: string;
+  content: Buffer;
+}
+
 export interface MailMessage {
   // An address, optionally with a display name: `Tábor Example <prihlasky@mail.example.test>`.
   from: string;
@@ -6,6 +12,7 @@ export interface MailMessage {
   subject: string;
   html: string;
   text: string;
+  attachments: MailAttachment[];
 }
 
 export abstract class MailSender {

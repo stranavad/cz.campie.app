@@ -128,6 +128,8 @@ services:
       JOB_WORKER: auto
       CLOCK_ADAPTER: system
       MAIL_ADAPTER: log
+      MAIL_AUTH_FROM: prihlaseni@auth.localhost
+      MAIL_NOTIFICATION_FROM: info@posta.localhost
       FILE_STORAGE_ADAPTER: s3
       PDF_RENDERER_ADAPTER: gotenberg
       PAYMENT_GATEWAY_ADAPTER: fake
