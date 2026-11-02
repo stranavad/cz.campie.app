@@ -1,6 +1,6 @@
 # 18 - Admin password auth
 
-Status: in-progress
+Status: done
 Stage: 1a
 Episode: E1 Organisations and identity
 Blocked by: 14, 16

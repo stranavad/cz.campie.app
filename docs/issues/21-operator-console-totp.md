@@ -1,6 +1,6 @@
 # 21 - Platform operator console with mandatory TOTP
 
-Status: in-progress
+Status: done
 Stage: 1a
 Episode: E1 Organisations and identity
 Blocked by: 19

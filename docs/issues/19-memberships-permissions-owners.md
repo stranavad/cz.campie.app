@@ -1,6 +1,6 @@
 # 19 - Memberships, permission areas, Owners
 
-Status: in-progress
+Status: done
 Stage: 1a
 Episode: E1 Organisations and identity
 Blocked by: 17, 18
