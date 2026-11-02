@@ -8,6 +8,6 @@ export const ACCESS_HEADERS = {
 } as const;
 
 // Codes of a request refused before it reaches its route, which the app translates.
-export const ACCESS_ERROR_CODES = ['csrf_header_missing', 'organisation_unknown'] as const;
+export const ACCESS_ERROR_CODES = ['csrf_header_missing', 'organisation_unknown', 'permission_denied'] as const;
 
 export type AccessErrorCode = (typeof ACCESS_ERROR_CODES)[number];

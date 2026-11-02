@@ -8,6 +8,7 @@ import { readSessionCookie } from '../sessions/session-cookie.ts';
 import { Access, GATEWAY_ORGANISATION_PARAM, type AccessKind } from './access.decorator.ts';
 import { AccessService } from './access.service.ts';
 import { originalHost } from './host.ts';
+import { allows, RequirePermission, type MemberAccess } from './permission.ts';
 import { setRequestScope, type RequestScope } from './request-scope.ts';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -38,9 +39,35 @@ export class AccessGuard implements CanActivate {
       throw new ForbiddenException({ code, message: 'A mutating request must carry the CSRF header' });
     }
 
-    setRequestScope(request, await this.resolve(kind, request));
+    const scope = await this.resolve(kind, request);
+
+    if (scope.access === 'admin') {
+      this.requirePermission(context, scope.admin.member);
+    }
+
+    setRequestScope(request, scope);
 
     return true;
+  }
+
+  /**
+   * Refuse an admin request whose membership lacks what its route requires.
+   * @param context the route being called
+   * @param member the membership the request acts through
+   * @throws {ForbiddenException} when the membership does not meet the requirement
+   */
+  private requirePermission(context: ExecutionContext, member: MemberAccess): void {
+    const requirement = this.reflector.getAllAndOverride(RequirePermission, [context.getHandler(), context.getClass()]);
+
+    if (requirement === undefined) {
+      throw new Error(`${context.getClass().name}.${context.getHandler().name} declares no permission`);
+    }
+
+    if (!allows(member, requirement)) {
+      const code: AccessErrorCode = 'permission_denied';
+
+      throw new ForbiddenException({ code, message: 'The membership lacks the permission this route requires' });
+    }
   }
 
   private resolve(kind: AccessKind, request: Request): RequestScope | Promise<RequestScope> {

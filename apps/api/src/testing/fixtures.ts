@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import type { Permissions } from '@repo/schema/admins';
 import { ACCESS_HEADERS } from '@repo/schema/shared';
 
 import type { Env } from '../core/config/env.schema.ts';
@@ -100,11 +101,17 @@ export async function organisationHost(app: INestApplication, organisationId: st
  * Create an admin who is a member of the given Organisations, signed in, with the headers of a request
  * in one of them as that admin.
  * @param app the running test app
- * @param options the Organisations the admin is a member of, and their password; none as if invited
+ * @param options the Organisations the admin is a member of; whether an Owner of each, and their level per
+ * area in each, none where left out; their password, none as if invited
  */
 export async function createAdmin(
   app: INestApplication,
-  { memberOf, password }: { memberOf: readonly string[]; password?: string },
+  {
+    memberOf,
+    owner = false,
+    permissions,
+    password,
+  }: { memberOf: readonly string[]; owner?: boolean; permissions?: Partial<Permissions>; password?: string },
 ): Promise<{ id: string; email: string; headers: (organisationId: string) => RequestHeaders }> {
   const unitOfWork = app.get(UnitOfWork);
   const passwordHash = password === undefined ? undefined : await hashPassword(password);
@@ -116,7 +123,7 @@ export async function createAdmin(
   // Arranged without an audit entry, so a test's audit log holds only what the test itself did.
   for (const organisationId of memberOf) {
     await unitOfWork.run(organisationId, () =>
-      app.get(MembershipRepository).create({ adminId: admin.id, owner: false }),
+      app.get(MembershipRepository).create({ adminId: admin.id, owner, permissions }),
     );
   }
 

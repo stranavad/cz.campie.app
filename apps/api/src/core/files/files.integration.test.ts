@@ -7,11 +7,13 @@ import { createAdmin, createOrganisation, type RequestHeaders } from '../../test
 import { withClient } from '../../testing/services/postgres.ts';
 import { useTestApp } from '../../testing/test-app.ts';
 import { Access } from '../access/access.decorator.ts';
+import { Requires } from '../access/permission.ts';
 import { FileUploadInterceptor, UploadedFile, type FileUpload } from './file-upload.ts';
 import { FileService } from './file.service.ts';
 
 // Stands in for the features that will upload, link and delete files, each after its own permission check.
 @Access('admin')
+@Requires('member')
 @Controller('test-files')
 class TestFilesController {
   constructor(private readonly files: FileService) {}

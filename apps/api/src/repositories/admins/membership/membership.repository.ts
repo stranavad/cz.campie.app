@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 
+import type { Permissions } from '@repo/schema/admins';
+
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { memberships } from '../../../db/schema.ts';
 import { MembershipEntity } from './membership.entity.ts';
@@ -24,14 +26,21 @@ export class MembershipRepository {
   }
 
   /**
-   * Create a membership of an admin in the current Organisation.
-   * @param input the admin and whether they are an Owner
+   * Create a membership of an admin in the current Organisation; an area left out is none.
+   * @param input the admin, whether they are an Owner, and their level per area
    * @throws {Error} when the database returns no row
    */
-  public async create(input: { adminId: string; owner: boolean }): Promise<MembershipEntity> {
+  public async create({
+    permissions,
+    ...input
+  }: {
+    adminId: string;
+    owner: boolean;
+    permissions?: Partial<Permissions>;
+  }): Promise<MembershipEntity> {
     const [row] = await this.unitOfWork.db
       .insert(memberships)
-      .values({ organisationId: this.unitOfWork.organisationId, ...input })
+      .values({ organisationId: this.unitOfWork.organisationId, ...input, ...permissions })
       .returning();
 
     if (row === undefined) {

@@ -1,5 +1,7 @@
 import type { Request } from 'express';
 
+import type { MemberAccess } from './permission.ts';
+
 // What the access guard resolved for a request: the Organisation its unit of work runs in, and who acts.
 export type RequestScope =
   | { readonly access: 'public' | 'gateway'; readonly organisationId: string }
@@ -11,7 +13,7 @@ export type RequestScope =
   | {
       readonly access: 'admin';
       readonly organisationId: string;
-      readonly admin: { readonly id: string; readonly membershipId: string };
+      readonly admin: { readonly id: string; readonly member: MemberAccess };
     }
   | { readonly access: 'account'; readonly admin: { readonly id: string } }
   | { readonly access: 'platform' | 'unscoped' };

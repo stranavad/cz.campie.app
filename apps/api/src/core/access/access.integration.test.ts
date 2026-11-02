@@ -18,6 +18,7 @@ import { UnitOfWork } from '../database/unit-of-work.ts';
 import { writeSessionCookie } from '../sessions/session-cookie.ts';
 import { SessionService } from '../sessions/session.service.ts';
 import { Access } from './access.decorator.ts';
+import { Requires } from './permission.ts';
 import { RequestActor } from './request-actor.decorator.ts';
 
 interface Answer {
@@ -63,6 +64,7 @@ class GuardianController {
 }
 
 @Access('admin')
+@Requires('member')
 @Controller('test-access/admin')
 class AdminController {
   constructor(private readonly unitOfWork: UnitOfWork) {}

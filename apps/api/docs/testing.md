@@ -20,7 +20,7 @@ Run one kind: `pnpm exec vitest --project integration` or `--project unit`.
 - **Time is controlled.** Code reads time only from the `Clock` port; `useTestApp().clock()` is a fake clock, frozen until the test moves it. Prague-calendar rules are tested near midnight UTC.
 - **Jobs run when the test says so.** The queue is real Redis, but nothing runs on its own (`JOB_WORKER=manual`): `jobs().drain()` runs every queued job through the app's runner, one at a time and in order, including jobs they enqueue, and returns each attempt; a retry runs at once and reports the backoff it skipped. `jobs().failed()` lists what ended failed.
 - **Fakes at every port, inspectable**: `mail().sent`, `files().objects`, `payments().created`, `pdfs().rendered`, and a fixed test key. A fake records; it never reimplements the service.
-- **Fixtures create the world through the app's own seams** (`src/testing/fixtures.ts`): Organisations, signed-in admins (`createAdmin(app, { memberOf })`, whose `headers(organisationId)` carry host, cookie, Organisation and CSRF headers) and guardian sessions (`createGuardianSession(app, organisationId, email)`); Camps, Turnusy and permissions join as their features land. Data is obviously fake; never a real person, rodné číslo or health record.
+- **Fixtures create the world through the app's own seams** (`src/testing/fixtures.ts`): Organisations, signed-in admins (`createAdmin(app, { memberOf, owner, permissions })`, whose `headers(organisationId)` carry host, cookie, Organisation and CSRF headers) and guardian sessions (`createGuardianSession(app, organisationId, email)`); Camps and Turnusy join as their features land. Data is obviously fake; never a real person, rodné číslo or health record.
 - **Migrations stay in sync.** A test fails with the missing SQL when the schema changed without `pnpm db:generate`.
 - `.only` and `.skip` are lint errors.
 
@@ -28,7 +28,7 @@ Run one kind: `pnpm exec vitest --project integration` or `--project unit`.
 
 - **Its behaviour**, as a camp admin, guardian or operator would observe it.
 - **Tenant isolation.** `useTestApp().expectIsolated(() => request)` sends a request with Organisation B's session and Organisation A's identifiers: the answer must be not-found or forbidden, and no row of any table may change.
-- **Permissions.** Each area at none, read and write; no health data without Health read, exports included.
+- **Permissions.** Each area at none, read and write; no health data without Health read, exports included. `useTestApp().expectPermission(['registrations', 'read'], organisationId, (headers) => request)`, with the route's `@Requires` in the same words, sends the request as members at none, read and write in that area (every other area at write) and as an Owner, and asserts that those below are refused with `permission_denied`, changing nothing, and the rest admitted. `['owner']` tells an Owner from a member with write everywhere.
 - **Audit.** A change produces its entry with actor, action, target and diff; a rolled-back change leaves none.
 
 ## Writing one

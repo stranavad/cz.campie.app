@@ -14,5 +14,14 @@ export default defineConfig({
   extends: [base, node, typeAware, vitest, time, clock, env, boundaries],
   ignorePatterns: ['dist', 'drizzle'],
   // Spikes are scripts run by hand; their console output is the result.
-  overrides: [{ files: ['spikes/**'], rules: { 'no-console': 'off' } }],
+  overrides: [
+    { files: ['spikes/**'], rules: { 'no-console': 'off' } },
+    // The test app's assertion helpers count as assertions.
+    {
+      files: ['**/*.test.ts', '**/*.test.tsx'],
+      rules: {
+        'vitest/expect-expect': ['warn', { assertFunctionNames: ['expect', 'expectIsolated', 'expectPermission'] }],
+      },
+    },
+  ],
 });

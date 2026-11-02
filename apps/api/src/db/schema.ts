@@ -1,5 +1,5 @@
 export { admins } from './admins/admins.ts';
-export { memberships } from './admins/memberships.ts';
+export { memberships, permissionLevel } from './admins/memberships.ts';
 export { passwordResets } from './admins/password-resets.ts';
 export { auditActorKind, auditEntries } from './audit/audit-entries.ts';
 export { camps } from './camps/camps.ts';

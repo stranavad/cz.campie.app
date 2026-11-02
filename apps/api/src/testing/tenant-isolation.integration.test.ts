@@ -3,6 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { Access } from '../core/access/access.decorator.ts';
+import { Requires } from '../core/access/permission.ts';
 import { UnitOfWork } from '../core/database/unit-of-work.ts';
 import { createAdmin, createOrganisation, type RequestHeaders } from './fixtures.ts';
 import { createNotesTable, notes } from './tenant-table.ts';
@@ -10,6 +11,7 @@ import { useTestApp } from './test-app.ts';
 
 // A sample endpoint over an Organisation-owned table, in the unit of work of the admin's Organisation.
 @Access('admin')
+@Requires('member')
 @Controller('test-notes')
 class NotesController {
   constructor(private readonly unitOfWork: UnitOfWork) {}

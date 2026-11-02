@@ -4,8 +4,11 @@ import { withClient } from './services/postgres.ts';
 
 type Snapshot = Record<string, unknown[]>;
 
-// Every row of every table, read as the owner past row-level security, in a stable order.
-async function snapshot(ownerUrl: string): Promise<Snapshot> {
+/**
+ * Read every row of every table, as the owner past row-level security, in a stable order.
+ * @param ownerUrl the test's database, as its owner
+ */
+export async function snapshot(ownerUrl: string): Promise<Snapshot> {
   return withClient(ownerUrl, async (client) => {
     const { rows: tables } = await client.query<{ schema: string; table: string }>(
       `SELECT schemaname AS schema, tablename AS table FROM pg_tables

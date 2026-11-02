@@ -1,3 +1,4 @@
+export * from './membership/membership.resource.ts';
 export * from './account/account.resource.ts';
 export * from './account/get-account.contract.ts';
 export * from './password-reset/request-password-reset.contract.ts';

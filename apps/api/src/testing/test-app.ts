@@ -15,6 +15,7 @@ import { FakePdfRenderer } from '../core/ports/pdf-renderer/fake-pdf-renderer.ad
 import { PdfRenderer } from '../core/ports/pdf-renderer/pdf-renderer.port.ts';
 import { bootApp, restoreEnv, type BootOptions } from './boot-app.ts';
 import { testJobs } from './jobs.ts';
+import { expectPermission, type PermissionAttempt, type Requirement } from './permissions.ts';
 import { testDatabase } from './services/postgres.ts';
 import type { ServiceEnv } from './services/test-service.ts';
 import { isolateTestServices } from './services/test-services.ts';
@@ -98,5 +99,10 @@ export function useTestApp({ env = {}, controllers, providers }: Omit<BootOption
     // Sends attempt, which reaches for another Organisation's data, and asserts it is refused and
     // changes nothing; one call per endpoint and identifier.
     expectIsolated: (attempt: Parameters<typeof expectIsolated>[1]) => expectIsolated(database().ownerUrl, attempt),
+    // Sends attempt as members at every level the requirement tells apart, in the given Organisation, and
+    // asserts who is refused with permission_denied, changing nothing, and who is admitted; one call per
+    // route, with its @Requires in the same words, such as (['registrations', 'read'], ...).
+    expectPermission: (requirement: Requirement, organisationId: string, attempt: PermissionAttempt) =>
+      expectPermission(current().app, database().ownerUrl, requirement, organisationId, attempt),
   };
 }

@@ -1,10 +1,22 @@
 import { Global, Module, type OnModuleInit } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule, DiscoveryService, Reflector } from '@nestjs/core';
+import { PATH_METADATA } from '@nestjs/common/constants.js';
+import {
+  APP_GUARD,
+  APP_INTERCEPTOR,
+  DiscoveryModule,
+  DiscoveryService,
+  MetadataScanner,
+  Reflector,
+} from '@nestjs/core';
 
 import { Access } from './access.decorator.ts';
 import { AccessGuard } from './access.guard.ts';
 import { AccessService } from './access.service.ts';
+import { RequirePermission } from './permission.ts';
 import { UnitOfWorkInterceptor } from './unit-of-work.interceptor.ts';
+
+// A class or method that Nest reads metadata from.
+type MetadataTarget = Parameters<Reflector['get']>[1];
 
 @Global()
 @Module({
@@ -19,18 +31,56 @@ export class AccessModule implements OnModuleInit {
   constructor(
     private readonly discovery: DiscoveryService,
     private readonly reflector: Reflector,
+    private readonly scanner: MetadataScanner,
   ) {}
 
-  // No route is reachable by accident: a controller without a declared access stops the app booting.
+  // No route is reachable by accident: a controller without a declared access, an admin route without a
+  // declared permission, or a permission where no membership is checked stops the app booting.
   public onModuleInit(): void {
-    const undeclared = this.discovery
+    const problems = this.discovery
       .getControllers()
-      .flatMap(({ metatype }) =>
-        metatype && this.reflector.get(Access, metatype) === undefined ? [metatype.name] : [],
-      );
+      .flatMap(({ metatype }) => (metatype ? this.problemsOf(metatype) : []));
 
-    if (undeclared.length > 0) {
-      throw new Error(`Declare @Access(...) on every controller; missing on ${undeclared.join(', ')}`);
+    if (problems.length > 0) {
+      throw new Error(problems.join('; '));
     }
+  }
+
+  /**
+   * List what a controller fails to declare, or declares where it means nothing.
+   * @param controller the controller class
+   */
+  private problemsOf(controller: MetadataTarget): string[] {
+    const kind = this.reflector.get(Access, controller);
+
+    if (kind === undefined) {
+      return [`Declare @Access(...) on every controller; missing on ${controller.name}`];
+    }
+
+    const prototype: unknown = controller.prototype;
+
+    if (typeof prototype !== 'object' || prototype === null) {
+      return [];
+    }
+
+    return this.scanner.getAllMethodNames(prototype).flatMap((name) => {
+      const route: unknown = Reflect.get(prototype, name);
+
+      if (typeof route !== 'function' || this.reflector.get<string | undefined>(PATH_METADATA, route) === undefined) {
+        return [];
+      }
+
+      const declared = this.reflector.getAllAndOverride(RequirePermission, [route, controller]) !== undefined;
+
+      if (kind === 'admin' && !declared) {
+        return [`Declare @Requires(...) on every admin route; missing on ${controller.name}.${name}`];
+      }
+
+      if (kind !== 'admin' && declared) {
+        return [`@Requires(...) applies only to admin routes; found on ${controller.name}.${name}`];
+      }
+
+      return [];
+    });
   }
 }

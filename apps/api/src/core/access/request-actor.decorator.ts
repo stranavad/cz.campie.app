@@ -2,6 +2,7 @@ import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
 
 import type { Actor } from '../audit/actor.ts';
+import type { MemberAccess } from './permission.ts';
 import { requestScope } from './request-scope.ts';
 
 /**
@@ -45,4 +46,16 @@ export const RequestAdminId = createParamDecorator((_: unknown, context: Executi
   }
 
   return scope.admin.id;
+});
+
+// The membership an admin request acts through, for what a route shows by permission, such as health data
+// only with Health read.
+export const RequestMember = createParamDecorator((_: unknown, context: ExecutionContext): MemberAccess => {
+  const scope = requestScope(context.switchToHttp().getRequest<Request>());
+
+  if (scope.access !== 'admin') {
+    throw new Error(`A ${scope.access} request has no membership`);
+  }
+
+  return scope.admin.member;
 });

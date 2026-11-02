@@ -8,6 +8,7 @@ import { withClient } from '../../testing/services/postgres.ts';
 import { createNotesTable, notes } from '../../testing/tenant-table.ts';
 import { useTestApp } from '../../testing/test-app.ts';
 import { Access } from '../access/access.decorator.ts';
+import { Requires } from '../access/permission.ts';
 import { RequestActor } from '../access/request-actor.decorator.ts';
 import { UnitOfWork } from '../database/unit-of-work.ts';
 import { EncryptionService } from '../encryption/encryption.service.ts';
@@ -19,6 +20,7 @@ const RODNE_CISLO = '000101/0000';
 
 // A sample endpoint that changes an Organisation-owned row and audits the change in the same unit of work.
 @Access('admin')
+@Requires('member')
 @Controller('test-notes')
 class NotesController {
   constructor(

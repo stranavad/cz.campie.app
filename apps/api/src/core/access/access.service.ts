@@ -110,7 +110,10 @@ export class AccessService {
       return {
         access: 'admin',
         organisationId: membership.organisationId,
-        admin: { id: session.adminId, membershipId: membership.id },
+        admin: {
+          id: session.adminId,
+          member: { membershipId: membership.id, owner: membership.owner, permissions: membership.permissions },
+        },
       };
     });
   }
