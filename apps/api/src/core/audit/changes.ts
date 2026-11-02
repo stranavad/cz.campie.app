@@ -1,7 +1,8 @@
 import { isDeepStrictEqual } from 'node:util';
 
-// A row as a service holds it before or after a change: column values by field name.
-export type AuditedRow = Readonly<Record<string, unknown>>;
+// A row as a service holds it before or after a change, an entity or a plain object: its own fields are
+// the column values by field name.
+export type AuditedRow = object;
 
 export interface ValueChange {
   readonly old: unknown;
@@ -37,13 +38,15 @@ function toJson(value: unknown): unknown {
  * @param after the row after the change, or null when it was removed
  */
 export function changesBetween(before: AuditedRow | null, after: AuditedRow | null): Changes {
-  const fields = new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})]);
+  const old = new Map<string, unknown>(Object.entries(before ?? {}));
+  const current = new Map<string, unknown>(Object.entries(after ?? {}));
+  const fields = new Set([...old.keys(), ...current.keys()]);
   const values: Record<string, ValueChange> = {};
   const encryptedFields: string[] = [];
 
   for (const field of fields) {
-    const oldValue = before?.[field] ?? null;
-    const newValue = after?.[field] ?? null;
+    const oldValue = old.get(field) ?? null;
+    const newValue = current.get(field) ?? null;
 
     if (isDeepStrictEqual(oldValue, newValue)) {
       continue;

@@ -1,0 +1,22 @@
+{
+  "loading": "Načítáme…",
+  "error": "Účet se nepodařilo načíst. Zkuste stránku načíst znovu.",
+  "signedOut": {
+    "title": "Nejste přihlášeni",
+    "description": "Přihlášení do administrace připravujeme. Novou organizaci můžete založit už teď.",
+    "signup": "Založit organizaci"
+  },
+  "pending": {
+    "title": "Organizace čeká na schválení",
+    "description": "Organizaci {{name}} jsme založili. Přihlášky bude moci zveřejnit, jakmile ji schválí provozovatel {{productName}}.",
+    "address": "Adresa přihlášek: {{address}}"
+  },
+  "approved": {
+    "title": "Organizace je schválena",
+    "description": "Organizace {{name}} může zveřejňovat přihlášky."
+  },
+  "suspended": {
+    "title": "Organizace je pozastavena",
+    "description": "Stránky organizace {{name}} jsou nedostupné a neodcházejí z ní žádné e-maily. Ozvěte se prosím provozovateli {{productName}}."
+  }
+}

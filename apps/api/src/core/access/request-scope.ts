@@ -13,6 +13,7 @@ export type RequestScope =
       readonly organisationId: string;
       readonly admin: { readonly id: string; readonly membershipId: string };
     }
+  | { readonly access: 'account'; readonly admin: { readonly id: string } }
   | { readonly access: 'platform' | 'unscoped' };
 
 const scopes = new WeakMap<Request, RequestScope>();

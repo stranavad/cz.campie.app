@@ -16,6 +16,7 @@ export const memberships = p.snakeCase.table(
       .uuid()
       .notNull()
       .references(() => admins.id, { onDelete: 'cascade' }),
+    owner: p.boolean().notNull().default(false),
   },
   (table) => [p.unique().on(table.organisationId, table.adminId)],
 );

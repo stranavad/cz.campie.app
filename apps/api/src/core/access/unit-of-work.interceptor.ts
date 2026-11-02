@@ -20,7 +20,7 @@ export class UnitOfWorkInterceptor implements NestInterceptor {
       return from(this.unitOfWork.run(scope.organisationId, handle));
     }
 
-    if (scope.access === 'platform') {
+    if (scope.access === 'platform' || scope.access === 'account') {
       return from(this.unitOfWork.runForPlatform(handle));
     }
 

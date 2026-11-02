@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { render, toPlainText } from '@react-email/render';
 import { createElement, type ReactElement } from 'react';
 
+import { DEFAULT_ACCENT_COLOUR } from '@repo/schema/organisations';
+
 import { OrganisationRepository } from '../../repositories/organisations/organisation/organisation.repository.ts';
 import type { Env } from '../config/env.schema.ts';
 import { UnitOfWork } from '../database/unit-of-work.ts';
@@ -78,16 +80,58 @@ export class EmailService {
     }
 
     const brand: EmailBrand = { name: sender.name, contact: sender.replyTo, accentColour: organisation.accentColour };
+
+    await this.deliver(template, props, brand, {
+      to,
+      replyTo: sender.replyTo,
+      attachments: await Promise.all(attachments.map((fileId) => this.attachment(fileId))),
+    });
+  }
+
+  /**
+   * Render an email of the platform itself, outside any Organisation, and send it under the product's name.
+   * @param template the email's template
+   * @param props what the template shows besides the brand
+   * @param options the recipients
+   */
+  public async sendForPlatform<Props extends object>(
+    template: EmailTemplate<Props>,
+    props: Props,
+    { to }: { readonly to: readonly string[] },
+  ): Promise<void> {
+    const name = this.config.get('PRODUCT_NAME', { infer: true });
+
+    await this.deliver(
+      template,
+      props,
+      { name, contact: null, accentColour: DEFAULT_ACCENT_COLOUR },
+      { to, attachments: [] },
+    );
+  }
+
+  /**
+   * Render an email with its brand and hand it to the mail port from the address of its stream.
+   * @param template the email's template
+   * @param props what the template shows besides the brand
+   * @param brand whom it is from
+   * @param envelope recipients, reply address and attachments
+   */
+  private async deliver<Props extends object>(
+    template: EmailTemplate<Props>,
+    props: Props,
+    brand: EmailBrand,
+    { to, replyTo, attachments }: { to: readonly string[]; replyTo?: string; attachments: MailAttachment[] },
+  ): Promise<void> {
     const html = await render(createElement(template.render, { ...props, brand }));
 
     await this.mailSender.send({
-      from: formatAddress(sender.name, this.config.get('mailStreams', { infer: true })[template.stream]),
+      from: formatAddress(brand.name, this.config.get('mailStreams', { infer: true })[template.stream]),
       to: [...to],
-      replyTo: sender.replyTo,
+      ...(replyTo === undefined ? {} : { replyTo }),
       subject: template.subject(props),
       html,
       text: toPlainText(html),
-      attachments: await Promise.all(attachments.map((fileId) => this.attachment(fileId))),
+      attachments,
     });
   }
 

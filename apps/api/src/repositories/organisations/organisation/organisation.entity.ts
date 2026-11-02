@@ -14,6 +14,11 @@ export class OrganisationEntity {
   public readonly legalName: string;
   public readonly ico: string;
   public readonly address: string;
+  public readonly statutoryRepresentative: string;
+  public readonly vatId: string | null;
+  public readonly contactEmail: string;
+  public readonly contactPhone: string;
+  public readonly billingEmail: string;
   public readonly displayName: string;
   public readonly accentColour: string;
   public readonly logoFileId: string | null;
@@ -25,6 +30,11 @@ export class OrganisationEntity {
     this.legalName = row.legalName;
     this.ico = row.ico;
     this.address = row.address;
+    this.statutoryRepresentative = row.statutoryRepresentative;
+    this.vatId = row.vatId;
+    this.contactEmail = row.contactEmail;
+    this.contactPhone = row.contactPhone;
+    this.billingEmail = row.billingEmail;
     this.displayName = row.displayName;
     this.accentColour = row.accentColour;
     this.logoFileId = row.logoFileId;

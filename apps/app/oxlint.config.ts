@@ -7,9 +7,10 @@ import { typeAware } from '@repo/oxlint-config/type-aware';
 
 import { boundaries } from './oxlint/boundaries.ts';
 import { env } from './oxlint/env.ts';
+import { shadcn } from './oxlint/shadcn.ts';
 import { translations } from './oxlint/translations.ts';
 
 export default defineConfig({
-  extends: [base, typeAware, react, a11y, env, translations, boundaries],
+  extends: [base, typeAware, react, a11y, env, translations, boundaries, shadcn],
   ignorePatterns: ['dist', 'src/routeTree.gen.ts'],
 });

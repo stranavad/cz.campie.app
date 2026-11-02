@@ -25,13 +25,13 @@ export class MembershipRepository {
 
   /**
    * Create a membership of an admin in the current Organisation.
-   * @param adminId admin id
+   * @param input the admin and whether they are an Owner
    * @throws {Error} when the database returns no row
    */
-  public async create(adminId: string): Promise<MembershipEntity> {
+  public async create(input: { adminId: string; owner: boolean }): Promise<MembershipEntity> {
     const [row] = await this.unitOfWork.db
       .insert(memberships)
-      .values({ organisationId: this.unitOfWork.organisationId, adminId })
+      .values({ organisationId: this.unitOfWork.organisationId, ...input })
       .returning();
 
     if (row === undefined) {

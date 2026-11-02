@@ -7,8 +7,8 @@ import { Database, type Transaction } from './database.port.ts';
 
 interface Scope {
   readonly db: Transaction;
-  // null in a platform unit of work, which sees no Organisation's rows.
-  readonly organisationId: string | null;
+  // null in a platform unit of work, which sees no Organisation's rows, until it enters one.
+  organisationId: string | null;
   readonly afterCommit: (() => Promise<void>)[];
   readonly afterRollback: (() => Promise<void>)[];
 }
@@ -38,6 +38,23 @@ export class UnitOfWork {
    */
   public runForPlatform<T>(work: () => Promise<T>): Promise<T> {
     return this.open(null, work);
+  }
+
+  /**
+   * Make the current platform unit of work the given Organisation's for the rest of its transaction, so
+   * the records of an Organisation it has just created commit together with it.
+   * @param organisationId the Organisation, never from client input
+   * @throws {Error} outside a platform unit of work
+   */
+  public async enter(organisationId: string): Promise<void> {
+    const scope = this.current();
+
+    if (scope.organisationId !== null) {
+      throw new Error('Only a platform unit of work can enter an Organisation');
+    }
+
+    await scope.db.execute(sql`select set_config(${ORGANISATION_SETTING}, ${organisationId}, true)`);
+    scope.organisationId = organisationId;
   }
 
   /**

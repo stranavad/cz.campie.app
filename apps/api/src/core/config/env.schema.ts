@@ -132,6 +132,10 @@ export const envSchema = z
     // The registrable domain the platform runs on: app.<domain> is the main host, every other single
     // label below it an Organisation's subdomain.
     PLATFORM_DOMAIN: z.string().regex(/^[a-z0-9-]+(\.[a-z0-9-]+)*$/, 'must be a bare lowercase hostname'),
+    // The platform's name: the sender of its own mail, and a subdomain no Organisation may take.
+    PRODUCT_NAME: nonEmpty,
+    // Where the Platform operator is told of new signups.
+    PLATFORM_OPERATOR_EMAIL: z.email(),
 
     REDIS_URL: z.url(),
     // auto runs queued jobs in this process; manual leaves them queued until a test drains them.

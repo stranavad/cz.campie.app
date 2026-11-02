@@ -1,0 +1,50 @@
+{
+  "title": "Založení organizace",
+  "intro": "Založte svou organizaci na {{productName}}. Jakmile ji provozovatel schválí, můžete zveřejnit přihlášky na své tábory.",
+  "dataPage": "Než organizaci založíte, přečtěte si, <a>kde a jak data ukládáme a kdo je zpracovává</a>.",
+  "organisation": {
+    "legend": "Organizace",
+    "legalName": "Název organizace",
+    "ico": "IČO",
+    "vatId": "DIČ",
+    "vatIdHint": "Jen pokud je organizace plátcem DPH.",
+    "address": "Sídlo",
+    "addressHint": "Ulice a číslo, PSČ a obec, jak je uvedeno v rejstříku.",
+    "statutoryRepresentative": "Statutární zástupce"
+  },
+  "contact": {
+    "legend": "Kontakt a fakturace",
+    "email": "Kontaktní e-mail",
+    "phone": "Telefon",
+    "billingEmail": "Fakturační e-mail",
+    "billingEmailHint": "Sem budeme posílat faktury za používání {{productName}}."
+  },
+  "camp": {
+    "legend": "Tábor a adresa",
+    "name": "Název tábora",
+    "nameHint": "Pod tímto názvem uvidí tábor rodiče. Další tábory přidáte později.",
+    "subdomain": "Adresa přihlášek",
+    "subdomainHint": "Přihlášky budou na adrese {{subdomain}}.{{platformDomain}}. Po schválení organizace ji už nelze změnit.",
+    "subdomainSample": "nazev-organizace"
+  },
+  "account": {
+    "legend": "Váš účet",
+    "email": "Váš e-mail",
+    "emailHint": "Tímto e-mailem se budete přihlašovat. Stanete se vlastníkem organizace.",
+    "password": "Heslo",
+    "passwordHint_one": "Alespoň {{count}} znak.",
+    "passwordHint_few": "Alespoň {{count}} znaky.",
+    "passwordHint_many": "Alespoň {{count}} znaku.",
+    "passwordHint_other": "Alespoň {{count}} znaků."
+  },
+  "consent": {
+    "legend": "Souhlasy",
+    "terms": "Souhlasím s <a>obchodními podmínkami</a> jménem organizace.",
+    "dataProcessingAgreement": "Uzavírám jménem organizace <a>smlouvu o zpracování osobních údajů</a>."
+  },
+  "failure": {
+    "legal_versions_outdated": "Podmínky se mezitím změnily. Načtěte prosím stránku znovu a zkontrolujte je.",
+    "unexpected": "Organizaci se nepodařilo založit. Zkuste to prosím znovu."
+  },
+  "submit": "Založit organizaci"
+}

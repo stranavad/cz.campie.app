@@ -77,6 +77,15 @@ class AdminController {
   public change(): void {}
 }
 
+@Access('account')
+@Controller('test-access/account')
+class AccountController {
+  @Get()
+  public read(@RequestActor() actor: Actor): { actor: Actor } {
+    return { actor };
+  }
+}
+
 @Access('platform')
 @Controller('test-access/platform')
 class PlatformController {
@@ -115,7 +124,14 @@ const CSRF = { [ACCESS_HEADERS.csrf]: '1' };
 
 describe('access', () => {
   const { app, http, clock } = useTestApp({
-    controllers: [PublicController, GuardianController, AdminController, PlatformController, GatewayController],
+    controllers: [
+      PublicController,
+      GuardianController,
+      AdminController,
+      AccountController,
+      PlatformController,
+      GatewayController,
+    ],
   });
   let organisationA: string;
   let organisationB: string;
@@ -255,6 +271,32 @@ describe('access', () => {
       expect((await http().get('/api/test-access/admin').set(admin.headers(organisationA))).status).toBe(200);
       clock().advance(1000);
       expect((await http().get('/api/test-access/admin').set(admin.headers(organisationA))).status).toBe(401);
+    });
+  });
+
+  describe('account', () => {
+    it('admits an admin session without an Organisation, acting as that admin', async () => {
+      const admin = await createAdmin(app(), { memberOf: [] });
+      const { [ACCESS_HEADERS.organisation]: _, ...headers } = admin.headers(organisationA);
+
+      const response = await http().get('/api/test-access/account').set(headers);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ actor: { kind: 'admin', identity: admin.id, ipAddress: expect.any(String) } });
+    });
+
+    it("rejects it without a session, and answers not-found on an Organisation's host", async () => {
+      const admin = await createAdmin(app(), { memberOf: [organisationA] });
+
+      expect((await http().get('/api/test-access/account').set('Host', mainHost(app()))).status).toBe(401);
+      expect(
+        (
+          await http()
+            .get('/api/test-access/account')
+            .set(admin.headers(organisationA))
+            .set('Host', await organisationHost(app(), organisationA))
+        ).status,
+      ).toBe(404);
     });
   });
 

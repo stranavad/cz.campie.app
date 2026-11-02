@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import * as p from 'drizzle-orm/pg-core';
 
-import { ORGANISATION_STATUSES } from '@repo/schema/organisations';
+import { DEFAULT_ACCENT_COLOUR, ORGANISATION_STATUSES } from '@repo/schema/organisations';
 
 import { id } from '../helpers/ids.ts';
 
@@ -16,8 +16,13 @@ export const organisations = p.snakeCase.table(
     legalName: p.text().notNull(),
     ico: p.text().notNull(),
     address: p.text().notNull(),
+    statutoryRepresentative: p.text().notNull(),
+    vatId: p.text(),
+    contactEmail: p.text().notNull(),
+    contactPhone: p.text().notNull(),
+    billingEmail: p.text().notNull(),
     displayName: p.text().notNull(),
-    accentColour: p.text().notNull().default('#2b8a4e'),
+    accentColour: p.text().notNull().default(DEFAULT_ACCENT_COLOUR),
     // No foreign key to files: files reference organisations, and the reverse would be an import cycle
     // between the two schema files. The logo is replaced or removed through the Organisation, which clears it.
     logoFileId: p.uuid(),

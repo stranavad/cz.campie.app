@@ -55,6 +55,8 @@ export class AccessGuard implements CanActivate {
           readSessionCookie(request, 'admin'),
           request.get(ACCESS_HEADERS.organisation),
         );
+      case 'account':
+        return this.access.resolveAccount(originalHost(request), readSessionCookie(request, 'admin'));
       case 'platform':
         return this.access.resolvePlatform(originalHost(request));
       case 'gateway':

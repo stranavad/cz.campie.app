@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-// The admin home (issue 18 onwards).
-export const Route = createFileRoute('/platform/')({});
+import { AdminHomePage } from '@/features/admin-home';
+
+export const Route = createFileRoute('/platform/')({ component: AdminHomePage });

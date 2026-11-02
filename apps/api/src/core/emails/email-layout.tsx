@@ -3,10 +3,11 @@ import { Fragment, type ReactNode } from 'react';
 import { fillPlaceholders } from '@repo/schema/emails';
 
 // Who an email comes from, as its frame shows it: the Camp's name and contact, and the accent colour.
-// Every template gets it from the pipeline, so no template names a Camp or an address by itself.
+// Every template gets it from the pipeline, so no template names a Camp or an address by itself. The
+// platform's own mail has no contact to reply to.
 export interface EmailBrand {
   readonly name: string;
-  readonly contact: string;
+  readonly contact: string | null;
   readonly accentColour: string;
 }
 
@@ -85,26 +86,28 @@ export function EmailLayout({
                         <td style={{ padding: '0 32px 14px' }}>{payment}</td>
                       </tr>
                     )}
-                    <tr>
-                      <td
-                        style={{
-                          padding: '18px 32px',
-                          borderTop: `1px solid ${RULE}`,
-                          fontFamily: FONT,
-                          fontSize: '13px',
-                          lineHeight: '20px',
-                          color: MUTED,
-                        }}
-                      >
-                        <p style={{ margin: 0 }}>Odpovědí na tento e-mail napíšete pořadateli.</p>
-                        <p style={{ margin: 0 }}>
-                          Kontakt:{' '}
-                          <a href={`mailto:${brand.contact}`} style={{ color: MUTED }}>
-                            {brand.contact}
-                          </a>
-                        </p>
-                      </td>
-                    </tr>
+                    {brand.contact === null ? null : (
+                      <tr>
+                        <td
+                          style={{
+                            padding: '18px 32px',
+                            borderTop: `1px solid ${RULE}`,
+                            fontFamily: FONT,
+                            fontSize: '13px',
+                            lineHeight: '20px',
+                            color: MUTED,
+                          }}
+                        >
+                          <p style={{ margin: 0 }}>Odpovědí na tento e-mail napíšete pořadateli.</p>
+                          <p style={{ margin: 0 }}>
+                            Kontakt:{' '}
+                            <a href={`mailto:${brand.contact}`} style={{ color: MUTED }}>
+                              {brand.contact}
+                            </a>
+                          </p>
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </td>

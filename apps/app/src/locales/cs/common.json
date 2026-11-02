@@ -12,5 +12,17 @@
   "unknownHost": {
     "title": "Neznámá adresa",
     "description": "Tato adresa nepatří k {{productName}}. Stránky organizací najdete na adrese ve tvaru nazev-organizace.{{platformDomain}}."
+  },
+  "validation": {
+    "ico_invalid": "Zadejte platné IČO, osm číslic.",
+    "vat_id_invalid": "Zadejte DIČ ve tvaru CZ12345678, nebo pole nechte prázdné.",
+    "phone_invalid": "Zadejte telefon, například +420 123 456 789.",
+    "password_too_short": "Heslo musí mít alespoň 12 znaků.",
+    "password_too_long": "Heslo může mít nejvýše 200 znaků.",
+    "subdomain_malformed": "Adresa může obsahovat jen malá písmena bez diakritiky, číslice a pomlčky mezi nimi.",
+    "subdomain_reserved": "Tuto adresu nelze použít, vyberte jinou.",
+    "subdomain_taken": "Tuto adresu už používá jiná organizace.",
+    "email_taken": "S tímto e-mailem už účet existuje.",
+    "consent_required": "Bez souhlasu nelze organizaci založit."
   }
 }

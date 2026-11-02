@@ -8,10 +8,12 @@ export class MembershipEntity {
   public readonly id: string;
   public readonly organisationId: string;
   public readonly adminId: string;
+  public readonly owner: boolean;
 
   constructor(row: MembershipSelectModel) {
     this.id = row.id;
     this.organisationId = row.organisationId;
     this.adminId = row.adminId;
+    this.owner = row.owner;
   }
 }

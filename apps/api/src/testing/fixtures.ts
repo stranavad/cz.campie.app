@@ -10,8 +10,8 @@ import { FileService } from '../core/files/file.service.ts';
 import { SESSION_COOKIES } from '../core/sessions/session-cookie.ts';
 import { SessionService } from '../core/sessions/session.service.ts';
 import { AdminService } from '../modules/admins/admin/services/admin.service.ts';
-import { MembershipService } from '../modules/admins/membership/services/membership.service.ts';
 import { OrganisationService } from '../modules/organisations/organisation/services/organisation.service.ts';
+import { MembershipRepository } from '../repositories/admins/membership/membership.repository.ts';
 import {
   OrganisationRepository,
   type CreateOrganisation,
@@ -39,6 +39,10 @@ export async function createOrganisation(
       legalName: `Testovací spolek ${suffix} z. s.`,
       ico: '12345678',
       address: 'Smyšlená 1, 123 45 Testov',
+      statutoryRepresentative: 'Jana Testovací',
+      contactEmail: `kontakt-${suffix}@example.com`,
+      contactPhone: '+420 123 456 789',
+      billingEmail: `fakturace-${suffix}@example.com`,
       displayName: `Tábor ${suffix}`,
       ...options,
     }),
@@ -107,8 +111,11 @@ export async function createAdmin(
     app.get(AdminService).create({ email: `admin-${randomUUID()}@example.com` }),
   );
 
+  // Arranged without an audit entry, so a test's audit log holds only what the test itself did.
   for (const organisationId of memberOf) {
-    await unitOfWork.run(organisationId, () => app.get(MembershipService).create(admin.id));
+    await unitOfWork.run(organisationId, () =>
+      app.get(MembershipRepository).create({ adminId: admin.id, owner: false }),
+    );
   }
 
   const session = await unitOfWork.runForPlatform(() => app.get(SessionService).startAdmin(admin.id));

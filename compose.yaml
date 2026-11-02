@@ -122,6 +122,8 @@ services:
     environment:
       APP_ENV: local
       PLATFORM_DOMAIN: localhost
+      PRODUCT_NAME: Campie
+      PLATFORM_OPERATOR_EMAIL: operator@example.com
       DATABASE_ADAPTER: pg
       DATABASE_URL: postgres://campie_app:campie_app@postgres:5432/campie
       REDIS_URL: redis://redis:6379

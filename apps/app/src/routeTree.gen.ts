@@ -13,6 +13,7 @@ import { Route as OrganisationRouteRouteImport } from './routes/organisation/rou
 import { Route as PlatformRouteRouteImport } from './routes/platform/route'
 import { Route as OrganisationIndexRouteImport } from './routes/organisation/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
+import { Route as PlatformRegistraceOrganizaceRouteImport } from './routes/platform/registrace-organizace'
 import { Route as UnknownSplatRouteImport } from './routes/unknown/$'
 
 const OrganisationRouteRoute = OrganisationRouteRouteImport.update({
@@ -35,6 +36,12 @@ const PlatformIndexRoute = PlatformIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
+const PlatformRegistraceOrganizaceRoute =
+  PlatformRegistraceOrganizaceRouteImport.update({
+    id: '/registrace-organizace',
+    path: '/registrace-organizace',
+    getParentRoute: () => PlatformRouteRoute,
+  } as any)
 const UnknownSplatRoute = UnknownSplatRouteImport.update({
   id: '/unknown/$',
   path: '/unknown/$',
@@ -44,11 +51,13 @@ const UnknownSplatRoute = UnknownSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
+  '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
 }
 export interface FileRoutesByTo {
+  '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation': typeof OrganisationIndexRoute
   '/platform': typeof PlatformIndexRoute
@@ -57,6 +66,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
+  '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
@@ -66,15 +76,21 @@ export interface FileRouteTypes {
   fullPaths:
     | '/organisation'
     | '/platform'
+    | '/platform/registrace-organizace'
     | '/unknown/$'
     | '/organisation/'
     | '/platform/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/unknown/$' | '/organisation' | '/platform'
+  to:
+    | '/platform/registrace-organizace'
+    | '/unknown/$'
+    | '/organisation'
+    | '/platform'
   id:
     | '__root__'
     | '/organisation'
     | '/platform'
+    | '/platform/registrace-organizace'
     | '/unknown/$'
     | '/organisation/'
     | '/platform/'
@@ -116,6 +132,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformIndexRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
+    '/platform/registrace-organizace': {
+      id: '/platform/registrace-organizace'
+      path: '/registrace-organizace'
+      fullPath: '/platform/registrace-organizace'
+      preLoaderRoute: typeof PlatformRegistraceOrganizaceRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
     '/unknown/$': {
       id: '/unknown/$'
       path: '/unknown/$'
@@ -138,10 +161,12 @@ const OrganisationRouteRouteWithChildren =
   OrganisationRouteRoute._addFileChildren(OrganisationRouteRouteChildren)
 
 interface PlatformRouteRouteChildren {
+  PlatformRegistraceOrganizaceRoute: typeof PlatformRegistraceOrganizaceRoute
   PlatformIndexRoute: typeof PlatformIndexRoute
 }
 
 const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
+  PlatformRegistraceOrganizaceRoute: PlatformRegistraceOrganizaceRoute,
   PlatformIndexRoute: PlatformIndexRoute,
 }
 

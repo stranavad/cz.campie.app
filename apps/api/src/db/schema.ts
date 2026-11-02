@@ -1,8 +1,10 @@
 export { admins } from './admins/admins.ts';
 export { memberships } from './admins/memberships.ts';
 export { auditActorKind, auditEntries } from './audit/audit-entries.ts';
+export { camps } from './camps/camps.ts';
 export { fileContentType, files } from './files/files.ts';
 export { appRole } from './helpers/organisation.ts';
+export { legalAcceptances, legalDocument } from './organisations/legal-acceptances.ts';
 export { organisationKeys } from './organisations/organisation-keys.ts';
 export { organisations, organisationStatus } from './organisations/organisations.ts';
 export { adminSessions } from './sessions/admin-sessions.ts';

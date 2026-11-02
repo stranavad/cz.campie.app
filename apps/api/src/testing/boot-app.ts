@@ -13,6 +13,8 @@ const UNREACHABLE = 'http://127.0.0.1:1';
 export const PRODUCTION_ENV = {
   APP_ENV: 'production',
   PLATFORM_DOMAIN: 'campie.cz',
+  PRODUCT_NAME: 'Campie',
+  PLATFORM_OPERATOR_EMAIL: 'operator@example.com',
   DATABASE_ADAPTER: 'neon',
   DATABASE_URL: 'postgres://campie:campie@127.0.0.1:1/campie',
   REDIS_URL: 'redis://127.0.0.1:1',

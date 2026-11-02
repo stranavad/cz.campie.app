@@ -19,6 +19,7 @@ function actorOf(request: Request): Actor {
 
   switch (scope.access) {
     case 'admin':
+    case 'account':
       return { kind: 'admin', identity: scope.admin.id, ipAddress };
     case 'guardian':
       return { kind: 'guardian', identity: scope.guardian.email, ipAddress };
@@ -34,3 +35,14 @@ function actorOf(request: Request): Actor {
 export const RequestActor = createParamDecorator((_: unknown, context: ExecutionContext) =>
   actorOf(context.switchToHttp().getRequest<Request>()),
 );
+
+// The id of the admin whose session an admin or account request carries.
+export const RequestAdminId = createParamDecorator((_: unknown, context: ExecutionContext): string => {
+  const scope = requestScope(context.switchToHttp().getRequest<Request>());
+
+  if (scope.access !== 'admin' && scope.access !== 'account') {
+    throw new Error(`A ${scope.access} request has no admin`);
+  }
+
+  return scope.admin.id;
+});

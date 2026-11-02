@@ -20,6 +20,10 @@
     "./organisations": {
       "types": "./dist/organisations/index.d.ts",
       "default": "./dist/organisations/index.js"
+    },
+    "./admins": {
+      "types": "./dist/admins/index.d.ts",
+      "default": "./dist/admins/index.js"
     }
   },
   "scripts": {

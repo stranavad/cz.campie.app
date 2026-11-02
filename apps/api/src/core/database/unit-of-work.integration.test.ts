@@ -20,9 +20,12 @@ describe('unit of work', () => {
     await createNotesTable(database().ownerUrl);
     await withClient(database().ownerUrl, async (client) => {
       await client.query(
-        `INSERT INTO organisations (id, subdomain, legal_name, ico, address, display_name)
-         VALUES ($1, 'tabor-a', 'Spolek A z. s.', '12345678', 'Smyšlená 1, 123 45 Testov', 'Tábor A'),
-                ($2, 'tabor-b', 'Spolek B z. s.', '87654321', 'Smyšlená 2, 123 45 Testov', 'Tábor B')`,
+        `INSERT INTO organisations (id, subdomain, legal_name, ico, address, statutory_representative,
+                                    contact_email, contact_phone, billing_email, display_name)
+         VALUES ($1, 'tabor-a', 'Spolek A z. s.', '12345678', 'Smyšlená 1, 123 45 Testov', 'Jana Testovací',
+                 'a@example.com', '+420 123 456 789', 'a@example.com', 'Tábor A'),
+                ($2, 'tabor-b', 'Spolek B z. s.', '87654321', 'Smyšlená 2, 123 45 Testov', 'Petr Testovací',
+                 'b@example.com', '+420 123 456 789', 'b@example.com', 'Tábor B')`,
         [ORG_A, ORG_B],
       );
       await client.query(
@@ -104,6 +107,10 @@ describe('unit of work', () => {
           legalName: 'Spolek C z. s.',
           ico: '11223344',
           address: 'Smyšlená 3, 123 45 Testov',
+          statutoryRepresentative: 'Eva Testovací',
+          contactEmail: 'c@example.com',
+          contactPhone: '+420 123 456 789',
+          billingEmail: 'c@example.com',
           displayName: 'Tábor C',
         })
         .returning({ id: organisations.id, subdomain: organisations.subdomain });
@@ -113,6 +120,29 @@ describe('unit of work', () => {
       expect(() => unitOfWork.organisationId).toThrow('A platform unit of work has no Organisation');
     });
     expect(() => unitOfWork.db).toThrow('No unit of work is open');
+  });
+
+  it('enters an Organisation from a platform unit of work, committing or rolling back both as one', async () => {
+    const unitOfWork = app().get(UnitOfWork);
+    const enterAndWrite = (text: string, fail: boolean) =>
+      unitOfWork.runForPlatform(async () => {
+        await unitOfWork.enter(ORG_A);
+        await unitOfWork.db.insert(notes).values({ organisationId: unitOfWork.organisationId, text });
+        expect(await unitOfWork.db.select({ text: notes.text }).from(notes)).toEqual([{ text: 'note of A' }, { text }]);
+
+        if (fail) {
+          throw new Error('work failed');
+        }
+      });
+
+    await expect(enterAndWrite('rolled back', true)).rejects.toThrow('work failed');
+    await enterAndWrite('committed', false);
+
+    const texts = await unitOfWork.run(ORG_A, async () => unitOfWork.db.select({ text: notes.text }).from(notes));
+    expect(texts).toEqual([{ text: 'note of A' }, { text: 'committed' }]);
+    await expect(unitOfWork.run(ORG_A, () => unitOfWork.enter(ORG_B))).rejects.toThrow(
+      'Only a platform unit of work can enter an Organisation',
+    );
   });
 
   it('connects as a role that cannot bypass row-level security and owns no table', async () => {

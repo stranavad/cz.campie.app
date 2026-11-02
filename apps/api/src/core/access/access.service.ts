@@ -116,6 +116,24 @@ export class AccessService {
   }
 
   /**
+   * Resolve an admin request on the main host outside any Organisation, to the admin's own account.
+   * @param host the host the browser called
+   * @param token the admin session token, if the request carries one
+   * @throws {UnauthorizedException} when there is no live admin session
+   */
+  public async resolveAccount(host: string, token: string | null): Promise<RequestScope> {
+    this.requireMainHost(host);
+
+    const session = token === null ? null : await this.unitOfWork.runForPlatform(() => this.sessions.getAdmin(token));
+
+    if (session === null) {
+      throw new UnauthorizedException();
+    }
+
+    return { access: 'account', admin: { id: session.adminId } };
+  }
+
+  /**
    * Resolve a request on the main host outside any Organisation.
    * @param host the host the browser called
    */

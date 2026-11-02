@@ -18,6 +18,7 @@ import { PaymentGatewayModule } from './core/ports/payment-gateway/payment-gatew
 import { PdfRendererModule } from './core/ports/pdf-renderer/pdf-renderer.module.ts';
 import { SessionsModule } from './core/sessions/sessions.module.ts';
 import { AdminsModule } from './modules/admins/admins.module.ts';
+import { CampsModule } from './modules/camps/camps.module.ts';
 import { OrganisationsModule } from './modules/organisations/organisations.module.ts';
 import { RepositoriesModule } from './repositories/repositories.module.ts';
 
@@ -49,6 +50,7 @@ export class AppModule {
         HealthModule,
         OrganisationsModule,
         AdminsModule,
+        CampsModule,
       ],
     };
   }
