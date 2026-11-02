@@ -126,12 +126,33 @@ const keyProvider = z
         : { adapter: env.KEY_PROVIDER_ADAPTER },
   }));
 
+const positiveInteger = z.coerce.number().int().positive();
+
+// Failed admin logins: each email and each IP address may fail this often within the lockout period, and
+// then waits until its oldest failure is that long ago. An IP address is shared by an office or a camp's
+// wifi, so its limit is the higher one.
+const loginLimits = z
+  .object({
+    LOGIN_MAX_FAILURES_PER_ACCOUNT: positiveInteger,
+    LOGIN_MAX_FAILURES_PER_IP: positiveInteger,
+    LOGIN_LOCKOUT_MINUTES: positiveInteger,
+  })
+  .transform((env) => ({
+    loginLimits: {
+      perAccount: env.LOGIN_MAX_FAILURES_PER_ACCOUNT,
+      perIp: env.LOGIN_MAX_FAILURES_PER_IP,
+      lockoutMs: env.LOGIN_LOCKOUT_MINUTES * 60 * 1000,
+    },
+  }));
+
 export const envSchema = z
   .object({
     APP_ENV: z.enum(['local', 'test', 'production']),
     // The registrable domain the platform runs on: app.<domain> is the main host, every other single
     // label below it an Organisation's subdomain.
     PLATFORM_DOMAIN: z.string().regex(/^[a-z0-9-]+(\.[a-z0-9-]+)*$/, 'must be a bare lowercase hostname'),
+    // How emailed links reach the platform: https everywhere but the local stack.
+    PLATFORM_SCHEME: z.enum(['https', 'http']),
     // The platform's name: the sender of its own mail, and a subdomain no Organisation may take.
     PRODUCT_NAME: nonEmpty,
     // Where the Platform operator is told of new signups.
@@ -149,6 +170,7 @@ export const envSchema = z
   .and(pdfRenderer)
   .and(paymentGateway)
   .and(keyProvider)
+  .and(loginLimits)
   .superRefine((env, context) => {
     if (env.APP_ENV !== 'production') {
       return;
@@ -160,6 +182,10 @@ export const envSchema = z
         path: ['JOB_WORKER'],
         message: `${env.JOB_WORKER} never runs a job; production requires auto`,
       });
+    }
+
+    if (env.PLATFORM_SCHEME !== 'https') {
+      context.addIssue({ code: 'custom', path: ['PLATFORM_SCHEME'], message: 'production requires https' });
     }
 
     // The adapter each port must use in production; every other adapter is local or test only.

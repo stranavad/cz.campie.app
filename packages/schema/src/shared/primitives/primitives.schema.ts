@@ -11,11 +11,6 @@ export const phoneSchema = z
   .trim()
   .regex(/^\+?[0-9][0-9 ]{7,18}[0-9]$/, 'phone_invalid');
 
-export const PASSWORD_MIN_LENGTH = 12;
-
-// Long enough on its own; the strength check joins with the admin login.
-export const passwordSchema = z.string().min(PASSWORD_MIN_LENGTH, 'password_too_short').max(200, 'password_too_long');
-
 /**
  * A required single-line text, trimmed.
  * @param max the longest it may be

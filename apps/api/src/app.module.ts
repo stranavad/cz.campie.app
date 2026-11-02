@@ -16,6 +16,7 @@ import { KeyProviderModule } from './core/ports/key-provider/key-provider.module
 import { MailSenderModule } from './core/ports/mail-sender/mail-sender.module.ts';
 import { PaymentGatewayModule } from './core/ports/payment-gateway/payment-gateway.module.ts';
 import { PdfRendererModule } from './core/ports/pdf-renderer/pdf-renderer.module.ts';
+import { RateLimitsModule } from './core/rate-limits/rate-limits.module.ts';
 import { SessionsModule } from './core/sessions/sessions.module.ts';
 import { AdminsModule } from './modules/admins/admins.module.ts';
 import { CampsModule } from './modules/camps/camps.module.ts';
@@ -44,6 +45,7 @@ export class AppModule {
         SessionsModule,
         AccessModule,
         JobsModule,
+        RateLimitsModule,
         FilesModule,
         DocumentsModule,
         EmailsModule,

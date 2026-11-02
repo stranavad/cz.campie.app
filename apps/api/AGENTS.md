@@ -128,6 +128,7 @@ apps/api/src/
     files/                           encrypted file storage, uploads, download links
     jobs/                            job queue, runner and worker; jobs and handlers live with their feature
     passwords/                       admin password hashes (Argon2id, PHC strings)
+    rate-limits/                     attempt limits counted in Redis by the Clock (login failures)
     sessions/                        admin and guardian sessions, their cookies
     ports/<port>/                    <port>.port.ts, <technology>-<port>.adapter.ts, <port>.module.ts
     http/                            global pipe, @Endpoint decorators, exception filters

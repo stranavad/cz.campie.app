@@ -7,6 +7,7 @@ import { ACCESS_HEADERS } from '@repo/schema/shared';
 import type { Env } from '../core/config/env.schema.ts';
 import { UnitOfWork } from '../core/database/unit-of-work.ts';
 import { FileService } from '../core/files/file.service.ts';
+import { hashPassword } from '../core/passwords/password-hash.ts';
 import { SESSION_COOKIES } from '../core/sessions/session-cookie.ts';
 import { SessionService } from '../core/sessions/session.service.ts';
 import { AdminService } from '../modules/admins/admin/services/admin.service.ts';
@@ -99,16 +100,17 @@ export async function organisationHost(app: INestApplication, organisationId: st
  * Create an admin who is a member of the given Organisations, signed in, with the headers of a request
  * in one of them as that admin.
  * @param app the running test app
- * @param options the Organisations the admin is a member of
+ * @param options the Organisations the admin is a member of, and their password; none as if invited
  */
 export async function createAdmin(
   app: INestApplication,
-  { memberOf }: { memberOf: readonly string[] },
-): Promise<{ id: string; headers: (organisationId: string) => RequestHeaders }> {
+  { memberOf, password }: { memberOf: readonly string[]; password?: string },
+): Promise<{ id: string; email: string; headers: (organisationId: string) => RequestHeaders }> {
   const unitOfWork = app.get(UnitOfWork);
+  const passwordHash = password === undefined ? undefined : await hashPassword(password);
 
   const admin = await unitOfWork.runForPlatform(() =>
-    app.get(AdminService).create({ email: `admin-${randomUUID()}@example.com` }),
+    app.get(AdminService).create({ email: `admin-${randomUUID()}@example.com`, passwordHash }),
   );
 
   // Arranged without an audit entry, so a test's audit log holds only what the test itself did.
@@ -123,6 +125,7 @@ export async function createAdmin(
 
   return {
     id: admin.id,
+    email: admin.email,
     headers: (organisationId) => ({
       Host: host,
       Cookie: `${SESSION_COOKIES.admin}=${session.token}`,

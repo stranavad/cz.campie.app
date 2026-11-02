@@ -6,6 +6,7 @@ import { admins } from '../../../db/schema.ts';
 import { AdminEntity, type AdminInsertModel } from './admin.entity.ts';
 
 export type CreateAdmin = Omit<AdminInsertModel, 'id'>;
+export type UpdateAdmin = Partial<CreateAdmin>;
 
 @Injectable()
 export class AdminRepository {
@@ -37,6 +38,20 @@ export class AdminRepository {
   }
 
   /**
+   * Get the id and password hash of the admin an email belongs to, in one query, for the login only: the
+   * hash stays out of the entity so no other caller holds it.
+   * @param email the email, lowercase
+   */
+  public async getCredentialsByEmail(email: string): Promise<{ id: string; passwordHash: string | null } | null> {
+    const [row] = await this.unitOfWork.db
+      .select({ id: admins.id, passwordHash: admins.passwordHash })
+      .from(admins)
+      .where(eq(admins.email, email));
+
+    return row ?? null;
+  }
+
+  /**
    * Create an admin identity.
    * @param input the admin
    * @throws {Error} when the database returns no row
@@ -46,6 +61,22 @@ export class AdminRepository {
 
     if (row === undefined) {
       throw new Error('The admin was not created');
+    }
+
+    return new AdminEntity(row);
+  }
+
+  /**
+   * Update an admin identity.
+   * @param id admin id
+   * @param input the changed fields
+   * @throws {NotFoundException} when no admin has this id
+   */
+  public async update(id: string, input: UpdateAdmin): Promise<AdminEntity> {
+    const [row] = await this.unitOfWork.db.update(admins).set(input).where(eq(admins.id, id)).returning();
+
+    if (row === undefined) {
+      throw new NotFoundException();
     }
 
     return new AdminEntity(row);

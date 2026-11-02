@@ -22,12 +22,22 @@ export async function hashPassword(password: string): Promise<string> {
   return `$argon2id$v=19$m=${memory},t=${passes},p=${parallelism}$${unpadded(salt)}$${unpadded(hash)}`;
 }
 
+// Hashed against when there is no stored hash, so a login takes as long whether or not the account exists.
+const NO_HASH_SALT = Buffer.alloc(SALT_BYTES);
+
 /**
- * Tell whether a password is the one a stored hash was made from, in constant time.
+ * Tell whether a password is the one a stored hash was made from, in constant time. Without a stored
+ * hash (no such account, or one without a password) it spends the time of a hash and says no.
  * @param password the password as typed
- * @param stored the stored hash
+ * @param stored the stored hash, or null
  */
-export async function verifyPassword(password: string, stored: string): Promise<boolean> {
+export async function verifyPassword(password: string, stored: string | null): Promise<boolean> {
+  if (stored === null) {
+    await derive('argon2id', { message: password, nonce: NO_HASH_SALT, ...PARAMETERS });
+
+    return false;
+  }
+
   const match = FORMAT.exec(stored);
 
   if (match === null) {

@@ -2,6 +2,7 @@ import { getTableName } from 'drizzle-orm';
 
 import { admins } from './admins/admins.ts';
 import { memberships } from './admins/memberships.ts';
+import { passwordResets } from './admins/password-resets.ts';
 import { legalAcceptances } from './organisations/legal-acceptances.ts';
 import { organisationKeys } from './organisations/organisation-keys.ts';
 import { organisations } from './organisations/organisations.ts';
@@ -15,5 +16,6 @@ export const PLATFORM_TABLES: readonly string[] = [
   legalAcceptances,
   admins,
   memberships,
+  passwordResets,
   adminSessions,
 ].map((table) => getTableName(table));

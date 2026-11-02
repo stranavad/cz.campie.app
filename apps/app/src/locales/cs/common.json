@@ -3,7 +3,8 @@
     "poweredBy": "Přihlášky běží na {{productName}}"
   },
   "platformShell": {
-    "tagline": "Přihlášky na tábory"
+    "tagline": "Přihlášky na tábory",
+    "logOut": "Odhlásit se"
   },
   "notFound": {
     "title": "Stránka nenalezena",
@@ -19,6 +20,8 @@
     "phone_invalid": "Zadejte telefon, například +420 123 456 789.",
     "password_too_short": "Heslo musí mít alespoň 12 znaků.",
     "password_too_long": "Heslo může mít nejvýše 200 znaků.",
+    "password_too_simple": "Heslo je příliš jednoduché: použijte víc různých znaků a vyhněte se řadám jako 12345 nebo qwerty.",
+    "password_guessable": "Heslo nesmí obsahovat váš e-mail ani název {{productName}}.",
     "subdomain_malformed": "Adresa může obsahovat jen malá písmena bez diakritiky, číslice a pomlčky mezi nimi.",
     "subdomain_reserved": "Tuto adresu nelze použít, vyberte jinou.",
     "subdomain_taken": "Tuto adresu už používá jiná organizace.",

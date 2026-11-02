@@ -34,6 +34,22 @@ export class SessionService {
   }
 
   /**
+   * End the admin session a token opens.
+   * @param token the token from the cookie
+   */
+  public async endAdmin(token: string): Promise<void> {
+    await this.adminSessions.removeByTokenHash(hashSessionToken(token));
+  }
+
+  /**
+   * End every session of an admin, wherever they are signed in.
+   * @param adminId admin id
+   */
+  public async endAllAdmin(adminId: string): Promise<void> {
+    await this.adminSessions.removeByAdmin(adminId);
+  }
+
+  /**
    * Start a session for a guardian, bound to the current Organisation.
    * @param email the guardian's email
    */

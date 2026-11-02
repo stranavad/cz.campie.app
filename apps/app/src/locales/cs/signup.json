@@ -32,10 +32,10 @@
     "email": "Váš e-mail",
     "emailHint": "Tímto e-mailem se budete přihlašovat. Stanete se vlastníkem organizace.",
     "password": "Heslo",
-    "passwordHint_one": "Alespoň {{count}} znak.",
-    "passwordHint_few": "Alespoň {{count}} znaky.",
-    "passwordHint_many": "Alespoň {{count}} znaku.",
-    "passwordHint_other": "Alespoň {{count}} znaků."
+    "passwordHint_one": "Alespoň {{count}} znak. Heslo nesmí obsahovat váš e-mail.",
+    "passwordHint_few": "Alespoň {{count}} znaky. Heslo nesmí obsahovat váš e-mail.",
+    "passwordHint_many": "Alespoň {{count}} znaku. Heslo nesmí obsahovat váš e-mail.",
+    "passwordHint_other": "Alespoň {{count}} znaků. Heslo nesmí obsahovat váš e-mail."
   },
   "consent": {
     "legend": "Souhlasy",

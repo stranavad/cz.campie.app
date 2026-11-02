@@ -9,6 +9,7 @@ import {
   type SignUpOrganisationBody,
   type SubdomainErrorCode,
 } from '@repo/schema/organisations';
+import { passwordProblem, type PasswordErrorCode } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
@@ -88,14 +89,21 @@ export class OrganisationService {
    * @param ipAddress where the signer acts from
    * @throws {ConflictException} when the legal versions are not the current ones, or the email has an
    * admin account
+   * @throws {BadRequestException} when the password is too weak
    */
   public async signUp(body: SignUpOrganisationBody, ipAddress: string): Promise<IssuedSession> {
     if (LEGAL_DOCUMENTS.some((document) => body.acceptedVersions[document] !== CURRENT_LEGAL_VERSIONS[document])) {
       throw signUpError(ConflictException, 'legal_versions_outdated');
     }
 
-    // Before any insert, so the slow hash holds no lock on the subdomain or email a simultaneous signup waits for.
     const { campName, email, password, acceptedVersions, ...identity } = body;
+    const weakness = passwordProblem(password, { email, productName: this.productName });
+
+    if (weakness !== null) {
+      throw signUpError(BadRequestException, weakness);
+    }
+
+    // Before any insert, so the slow hash holds no lock on the subdomain or email a simultaneous signup waits for.
     const passwordHash = await hashPassword(password);
 
     await this.requireAvailableSubdomain(body.subdomain);
@@ -195,7 +203,7 @@ export class OrganisationService {
  */
 function signUpError(
   Exception: typeof BadRequestException | typeof ConflictException,
-  code: SignUpErrorCode | SubdomainErrorCode,
+  code: SignUpErrorCode | SubdomainErrorCode | PasswordErrorCode,
 ): BadRequestException | ConflictException {
   return new Exception({ code, message: `Signup refused: ${code}` });
 }

@@ -2,6 +2,7 @@ import { Outlet } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { config } from '@/config';
+import { LogOutButton } from '@/core/platform-shell/components/log-out-button';
 
 // Signup, the admin interface and the operator console on the main host.
 export function PlatformShell() {
@@ -13,6 +14,7 @@ export function PlatformShell() {
         <div className="mx-auto flex h-14 w-full max-w-5xl items-baseline gap-3 px-4 pt-4">
           <span className="text-lg font-semibold">{config.productName}</span>
           <span className="text-sm text-muted-foreground">{t('platformShell.tagline')}</span>
+          <LogOutButton />
         </div>
       </header>
       <main className="mx-auto w-full max-w-5xl flex-1 px-4">

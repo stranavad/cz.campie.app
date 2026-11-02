@@ -1,7 +1,7 @@
+import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { OrganisationStatusNotice } from '@/features/admin-home/components/organisation-status-notice';
-import { SignedOutNotice } from '@/features/admin-home/components/signed-out-notice';
 import { useAdminHome } from '@/features/admin-home/components/use-admin-home.hook';
 
 export function AdminHomePage() {
@@ -13,7 +13,7 @@ export function AdminHomePage() {
   }
 
   if (isSignedOut) {
-    return <SignedOutNotice />;
+    return <Navigate to="/platform/prihlaseni" replace />;
   }
 
   if (isError || organisation === undefined) {

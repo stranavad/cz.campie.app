@@ -20,7 +20,7 @@ const SIGNUP: Omit<SignUpOrganisationBody, 'vatId'> & { vatId: string } = {
   campName: 'Letní tábor Pokusník',
   subdomain: 'pokusnik',
   email: 'Jana.Testovaci@Example.com',
-  password: 'dlouhe-testovaci-heslo',
+  password: 'dlouhe heslo pro letni tabor',
   acceptedVersions: { ...CURRENT_LEGAL_VERSIONS },
 };
 
@@ -220,6 +220,17 @@ describe('organisation signup', () => {
 
     expect(response.status).toBe(409);
     expect(response.body).toMatchObject({ code: 'legal_versions_outdated' });
+    await expectNothingCreated();
+  });
+
+  it.each([
+    { password: '123456789012', code: 'password_too_simple' },
+    { password: 'jana.testovaci-2027', code: 'password_guessable' },
+  ])('rejects a weak password ($password) with its code', async ({ password, code }) => {
+    const response = await signUp({ password });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({ code });
     await expectNothingCreated();
   });
 

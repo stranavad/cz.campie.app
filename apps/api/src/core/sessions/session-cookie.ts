@@ -12,6 +12,8 @@ export const SESSION_COOKIES = {
 
 export type SessionKind = keyof typeof SESSION_COOKIES;
 
+const COOKIE_OPTIONS = { httpOnly: true, secure: true, sameSite: 'lax', path: '/' } as const;
+
 /**
  * Set the session cookie on a response.
  * @param response the response
@@ -19,13 +21,16 @@ export type SessionKind = keyof typeof SESSION_COOKIES;
  * @param session the issued session
  */
 export function writeSessionCookie(response: Response, kind: SessionKind, session: IssuedSession): void {
-  response.cookie(SESSION_COOKIES[kind], session.token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    path: '/',
-    expires: session.expiresAt,
-  });
+  response.cookie(SESSION_COOKIES[kind], session.token, { ...COOKIE_OPTIONS, expires: session.expiresAt });
+}
+
+/**
+ * Tell the browser to drop the session cookie.
+ * @param response the response
+ * @param kind whose session it was
+ */
+export function clearSessionCookie(response: Response, kind: SessionKind): void {
+  response.clearCookie(SESSION_COOKIES[kind], COOKIE_OPTIONS);
 }
 
 /**

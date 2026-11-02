@@ -1,11 +1,6 @@
 {
   "loading": "Načítáme…",
   "error": "Účet se nepodařilo načíst. Zkuste stránku načíst znovu.",
-  "signedOut": {
-    "title": "Nejste přihlášeni",
-    "description": "Přihlášení do administrace připravujeme. Novou organizaci můžete založit už teď.",
-    "signup": "Založit organizaci"
-  },
   "pending": {
     "title": "Organizace čeká na schválení",
     "description": "Organizaci {{name}} jsme založili. Přihlášky bude moci zveřejnit, jakmile ji schválí provozovatel {{productName}}.",

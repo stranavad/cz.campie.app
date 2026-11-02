@@ -1,0 +1,13 @@
+{
+  "title": "Přihlášení do administrace",
+  "email": "E-mail",
+  "password": "Heslo",
+  "submit": "Přihlásit se",
+  "forgottenPassword": "Zapomněli jste heslo?",
+  "signup": "Ještě nemáte účet? <a>Založte organizaci</a>.",
+  "failure": {
+    "credentials_invalid": "Nesprávný e-mail nebo heslo.",
+    "login_throttled": "Příliš mnoho neúspěšných pokusů. Zkuste to prosím později, nebo si obnovte heslo.",
+    "unexpected": "Přihlášení se nepodařilo. Zkuste to prosím znovu."
+  }
+}

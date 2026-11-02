@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { CURRENT_LEGAL_VERSIONS, SUBDOMAIN_ERROR_CODES } from '@repo/schema/organisations';
+import { PASSWORD_ERROR_CODES } from '@repo/schema/shared';
 
 import { useAppForm } from '@/core/form';
 import { useSignUpMutation } from '@/features/signup/api/signup.queries';
@@ -19,6 +20,10 @@ export type SignupFailure = 'legal_versions_outdated' | 'unexpected';
 function fieldOf(code: string | undefined): keyof SignupFormValues | null {
   if ((SUBDOMAIN_ERROR_CODES as readonly (string | undefined)[]).includes(code)) {
     return 'subdomain';
+  }
+
+  if ((PASSWORD_ERROR_CODES as readonly (string | undefined)[]).includes(code)) {
+    return 'password';
   }
 
   return code === 'email_taken' ? 'email' : null;

@@ -33,4 +33,20 @@ export class AdminSessionRepository {
 
     return new AdminSessionEntity(row);
   }
+
+  /**
+   * Remove the admin session a token opens, if there is one.
+   * @param tokenHash SHA-256 of the session token
+   */
+  public async removeByTokenHash(tokenHash: Buffer): Promise<void> {
+    await this.unitOfWork.db.delete(adminSessions).where(eq(adminSessions.tokenHash, tokenHash));
+  }
+
+  /**
+   * Remove every session of an admin.
+   * @param adminId admin id
+   */
+  public async removeByAdmin(adminId: string): Promise<void> {
+    await this.unitOfWork.db.delete(adminSessions).where(eq(adminSessions.adminId, adminId));
+  }
 }

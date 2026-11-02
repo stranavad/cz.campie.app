@@ -1,5 +1,6 @@
 import type { Server } from 'node:http';
 import type { INestApplication, LoggerService, Provider, Type } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { vi } from 'vitest';
 
@@ -13,6 +14,7 @@ const UNREACHABLE = 'http://127.0.0.1:1';
 export const PRODUCTION_ENV = {
   APP_ENV: 'production',
   PLATFORM_DOMAIN: 'campie.cz',
+  PLATFORM_SCHEME: 'https',
   PRODUCT_NAME: 'Campie',
   PLATFORM_OPERATOR_EMAIL: 'operator@example.com',
   DATABASE_ADAPTER: 'neon',
@@ -34,6 +36,9 @@ export const PRODUCTION_ENV = {
   PAYMENT_GATEWAY_ADAPTER: 'comgate',
   KEY_PROVIDER_ADAPTER: 'secret',
   MASTER_KEY: Buffer.alloc(32, 7).toString('base64'),
+  LOGIN_MAX_FAILURES_PER_ACCOUNT: '5',
+  LOGIN_MAX_FAILURES_PER_IP: '20',
+  LOGIN_LOCKOUT_MINUTES: '15',
 } satisfies Record<string, string>;
 
 const initialEnv = new Set(Object.keys(process.env));
@@ -65,7 +70,7 @@ export async function bootApp({
     controllers,
     providers,
   }).compile();
-  const app = setupApp(moduleRef.createNestApplication<INestApplication<Server>>({ logger }));
+  const app = setupApp(moduleRef.createNestApplication<NestExpressApplication<Server>>({ logger }));
   await app.init();
 
   return app;
