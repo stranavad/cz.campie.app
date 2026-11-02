@@ -24,7 +24,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 12  | Encrypted file service and short-lived download links           | ready-for-agent | 06, 09     |
 | 13  | Frontend scaffold: hostname mode, i18n, `/api` proxy            | done            | 02         |
 | 14  | Cookie sessions, CSRF, Organisation resolution                  | done            | 08, 13     |
-| 15  | PDF pipeline                                                    | ready-for-agent | 06, 11     |
+| 15  | PDF pipeline                                                    | done            | 06, 11     |
 | 16  | Email pipeline: React templates, two streams                    | ready-for-agent | 11         |
 
 ### E1 Organisations and identity - "a camp signs up, gets approved, invites colleagues"
