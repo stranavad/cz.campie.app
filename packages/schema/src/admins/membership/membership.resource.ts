@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 // The areas an admin's membership grants a level in; an Owner holds write in all of them.
 export const PERMISSION_AREAS = ['registrations', 'campSettings', 'health', 'oddily', 'vedouci'] as const;
 
@@ -18,3 +20,6 @@ export type Permissions = Readonly<Record<PermissionArea, PermissionLevel>>;
 export function levelIncludes(held: PermissionLevel, needed: PermissionLevel): boolean {
   return PERMISSION_LEVELS.indexOf(held) >= PERMISSION_LEVELS.indexOf(needed);
 }
+
+// A level in every area, as the API answers and an Owner sets them.
+export const permissionsSchema = z.record(z.enum(PERMISSION_AREAS), z.enum(PERMISSION_LEVELS));

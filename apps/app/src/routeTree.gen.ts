@@ -14,8 +14,10 @@ import { Route as PlatformRouteRouteImport } from './routes/platform/route'
 import { Route as OrganisationIndexRouteImport } from './routes/organisation/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
 import { Route as PlatformNoveHesloRouteImport } from './routes/platform/nove-heslo'
+import { Route as PlatformPozvankaRouteImport } from './routes/platform/pozvanka'
 import { Route as PlatformPrihlaseniRouteImport } from './routes/platform/prihlaseni'
 import { Route as PlatformRegistraceOrganizaceRouteImport } from './routes/platform/registrace-organizace'
+import { Route as PlatformUzivateleRouteImport } from './routes/platform/uzivatele'
 import { Route as PlatformZapomenuteHesloRouteImport } from './routes/platform/zapomenute-heslo'
 import { Route as UnknownSplatRouteImport } from './routes/unknown/$'
 
@@ -44,6 +46,11 @@ const PlatformNoveHesloRoute = PlatformNoveHesloRouteImport.update({
   path: '/nove-heslo',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
+const PlatformPozvankaRoute = PlatformPozvankaRouteImport.update({
+  id: '/pozvanka',
+  path: '/pozvanka',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
 const PlatformPrihlaseniRoute = PlatformPrihlaseniRouteImport.update({
   id: '/prihlaseni',
   path: '/prihlaseni',
@@ -55,6 +62,11 @@ const PlatformRegistraceOrganizaceRoute =
     path: '/registrace-organizace',
     getParentRoute: () => PlatformRouteRoute,
   } as any)
+const PlatformUzivateleRoute = PlatformUzivateleRouteImport.update({
+  id: '/uzivatele',
+  path: '/uzivatele',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
 const PlatformZapomenuteHesloRoute = PlatformZapomenuteHesloRouteImport.update({
   id: '/zapomenute-heslo',
   path: '/zapomenute-heslo',
@@ -70,8 +82,10 @@ export interface FileRoutesByFullPath {
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
+  '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
   '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
+  '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation/': typeof OrganisationIndexRoute
@@ -79,8 +93,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
+  '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
   '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
+  '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation': typeof OrganisationIndexRoute
@@ -91,8 +107,10 @@ export interface FileRoutesById {
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
+  '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
   '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
+  '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation/': typeof OrganisationIndexRoute
@@ -104,8 +122,10 @@ export interface FileRouteTypes {
     | '/organisation'
     | '/platform'
     | '/platform/nove-heslo'
+    | '/platform/pozvanka'
     | '/platform/prihlaseni'
     | '/platform/registrace-organizace'
+    | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
     | '/unknown/$'
     | '/organisation/'
@@ -113,8 +133,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/platform/nove-heslo'
+    | '/platform/pozvanka'
     | '/platform/prihlaseni'
     | '/platform/registrace-organizace'
+    | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
     | '/unknown/$'
     | '/organisation'
@@ -124,8 +146,10 @@ export interface FileRouteTypes {
     | '/organisation'
     | '/platform'
     | '/platform/nove-heslo'
+    | '/platform/pozvanka'
     | '/platform/prihlaseni'
     | '/platform/registrace-organizace'
+    | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
     | '/unknown/$'
     | '/organisation/'
@@ -175,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformNoveHesloRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
+    '/platform/pozvanka': {
+      id: '/platform/pozvanka'
+      path: '/pozvanka'
+      fullPath: '/platform/pozvanka'
+      preLoaderRoute: typeof PlatformPozvankaRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
     '/platform/prihlaseni': {
       id: '/platform/prihlaseni'
       path: '/prihlaseni'
@@ -187,6 +218,13 @@ declare module '@tanstack/react-router' {
       path: '/registrace-organizace'
       fullPath: '/platform/registrace-organizace'
       preLoaderRoute: typeof PlatformRegistraceOrganizaceRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/uzivatele': {
+      id: '/platform/uzivatele'
+      path: '/uzivatele'
+      fullPath: '/platform/uzivatele'
+      preLoaderRoute: typeof PlatformUzivateleRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
     '/platform/zapomenute-heslo': {
@@ -219,16 +257,20 @@ const OrganisationRouteRouteWithChildren =
 
 interface PlatformRouteRouteChildren {
   PlatformNoveHesloRoute: typeof PlatformNoveHesloRoute
+  PlatformPozvankaRoute: typeof PlatformPozvankaRoute
   PlatformPrihlaseniRoute: typeof PlatformPrihlaseniRoute
   PlatformRegistraceOrganizaceRoute: typeof PlatformRegistraceOrganizaceRoute
+  PlatformUzivateleRoute: typeof PlatformUzivateleRoute
   PlatformZapomenuteHesloRoute: typeof PlatformZapomenuteHesloRoute
   PlatformIndexRoute: typeof PlatformIndexRoute
 }
 
 const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformNoveHesloRoute: PlatformNoveHesloRoute,
+  PlatformPozvankaRoute: PlatformPozvankaRoute,
   PlatformPrihlaseniRoute: PlatformPrihlaseniRoute,
   PlatformRegistraceOrganizaceRoute: PlatformRegistraceOrganizaceRoute,
+  PlatformUzivateleRoute: PlatformUzivateleRoute,
   PlatformZapomenuteHesloRoute: PlatformZapomenuteHesloRoute,
   PlatformIndexRoute: PlatformIndexRoute,
 }

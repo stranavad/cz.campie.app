@@ -26,6 +26,7 @@
     "subdomain_reserved": "Tuto adresu nelze použít, vyberte jinou.",
     "subdomain_taken": "Tuto adresu už používá jiná organizace.",
     "email_taken": "S tímto e-mailem už účet existuje.",
-    "consent_required": "Bez souhlasu nelze organizaci založit."
+    "consent_required": "Bez souhlasu nelze organizaci založit.",
+    "already_member": "Tento e-mail už patří správci organizace."
   }
 }

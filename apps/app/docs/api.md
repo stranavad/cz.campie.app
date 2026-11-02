@@ -8,8 +8,9 @@ Server data flows through three layers: `apiClient` (`src/lib/api/`, a thin `fet
 - **Components only see query hooks**, never the client (lint: only `*.service.ts` imports `apiClient`), so caching, loading and invalidation are handled in one place.
 - **Every response is validated** against its contract schema, and the client only ever throws `ApiError` subclasses. A backend drift shows up as a clear error at the boundary, not as `undefined` deep in the UI.
 - **The contract is the source of truth**: a new or changed endpoint starts in `@repo/schema/<module>`. Frontend-only rules extend it inside the feature rather than redefining it.
-- **Concerns of every request** live in `src/lib/api/request-hooks.ts`, not in individual calls: the CSRF header on mutations, the Organisation header on admin requests (ADR-0001), handling of an expired session.
-- `apiClient.request(endpoint, { params, query, body, signal })` builds the URL, types the call from the endpoint and validates the response.
+- **Concerns of every request** live in `src/lib/api/request-hooks.ts`, not in individual calls: the CSRF header on mutations, handling of an expired session.
+- **An admin request names its Organisation** with the `organisationId` request option (ADR-0001), from the current membership (`useCurrentMembership()` in `core/account`). Put it in the query key too, so each Organisation has its own cache.
+- `apiClient.request(endpoint, { params, query, body, signal, organisationId })` builds the URL, types the call from the endpoint and validates the response.
 - `QueryClient` defaults sit in `src/core/application/query-client.ts`; tune per query only when a case needs it.
 
 ## Feature API

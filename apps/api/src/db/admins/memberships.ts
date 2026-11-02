@@ -10,6 +10,16 @@ export const permissionLevel = p.pgEnum('permission_level', PERMISSION_LEVELS);
 
 const level = () => permissionLevel().notNull().default('none');
 
+// A level per permission area, none by default; held by a membership, and by an invitation until it
+// becomes one.
+export const permissionColumns = () => ({
+  registrations: level(),
+  campSettings: level(),
+  health: level(),
+  oddily: level(),
+  vedouci: level(),
+});
+
 // An Organisation always keeps an Owner: a deferred trigger refuses a commit that demotes or removes the
 // last one, unless the Organisation itself is gone.
 export const memberships = p.snakeCase.table(
@@ -25,11 +35,7 @@ export const memberships = p.snakeCase.table(
       .notNull()
       .references(() => admins.id, { onDelete: 'cascade' }),
     owner: p.boolean().notNull().default(false),
-    registrations: level(),
-    campSettings: level(),
-    health: level(),
-    oddily: level(),
-    vedouci: level(),
+    ...permissionColumns(),
   },
   (table) => [p.unique().on(table.organisationId, table.adminId)],
 );

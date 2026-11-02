@@ -1,0 +1,51 @@
+{
+  "title": "Uživatelé",
+  "intro": "Správci organizace a jejich oprávnění. Změna platí od jejich dalšího kroku v aplikaci.",
+  "loading": "Načítáme…",
+  "error": "Uživatele se nepodařilo načíst. Zkuste stránku načíst znovu.",
+  "notOwner": "Uživatele spravují jen vlastníci organizace.",
+  "backHome": "Zpět na přehled",
+  "areas": {
+    "registrations": "Přihlášky",
+    "campSettings": "Nastavení táborů",
+    "health": "Zdravotní údaje",
+    "oddily": "Oddíly",
+    "vedouci": "Vedoucí"
+  },
+  "levels": {
+    "none": "Bez přístupu",
+    "read": "Čtení",
+    "write": "Úpravy"
+  },
+  "members": {
+    "title": "Správci",
+    "owner": "Vlastník",
+    "ownerHasAll": "Vlastník má přístup ke všemu a spravuje uživatele.",
+    "promote": "Udělat vlastníkem",
+    "demote": "Odebrat roli vlastníka",
+    "remove": "Odebrat ze správy",
+    "confirmRemove": "Opravdu odebrat",
+    "cancel": "Zrušit",
+    "failure": {
+      "last_owner": "Organizace musí mít alespoň jednoho vlastníka.",
+      "unexpected": "Změnu se nepodařilo uložit. Zkuste to prosím znovu."
+    }
+  },
+  "invitations": {
+    "title": "Čekající pozvánky",
+    "empty": "Žádná pozvánka nečeká na přijetí.",
+    "expires": "Platí do {{date}}",
+    "revoke": "Zrušit pozvánku",
+    "failure": "Pozvánku se nepodařilo zrušit. Zkuste to prosím znovu.",
+    "expired": "Platnost vypršela, pošlete pozvánku znovu"
+  },
+  "invite": {
+    "title": "Pozvat správce",
+    "intro": "Pozvaný dostane e-mail s odkazem. Bez účtu si nastaví heslo, s účtem se přidá pod svým stávajícím přihlášením.",
+    "email": "E-mail",
+    "permissions": "Oprávnění",
+    "submit": "Poslat pozvánku",
+    "sent": "Pozvánku jsme poslali na {{email}}.",
+    "failure": "Pozvánku se nepodařilo odeslat. Zkuste to prosím znovu."
+  }
+}

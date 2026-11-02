@@ -1,6 +1,7 @@
 import type { z } from 'zod';
 
 import {
+  ACCESS_HEADERS,
   endpointPath,
   type EndpointDefinition,
   type EndpointRequest,
@@ -17,6 +18,8 @@ const TIMEOUT_MS = 30_000;
 export type RequestOptions<Endpoint extends EndpointDefinition> = EndpointRequest<Endpoint> & {
   // Pass TanStack Query's signal, so an unmounted query cancels its request.
   signal?: AbortSignal;
+  // The Organisation an admin request acts in; the API checks it against the admin's memberships.
+  organisationId?: string;
 };
 
 type QueryValue = string | number | boolean | null | undefined;
@@ -26,6 +29,7 @@ interface UntypedOptions {
   query?: Record<string, QueryValue | QueryValue[]>;
   body?: unknown;
   signal?: AbortSignal;
+  organisationId?: string;
 }
 
 // Same origin only: the proxy forwards /api to the API with the host the browser called.
@@ -57,13 +61,20 @@ async function readBody(response: Response): Promise<unknown> {
   }
 }
 
-async function send(endpoint: EndpointDefinition, { params, query, body, signal }: UntypedOptions): Promise<unknown> {
+async function send(
+  endpoint: EndpointDefinition,
+  { params, query, body, signal, organisationId }: UntypedOptions,
+): Promise<unknown> {
   const path = endpointPath(endpoint, params);
   const timeout = AbortSignal.timeout(TIMEOUT_MS);
   const headers = new Headers({ Accept: 'application/json' });
 
   if (body !== undefined) {
     headers.set('Content-Type', 'application/json');
+  }
+
+  if (organisationId !== undefined) {
+    headers.set(ACCESS_HEADERS.organisation, organisationId);
   }
 
   const request = onRequest(

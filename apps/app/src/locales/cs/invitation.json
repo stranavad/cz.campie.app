@@ -1,0 +1,25 @@
+{
+  "title": "Pozvánka do správy organizace",
+  "loading": "Načítáme pozvánku…",
+  "error": "Pozvánku se nepodařilo načíst. Zkuste stránku načíst znovu.",
+  "intro": "Organizace: {{organisation}}. Pozvánka platí pro e-mail {{email}}.",
+  "accept": "Přijmout pozvánku",
+  "newAccount": {
+    "intro": "Nastavte si heslo, kterým se budete přihlašovat.",
+    "password": "Heslo",
+    "passwordHint_one": "Alespoň {{count}} znak. Heslo nesmí obsahovat váš e-mail.",
+    "passwordHint_few": "Alespoň {{count}} znaky. Heslo nesmí obsahovat váš e-mail.",
+    "passwordHint_many": "Alespoň {{count}} znaku. Heslo nesmí obsahovat váš e-mail.",
+    "passwordHint_other": "Alespoň {{count}} znaků. Heslo nesmí obsahovat váš e-mail."
+  },
+  "existingAccount": {
+    "intro": "K tomuto e-mailu už účet máte. Po přijetí se přihlásíte svým stávajícím heslem.",
+    "done": "Pozvánka je přijatá.",
+    "logIn": "Přihlásit se",
+    "continue": "Pokračovat do správy"
+  },
+  "failure": {
+    "invitation_invalid": "Odkaz už neplatí: pozvánka byla přijata, zrušena, nebo vypršela. Požádejte vlastníka organizace o novou.",
+    "unexpected": "Pozvánku se nepodařilo přijmout. Zkuste to prosím znovu."
+  }
+}

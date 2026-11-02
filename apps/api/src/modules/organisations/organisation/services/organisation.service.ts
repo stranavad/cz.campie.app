@@ -14,7 +14,7 @@ import { passwordProblem, type PasswordErrorCode } from '@repo/schema/shared';
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
 import type { Env } from '../../../../core/config/env.schema.ts';
-import { violatedUniqueConstraint } from '../../../../core/database/unique-violation.ts';
+import { violatedConstraint } from '../../../../core/database/constraint-violation.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
 import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
 import { JobQueue } from '../../../../core/jobs/job-queue.ts';
@@ -171,7 +171,7 @@ export class OrganisationService {
     try {
       return { organisation: await this.create(organisation), admin: await this.admins.create(admin) };
     } catch (error) {
-      const code = TAKEN_BY_CONSTRAINT[violatedUniqueConstraint(error) ?? ''];
+      const code = TAKEN_BY_CONSTRAINT[violatedConstraint(error, 'unique') ?? ''];
 
       throw code === undefined ? error : signUpError(ConflictException, code);
     }

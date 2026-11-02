@@ -1,11 +1,13 @@
 import adminHome from '@/locales/cs/admin-home.json';
 import common from '@/locales/cs/common.json';
+import invitation from '@/locales/cs/invitation.json';
 import login from '@/locales/cs/login.json';
+import members from '@/locales/cs/members.json';
 import passwordReset from '@/locales/cs/password-reset.json';
 import signup from '@/locales/cs/signup.json';
 
 export const defaultNamespace = 'common';
 
 export const resources = {
-  cs: { common, signup, adminHome, login, passwordReset },
+  cs: { common, signup, adminHome, login, passwordReset, members, invitation },
 };
