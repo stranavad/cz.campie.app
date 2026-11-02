@@ -5,6 +5,7 @@ import { createElement, type ReactElement } from 'react';
 
 import { DEFAULT_ACCENT_COLOUR } from '@repo/schema/organisations';
 
+import type { OrganisationEntity } from '../../repositories/organisations/organisation/organisation.entity.ts';
 import { OrganisationRepository } from '../../repositories/organisations/organisation/organisation.repository.ts';
 import type { Env } from '../config/env.schema.ts';
 import { UnitOfWork } from '../database/unit-of-work.ts';
@@ -72,10 +73,7 @@ export class EmailService {
   ): Promise<void> {
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
 
-    // Not sent at all rather than failed: a retry would not change the outcome.
-    if (organisation.status === 'suspended') {
-      this.logger.warn(`Email not sent: Organisation ${organisation.id} is suspended`);
-
+    if (this.skippedForSuspension(organisation)) {
       return;
     }
 
@@ -89,7 +87,9 @@ export class EmailService {
   }
 
   /**
-   * Render an email of the platform itself, outside any Organisation, and send it under the product's name.
+   * Render an email of the platform itself and send it under the product's name. Sent from an
+   * Organisation's unit of work, about that Organisation (an invitation, an Owner change), it is skipped
+   * like the Organisation's own mail while the Organisation is suspended.
    * @param template the email's template
    * @param props what the template shows besides the brand
    * @param options the recipients
@@ -99,6 +99,13 @@ export class EmailService {
     props: Props,
     { to }: { readonly to: readonly string[] },
   ): Promise<void> {
+    if (
+      this.unitOfWork.inOrganisation &&
+      this.skippedForSuspension(await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId))
+    ) {
+      return;
+    }
+
     const name = this.config.get('PRODUCT_NAME', { infer: true });
 
     await this.deliver(
@@ -107,6 +114,21 @@ export class EmailService {
       { name, contact: null, accentColour: DEFAULT_ACCENT_COLOUR },
       { to, attachments: [] },
     );
+  }
+
+  /**
+   * Tell whether an Organisation's mail is skipped because it is suspended: not sent at all rather than
+   * failed, since a retry would not change the outcome.
+   * @param organisation the Organisation the mail is about
+   */
+  private skippedForSuspension(organisation: OrganisationEntity): boolean {
+    if (organisation.status !== 'suspended') {
+      return false;
+    }
+
+    this.logger.warn(`Email not sent: Organisation ${organisation.id} is suspended`);
+
+    return true;
   }
 
   /**

@@ -89,6 +89,9 @@ describe('organisation signup', () => {
     expect(account.status).toBe(200);
     expect(account.body).toEqual({
       email: 'jana.testovaci@example.com',
+      operator: false,
+      totpEnabled: false,
+      secondFactor: false,
       memberships: [
         {
           owner: true,

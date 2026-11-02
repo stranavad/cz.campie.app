@@ -15,3 +15,7 @@ export * from './password-reset/request-password-reset.contract.ts';
 export * from './password-reset/reset-password.contract.ts';
 export * from './session/log-in.contract.ts';
 export * from './session/log-out.contract.ts';
+export * from './totp/totp.resource.ts';
+export * from './totp/start-totp-enrolment.contract.ts';
+export * from './totp/confirm-totp-enrolment.contract.ts';
+export * from './totp/verify-totp.contract.ts';

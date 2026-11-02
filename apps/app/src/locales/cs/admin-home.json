@@ -15,5 +15,6 @@
     "description": "Stránky organizace {{name}} jsou nedostupné a neodcházejí z ní žádné e-maily. Ozvěte se prosím provozovateli {{productName}}."
   },
   "manageUsers": "Spravovat uživatele",
+  "openConsole": "Konzole provozovatele",
   "noMembership": "Nejste správcem žádné organizace. Pokud vás má některá pozvat, ozvěte se jejímu vlastníkovi."
 }

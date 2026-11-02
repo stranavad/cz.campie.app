@@ -127,18 +127,28 @@ export async function createAdmin(
     );
   }
 
-  const session = await unitOfWork.runForPlatform(() => app.get(SessionService).startAdmin(admin.id));
-  const host = mainHost(app);
+  const headers = await signIn(app, admin.id);
 
   return {
     id: admin.id,
     email: admin.email,
-    headers: (organisationId) => ({
-      Host: host,
-      Cookie: `${SESSION_COOKIES.admin}=${session.token}`,
-      [ACCESS_HEADERS.organisation]: organisationId,
-      [ACCESS_HEADERS.csrf]: '1',
-    }),
+    headers: (organisationId) => ({ ...headers, [ACCESS_HEADERS.organisation]: organisationId }),
+  };
+}
+
+/**
+ * Start a session for an existing admin, with the headers of a request on the main host outside any
+ * Organisation as that admin.
+ * @param app the running test app
+ * @param adminId the admin
+ */
+export async function signIn(app: INestApplication, adminId: string): Promise<RequestHeaders> {
+  const session = await app.get(UnitOfWork).runForPlatform(() => app.get(SessionService).startAdmin(adminId));
+
+  return {
+    Host: mainHost(app),
+    Cookie: `${SESSION_COOKIES.admin}=${session.token}`,
+    [ACCESS_HEADERS.csrf]: '1',
   };
 }
 

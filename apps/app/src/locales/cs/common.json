@@ -1,6 +1,10 @@
 {
   "organisationShell": {
-    "poweredBy": "Přihlášky běží na {{productName}}"
+    "poweredBy": "Přihlášky běží na {{productName}}",
+    "suspended": {
+      "title": "Stránky jsou pozastavené",
+      "description": "Provozovatel {{productName}} stránky této organizace pozastavil. Přihlášky ani přístup pro rodiče teď nejsou k dispozici."
+    }
   },
   "platformShell": {
     "tagline": "Přihlášky na tábory",
@@ -27,6 +31,7 @@
     "subdomain_taken": "Tuto adresu už používá jiná organizace.",
     "email_taken": "S tímto e-mailem už účet existuje.",
     "consent_required": "Bez souhlasu nelze organizaci založit.",
-    "already_member": "Tento e-mail už patří správci organizace."
+    "already_member": "Tento e-mail už patří správci organizace.",
+    "totp_code_malformed": "Zadejte šest číslic z ověřovací aplikace."
   }
 }

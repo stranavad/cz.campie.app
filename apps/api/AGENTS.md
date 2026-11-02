@@ -15,6 +15,7 @@ In `apps/api`, or from the root `pnpm --filter api <script>`.
 | `pnpm dev`         | `tsc --watch` + `node --watch dist/main.js`        |
 | `pnpm build`       | `tsc` into `dist/`                                 |
 | `pnpm start`       | run the last build                                 |
+| `pnpm operator`    | the operator command line, on the last build       |
 | `pnpm check-types` | TypeScript                                         |
 | `pnpm lint`        | Oxlint, type-aware, warnings fail, layer rules     |
 | `pnpm test`        | Vitest once                                        |
@@ -52,6 +53,7 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 - The unit of work is opened by request infrastructure (see Access and sessions) or by a job from its payload, never by a controller or repository.
 - **The Organisation never comes from client input.** Inserts take `organisationId` from the unit of work; a body or query carrying it is a bug.
 - **RLS is the second line, not the first.** Services still check permissions; RLS stops whatever a missed check lets through. A row of another Organisation is invisible, so lookups by its id end as not-found.
+- `UnitOfWork.runForOperator(work)` is the operator console's: a platform unit of work that can never `enter` an Organisation, so no route of the console reaches an Organisation's own data, by mistake or otherwise.
 - Platform-level tables (Organisations themselves, admin identities, operator records) are listed in `db/platform-tables.ts` and have no policy: every unit of work reaches them, so their services decide who may read or change what. A platform table the API must not change in some way revokes that privilege in a custom migration.
 - Views over Organisation tables are declared `security_invoker`, or they read as their owner, past RLS; the tenancy check rejects any other view and every materialized view.
 
@@ -59,16 +61,19 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 
 `core/access/` resolves every request before its route runs; `core/sessions/` (`SessionsModule`, global) issues and reads the sessions and their cookies.
 
-- **`@Access(kind)` on every controller** says who may call it and where its Organisation comes from: `public` (an Organisation's subdomain), `guardian` (a guardian session of the subdomain's Organisation), `admin` (an admin session on the main host, the Organisation named in the `x-organisation-id` header and checked against the admin's memberships), `account` (an admin session on the main host outside any Organisation: the admin's own account and memberships), `platform` (the main host, outside any Organisation: signup, login), `gateway` (the Organisation in the `:organisationId` path parameter; the route checks the gateway's signature) and `unscoped` (the route opens its own unit of work: health, download links). A controller with mixed access splits in two.
+- **`@Access(kind)` on every controller** says who may call it and where its Organisation comes from: `public` (an Organisation's subdomain), `guardian` (a guardian session of the subdomain's Organisation), `admin` (an admin session on the main host, the Organisation named in the `x-organisation-id` header and checked against the admin's memberships), `account` (an admin session on the main host outside any Organisation: the admin's own account and memberships), `operator` (the Platform operator's console on the main host: an admin session that passed a TOTP code, of an admin with the operator flag, checked on every request; it runs in `runForOperator`), `platform` (the main host, outside any Organisation: signup, login), `gateway` (the Organisation in the `:organisationId` path parameter; the route checks the gateway's signature) and `unscoped` (the route opens its own unit of work: health, download links). A controller with mixed access splits in two.
 - The host is the one the frontend's proxy forwarded (`X-Forwarded-Host`, last entry, since a proxy appends to what the client sent), else `Host`. `app.<PLATFORM_DOMAIN>` is the main host, `<subdomain>.<PLATFORM_DOMAIN>` an Organisation. A public or guardian request on any other host, or on a subdomain no Organisation has, answers 404 `organisation_unknown`; an admin or platform request off the main host a plain 404.
 - The global `AccessGuard` refuses a mutating request (not GET, HEAD, OPTIONS) without the `x-csrf-protection` header with 403 `csrf_header_missing`, except `gateway`. A missing or expired session is 401; an admin naming an Organisation they are no member of, or none, is 403. Header names and error codes are in `@repo/schema/shared` (`ACCESS_HEADERS`, `ACCESS_ERROR_CODES`).
-- The global `UnitOfWorkInterceptor` then runs the route in the resolved Organisation's unit of work (a platform one for `platform` and `account`), so the route commits or rolls back as one. Route interceptors run inside it, an upload's parsing included.
+- The global `UnitOfWorkInterceptor` then runs the route in the resolved Organisation's unit of work (a platform one for `platform` and `account`, the console's for `operator`), so the route commits or rolls back as one. Route interceptors run inside it, an upload's parsing included.
 - **`@Requires(...)` on every admin route** (or its controller) says what the membership must hold: `@Requires('registrations', 'read')` for a level in a permission area (`PERMISSION_AREAS` and `PERMISSION_LEVELS` in `@repo/schema/admins`, write including read), `@Requires('owner')` for organisation settings, users, payment keys, support access and erasure, `@Requires('member')` for what every member may see. An Owner meets every requirement. The `AccessGuard` refuses a request below it with 403 `permission_denied`; the app refuses to boot with an admin route that declares none, or with one on a route that is not admin. Permissions come from the membership in the request's Organisation only.
 - Data a route shows by permission, health data above all, depends on `@RequestMember()`: `allows(member, { area: 'health', level: 'read' })` decides whether it is in the response at all. Without Health read no health data leaves the server, exports included.
 - An Organisation always keeps an Owner: a deferred trigger on `memberships` refuses to commit a demotion or removal of the last one (`memberships_keep_an_owner`, a check violation), serialised per Organisation, so it holds even when two Owners demote each other at once. A service that changes memberships calls `MembershipRepository.keepsAnOwner()` right after, which runs the check at once, and answers 409 `last_owner` instead of failing at commit.
 - Memberships and invitations are platform tables, so their repositories keep every query of a member or an invitation to the current Organisation themselves; only an invitation's lookup by its link's token reaches across Organisations.
-- `@RequestActor()` gives the admin (identity: admin id) or guardian (identity: email) making the request, for permission checks and audit; `@RequestAdminId()` the admin's id on an admin or account request.
+- `@RequestActor()` gives the admin or Platform operator (identity: admin id) or guardian (identity: email) making the request, for permission checks and audit; `@RequestAdminId()` the admin's id on an admin or account request; `@RequestAdminSession()` the session of an account request (its id, and whether it passed a TOTP code).
+- A suspended Organisation's subdomain is offline: public and guardian requests on it answer 403 `organisation_suspended`.
 - Sessions live in the database; the cookie carries a random token and only its SHA-256 is stored. `SessionService.startAdmin(adminId)` / `startGuardian(email)` (in the guardian's Organisation's unit of work) return the token, and `writeSessionCookie(response, kind, session)` sets it: `__Host-admin_session` / `__Host-guardian_session`, httpOnly, Secure, SameSite=Lax, Path=/, no Domain, so it stays on the exact host. Admin sessions last 12 hours, guardian sessions 7 days, not extended by use.
+- The Platform operator is an admin in the `operators` table, which the API's role may only read: `pnpm operator grant|revoke|reset-totp <email>` (`src/cli/`) writes it as the tables' owner (`MIGRATION_DATABASE_URL`), so no route can make anyone the operator. `grant` creates a missing account without a password, set through the forgotten password page.
+- TOTP (`core/totp/`, RFC 6238, 6 digits, 30 s, one step of drift either way): the secret is sealed with the master key for its admin (`EncryptionService.sealPlatformSecret`), a code's time step is used up so no code works twice, and wrong codes count against `LOGIN_MAX_FAILURES_PER_ACCOUNT` within `LOGIN_LOCKOUT_MINUTES`. Passing a code replaces the admin session by a new one with `second_factor`, under a new token and until the old one's expiry, so a cookie copied before the code gains nothing. Only the operator sets TOTP up so far.
 - Guardian sessions are an Organisation table, looked up in the host's Organisation, so another Organisation's session is invisible; the guard also compares the session's Organisation with the host's. Admins, memberships and admin sessions are platform tables: an admin identity is global, and the membership decides the Organisation before one is current.
 
 ## Encryption
@@ -84,6 +89,7 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 - The entry keeps old and new values of plain fields and only the names of encrypted ones: any byte value is treated as encrypted, and counts as changed whenever its ciphertext differs, so re-encrypt only values that changed.
 - `audit_entries` is append-only: the application role may insert and read but not update, delete or truncate. Actor identity, IP address and changes are nullable so erasure can scrub an entry without removing it.
 - The `Actor` (kind, identity, IP address; `system` has neither) is passed explicitly by the caller; services need it for permission checks anyway.
+- What happens above any one Organisation (the operator console's approvals, rejections, subdomain changes and suspensions, the operator command line) goes to the platform's log with `AuditService.recordForPlatform(actor, event)`: `platform_audit_entries`, append-only too, a platform table, since a rejected Organisation's own log is deleted with it.
 
 ## Jobs
 
@@ -113,7 +119,7 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 
 - One pipeline (`core/emails/`): a React template, rendered with React Email, sent through the `MailSender` port. A template is `defineEmail({ stream, subject, render })`; `render` wraps its content in `EmailLayout` and receives the `brand` (sender name, contact, the Organisation's accent colour) from `EmailService`. A template never names a Camp or address itself.
 - `emails.send(template, props, { to, sender, attachments })` sends one message from the current Organisation's unit of work: `sender` is the Camp's name and contact (the From display name and Reply-To), `attachments` file ids read through `FileService`. Call it from a job declared by the feature, never from a request; one job sends one message, so a retry never repeats a mail that went out.
-- The template's `stream` picks the From address: `auth` (login links, email verification, invitations) or `notification` (everything else), `MAIL_AUTH_FROM` and `MAIL_NOTIFICATION_FROM`, on different domains. A suspended Organisation's mail is skipped, not failed, so the job completes without retrying.
+- The template's `stream` picks the From address: `auth` (login links, email verification, invitations) or `notification` (everything else), `MAIL_AUTH_FROM` and `MAIL_NOTIFICATION_FROM`, on different domains. A suspended Organisation's mail is skipped, not failed, so the job completes without retrying; so is platform mail sent from its unit of work (invitations, Owner changes).
 - Admin-edited texts go through `EmailText`, which fills placeholders (`{{name}}`, from `@repo/schema/emails`) as escaped text and keeps paragraphs and line breaks. Unknown placeholders are rejected when a text is saved, with `unknownPlaceholders`. Functional parts are fixed: `EmailAction` for the button, the layout's `payment` slot for the payment block.
 - The platform's own mail (to the Platform operator) goes through `emails.sendForPlatform(template, props, { to })`, from any unit of work: `PRODUCT_NAME` is the sender name, and the layout has no reply contact.
 - Tests read `mail().sent`; `src/testing/sample-emails.tsx` holds a sample template per stream.
@@ -134,6 +140,7 @@ apps/api/src/
     passwords/                       admin password hashes (Argon2id, PHC strings)
     rate-limits/                     attempt limits counted in Redis by the Clock (login failures)
     sessions/                        admin and guardian sessions, their cookies
+    totp/                            TOTP codes (RFC 6238), pure
     ports/<port>/                    <port>.port.ts, <technology>-<port>.adapter.ts, <port>.module.ts
     http/                            global pipe, @Endpoint decorators, exception filters
     health/
@@ -155,6 +162,7 @@ apps/api/src/
         <entity>.controller.ts
         <entity>.integration.test.ts
       <domain>.module.ts             controllers + services of this domain
+  cli/                               the operator command line, run as the tables' owner
   testing/                           harness, fakes, fixtures (not built)
   app.module.ts
   app.setup.ts                       setup shared by main.ts and tests

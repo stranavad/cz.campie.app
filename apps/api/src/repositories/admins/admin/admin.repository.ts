@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq, inArray, notExists } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
-import { admins } from '../../../db/schema.ts';
+import { admins, legalAcceptances, memberships, operators } from '../../../db/schema.ts';
 import { AdminEntity, type AdminInsertModel } from './admin.entity.ts';
 
 export type CreateAdmin = Omit<AdminInsertModel, 'id'>;
@@ -80,5 +80,34 @@ export class AdminRepository {
     }
 
     return new AdminEntity(row);
+  }
+
+  /**
+   * Remove those of the given admins who are left without any membership, are not the Platform operator
+   * and never accepted another Organisation's legal texts, which keep naming them: such as the signer of a
+   * rejected Organisation, so their email is free again.
+   * @param ids admin ids
+   * @returns the ids of the admins removed
+   */
+  public async removeWithoutMembership(ids: readonly string[]): Promise<string[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const rows = await this.unitOfWork.db
+      .delete(admins)
+      .where(
+        and(
+          inArray(admins.id, [...ids]),
+          notExists(this.unitOfWork.db.select().from(memberships).where(eq(memberships.adminId, admins.id))),
+          notExists(this.unitOfWork.db.select().from(operators).where(eq(operators.adminId, admins.id))),
+          notExists(
+            this.unitOfWork.db.select().from(legalAcceptances).where(eq(legalAcceptances.acceptedBy, admins.id)),
+          ),
+        ),
+      )
+      .returning({ id: admins.id });
+
+    return rows.map(({ id }) => id);
   }
 }

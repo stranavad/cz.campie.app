@@ -7,7 +7,12 @@ import { useAdminHome } from '@/features/admin-home/components/use-admin-home.ho
 
 export function AdminHomePage() {
   const { t } = useTranslation('adminHome');
-  const { isLoading, isSignedOut, isError, hasNoMembership, organisation, isOwner } = useAdminHome();
+  const { isLoading, isSignedOut, isError, hasNoMembership, organisation, isOwner, isOperator } = useAdminHome();
+  const consoleLink = isOperator ? (
+    <Link to="/platform/konzole" className={buttonVariants({ variant: 'outline' })}>
+      {t('openConsole')}
+    </Link>
+  ) : null;
 
   if (isLoading) {
     return <p className="py-12 text-muted-foreground">{t('loading')}</p>;
@@ -17,8 +22,14 @@ export function AdminHomePage() {
     return <Navigate to="/platform/prihlaseni" replace />;
   }
 
+  // The Platform operator usually belongs to no Organisation; the console is their home.
   if (hasNoMembership) {
-    return <p className="py-12">{t('noMembership')}</p>;
+    return (
+      <div className="flex flex-col items-start gap-4 py-12">
+        {isOperator ? null : <p>{t('noMembership')}</p>}
+        {consoleLink}
+      </div>
+    );
   }
 
   if (isError || organisation === undefined) {
@@ -33,6 +44,7 @@ export function AdminHomePage() {
           {t('manageUsers')}
         </Link>
       ) : null}
+      {consoleLink}
     </div>
   );
 }

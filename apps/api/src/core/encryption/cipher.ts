@@ -176,6 +176,27 @@ export function unwrapDataKey(masterKey: KeyObject, wrappedKey: Buffer, organisa
   return createSecretKey(open(masterKey, wrappedKey, Buffer.from(organisationId), 'The data key'));
 }
 
+/**
+ * Seal a secret of the platform's own, which belongs to no Organisation, with the master key.
+ * @param masterKey the platform master key
+ * @param plaintext the secret
+ * @param context what the secret belongs to, such as `totp:<admin id>`; never a bare Organisation id, which
+ * binds a data key
+ */
+export function sealPlatformSecret(masterKey: KeyObject, plaintext: Buffer, context: string): Buffer {
+  return seal(masterKey, plaintext, Buffer.from(context));
+}
+
+/**
+ * Open a secret sealed by sealPlatformSecret.
+ * @param masterKey the platform master key
+ * @param sealed the secret as stored
+ * @param context what it was sealed for
+ */
+export function openPlatformSecret(masterKey: KeyObject, sealed: Buffer, context: string): Buffer {
+  return open(masterKey, sealed, Buffer.from(context), 'A platform secret');
+}
+
 // Encrypts and decrypts with one Organisation's data key, held in memory only.
 export class OrganisationCipher {
   constructor(private readonly dataKey: KeyObject) {}

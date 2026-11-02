@@ -33,6 +33,20 @@ export class MembershipRepository {
   }
 
   /**
+   * List the ids of the admins who are members of an Organisation, for the operator console, which has no
+   * current Organisation.
+   * @param organisationId Organisation id
+   */
+  public async listAdminIdsByOrganisation(organisationId: string): Promise<string[]> {
+    const rows = await this.unitOfWork.db
+      .select({ adminId: memberships.adminId })
+      .from(memberships)
+      .where(eq(memberships.organisationId, organisationId));
+
+    return rows.map(({ adminId }) => adminId);
+  }
+
+  /**
    * List the current Organisation's members with their emails, in the order they joined.
    */
   public async listMembers(): Promise<MemberEntity[]> {

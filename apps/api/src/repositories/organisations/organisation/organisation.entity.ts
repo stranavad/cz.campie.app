@@ -1,6 +1,7 @@
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
-import type { OrganisationStatus } from '@repo/schema/organisations';
+import type { ConsoleOrganisation } from '@repo/schema/console';
+import type { OrganisationStatus, PublicOrganisation } from '@repo/schema/organisations';
 
 import type { organisations } from '../../../db/schema.ts';
 
@@ -38,5 +39,25 @@ export class OrganisationEntity {
     this.displayName = row.displayName;
     this.accentColour = row.accentColour;
     this.logoFileId = row.logoFileId;
+  }
+
+  toConsoleDto(): ConsoleOrganisation {
+    return {
+      id: this.id,
+      subdomain: this.subdomain,
+      status: this.status,
+      displayName: this.displayName,
+      legalName: this.legalName,
+      ico: this.ico,
+      vatId: this.vatId,
+      address: this.address,
+      statutoryRepresentative: this.statutoryRepresentative,
+      contactEmail: this.contactEmail,
+      contactPhone: this.contactPhone,
+    };
+  }
+
+  toPublicDto(): PublicOrganisation {
+    return { displayName: this.displayName };
   }
 }

@@ -70,6 +70,13 @@ export class OrganisationService {
   }
 
   /**
+   * Get the current unit of work's Organisation.
+   */
+  public getCurrent(): Promise<OrganisationEntity> {
+    return this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
+  }
+
+  /**
    * Create an Organisation with its data key, in the current platform unit of work.
    * @param input the Organisation
    */

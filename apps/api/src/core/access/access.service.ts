@@ -5,6 +5,7 @@ import { z } from 'zod';
 import type { AccessErrorCode } from '@repo/schema/shared';
 
 import { MembershipRepository } from '../../repositories/admins/membership/membership.repository.ts';
+import { OperatorRepository } from '../../repositories/operators/operator/operator.repository.ts';
 import { OrganisationRepository } from '../../repositories/organisations/organisation/organisation.repository.ts';
 import type { Env } from '../config/env.schema.ts';
 import { UnitOfWork } from '../database/unit-of-work.ts';
@@ -31,6 +32,15 @@ function organisationUnknown(): NotFoundException {
   return new NotFoundException({ code, message: 'No Organisation is reachable here' });
 }
 
+/**
+ * Build the refusal of a request whose access resolved but is not admitted.
+ * @param code why
+ * @param message what for the logs
+ */
+function refusal(code: AccessErrorCode, message: string): ForbiddenException {
+  return new ForbiddenException({ code, message });
+}
+
 // Resolves who calls and in which Organisation, each lookup in a short unit of work of its own; the route
 // then runs in the unit of work of the resolved Organisation.
 @Injectable()
@@ -41,6 +51,7 @@ export class AccessService {
     private readonly unitOfWork: UnitOfWork,
     private readonly organisations: OrganisationRepository,
     private readonly memberships: MembershipRepository,
+    private readonly operators: OperatorRepository,
     private readonly sessions: SessionService,
     config: ConfigService<Env, true>,
   ) {
@@ -133,7 +144,43 @@ export class AccessService {
       throw new UnauthorizedException();
     }
 
-    return { access: 'account', admin: { id: session.adminId } };
+    return {
+      access: 'account',
+      admin: { id: session.adminId },
+      session: { id: session.id, secondFactor: session.secondFactor },
+    };
+  }
+
+  /**
+   * Resolve a request to the operator console: the session's admin must be the Platform operator now, and
+   * the session must have passed a TOTP code.
+   * @param host the host the browser called
+   * @param token the admin session token, if the request carries one
+   * @throws {NotFoundException} when the host is not the main host
+   * @throws {UnauthorizedException} when there is no live admin session
+   * @throws {ForbiddenException} when the admin is not the Platform operator, or the session has no TOTP
+   * code
+   */
+  public async resolveOperator(host: string, token: string | null): Promise<RequestScope> {
+    this.requireMainHost(host);
+
+    return this.unitOfWork.runForPlatform(async () => {
+      const session = token === null ? null : await this.sessions.getAdmin(token);
+
+      if (session === null) {
+        throw new UnauthorizedException();
+      }
+
+      if (!(await this.operators.isOperator(session.adminId))) {
+        throw refusal('not_operator', 'Only the Platform operator reaches the console');
+      }
+
+      if (!session.secondFactor) {
+        throw refusal('second_factor_required', 'The console needs a session that passed a TOTP code');
+      }
+
+      return { access: 'operator', admin: { id: session.adminId } };
+    });
   }
 
   /**
@@ -163,9 +210,10 @@ export class AccessService {
   }
 
   /**
-   * Find the Organisation whose subdomain a host is.
+   * Find the Organisation whose subdomain a host is. A suspended Organisation's subdomain is offline.
    * @param host the host the browser called
    * @throws {NotFoundException} when the host is no Organisation's subdomain
+   * @throws {ForbiddenException} when the Organisation is suspended
    */
   private async organisationOfHost(host: string): Promise<string> {
     const parsed = parseHost(host, this.platformDomain);
@@ -177,6 +225,10 @@ export class AccessService {
 
     if (organisation === null) {
       throw organisationUnknown();
+    }
+
+    if (organisation.status === 'suspended') {
+      throw refusal('organisation_suspended', 'The Organisation is suspended');
     }
 
     return organisation.id;

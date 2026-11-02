@@ -1,0 +1,74 @@
+{
+  "loading": "Načítáme…",
+  "error": "Konzoli se nepodařilo načíst. Zkuste stránku načíst znovu.",
+  "notOperator": "Konzole je jen pro provozovatele platformy.",
+  "enrolment": {
+    "title": "Nastavení dvoufázového přihlášení",
+    "intro": "Do konzole se provozovatel přihlašuje vždy i kódem z ověřovací aplikace v telefonu, například Google Authenticator nebo Aegis.",
+    "start": "Vytvořit klíč",
+    "secret": "Klíč zadejte do aplikace, nebo otevřete odkaz v telefonu. Pak opište kód, který aplikace ukazuje.",
+    "openApp": "Otevřít v ověřovací aplikaci",
+    "failure": "Klíč se nepodařilo vytvořit. Zkuste to prosím znovu."
+  },
+  "verify": {
+    "title": "Ověření přihlášení",
+    "intro": "Zadejte kód, který právě ukazuje vaše ověřovací aplikace."
+  },
+  "totp": {
+    "code": "Kód z aplikace",
+    "submit": {
+      "confirm": "Zapnout dvoufázové přihlášení",
+      "verify": "Ověřit"
+    },
+    "failure": {
+      "totp_enabled": "Dvoufázové přihlášení už je zapnuté. Načtěte stránku znovu.",
+      "totp_not_started": "Nejdřív vytvořte klíč.",
+      "totp_not_enabled": "Dvoufázové přihlášení ještě není nastavené. Načtěte stránku znovu.",
+      "totp_code_invalid": "Kód nesouhlasí nebo už byl použit. Počkejte na další kód z aplikace.",
+      "totp_throttled": "Příliš mnoho chybných kódů. Zkuste to znovu za chvíli.",
+      "unexpected": "Kód se nepodařilo ověřit. Zkuste to prosím znovu."
+    }
+  },
+  "organisations": {
+    "title": "Organizace",
+    "empty": "Zatím se nezaregistrovala žádná organizace."
+  },
+  "status": {
+    "pending": "Čeká na schválení",
+    "approved": "Schválená",
+    "suspended": "Pozastavená"
+  },
+  "fields": {
+    "address": "Adresa stránek",
+    "addressValue": "{{subdomain}}.{{platformDomain}}",
+    "icoWithVat": "{{ico}}, DIČ {{vatId}}",
+    "contactValue": "{{email}}, {{phone}}",
+    "legalName": "Název",
+    "ico": "IČO",
+    "seat": "Sídlo",
+    "statutoryRepresentative": "Statutární zástupce",
+    "contact": "Kontakt"
+  },
+  "rename": {
+    "label": "Subdoména",
+    "submit": "Změnit subdoménu"
+  },
+  "actions": {
+    "approve": "Schválit",
+    "reject": "Zamítnout",
+    "suspend": "Pozastavit",
+    "cancel": "Zrušit",
+    "confirm": {
+      "reject": "Opravdu zamítnout a smazat",
+      "suspend": "Opravdu pozastavit"
+    }
+  },
+  "failure": {
+    "organisation_not_pending": "Organizace už nečeká na schválení. Načtěte stránku znovu.",
+    "organisation_not_approved": "Pozastavit lze jen schválenou organizaci.",
+    "subdomain_malformed": "Subdoména může obsahovat jen malá písmena bez diakritiky, číslice a pomlčky mezi nimi.",
+    "subdomain_reserved": "Tuto subdoménu nelze použít.",
+    "subdomain_taken": "Tuto subdoménu už používá jiná organizace.",
+    "unexpected": "Změnu se nepodařilo uložit. Zkuste to prosím znovu."
+  }
+}

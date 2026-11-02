@@ -15,7 +15,12 @@ export type RequestScope =
       readonly organisationId: string;
       readonly admin: { readonly id: string; readonly member: MemberAccess };
     }
-  | { readonly access: 'account'; readonly admin: { readonly id: string } }
+  | {
+      readonly access: 'account';
+      readonly admin: { readonly id: string };
+      readonly session: { readonly id: string; readonly secondFactor: boolean };
+    }
+  | { readonly access: 'operator'; readonly admin: { readonly id: string } }
   | { readonly access: 'platform' | 'unscoped' };
 
 const scopes = new WeakMap<Request, RequestScope>();

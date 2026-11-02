@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { AuditEntryRepository } from '../../repositories/audit/audit-entry/audit-entry.repository.ts';
+import { PlatformAuditEntryRepository } from '../../repositories/audit/platform-audit-entry/platform-audit-entry.repository.ts';
 import { Clock } from '../ports/clock/clock.port.ts';
 import type { Actor } from './actor.ts';
 import { changesBetween, type AuditedRow } from './changes.ts';
@@ -23,6 +24,7 @@ export interface AuditEvent {
 export class AuditService {
   constructor(
     private readonly entries: AuditEntryRepository,
+    private readonly platformEntries: PlatformAuditEntryRepository,
     private readonly clock: Clock,
   ) {}
 
@@ -47,6 +49,29 @@ export class AuditService {
       targetId: event.target.id,
       changes: diff?.values ?? null,
       encryptedFields: [...(diff?.encryptedFields ?? [])],
+    });
+  }
+
+  /**
+   * Record a change above any one Organisation, such as the Platform operator approving or rejecting one,
+   * in the platform's audit log, in the current unit of work. It holds plain values only: nothing encrypted
+   * is ever above an Organisation.
+   * @param actor who did it
+   * @param event what they did, to which record, and the change if any
+   */
+  public async recordForPlatform(actor: Actor, event: AuditEvent): Promise<void> {
+    const diff = event.change === undefined ? null : changesBetween(event.change.before, event.change.after);
+    const person = actor.kind === 'system' ? null : actor;
+
+    await this.platformEntries.create({
+      occurredAt: this.clock.now(),
+      actorKind: actor.kind,
+      actorIdentity: person?.identity ?? null,
+      ipAddress: person?.ipAddress ?? null,
+      action: event.action,
+      targetType: event.target.type,
+      targetId: event.target.id,
+      changes: diff?.values ?? null,
     });
   }
 }

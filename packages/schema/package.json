@@ -24,6 +24,10 @@
     "./admins": {
       "types": "./dist/admins/index.d.ts",
       "default": "./dist/admins/index.js"
+    },
+    "./console": {
+      "types": "./dist/console/index.d.ts",
+      "default": "./dist/console/index.js"
     }
   },
   "scripts": {

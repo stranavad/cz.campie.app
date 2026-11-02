@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
+
+import type { OrganisationStatus } from '@repo/schema/organisations';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { organisations } from '../../../db/schema.ts';
@@ -7,10 +9,21 @@ import { OrganisationEntity, type OrganisationInsertModel } from './organisation
 
 export type CreateOrganisation = Omit<OrganisationInsertModel, 'id'>;
 export type UpdateOrganisation = Partial<Omit<OrganisationInsertModel, 'id' | 'subdomain'>>;
+// What the operator console changes, and only while the Organisation has a given status.
+export type ConsoleChange = Partial<Pick<OrganisationInsertModel, 'status' | 'subdomain'>>;
 
 @Injectable()
 export class OrganisationRepository {
   constructor(private readonly unitOfWork: UnitOfWork) {}
+
+  /**
+   * List every Organisation, the newest first: ids are UUIDv7, so they sort by creation.
+   */
+  public async list(): Promise<OrganisationEntity[]> {
+    const rows = await this.unitOfWork.db.select().from(organisations).orderBy(desc(organisations.id));
+
+    return rows.map((row) => new OrganisationEntity(row));
+  }
 
   /**
    * Get an Organisation by id.
@@ -35,6 +48,17 @@ export class OrganisationRepository {
     }
 
     return organisation;
+  }
+
+  /**
+   * Get an Organisation by id and lock its row until the unit of work ends, so what is read stays what a
+   * change in the same unit of work starts from.
+   * @param id Organisation id
+   */
+  public async getByIdForUpdate(id: string): Promise<OrganisationEntity | null> {
+    const [row] = await this.unitOfWork.db.select().from(organisations).where(eq(organisations.id, id)).for('update');
+
+    return row === undefined ? null : new OrganisationEntity(row);
   }
 
   /**
@@ -76,5 +100,42 @@ export class OrganisationRepository {
     }
 
     return new OrganisationEntity(row);
+  }
+
+  /**
+   * Change an Organisation's status or subdomain only while it has the given status, in one statement, so
+   * two simultaneous changes cannot both start from it.
+   * @param id Organisation id
+   * @param status the status it must have
+   * @param change the new status or subdomain
+   * @returns the changed Organisation, or null when none with this id has the status
+   */
+  public async updateWhileStatus(
+    id: string,
+    status: OrganisationStatus,
+    change: ConsoleChange,
+  ): Promise<OrganisationEntity | null> {
+    const [row] = await this.unitOfWork.db
+      .update(organisations)
+      .set(change)
+      .where(and(eq(organisations.id, id), eq(organisations.status, status)))
+      .returning();
+
+    return row === undefined ? null : new OrganisationEntity(row);
+  }
+
+  /**
+   * Delete an Organisation with everything it holds, only while it has the given status.
+   * @param id Organisation id
+   * @param status the status it must have
+   * @returns the deleted Organisation, or null when none with this id has the status
+   */
+  public async removeWhileStatus(id: string, status: OrganisationStatus): Promise<OrganisationEntity | null> {
+    const [row] = await this.unitOfWork.db
+      .delete(organisations)
+      .where(and(eq(organisations.id, id), eq(organisations.status, status)))
+      .returning();
+
+    return row === undefined ? null : new OrganisationEntity(row);
   }
 }

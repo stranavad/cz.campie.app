@@ -4,6 +4,9 @@ import { admins } from './admins/admins.ts';
 import { invitations } from './admins/invitations.ts';
 import { memberships } from './admins/memberships.ts';
 import { passwordResets } from './admins/password-resets.ts';
+import { totpCredentials } from './admins/totp-credentials.ts';
+import { platformAuditEntries } from './audit/platform-audit-entries.ts';
+import { operators } from './operators/operators.ts';
 import { legalAcceptances } from './organisations/legal-acceptances.ts';
 import { organisationKeys } from './organisations/organisation-keys.ts';
 import { organisations } from './organisations/organisations.ts';
@@ -19,5 +22,8 @@ export const PLATFORM_TABLES: readonly string[] = [
   memberships,
   invitations,
   passwordResets,
+  totpCredentials,
+  operators,
   adminSessions,
+  platformAuditEntries,
 ].map((table) => getTableName(table));

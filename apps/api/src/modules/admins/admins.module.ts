@@ -15,6 +15,8 @@ import { MembershipService } from './membership/services/membership.service.ts';
 import { PasswordResetRequestedHandler } from './password-reset/password-reset-requested.handler.ts';
 import { PasswordResetController } from './password-reset/password-reset.controller.ts';
 import { PasswordResetService } from './password-reset/services/password-reset.service.ts';
+import { TotpService } from './totp/services/totp.service.ts';
+import { TotpController } from './totp/totp.controller.ts';
 
 @Module({
   controllers: [
@@ -24,6 +26,7 @@ import { PasswordResetService } from './password-reset/services/password-reset.s
     MemberController,
     InvitationController,
     InvitationAcceptanceController,
+    TotpController,
   ],
   providers: [
     AdminService,
@@ -35,6 +38,7 @@ import { PasswordResetService } from './password-reset/services/password-reset.s
     PasswordResetRequestedHandler,
     InvitationService,
     InvitationCreatedHandler,
+    TotpService,
   ],
   exports: [AdminService, MembershipService],
 })

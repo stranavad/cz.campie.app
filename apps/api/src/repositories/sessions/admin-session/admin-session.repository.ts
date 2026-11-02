@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { eq, type InferInsertModel } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
@@ -29,6 +29,21 @@ export class AdminSessionRepository {
 
     if (row === undefined) {
       throw new Error('The admin session was not created');
+    }
+
+    return new AdminSessionEntity(row);
+  }
+
+  /**
+   * Remove an admin session by id.
+   * @param id session id
+   * @throws {NotFoundException} when no session has this id, such as one just ended
+   */
+  public async remove(id: string): Promise<AdminSessionEntity> {
+    const [row] = await this.unitOfWork.db.delete(adminSessions).where(eq(adminSessions.id, id)).returning();
+
+    if (row === undefined) {
+      throw new NotFoundException();
     }
 
     return new AdminSessionEntity(row);

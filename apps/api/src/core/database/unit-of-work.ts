@@ -9,6 +9,8 @@ interface Scope {
   readonly db: Transaction;
   // null in a platform unit of work, which sees no Organisation's rows, until it enters one.
   organisationId: string | null;
+  // false for the operator console's, which must never reach an Organisation's own data.
+  readonly mayEnter: boolean;
   readonly afterCommit: (() => Promise<void>)[];
   readonly afterRollback: (() => Promise<void>)[];
 }
@@ -28,7 +30,7 @@ export class UnitOfWork {
    * @param work reads and writes through `db`
    */
   public run<T>(organisationId: string, work: () => Promise<T>): Promise<T> {
-    return this.open(organisationId, work);
+    return this.open(organisationId, work, false);
   }
 
   /**
@@ -37,20 +39,33 @@ export class UnitOfWork {
    * @param work reads and writes through `db`
    */
   public runForPlatform<T>(work: () => Promise<T>): Promise<T> {
-    return this.open(null, work);
+    return this.open(null, work, true);
+  }
+
+  /**
+   * Run work in one transaction without an Organisation that can never enter one, for the operator
+   * console: it reaches platform tables only, and every Organisation-owned table stays empty to it.
+   * @param work reads and writes through `db`
+   */
+  public runForOperator<T>(work: () => Promise<T>): Promise<T> {
+    return this.open(null, work, false);
   }
 
   /**
    * Make the current platform unit of work the given Organisation's for the rest of its transaction, so
    * the records of an Organisation it has just created commit together with it.
    * @param organisationId the Organisation, never from client input
-   * @throws {Error} outside a platform unit of work
+   * @throws {Error} outside a platform unit of work, and in the operator console's
    */
   public async enter(organisationId: string): Promise<void> {
     const scope = this.current();
 
     if (scope.organisationId !== null) {
       throw new Error('Only a platform unit of work can enter an Organisation');
+    }
+
+    if (!scope.mayEnter) {
+      throw new Error("The operator console's unit of work never enters an Organisation");
     }
 
     await scope.db.execute(sql`select set_config(${ORGANISATION_SETTING}, ${organisationId}, true)`);
@@ -63,6 +78,14 @@ export class UnitOfWork {
    */
   public get db(): Transaction {
     return this.current().db;
+  }
+
+  /**
+   * Whether the current unit of work is an Organisation's, entered or from the start.
+   * @throws {Error} outside a unit of work
+   */
+  public get inOrganisation(): boolean {
+    return this.current().organisationId !== null;
   }
 
   /**
@@ -102,9 +125,10 @@ export class UnitOfWork {
    * Open the transaction, set the Organisation if there is one, and run work with it as the current scope.
    * @param organisationId the Organisation, or null for a platform unit of work
    * @param work runs inside the transaction
+   * @param mayEnter whether a platform unit of work may enter an Organisation
    * @throws {Error} when a unit of work is already open: they do not nest
    */
-  private async open<T>(organisationId: string | null, work: () => Promise<T>): Promise<T> {
+  private async open<T>(organisationId: string | null, work: () => Promise<T>, mayEnter: boolean): Promise<T> {
     if (this.scope.getStore() !== undefined) {
       throw new Error('A unit of work is already open; units of work do not nest');
     }
@@ -120,7 +144,7 @@ export class UnitOfWork {
           await db.execute(sql`select set_config(${ORGANISATION_SETTING}, ${organisationId}, true)`);
         }
 
-        return this.scope.run({ db, organisationId, afterCommit, afterRollback }, work);
+        return this.scope.run({ db, organisationId, mayEnter, afterCommit, afterRollback }, work);
       });
     } catch (error) {
       for (const callback of afterRollback) {

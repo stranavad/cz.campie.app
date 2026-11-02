@@ -7,7 +7,16 @@ export const ACCESS_HEADERS = {
   organisation: 'x-organisation-id',
 } as const;
 
-// Codes of a request refused before it reaches its route, which the app translates.
-export const ACCESS_ERROR_CODES = ['csrf_header_missing', 'organisation_unknown', 'permission_denied'] as const;
+// Codes of a request refused before it reaches its route, which the app translates. A suspended
+// Organisation's subdomain answers organisation_suspended; the console answers not_operator to anyone but
+// the Platform operator, and second_factor_required to a session without a TOTP code.
+export const ACCESS_ERROR_CODES = [
+  'csrf_header_missing',
+  'organisation_unknown',
+  'organisation_suspended',
+  'permission_denied',
+  'not_operator',
+  'second_factor_required',
+] as const;
 
 export type AccessErrorCode = (typeof ACCESS_ERROR_CODES)[number];

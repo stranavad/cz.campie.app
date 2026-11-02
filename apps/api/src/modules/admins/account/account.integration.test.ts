@@ -20,6 +20,9 @@ describe('account', () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       email: expect.stringMatching(/@example\.com$/),
+      operator: false,
+      totpEnabled: false,
+      secondFactor: false,
       memberships: [
         {
           owner: false,

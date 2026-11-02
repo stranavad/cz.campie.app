@@ -2,7 +2,13 @@ import { Injectable } from '@nestjs/common';
 
 import { OrganisationKeyRepository } from '../../repositories/organisations/organisation-key/organisation-key.repository.ts';
 import { KeyProvider } from '../ports/key-provider/key-provider.port.ts';
-import { generateWrappedDataKey, OrganisationCipher, unwrapDataKey } from './cipher.ts';
+import {
+  generateWrappedDataKey,
+  openPlatformSecret,
+  OrganisationCipher,
+  sealPlatformSecret,
+  unwrapDataKey,
+} from './cipher.ts';
 
 // The only holder of unwrapped data keys. They exist in memory only; the database holds them wrapped by
 // the master key.
@@ -37,5 +43,23 @@ export class EncryptionService {
     }
 
     return new OrganisationCipher(unwrapDataKey(this.keyProvider.masterKey(), key.wrappedKey, key.organisationId));
+  }
+
+  /**
+   * Seal a secret of the platform's own, such as an admin's TOTP secret, with the master key.
+   * @param context what the secret belongs to, such as `totp:<admin id>`
+   * @param secret the secret
+   */
+  public sealPlatformSecret(context: string, secret: Buffer): Buffer {
+    return sealPlatformSecret(this.keyProvider.masterKey(), secret, context);
+  }
+
+  /**
+   * Open a secret sealed by sealPlatformSecret for the same context.
+   * @param context what the secret belongs to
+   * @param sealed the secret as stored
+   */
+  public openPlatformSecret(context: string, sealed: Buffer): Buffer {
+    return openPlatformSecret(this.keyProvider.masterKey(), sealed, context);
   }
 }

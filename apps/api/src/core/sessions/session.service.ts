@@ -42,6 +42,25 @@ export class SessionService {
   }
 
   /**
+   * Replace an admin session that passed a TOTP code with a new one that holds it, until the old one would
+   * have expired. A new token, so a copy of the old cookie taken before the code gains nothing.
+   * @param sessionId the session that passed the code
+   */
+  public async passSecondFactor(sessionId: string): Promise<IssuedSession> {
+    const passed = await this.adminSessions.remove(sessionId);
+    const token = generateSessionToken();
+
+    await this.adminSessions.create({
+      adminId: passed.adminId,
+      tokenHash: hashSessionToken(token),
+      expiresAt: passed.expiresAt,
+      secondFactor: true,
+    });
+
+    return { token, expiresAt: passed.expiresAt };
+  }
+
+  /**
    * End every session of an admin, wherever they are signed in.
    * @param adminId admin id
    */

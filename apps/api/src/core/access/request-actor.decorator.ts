@@ -22,6 +22,8 @@ function actorOf(request: Request): Actor {
     case 'admin':
     case 'account':
       return { kind: 'admin', identity: scope.admin.id, ipAddress };
+    case 'operator':
+      return { kind: 'operator', identity: scope.admin.id, ipAddress };
     case 'guardian':
       return { kind: 'guardian', identity: scope.guardian.email, ipAddress };
     case 'public':
@@ -32,7 +34,7 @@ function actorOf(request: Request): Actor {
   }
 }
 
-// The admin or guardian making the request.
+// The admin, Platform operator or guardian making the request.
 export const RequestActor = createParamDecorator((_: unknown, context: ExecutionContext) =>
   actorOf(context.switchToHttp().getRequest<Request>()),
 );
@@ -59,3 +61,17 @@ export const RequestMember = createParamDecorator((_: unknown, context: Executio
 
   return scope.admin.member;
 });
+
+// The admin session an account request carries, for what happens to the session itself, such as passing
+// a TOTP code.
+export const RequestAdminSession = createParamDecorator(
+  (_: unknown, context: ExecutionContext): { readonly id: string; readonly secondFactor: boolean } => {
+    const scope = requestScope(context.switchToHttp().getRequest<Request>());
+
+    if (scope.access !== 'account') {
+      throw new Error(`A ${scope.access} request has no account session`);
+    }
+
+    return scope.session;
+  },
+);

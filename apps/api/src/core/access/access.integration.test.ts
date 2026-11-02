@@ -169,6 +169,21 @@ describe('access', () => {
         expect(response.body).toMatchObject({ code: 'organisation_unknown' });
       },
     );
+
+    it("takes a suspended Organisation's subdomain offline, for the public and its guardians alike", async () => {
+      const suspended = await createOrganisation(app(), { status: 'suspended' });
+      const guardian = await createGuardianSession(app(), suspended, 'rodic@example.com');
+
+      for (const [path, headers] of [
+        ['public', { Host: await organisationHost(app(), suspended) }],
+        ['guardian', guardian.headers],
+      ] as const) {
+        const response = await http().get(`/api/test-access/${path}`).set(headers);
+
+        expect(response.status).toBe(403);
+        expect(response.body).toMatchObject({ code: 'organisation_suspended' });
+      }
+    });
   });
 
   describe('guardian sessions', () => {

@@ -7,12 +7,24 @@ import { Reflector } from '@nestjs/core';
 //   admin is a member of.
 // - account: an admin session on the main host, outside any Organisation: the admin's own identity and
 //   memberships, before an Organisation is chosen.
+// - operator: the Platform operator's console on the main host, outside any Organisation: an admin session
+//   that passed a TOTP code, of an admin with the operator flag, checked on every request. Its unit of work
+//   cannot enter an Organisation, so no Organisation's own data is within its reach.
 // - platform: anyone on the main host, outside any Organisation (signup, login).
 // - gateway: a payment gateway's notification; the Organisation is in the path, and the gateway's
 //   signature, checked by the route, is the permission.
 // - unscoped: anyone anywhere; the route opens its own unit of work if it needs one (health, download
 //   links whose signed token is the permission).
-export const ACCESS_KINDS = ['public', 'guardian', 'admin', 'account', 'platform', 'gateway', 'unscoped'] as const;
+export const ACCESS_KINDS = [
+  'public',
+  'guardian',
+  'admin',
+  'account',
+  'operator',
+  'platform',
+  'gateway',
+  'unscoped',
+] as const;
 
 export type AccessKind = (typeof ACCESS_KINDS)[number];
 

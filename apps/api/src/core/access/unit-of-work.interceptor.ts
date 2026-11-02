@@ -5,9 +5,10 @@ import { from, lastValueFrom, type Observable } from 'rxjs';
 import { UnitOfWork } from '../database/unit-of-work.ts';
 import { requestScope } from './request-scope.ts';
 
-// Runs each route inside the unit of work of the Organisation its access resolved to, so the whole route
-// commits or rolls back as one. Route interceptors run inside it, an upload's parsing included, which
-// holds the transaction open while the body arrives.
+// Runs each route inside the unit of work of the Organisation its access resolved to, or a platform one,
+// so the whole route commits or rolls back as one; the operator console's can never enter an Organisation.
+// Route interceptors run inside it, an upload's parsing included, which holds the transaction open while
+// the body arrives.
 @Injectable()
 export class UnitOfWorkInterceptor implements NestInterceptor {
   constructor(private readonly unitOfWork: UnitOfWork) {}
@@ -22,6 +23,10 @@ export class UnitOfWorkInterceptor implements NestInterceptor {
 
     if (scope.access === 'platform' || scope.access === 'account') {
       return from(this.unitOfWork.runForPlatform(handle));
+    }
+
+    if (scope.access === 'operator') {
+      return from(this.unitOfWork.runForOperator(handle));
     }
 
     return next.handle();

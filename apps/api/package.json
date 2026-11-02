@@ -8,6 +8,7 @@
     "dev": "tsc -p tsconfig.build.json && concurrently -k -n tsc,node \"tsc -p tsconfig.build.json --watch --preserveWatchOutput\" \"node --watch dist/main.js\"",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
+    "operator": "node dist/cli/operator.js",
     "check-types": "tsc --noEmit",
     "lint": "oxlint --type-aware --deny-warnings",
     "lint-staged": "lint-staged",
