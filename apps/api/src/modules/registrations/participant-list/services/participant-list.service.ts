@@ -57,6 +57,7 @@ export class ParticipantListService {
         id,
         name,
         startDate,
+        campId,
         campName: camps.get(campId) ?? '',
       })),
     };

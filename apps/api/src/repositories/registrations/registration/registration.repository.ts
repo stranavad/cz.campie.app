@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, count, desc, eq, inArray, sql, sum } from 'drizzle-orm';
 
 import type { Answers } from '@repo/schema/form-engine';
-import type { PriceLineKind } from '@repo/schema/pricing';
+import type { PriceLineKind, SurchargeSource } from '@repo/schema/pricing';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import {
@@ -37,6 +37,7 @@ export interface PriceLineFields {
   readonly participant: number | null;
   readonly label: string | null;
   readonly amount: number;
+  readonly source?: SurchargeSource;
 }
 
 export interface DeclarationAnswerFields {
@@ -442,6 +443,47 @@ export class RegistrationRepository {
   }
 
   /**
+   * Add a Participant to a Registration at a position, Registered.
+   * @param registrationId Registration id
+   * @param position its place among the Registration's Participants
+   * @param child the child
+   */
+  public async addParticipant(
+    registrationId: string,
+    position: number,
+    child: ParticipantFields,
+  ): Promise<ParticipantEntity> {
+    const [row] = await this.unitOfWork.db
+      .insert(participants)
+      .values({ ...child, registrationId, position, organisationId: this.unitOfWork.organisationId })
+      .returning();
+
+    if (row === undefined) {
+      throw new Error('The Participant was not added');
+    }
+
+    return new ParticipantEntity(row);
+  }
+
+  /**
+   * Replace a Participant's core answers and answers beyond the core.
+   * @param participantId Participant id
+   * @param child the child's name, birth date and answers
+   */
+  public async updateParticipant(participantId: string, child: ParticipantFields): Promise<void> {
+    await this.unitOfWork.db.update(participants).set(child).where(eq(participants.id, participantId));
+  }
+
+  /**
+   * Move a Registration of the current Organisation to another Turnus.
+   * @param registrationId Registration id
+   * @param turnusId Turnus id
+   */
+  public async setTurnus(registrationId: string, turnusId: string): Promise<void> {
+    await this.unitOfWork.db.update(registrations).set({ turnusId }).where(eq(registrations.id, registrationId));
+  }
+
+  /**
    * Replace a Participant's answers beyond the core.
    * @param participantId Participant id
    * @param answers all its answers beyond the core
@@ -487,14 +529,46 @@ export class RegistrationRepository {
     }
 
     await this.unitOfWork.db.insert(priceLines).values(
-      lines.map(({ participant, ...line }, index) => ({
+      lines.map(({ participant, source, ...line }, index) => ({
         ...line,
+        fieldId: source?.fieldId ?? null,
+        optionId: source?.optionId ?? null,
         registrationId,
         position: from + index,
         participantId: participant === null ? null : (participantIds[participant] ?? null),
         organisationId: this.unitOfWork.organisationId,
       })),
     );
+  }
+
+  /**
+   * List a Registration's lines that came from form answers, with the answer each came from.
+   * @param registrationId Registration id
+   */
+  public async listSurchargeLines(registrationId: string): Promise<
+    {
+      participantId: string | null;
+      fieldId: string;
+      optionId: string | null;
+      kind: PriceLineKind;
+      label: string | null;
+      amount: number;
+    }[]
+  > {
+    const rows = await this.unitOfWork.db
+      .select({
+        participantId: priceLines.participantId,
+        fieldId: priceLines.fieldId,
+        optionId: priceLines.optionId,
+        kind: priceLines.kind,
+        label: priceLines.label,
+        amount: priceLines.amount,
+      })
+      .from(priceLines)
+      .where(eq(priceLines.registrationId, registrationId))
+      .orderBy(asc(priceLines.position));
+
+    return rows.flatMap(({ fieldId, ...line }) => (fieldId === null ? [] : [{ ...line, fieldId }]));
   }
 
   /**

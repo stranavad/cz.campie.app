@@ -31,6 +31,9 @@ export function ParticipantsPage() {
           {t('backHome')}
         </Link>
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
+        <Link to="/platform/prihlasky/nova" className="self-start text-sm underline">
+          {t('create.open')}
+        </Link>
         {page.turnusy.length === 0 ? <p>{t('noTurnusy')}</p> : null}
         <label className="flex flex-col gap-1 text-sm font-medium sm:max-w-md">
           {t('turnus')}

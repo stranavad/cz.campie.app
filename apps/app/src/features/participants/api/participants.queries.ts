@@ -1,9 +1,15 @@
 import { keepPreviousData, skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
+  AddParticipantBody,
   AddPriceAdjustmentBody,
+  EditAnswersBody,
+  EditGuardianBody,
   ParticipantListQuery,
   RecordPaymentBody,
+  SaveAddParticipantBody,
+  SaveEditAnswersBody,
+  SubmitRegistrationBody,
   VerifyClaimedDiscountBody,
 } from '@repo/schema/registrations';
 
@@ -74,4 +80,48 @@ export const useAddPriceAdjustmentMutation = (organisationId: string, registrati
 export const useVerifyClaimedDiscountMutation = (organisationId: string, registrationId: string) =>
   useRegistrationChange(organisationId, (body: VerifyClaimedDiscountBody) =>
     participantsService.verifyClaimedDiscount(organisationId, registrationId, body),
+  );
+
+export const usePreviewAnswersMutation = (organisationId: string, registrationId: string) =>
+  useMutation({
+    mutationFn: (body: EditAnswersBody) => participantsService.previewAnswers(organisationId, registrationId, body),
+  });
+
+export const useEditAnswersMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, (body: SaveEditAnswersBody) =>
+    participantsService.editAnswers(organisationId, registrationId, body),
+  );
+
+export const usePreviewParticipantMutation = (organisationId: string, registrationId: string) =>
+  useMutation({
+    mutationFn: (body: AddParticipantBody) =>
+      participantsService.previewParticipant(organisationId, registrationId, body),
+  });
+
+export const useAddParticipantMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, (body: SaveAddParticipantBody) =>
+    participantsService.addParticipant(organisationId, registrationId, body),
+  );
+
+export const useMoveRegistrationMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, (turnusId: string) =>
+    participantsService.move(organisationId, registrationId, turnusId),
+  );
+
+export const useEditGuardianMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, ({ position, body }: { position: number; body: EditGuardianBody }) =>
+    participantsService.editGuardian(organisationId, registrationId, position, body),
+  );
+
+export const useTurnusFormQuery = (organisationId: string, turnusId: string | null) =>
+  useQuery({
+    queryKey: [...participantsKeys.organisation(organisationId), 'form', turnusId ?? ''],
+    queryFn:
+      turnusId === null ? skipToken : ({ signal }) => participantsService.turnusForm(organisationId, turnusId, signal),
+    retry: false,
+  });
+
+export const useCreateRegistrationMutation = (organisationId: string) =>
+  useRegistrationChange(organisationId, ({ campId, body }: { campId: string; body: SubmitRegistrationBody }) =>
+    participantsService.create(organisationId, campId, body),
   );

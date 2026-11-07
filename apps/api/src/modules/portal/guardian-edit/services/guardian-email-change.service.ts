@@ -22,8 +22,9 @@ import { OrganisationRepository } from '../../../../repositories/organisations/o
 import { GuardianEmailChangeRepository } from '../../../../repositories/registrations/guardian-email-change/guardian-email-change.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { CampEmailService } from '../../../camps/camp-email/services/camp-email.service.ts';
-import { emailChangeConfirmedJob, emailChangeRequestedJob } from '../guardian-edit.jobs.ts';
-import { EmailChangeConfirmationEmail, EmailChangeNoticeEmail } from '../guardian-email-change.email.tsx';
+import { emailChangeConfirmedJob } from '../../../registrations/guardian-email/guardian-email-notice.job.ts';
+import { emailChangeRequestedJob } from '../guardian-edit.jobs.ts';
+import { EmailChangeConfirmationEmail } from '../guardian-email-change.email.tsx';
 import { GuardianEditService } from './guardian-edit.service.ts';
 
 // Long enough to reach a mailbox not checked every hour.
@@ -189,27 +190,6 @@ export class GuardianEmailChangeService {
       },
     });
     this.jobs.enqueue(emailChangeConfirmedJob, { changeId: change.id });
-  }
-
-  /**
-   * Tell a guardian's previous address of a confirmed change, naming the new one; the Camp's contact is in
-   * the email's footer.
-   * @param changeId the change
-   */
-  public async sendNotice(changeId: string): Promise<void> {
-    const change = await this.changes.takeConfirmed(changeId);
-
-    if (change === null) {
-      return;
-    }
-
-    const { campId, campName } = await this.campOf(change.registrationId);
-
-    await this.emails.send(
-      EmailChangeNoticeEmail,
-      { campName, email: change.email },
-      { to: [change.previousEmail], sender: await this.campEmails.senderFor(campId) },
-    );
   }
 
   /**

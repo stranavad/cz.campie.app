@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { priceLineSchema } from '@repo/schema/camps';
 import { fileLinkSchema } from '@repo/schema/files';
-import { answerValueSchema } from '@repo/schema/form-engine';
+import { answerValueSchema, formDefinitionShape } from '@repo/schema/form-engine';
 import { PAYMENT_CHOICES } from '@repo/schema/pricing';
 import { calendarDateSchema, defineEndpoint } from '@repo/schema/shared';
 
@@ -33,6 +33,8 @@ export const registrationDetailSchema = z.object({
   submittedAt: z.iso.datetime(),
   paymentChoice: z.enum(PAYMENT_CHOICES),
   formVersion: z.number().int(),
+  // The Camp's latest form, whose fields an admin may answer.
+  latestDefinition: formDefinitionShape,
   camp: z.object({ id: z.uuid(), name: z.string() }),
   turnus: z.object({ id: z.uuid(), name: z.string(), startDate: calendarDateSchema, endDate: calendarDateSchema }),
   guardians: z.array(

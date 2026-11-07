@@ -1,15 +1,29 @@
 import {
+  addParticipantEndpoint,
   addPriceAdjustmentEndpoint,
+  createRegistrationEndpoint,
+  editAnswersEndpoint,
+  editGuardianEndpoint,
   getRegistrationDetailEndpoint,
   getRegistrationHistoryEndpoint,
   getSelectedTurnusEndpoint,
+  getTurnusFormEndpoint,
   listParticipantsEndpoint,
+  moveRegistrationEndpoint,
+  previewAddParticipantEndpoint,
+  previewEditAnswersEndpoint,
   recordPaymentEndpoint,
   setSelectedTurnusEndpoint,
   verifyClaimedDiscountEndpoint,
+  type AddParticipantBody,
   type AddPriceAdjustmentBody,
+  type EditAnswersBody,
+  type EditGuardianBody,
   type ParticipantListQuery,
   type RecordPaymentBody,
+  type SaveAddParticipantBody,
+  type SaveEditAnswersBody,
+  type SubmitRegistrationBody,
   type VerifyClaimedDiscountBody,
 } from '@repo/schema/registrations';
 
@@ -41,4 +55,24 @@ export const participantsService = {
     apiClient.request(addPriceAdjustmentEndpoint, { organisationId, params: { registrationId }, body }),
   verifyClaimedDiscount: (organisationId: string, registrationId: string, body: VerifyClaimedDiscountBody) =>
     apiClient.request(verifyClaimedDiscountEndpoint, { organisationId, params: { registrationId }, body }),
+  previewAnswers: (organisationId: string, registrationId: string, body: EditAnswersBody) =>
+    apiClient.request(previewEditAnswersEndpoint, { organisationId, params: { registrationId }, body }),
+  editAnswers: (organisationId: string, registrationId: string, body: SaveEditAnswersBody) =>
+    apiClient.request(editAnswersEndpoint, { organisationId, params: { registrationId }, body }),
+  previewParticipant: (organisationId: string, registrationId: string, body: AddParticipantBody) =>
+    apiClient.request(previewAddParticipantEndpoint, { organisationId, params: { registrationId }, body }),
+  addParticipant: (organisationId: string, registrationId: string, body: SaveAddParticipantBody) =>
+    apiClient.request(addParticipantEndpoint, { organisationId, params: { registrationId }, body }),
+  move: (organisationId: string, registrationId: string, turnusId: string) =>
+    apiClient.request(moveRegistrationEndpoint, { organisationId, params: { registrationId }, body: { turnusId } }),
+  editGuardian: (organisationId: string, registrationId: string, position: number, body: EditGuardianBody) =>
+    apiClient.request(editGuardianEndpoint, {
+      organisationId,
+      params: { registrationId, position: position === 1 ? '1' : '2' },
+      body,
+    }),
+  turnusForm: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
+    apiClient.request(getTurnusFormEndpoint, { organisationId, params: { turnusId }, signal }),
+  create: (organisationId: string, campId: string, body: SubmitRegistrationBody) =>
+    apiClient.request(createRegistrationEndpoint, { organisationId, params: { campId }, body }),
 };

@@ -12,6 +12,7 @@ import {
   ageProblem,
   REGISTRATION_FIELD_CATALOGUE,
   turnusAvailability,
+  type DiscountCodeStatus,
   type TurnusAvailability,
 } from '@repo/schema/camps';
 import {
@@ -143,7 +144,7 @@ export class RegistrationService {
     const now = this.clock.now();
     const { camp, form, turnus } = await this.placeOf(slug, body.turnusId);
     await this.ensureRoom(turnus, body.submission.participants.length, now);
-    const { submission, errors } = this.checkAnswers(form, turnus, body);
+    const { submission, errors } = this.checkAnswers(form, turnus, body, true);
 
     if (errors.length > 0) {
       const code = await this.discountCodeOf(camp.id, body.discountCode, 'check');
@@ -169,7 +170,85 @@ export class RegistrationService {
       submittedAt: now,
     });
 
-    return this.store({ form, turnus: locked }, body, { submission, price, code, now, ipAddress });
+    const actor: Actor = {
+      kind: 'guardian',
+      identity: requiredTextOf(submission.registration, 'guardianEmail'),
+      ipAddress,
+    };
+
+    return this.store({ form, turnus: locked }, body, {
+      submission,
+      price,
+      code,
+      now,
+      ipAddress,
+      actor,
+      action: 'registration.submit',
+    });
+  }
+
+  /**
+   * Create a Registration for an admin, from a phone call or a paper form: under the Camp's latest form, but
+   * outside the Registration window, over capacity and outside age limits, without mandatory declarations,
+   * and with a Discount code past its limit or expiry, still counted as a use. The same idempotency key
+   * returns the first Registration.
+   * @param actor the admin
+   * @param campId Camp id
+   * @param body the Turnus, the answers, the payment choice, the code and the declarations
+   * @throws {NotFoundException} when the Camp has no published form or the Turnus is not its
+   * @throws {BadRequestException} submission_invalid with the reasons in `fields`
+   */
+  public async createByAdmin(
+    actor: Actor,
+    campId: string,
+    body: SubmitRegistrationBody,
+  ): Promise<SubmittedRegistration> {
+    if (actor.kind === 'system') {
+      throw new Error('An admin creates a Registration, never the system');
+    }
+
+    await this.registrations.lockIdempotencyKey(body.idempotencyKey);
+    const earlier = await this.registrations.getByIdempotencyKey(body.idempotencyKey);
+
+    if (earlier !== null) {
+      return this.replay(earlier, body.turnusId);
+    }
+
+    const camp = await this.camps.getByIdOrThrow(campId);
+    const form = await this.forms.getLatestVersion(camp.id);
+    // No lock: an admin's Registration takes a place whatever the capacity.
+    const turnus = await this.turnusy.getById(body.turnusId);
+
+    if (form === null || turnus === null || turnus.campId !== camp.id) {
+      throw new NotFoundException();
+    }
+
+    const { submission, errors } = this.checkAnswers(form, turnus, body, false);
+    const { code, error } = await this.discountCodeOf(camp.id, body.discountCode, 'admin');
+
+    if (errors.length > 0 || error !== null) {
+      throw invalid(error === null ? errors : [...errors, error]);
+    }
+
+    const now = this.clock.now();
+    const price = priceRegistration({
+      priceList: turnus,
+      siblingDiscount: camp.toSiblingDiscount(),
+      participants: surchargesOf(form.definition, submission),
+      discountCode: code?.toPricing() ?? null,
+      paymentChoice: body.paymentChoice,
+      submittedAt: now,
+    });
+
+    return this.store({ form, turnus }, body, {
+      submission,
+      price,
+      code,
+      now,
+      ipAddress: actor.ipAddress,
+      actor,
+      action: 'registration.create',
+    });
   }
 
   /**
@@ -277,16 +356,18 @@ export class RegistrationService {
   }
 
   /**
-   * Check the answers against the form, the Camp's limit of children, the Turnus's age limits and the
-   * mandatory declarations.
+   * Check the answers against the form and the Camp's limit of children, and for a guardian's submission
+   * the Turnus's age limits and the mandatory declarations too.
    * @param form the latest published form
    * @param turnus the Turnus
    * @param body the submission
+   * @param byGuardian whether a guardian submits; an admin's Registration skips the ages and declarations
    */
   private checkAnswers(
     form: RegistrationFormVersionEntity,
     turnus: TurnusEntity,
     body: SubmitRegistrationBody,
+    byGuardian: boolean,
   ): { submission: Submission; errors: FieldError[] } {
     const { value, errors: formErrors } = checkSubmission(
       form.definition,
@@ -299,6 +380,10 @@ export class RegistrationService {
 
     if (value.participants.length > form.maxParticipants) {
       field(['participants'], 'participants_too_many', { max: form.maxParticipants });
+    }
+
+    if (!byGuardian) {
+      return { submission: value, errors };
     }
 
     value.participants.forEach((answers, index) => {
@@ -326,23 +411,25 @@ export class RegistrationService {
    * code stays locked until the unit of work ends.
    * @param campId Camp id
    * @param text the code as typed, or nothing
-   * @param purpose `check` to only tell, `use` to take a use next
+   * @param purpose `check` to only tell, `use` to take a use next, `admin` to take one past the code's limit
+   * or expiry, as an admin may
    */
   private async discountCodeOf(
     campId: string,
     text: string | null,
-    purpose: 'check' | 'use',
+    purpose: 'check' | 'use' | 'admin',
   ): Promise<{ code: DiscountCodeEntity | null; error: FieldError | null }> {
     if (text === null || text.trim() === '') {
       return { code: null, error: null };
     }
 
     const { code, status } =
-      purpose === 'use'
-        ? await this.discountCodes.checkForUse(campId, text)
-        : await this.discountCodes.check(campId, text);
+      purpose === 'check'
+        ? await this.discountCodes.check(campId, text)
+        : await this.discountCodes.checkForUse(campId, text);
+    const usable: readonly DiscountCodeStatus[] = purpose === 'admin' ? ['valid', 'expired', 'exhausted'] : ['valid'];
 
-    if (code !== null && status === 'valid') {
+    if (code !== null && usable.includes(status)) {
       return { code, error: null };
     }
 
@@ -356,7 +443,7 @@ export class RegistrationService {
    * Participants, price lines, code use and declaration answers; audit it and enqueue what follows.
    * @param place the form and the Turnus, locked
    * @param body the submission
-   * @param checked the checked answers, the price, the code, the instant and the address
+   * @param checked the checked answers, the price, the code, the instant, who submits and from where
    */
   private async store(
     { form, turnus }: Omit<Place, 'camp'>,
@@ -367,9 +454,11 @@ export class RegistrationService {
       code: DiscountCodeEntity | null;
       now: Date;
       ipAddress: string;
+      actor: Actor;
+      action: 'registration.submit' | 'registration.create';
     },
   ): Promise<SubmittedRegistration> {
-    const { submission, price, code, now, ipAddress } = checked;
+    const { submission, price, code, now, ipAddress, actor, action } = checked;
     const registration = await this.createWithVariableSymbol({
       turnusId: turnus.id,
       formVersionId: form.id,
@@ -401,14 +490,9 @@ export class RegistrationService {
       await this.discountCodes.recordUse(code.id, registration.id, now);
     }
 
-    const actor: Actor = {
-      kind: 'guardian',
-      identity: requiredTextOf(submission.registration, 'guardianEmail'),
-      ipAddress,
-    };
     // What was submitted, as the history shows it; the address is the entry's own, not repeated inside.
     await this.audit.record(actor, {
-      action: 'registration.submit',
+      action,
       target: { type: 'registration', id: registration.id },
       change: {
         before: null,

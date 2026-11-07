@@ -22,6 +22,14 @@ export interface PriceLine {
   readonly label: string | null;
   // Whole CZK, negative for a discount.
   readonly amount: number;
+  // The form answer a Paid extra or Claimed discount comes from, so it can be taken back exactly.
+  readonly source?: SurchargeSource;
+}
+
+export interface SurchargeSource {
+  readonly fieldId: string;
+  // The chosen option, or null for a yes.
+  readonly optionId: string | null;
 }
 
 export interface PriceList {
@@ -67,7 +75,12 @@ export interface PricingInput {
   readonly siblingDiscount: SiblingDiscount | null;
   // Each Participant's surcharges from the form's answers: positive Paid extras, negative Claimed discounts.
   readonly participants: readonly {
-    readonly surcharges: readonly { readonly label: string; readonly amount: number }[];
+    readonly surcharges: readonly {
+      readonly label: string;
+      readonly amount: number;
+      readonly fieldId?: string;
+      readonly optionId?: string | null;
+    }[];
   }[];
   readonly discountCode: DiscountCode | null;
   readonly paymentChoice: PaymentChoice;
@@ -118,11 +131,12 @@ export function priceRegistration(input: PricingInput): RegistrationPrice {
 
   const childPrices: PriceLine[] = participants.map((_, participant) => ({ ...childPrice, participant, label: null }));
   const surcharges: PriceLine[] = participants.flatMap(({ surcharges: answers }, participant) =>
-    answers.map(({ label, amount }) => ({
+    answers.map(({ label, amount, fieldId, optionId }) => ({
       kind: amount < 0 ? 'claimed_discount' : 'paid_extra',
       participant,
       label,
       amount,
+      ...(fieldId === undefined ? {} : { source: { fieldId, optionId: optionId ?? null } }),
     })),
   );
   const percentage: PriceLine[] =

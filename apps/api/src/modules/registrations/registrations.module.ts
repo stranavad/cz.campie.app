@@ -1,8 +1,12 @@
 import { Module } from '@nestjs/common';
 
 import { CampsModule } from '../camps/camps.module.ts';
+import { AdminRegistrationController } from './admin-registration/admin-registration.controller.ts';
+import { AdminRegistrationService } from './admin-registration/services/admin-registration.service.ts';
 import { SendConfirmationHandler } from './confirmation/send-confirmation.handler.ts';
 import { ConfirmationService } from './confirmation/services/confirmation.service.ts';
+import { EmailChangeConfirmedHandler } from './guardian-email/guardian-email-notice.handler.ts';
+import { GuardianEmailNoticeService } from './guardian-email/services/guardian-email-notice.service.ts';
 import { LedgerController } from './ledger/ledger.controller.ts';
 import { SendPaymentReceivedHandler } from './ledger/send-payment-received.handler.ts';
 import { LedgerService } from './ledger/services/ledger.service.ts';
@@ -24,6 +28,7 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     LedgerController,
     ParticipantListController,
     RegistrationDetailController,
+    AdminRegistrationController,
   ],
   providers: [
     RegistrationService,
@@ -33,6 +38,9 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     LedgerService,
     ParticipantListService,
     RegistrationDetailService,
+    AdminRegistrationService,
+    GuardianEmailNoticeService,
+    EmailChangeConfirmedHandler,
     NotifyTeamHandler,
     GeneratePrihlaskyHandler,
     SendConfirmationHandler,

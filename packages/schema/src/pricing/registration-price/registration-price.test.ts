@@ -199,4 +199,19 @@ describe('priceRegistration', () => {
 
     expect(price).toMatchObject({ total: 1500, depositTotal: 1500 });
   });
+
+  it('keeps the answer a surcharge line comes from, so it can be taken back exactly', () => {
+    const { lines } = priceRegistration({
+      ...INPUT,
+      participants: [{ surcharges: [{ label: 'Doprava: Autobus', amount: 300, fieldId: 'doprava', optionId: 'bus' }] }],
+    });
+
+    expect(lines).toContainEqual({
+      kind: 'paid_extra',
+      participant: 0,
+      label: 'Doprava: Autobus',
+      amount: 300,
+      source: { fieldId: 'doprava', optionId: 'bus' },
+    });
+  });
 });

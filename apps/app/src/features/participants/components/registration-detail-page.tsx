@@ -7,6 +7,7 @@ import type { AnswerRow } from '@repo/schema/registrations';
 import { czechDate, czechDateTime, czk } from '@repo/schema/shared';
 
 import { Button } from '@/components/ui/button';
+import { AdminActions } from '@/features/participants/components/admin-actions';
 import { LedgerForms } from '@/features/participants/components/ledger-forms';
 import { useRegistrationDetailPage } from '@/features/participants/components/use-registration-detail-page.hook';
 
@@ -189,6 +190,7 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
         {detail.ledger.overdue ? <p className="text-sm text-destructive">{t('detail.overdue')}</p> : null}
         {page.canWrite ? <LedgerForms organisationId={page.organisationId} registrationId={registrationId} /> : null}
       </Section>
+      {page.canWrite ? <AdminActions organisationId={page.organisationId} detail={detail} /> : null}
       <Section title={t('detail.declarations')}>
         {detail.declarations.map((declaration, index) => (
           <p key={index} className="text-sm">

@@ -421,11 +421,12 @@ function surchargeLinesOf(
   return participants
     .filter(({ status }) => status === 'registered')
     .flatMap(({ position }) =>
-      (child?.surcharges ?? []).map(({ label, amount }) => ({
+      (child?.surcharges ?? []).map(({ label, amount, fieldId, optionId }) => ({
         kind: amount < 0 ? ('claimed_discount' as const) : ('paid_extra' as const),
         participant: position,
         label,
         amount,
+        source: { fieldId, optionId },
       })),
     );
 }

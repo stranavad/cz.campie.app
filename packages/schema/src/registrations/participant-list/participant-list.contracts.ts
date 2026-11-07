@@ -9,7 +9,9 @@ import { PARTICIPANT_STATUSES } from '../registration/participant-status.ts';
 // A viewing choice, not a business state.
 export const selectedTurnusSchema = z.object({
   turnusId: z.uuid().nullable(),
-  turnusy: z.array(z.object({ id: z.uuid(), campName: z.string(), name: z.string(), startDate: calendarDateSchema })),
+  turnusy: z.array(
+    z.object({ id: z.uuid(), campId: z.uuid(), campName: z.string(), name: z.string(), startDate: calendarDateSchema }),
+  ),
 });
 
 export type SelectedTurnus = z.infer<typeof selectedTurnusSchema>;

@@ -31,6 +31,7 @@ import { Route as OrganisationPortalRegistrationIdRouteImport } from './routes/o
 import { Route as OrganisationPortalPotvrzeniEmailuRouteImport } from './routes/organisation/portal/potvrzeni-emailu'
 import { Route as OrganisationPortalPrihlaseniRouteImport } from './routes/organisation/portal/prihlaseni'
 import { Route as PlatformPrihlaskyRegistrationIdRouteImport } from './routes/platform/prihlasky_.$registrationId'
+import { Route as PlatformPrihlaskyNovaRouteImport } from './routes/platform/prihlasky_.nova'
 import { Route as PlatformTaboryNahledRouteImport } from './routes/platform/tabory_.nahled'
 
 const OrganisationRouteRoute = OrganisationRouteRouteImport.update({
@@ -150,6 +151,11 @@ const PlatformPrihlaskyRegistrationIdRoute =
     path: '/prihlasky/$registrationId',
     getParentRoute: () => PlatformRouteRoute,
   } as any)
+const PlatformPrihlaskyNovaRoute = PlatformPrihlaskyNovaRouteImport.update({
+  id: '/prihlasky_/nova',
+  path: '/prihlasky/nova',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
 const PlatformTaboryNahledRoute = PlatformTaboryNahledRouteImport.update({
   id: '/tabory_/nahled',
   path: '/tabory/nahled',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/organisation/portal/potvrzeni-emailu': typeof OrganisationPortalPotvrzeniEmailuRoute
   '/organisation/portal/prihlaseni': typeof OrganisationPortalPrihlaseniRoute
   '/platform/prihlasky/$registrationId': typeof PlatformPrihlaskyRegistrationIdRoute
+  '/platform/prihlasky/nova': typeof PlatformPrihlaskyNovaRoute
   '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug/': typeof OrganisationCampSlugIndexRoute
   '/organisation/portal/': typeof OrganisationPortalIndexRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByTo {
   '/organisation/portal/potvrzeni-emailu': typeof OrganisationPortalPotvrzeniEmailuRoute
   '/organisation/portal/prihlaseni': typeof OrganisationPortalPrihlaseniRoute
   '/platform/prihlasky/$registrationId': typeof PlatformPrihlaskyRegistrationIdRoute
+  '/platform/prihlasky/nova': typeof PlatformPrihlaskyNovaRoute
   '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug': typeof OrganisationCampSlugIndexRoute
   '/organisation/portal': typeof OrganisationPortalIndexRoute
@@ -226,6 +234,7 @@ export interface FileRoutesById {
   '/organisation/portal/potvrzeni-emailu': typeof OrganisationPortalPotvrzeniEmailuRoute
   '/organisation/portal/prihlaseni': typeof OrganisationPortalPrihlaseniRoute
   '/platform/prihlasky_/$registrationId': typeof PlatformPrihlaskyRegistrationIdRoute
+  '/platform/prihlasky_/nova': typeof PlatformPrihlaskyNovaRoute
   '/platform/tabory_/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug/': typeof OrganisationCampSlugIndexRoute
   '/organisation/portal/': typeof OrganisationPortalIndexRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/organisation/portal/potvrzeni-emailu'
     | '/organisation/portal/prihlaseni'
     | '/platform/prihlasky/$registrationId'
+    | '/platform/prihlasky/nova'
     | '/platform/tabory/nahled'
     | '/organisation/$campSlug/'
     | '/organisation/portal/'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/organisation/portal/potvrzeni-emailu'
     | '/organisation/portal/prihlaseni'
     | '/platform/prihlasky/$registrationId'
+    | '/platform/prihlasky/nova'
     | '/platform/tabory/nahled'
     | '/organisation/$campSlug'
     | '/organisation/portal'
@@ -301,6 +312,7 @@ export interface FileRouteTypes {
     | '/organisation/portal/potvrzeni-emailu'
     | '/organisation/portal/prihlaseni'
     | '/platform/prihlasky_/$registrationId'
+    | '/platform/prihlasky_/nova'
     | '/platform/tabory_/nahled'
     | '/organisation/$campSlug/'
     | '/organisation/portal/'
@@ -468,6 +480,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformPrihlaskyRegistrationIdRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
+    '/platform/prihlasky_/nova': {
+      id: '/platform/prihlasky_/nova'
+      path: '/prihlasky/nova'
+      fullPath: '/platform/prihlasky/nova'
+      preLoaderRoute: typeof PlatformPrihlaskyNovaRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
     '/platform/tabory_/nahled': {
       id: '/platform/tabory_/nahled'
       path: '/tabory/nahled'
@@ -515,6 +534,7 @@ interface PlatformRouteRouteChildren {
   PlatformZapomenuteHesloRoute: typeof PlatformZapomenuteHesloRoute
   PlatformIndexRoute: typeof PlatformIndexRoute
   PlatformPrihlaskyRegistrationIdRoute: typeof PlatformPrihlaskyRegistrationIdRoute
+  PlatformPrihlaskyNovaRoute: typeof PlatformPrihlaskyNovaRoute
   PlatformTaboryNahledRoute: typeof PlatformTaboryNahledRoute
 }
 
@@ -531,6 +551,7 @@ const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformZapomenuteHesloRoute: PlatformZapomenuteHesloRoute,
   PlatformIndexRoute: PlatformIndexRoute,
   PlatformPrihlaskyRegistrationIdRoute: PlatformPrihlaskyRegistrationIdRoute,
+  PlatformPrihlaskyNovaRoute: PlatformPrihlaskyNovaRoute,
   PlatformTaboryNahledRoute: PlatformTaboryNahledRoute,
 }
 

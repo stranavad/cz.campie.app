@@ -73,6 +73,7 @@ export class RegistrationDetailService {
       submittedAt: registration.submittedAt.toISOString(),
       paymentChoice: registration.paymentChoice,
       formVersion: version.version,
+      latestDefinition: latest.definition,
       camp: { id: camp.id, name: camp.name },
       turnus: { id: turnus.id, name: turnus.name, startDate: turnus.startDate, endDate: turnus.endDate },
       guardians: (await this.registrations.listGuardians(registrationId)).map((guardian, index) => ({

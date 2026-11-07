@@ -100,5 +100,45 @@
       "invalid_amount": "Zadejte celou částku v Kč."
     },
     "encryptedChanged": "Změněná chráněná pole: {{fields}}"
+  },
+  "edit": {
+    "title": "Úpravy přihlášky",
+    "guardian": "Zákonný zástupce {{number}}",
+    "firstName": "Jméno",
+    "lastName": "Příjmení",
+    "email": "E-mail",
+    "phone": "Telefon",
+    "save": "Uložit",
+    "preview": "Ukázat dopad na cenu",
+    "failed": "Změnu se nepodařilo uložit. Zkontrolujte údaje.",
+    "noPriceChange": "Cena se nezmění.",
+    "priceChange": "Přidají se tyto řádky ceny:",
+    "line": "{{label}}: {{amount}}",
+    "kinds": {
+      "base_price": "Základní cena",
+      "early_bird_price": "Cena při včasném přihlášení",
+      "paid_extra": "Příplatek",
+      "claimed_discount": "Sleva",
+      "sibling_discount": "Sourozenecká sleva",
+      "discount_code": "Slevový kód",
+      "zero_floor": "Vyrovnání na nulu"
+    },
+    "registrationAnswers": "Odpovědi za celou přihlášku",
+    "addParticipant": "Přidat dítě",
+    "move": "Přesunout do jiného turnusu",
+    "pickTurnus": "Vyberte turnus",
+    "turnusOption": "{{name}} ({{date}})",
+    "moveButton": "Přesunout"
+  },
+  "create": {
+    "title": "Nová přihláška",
+    "intro": "Přihláška z telefonu nebo papíru. Platí i mimo přihlašovací období, nad kapacitu a mimo věkové limity.",
+    "noForm": "Tábor zatím nemá zveřejněný formulář.",
+    "guardian": "Zákonný zástupce",
+    "child": "Dítě {{number}}",
+    "addChild": "Přidat další dítě",
+    "failed": "Přihlášku se nepodařilo založit. Zkontrolujte údaje.",
+    "submit": "Založit přihlášku",
+    "open": "Nová přihláška"
   }
 }

@@ -21,6 +21,9 @@ export const priceLines = p.snakeCase.table.withRLS(
     participantId: p.uuid(),
     label: p.text(),
     amount: p.integer().notNull(),
+    // The form answer a Paid extra or Claimed discount comes from; a change of it reverses exactly these.
+    fieldId: p.text(),
+    optionId: p.text(),
   },
   (table) => [
     p.unique('price_lines_registration_id_position_key').on(table.registrationId, table.position),

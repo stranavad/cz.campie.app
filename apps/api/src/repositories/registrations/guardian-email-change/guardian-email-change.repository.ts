@@ -109,6 +109,31 @@ export class GuardianEmailChangeRepository {
   }
 
   /**
+   * Record a change made at once, by an admin, for its notice: any change of that guardian still waiting is
+   * replaced, so no earlier link can undo it.
+   * @param change the Registration, the guardian's position and the new email
+   * @param previousEmail the guardian's email before the change
+   * @param tokenHash SHA-256 of a token no link carries
+   * @param now the instant of the change
+   * @returns the change's id
+   */
+  public async recordConfirmed(
+    change: Omit<PendingEmailChange, 'id'>,
+    previousEmail: string,
+    tokenHash: Buffer,
+    now: Date,
+  ): Promise<string> {
+    const id = await this.replace(change, tokenHash, now);
+
+    await this.unitOfWork.db
+      .update(guardianEmailChanges)
+      .set({ confirmedAt: now, previousEmail })
+      .where(eq(guardianEmailChanges.id, id));
+
+    return id;
+  }
+
+  /**
    * Keep the email a confirmed change replaced, for its notice.
    * @param id the change's id
    * @param previousEmail the guardian's email before the change

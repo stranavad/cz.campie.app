@@ -83,7 +83,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | --- | ------------------------------------------------------- | --------------- | ---------- |
 | 42  | Participant list with search and Selected Turnus        | done            | 19, 35     |
 | 43  | Registration detail and change history                  | done            | 38, 42     |
-| 44  | Admin create, edit and move Registration                | ready-for-agent | 43         |
+| 44  | Admin create, edit and move Registration                | done            | 43         |
 | 45  | Cancel, Cancel all, access emails, regenerate Přihláška | ready-for-agent | 37, 44     |
 | 46  | Simple Participant export                               | ready-for-agent | 42         |
 | 47  | Public data and processors page                         | ready-for-human | 13         |

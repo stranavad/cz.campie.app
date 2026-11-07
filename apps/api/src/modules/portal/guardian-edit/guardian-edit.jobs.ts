@@ -8,10 +8,3 @@ export const emailChangeRequestedJob = defineJob({
   scope: 'organisation',
   payload: z.object({ changeId: z.uuid() }),
 });
-
-// Tells a guardian's previous address of a confirmed change.
-export const emailChangeConfirmedJob = defineJob({
-  name: 'portal.email-change-confirmed',
-  scope: 'organisation',
-  payload: z.object({ changeId: z.uuid() }),
-});
