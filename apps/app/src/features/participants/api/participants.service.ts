@@ -1,3 +1,4 @@
+import { previewOpenItemsReminderEndpoint, sendOpenItemsReminderEndpoint } from '@repo/schema/checklist';
 import {
   downloadSignedConsentEndpoint,
   getRegistrationConsentsEndpoint,
@@ -143,4 +144,8 @@ export const participantsService = {
     apiClient.request(addInternalDocumentEndpoint, { organisationId, params: { registrationId, participantId }, file }),
   removeInternalDocument: (organisationId: string, internalDocumentId: string) =>
     apiClient.request(removeInternalDocumentEndpoint, { organisationId, params: { internalDocumentId } }),
+  openItemsPreview: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
+    apiClient.request(previewOpenItemsReminderEndpoint, { organisationId, params: { turnusId }, signal }),
+  sendOpenItemsReminder: (organisationId: string, turnusId: string) =>
+    apiClient.request(sendOpenItemsReminderEndpoint, { organisationId, params: { turnusId } }),
 };

@@ -104,7 +104,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 57  | Guardian document upload                       | E8           | done            | 39, 56     |
 | 58  | Admin document review and Internal documents   | E8           | done            | 57         |
 | 59  | Participant checklist                          | E5           | done            | 41, 53, 57 |
-| 60  | Open-items reminder                            | E5           | ready-for-agent | 59         |
+| 60  | Open-items reminder                            | E5           | done            | 59         |
 | 61  | Turnus overview and list filters               | E6           | ready-for-agent | 38, 42, 59 |
 | 62  | Export presets and payments export             | E6           | ready-for-agent | 46         |
 | 63  | Support access                                 | E9 Trust     | ready-for-agent | 10, 21     |

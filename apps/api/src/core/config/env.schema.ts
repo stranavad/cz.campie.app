@@ -219,6 +219,12 @@ const requestLimits = z
           env.PAYMENT_REMINDER_LIMIT_PER_ORGANISATION,
           env.PAYMENT_REMINDER_LIMIT_PER_ORGANISATION,
         ),
+        // The open-items reminder, as often as the payment reminder, counted apart.
+        openItemsReminder: limitOf(
+          'open-items-reminder',
+          env.PAYMENT_REMINDER_LIMIT_PER_ORGANISATION,
+          env.PAYMENT_REMINDER_LIMIT_PER_ORGANISATION,
+        ),
       },
     };
   });

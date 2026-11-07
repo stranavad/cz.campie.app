@@ -76,6 +76,16 @@ export class ChecklistService {
   }
 
   /**
+   * Gather the checklists of a Registration's Registered children.
+   * @param registrationId Registration id
+   */
+  public async ofRegistration(registrationId: string): Promise<ParticipantChecklist[]> {
+    const registration = await this.registrations.getByIdOrThrow(registrationId);
+
+    return this.ofRegistrations(registration.turnusId, [registration]);
+  }
+
+  /**
    * Gather the checklists of the Registered children of some of a Turnus's Registrations.
    * @param turnusId the Turnus they are in
    * @param registrations the Registrations

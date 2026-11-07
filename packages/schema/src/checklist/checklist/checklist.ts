@@ -115,3 +115,12 @@ export function checklistOf(input: ChecklistInput): ChecklistItem[] | null {
 
   return items;
 }
+
+/**
+ * Tell whether an item asks something of the guardians other than money: open, and not a document waiting
+ * for the camp's review. Payment is reminded on its own.
+ * @param item the checklist item
+ */
+export function isOpenForGuardians(item: ChecklistItem): boolean {
+  return !item.done && item.kind !== 'payment' && !(item.kind === 'document' && item.state === 'pending');
+}

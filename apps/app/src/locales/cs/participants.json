@@ -231,5 +231,10 @@
     "addInternal": "Přidat interní dokument",
     "removeInternal": "Smazat",
     "actionFailed": "Akci se nepodařilo provést. Načtěte stránku a zkuste to znovu."
+  },
+  "openItems": {
+    "open": "Připomenout chybějící věci",
+    "intro": "Půjde rodičům dětí, kterým chybí podpis souhlasu, dokument nebo údaje v přihlášce. Platby připomíná zvláštní tlačítko.",
+    "switchedOff": "Tábor má připomínku chybějících věcí vypnutou, nic se neodešle. Zapnout ji můžete v nastavení e-mailů tábora."
   }
 }

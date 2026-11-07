@@ -5,6 +5,7 @@ import { PAYMENT_STATUSES } from '@repo/schema/pricing';
 import { czechDate, czk } from '@repo/schema/shared';
 
 import { Input } from '@/components/ui/input';
+import { OpenItemsReminder } from '@/features/participants/components/open-items-reminder';
 import { ParticipantExport } from '@/features/participants/components/participant-export';
 import { PaymentReminders } from '@/features/participants/components/payment-reminders';
 import { TurnusConsents } from '@/features/participants/components/turnus-consents';
@@ -64,6 +65,13 @@ export function ParticipantsPage() {
         )}
         {page.turnusId === null || !page.canWrite ? null : (
           <PaymentReminders key={page.turnusId} organisationId={page.organisationId} turnusId={page.turnusId} />
+        )}
+        {page.turnusId === null || !page.canWrite ? null : (
+          <OpenItemsReminder
+            key={`open-${page.turnusId}`}
+            organisationId={page.organisationId}
+            turnusId={page.turnusId}
+          />
         )}
       </header>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

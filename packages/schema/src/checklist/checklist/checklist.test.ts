@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { checklistOf, type ChecklistInput } from './checklist.ts';
+import { checklistOf, isOpenForGuardians, type ChecklistInput } from './checklist.ts';
 
 const CONSENT = '0190a2b4-0000-7000-8000-0000000000f1';
 const REQUIREMENT = '0190a2b4-0000-7000-8000-0000000000f2';
@@ -71,5 +71,20 @@ describe('checklistOf', () => {
 
   it('gives a Cancelled child no checklist', () => {
     expect(checklistOf({ ...INPUT, participantStatus: 'cancelled' })).toBeNull();
+  });
+
+  it('tells what asks something of the guardians: not payment, nor a document waiting for review', () => {
+    const items = checklistOf({
+      ...INPUT,
+      requirements: [
+        { documentTypeId: REQUIREMENT, name: 'Potvrzení', dueDate: null, state: 'pending' },
+        { documentTypeId: CONSENT, name: 'Průkaz', dueDate: null, state: 'returned' },
+      ],
+    });
+
+    expect(items?.filter(isOpenForGuardians).map(({ kind, state }) => `${kind}:${state}`)).toEqual([
+      'consent:unsigned',
+      'document:returned',
+    ]);
   });
 });

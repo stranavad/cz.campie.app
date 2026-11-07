@@ -236,3 +236,14 @@ export const useDocumentReview = <Variables, Result>(
     onSettled: () => queryClient.invalidateQueries({ queryKey: documentsKey(organisationId, registrationId) }),
   });
 };
+
+export const useOpenItemsPreviewQuery = (organisationId: string, turnusId: string, enabled: boolean) =>
+  useQuery({
+    queryKey: [...participantsKeys.organisation(organisationId), 'open-items', turnusId],
+    queryFn: enabled
+      ? ({ signal }) => participantsService.openItemsPreview(organisationId, turnusId, signal)
+      : skipToken,
+  });
+
+export const useSendOpenItemsReminderMutation = (organisationId: string, turnusId: string) =>
+  useMutation({ mutationFn: () => participantsService.sendOpenItemsReminder(organisationId, turnusId) });

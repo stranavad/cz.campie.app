@@ -37,6 +37,7 @@ export interface CampEmailMessage {
   readonly to: readonly string[];
   readonly actionHref?: CampEmailProps['actionHref'];
   readonly payment?: CampEmailProps['payment'];
+  readonly details?: CampEmailProps['details'];
   readonly attachments?: readonly string[];
   readonly inlineImages?: EmailOptions['inlineImages'];
 }
@@ -183,6 +184,7 @@ export class CampEmailService {
         values,
         actionHref: message.actionHref,
         payment: message.payment,
+        details: message.details,
       },
       { to, sender, attachments: message.attachments, inlineImages: message.inlineImages },
     );
