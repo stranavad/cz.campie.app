@@ -3,7 +3,14 @@ import { pipeline, Readable } from 'node:stream';
 import { buffer } from 'node:stream/consumers';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
-import { FILE_CONTENT_TYPES, MAX_FILE_BYTES, type FileContentType, type FileLink } from '@repo/schema/files';
+import {
+  FILE_CONTENT_TYPES,
+  MAX_FILE_BYTES,
+  UPLOAD_CONTENT_TYPES,
+  XLSX_CONTENT_TYPE,
+  type FileContentType,
+  type FileLink,
+} from '@repo/schema/files';
 import { LOGO_CONTENT_TYPES, MAX_LOGO_BYTES } from '@repo/schema/organisations';
 
 import { FileRepository } from '../../repositories/files/file/file.repository.ts';
@@ -24,6 +31,7 @@ const FILE_TYPES: Record<FileContentType, { readonly signature: Buffer; readonly
   'application/pdf': { signature: Buffer.from('%PDF-'), extensions: ['.pdf'] },
   'image/jpeg': { signature: Buffer.from('ffd8ff', 'hex'), extensions: ['.jpg', '.jpeg'] },
   'image/png': { signature: Buffer.from('89504e470d0a1a0a', 'hex'), extensions: ['.png'] },
+  [XLSX_CONTENT_TYPE]: { signature: Buffer.from('504b0304', 'hex'), extensions: ['.xlsx'] },
 };
 
 // What a feature narrows an upload to, such as a logo to small images.
@@ -72,7 +80,7 @@ export class FileService {
    * @throws {PayloadTooLargeException} when the file is over the size limit
    */
   public async store(upload: FileUpload, limits: StoreLimits = {}): Promise<string> {
-    const { allow = FILE_CONTENT_TYPES, maxBytes = MAX_FILE_BYTES } = limits;
+    const { allow = UPLOAD_CONTENT_TYPES, maxBytes = MAX_FILE_BYTES } = limits;
     const contentType = contentTypeOf(upload);
 
     if (contentType === null || !allow.includes(contentType)) {

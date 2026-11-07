@@ -33,6 +33,7 @@ export function useParticipantsPage() {
     isSignedOut,
     isLoading: isLoading || (canRead && selected.isPending),
     hasNoAccess: hasNoMembership || !canRead,
+    organisationId,
     turnusy: selected.data?.turnusy ?? [],
     turnusId,
     selectTurnus: (id: string) => select.mutate(id),

@@ -5,6 +5,7 @@ import { PAYMENT_STATUSES } from '@repo/schema/pricing';
 import { czechDate, czk } from '@repo/schema/shared';
 
 import { Input } from '@/components/ui/input';
+import { ParticipantExport } from '@/features/participants/components/participant-export';
 import { useParticipantsPage } from '@/features/participants/components/use-participants-page.hook';
 
 // The admin's working list: the Participants of the Selected Turnus, searched and filtered.
@@ -49,6 +50,9 @@ export function ParticipantsPage() {
             ))}
           </select>
         </label>
+        {page.turnusId === null ? null : (
+          <ParticipantExport key={page.turnusId} organisationId={page.organisationId} turnusId={page.turnusId} />
+        )}
       </header>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <label className="flex flex-1 flex-col gap-1 text-sm">

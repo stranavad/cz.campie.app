@@ -85,7 +85,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 43  | Registration detail and change history                  | done            | 38, 42     |
 | 44  | Admin create, edit and move Registration                | done            | 43         |
 | 45  | Cancel, Cancel all, access emails, regenerate Přihláška | done            | 37, 44     |
-| 46  | Simple Participant export                               | ready-for-agent | 42         |
+| 46  | Simple Participant export                               | done            | 42         |
 | 47  | Public data and processors page                         | ready-for-human | 13         |
 
 ## Stage 1b - before payments and paperwork are due (April 2027)

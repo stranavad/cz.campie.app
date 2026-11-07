@@ -7,6 +7,7 @@ import {
   createRegistrationEndpoint,
   editAnswersEndpoint,
   editGuardianEndpoint,
+  getParticipantExportEndpoint,
   getRegistrationDetailEndpoint,
   getRegistrationHistoryEndpoint,
   getSelectedTurnusEndpoint,
@@ -20,6 +21,7 @@ import {
   removeAccessEmailEndpoint,
   removeGuardianEndpoint,
   setSelectedTurnusEndpoint,
+  startParticipantExportEndpoint,
   verifyClaimedDiscountEndpoint,
   type AddParticipantBody,
   type AddPriceAdjustmentBody,
@@ -96,4 +98,8 @@ export const participantsService = {
     }),
   regeneratePrihlaska: (organisationId: string, registrationId: string, participantId: string) =>
     apiClient.request(regeneratePrihlaskaEndpoint, { organisationId, params: { registrationId, participantId } }),
+  startExport: (organisationId: string, turnusId: string) =>
+    apiClient.request(startParticipantExportEndpoint, { organisationId, params: { turnusId } }),
+  export: (organisationId: string, exportId: string, signal?: AbortSignal) =>
+    apiClient.request(getParticipantExportEndpoint, { organisationId, params: { exportId }, signal }),
 };

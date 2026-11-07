@@ -153,3 +153,29 @@ export const useRegeneratePrihlaskaMutation = (organisationId: string, registrat
   useRegistrationChange(organisationId, (participantId: string) =>
     participantsService.regeneratePrihlaska(organisationId, registrationId, participantId),
   );
+
+export const useStartExportMutation = (organisationId: string) =>
+  useMutation({ mutationFn: (turnusId: string) => participantsService.startExport(organisationId, turnusId) });
+
+// The job usually finishes within seconds: poll until the file is there, then renew its five-minute link.
+// A job still waiting after two minutes is retrying with growing delays, so the page stops asking.
+const EXPORT_POLLS = 80;
+
+export const useParticipantExportQuery = (organisationId: string, exportId: string | null) => {
+  const queryKey = [...participantsKeys.organisation(organisationId), 'export', exportId ?? ''];
+  const polls = useQueryClient().getQueryState(queryKey)?.dataUpdateCount ?? 0;
+  const query = useQuery({
+    queryKey,
+    queryFn:
+      exportId === null ? skipToken : ({ signal }) => participantsService.export(organisationId, exportId, signal),
+    refetchInterval: ({ state }) => {
+      if (state.data?.status === 'ready') {
+        return 4 * 60_000;
+      }
+
+      return state.dataUpdateCount < EXPORT_POLLS ? 1500 : false;
+    },
+  });
+
+  return { ...query, gaveUp: query.data?.status === 'pending' && polls >= EXPORT_POLLS };
+};

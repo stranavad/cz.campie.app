@@ -19,6 +19,7 @@ import { OrganisationKeyRepository } from './organisations/organisation-key/orga
 import { OrganisationRepository } from './organisations/organisation/organisation.repository.ts';
 import { ClaimedDiscountVerificationRepository } from './registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
 import { GuardianEmailChangeRepository } from './registrations/guardian-email-change/guardian-email-change.repository.ts';
+import { ParticipantExportRepository } from './registrations/participant-export/participant-export.repository.ts';
 import { PaymentRepository } from './registrations/payment/payment.repository.ts';
 import { PriceAdjustmentRepository } from './registrations/price-adjustment/price-adjustment.repository.ts';
 import { RegistrationRepository } from './registrations/registration/registration.repository.ts';
@@ -52,6 +53,7 @@ const REPOSITORIES = [
   PriceAdjustmentRepository,
   GuardianEmailChangeRepository,
   ClaimedDiscountVerificationRepository,
+  ParticipantExportRepository,
 ];
 
 @Global()

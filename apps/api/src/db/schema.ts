@@ -14,7 +14,7 @@ export { registrationFormFiles } from './camps/registration-form-files.ts';
 export { registrationFormVersions } from './camps/registration-form-versions.ts';
 export { registrationForms } from './camps/registration-forms.ts';
 export { turnusy } from './camps/turnusy.ts';
-export { fileContentType, files } from './files/files.ts';
+export { files } from './files/files.ts';
 export { appRole } from './helpers/organisation.ts';
 export { legalAcceptances, legalDocument } from './organisations/legal-acceptances.ts';
 export { organisationKeys } from './organisations/organisation-keys.ts';
@@ -23,6 +23,7 @@ export { organisations, organisationStatus } from './organisations/organisations
 export { claimedDiscountVerifications } from './registrations/claimed-discount-verifications.ts';
 export { declarationAnswers } from './registrations/declaration-answers.ts';
 export { guardianEmailChanges } from './registrations/guardian-email-changes.ts';
+export { exportStatus, participantExports } from './registrations/participant-exports.ts';
 export { participants, participantStatus } from './registrations/participants.ts';
 export { paymentSource, payments } from './registrations/payments.ts';
 export { priceAdjustments } from './registrations/price-adjustments.ts';

@@ -30,6 +30,7 @@
     "@tigrisdata/storage": "^3.23.0",
     "bullmq": "^6.5.3",
     "drizzle-orm": "1.0.0-rc.4",
+    "exceljs": "^4.4.0",
     "ioredis": "^6.0.0",
     "pg": "^8.23.1",
     "qrcode": "^1.5.4",

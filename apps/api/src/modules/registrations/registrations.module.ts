@@ -12,6 +12,9 @@ import { GuardianEmailNoticeService } from './guardian-email/services/guardian-e
 import { LedgerController } from './ledger/ledger.controller.ts';
 import { SendPaymentReceivedHandler } from './ledger/send-payment-received.handler.ts';
 import { LedgerService } from './ledger/services/ledger.service.ts';
+import { ExportParticipantsHandler } from './participant-export/export-participants.handler.ts';
+import { ParticipantExportController } from './participant-export/participant-export.controller.ts';
+import { ParticipantExportService } from './participant-export/services/participant-export.service.ts';
 import { ParticipantListController } from './participant-list/participant-list.controller.ts';
 import { ParticipantListService } from './participant-list/services/participant-list.service.ts';
 import { GeneratePrihlaskyHandler } from './prihlaska/generate-prihlasky.handler.ts';
@@ -32,6 +35,7 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     ParticipantListController,
     RegistrationDetailController,
     AdminRegistrationController,
+    ParticipantExportController,
   ],
   providers: [
     RegistrationService,
@@ -44,6 +48,8 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     AdminRegistrationService,
     GuardianEmailNoticeService,
     CancellationService,
+    ParticipantExportService,
+    ExportParticipantsHandler,
     SendCancellationHandler,
     RegeneratePrihlaskaHandler,
     EmailChangeConfirmedHandler,

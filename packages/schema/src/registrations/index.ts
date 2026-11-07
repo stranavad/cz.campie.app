@@ -7,3 +7,4 @@ export * from './registration/submit-registration.contract.ts';
 export * from './participant-list/participant-list.contracts.ts';
 export * from './registration-detail/registration-detail.contracts.ts';
 export * from './admin-registration/admin-registration.contracts.ts';
+export * from './participant-export/participant-export.contracts.ts';
