@@ -59,8 +59,10 @@ export class JobQueue implements OnModuleDestroy {
     };
 
     // Sent only after the commit, so a job never runs for a change that rolled back or before the change
-    // is visible.
-    this.unitOfWork.afterCommit(() => this.send(job.name, envelope, options.delayMs));
+    // is visible; all of a unit of work's jobs in one round trip, as a reminder to a whole Turnus makes many.
+    this.unitOfWork.gatherAfterCommit(this, { name: job.name, data: envelope, delayMs: options.delayMs }, (jobs) =>
+      this.send(jobs),
+    );
   }
 
   public async onModuleDestroy(): Promise<void> {
@@ -68,26 +70,31 @@ export class JobQueue implements OnModuleDestroy {
   }
 
   /**
-   * Add a job to the queue, waiting for it a short while at most.
-   * @param name the job's name
-   * @param envelope its Organisation and payload
-   * @param delayMs how long it waits before it runs, if at all
+   * Add a unit of work's jobs to the queue together, waiting for them a short while at most.
+   * @param jobs each job's name, its Organisation and payload, and how long it waits before it runs
    */
-  private async send(name: string, envelope: JobEnvelope, delayMs?: number): Promise<void> {
+  private async send(jobs: readonly { name: string; data: JobEnvelope; delayMs: number | undefined }[]): Promise<void> {
+    const names = [...new Set(jobs.map(({ name }) => name))].join(', ');
     // The change is committed by now, so a failure is logged rather than thrown: failing the request
     // would invite repeating a change that happened. While Redis is unreachable an add waits for it
     // without end; the request goes on, and the add with it in the background.
-    const added = this.queue.add(name, envelope, delayMs === undefined ? {} : { delay: delayMs }).then(
-      () => true,
-      (error: unknown) => {
-        this.logger.error(`Job ${name} was not enqueued: ${error instanceof Error ? error.message : String(error)}`);
+    const added = this.queue
+      .addBulk(
+        jobs.map(({ name, data, delayMs }) => ({ name, data, opts: delayMs === undefined ? {} : { delay: delayMs } })),
+      )
+      .then(
+        () => true,
+        (error: unknown) => {
+          this.logger.error(
+            `Jobs ${names} were not enqueued: ${error instanceof Error ? error.message : String(error)}`,
+          );
 
-        return true;
-      },
-    );
+          return true;
+        },
+      );
 
     if (!(await Promise.race([added, sleep(SEND_WAIT_MS, false, { ref: false })]))) {
-      this.logger.error(`Job ${name} is not enqueued yet; Redis is unreachable`);
+      this.logger.error(`Jobs ${names} are not enqueued yet; Redis is unreachable`);
     }
   }
 }

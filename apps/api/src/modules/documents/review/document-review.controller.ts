@@ -1,4 +1,4 @@
-import { Controller, UseInterceptors } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 
 import {
   addInternalDocumentEndpoint,
@@ -23,7 +23,7 @@ import { Access } from '../../../core/access/access.decorator.ts';
 import { Requires } from '../../../core/access/permission.ts';
 import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
-import { FileUploadInterceptor, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
+import { FileUploadGuard, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { DocumentReviewService } from './services/document-review.service.ts';
 
@@ -61,7 +61,7 @@ export class DocumentReviewController {
 
   @Endpoint(uploadDocumentOnBehalfEndpoint)
   @Requires('registrations', 'write')
-  @UseInterceptors(FileUploadInterceptor)
+  @UseGuards(FileUploadGuard)
   public uploadOnBehalf(
     @RequestActor() actor: Actor,
     @EndpointParams(uploadDocumentOnBehalfEndpoint) params: ChildRequirementParams,
@@ -81,7 +81,7 @@ export class DocumentReviewController {
 
   @Endpoint(addInternalDocumentEndpoint)
   @Requires('registrations', 'write')
-  @UseInterceptors(FileUploadInterceptor)
+  @UseGuards(FileUploadGuard)
   public addInternal(
     @RequestActor() actor: Actor,
     @EndpointParams(addInternalDocumentEndpoint) params: ChildParams,

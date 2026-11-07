@@ -1,4 +1,4 @@
-import { Controller, UseInterceptors } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 
 import {
   getRegistrationFormEndpoint,
@@ -18,7 +18,7 @@ import { Access } from '../../../core/access/access.decorator.ts';
 import { Requires } from '../../../core/access/permission.ts';
 import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
-import { FileUploadInterceptor, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
+import { FileUploadGuard, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { RegistrationFormService } from './services/registration-form.service.ts';
 
@@ -62,7 +62,7 @@ export class RegistrationFormController {
 
   @Endpoint(uploadDeclarationFileEndpoint)
   @Requires('campSettings', 'write')
-  @UseInterceptors(FileUploadInterceptor)
+  @UseGuards(FileUploadGuard)
   public uploadFile(
     @RequestActor() actor: Actor,
     @EndpointParams(uploadDeclarationFileEndpoint) { campId }: CampParams,

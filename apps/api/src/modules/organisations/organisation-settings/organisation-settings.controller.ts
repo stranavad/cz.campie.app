@@ -1,4 +1,4 @@
-import { Controller, UseInterceptors } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 
 import {
   getOrganisationSettingsEndpoint,
@@ -15,7 +15,7 @@ import { Access } from '../../../core/access/access.decorator.ts';
 import { Requires } from '../../../core/access/permission.ts';
 import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
-import { FileUploadInterceptor, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
+import { FileUploadGuard, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
 import { Endpoint, EndpointBody } from '../../../core/http/endpoint.decorator.ts';
 import {
   OrganisationSettingsService,
@@ -53,7 +53,7 @@ export class OrganisationSettingsController {
   }
 
   @Endpoint(setOrganisationLogoEndpoint)
-  @UseInterceptors(FileUploadInterceptor)
+  @UseGuards(FileUploadGuard)
   public async setLogo(
     @RequestActor() actor: Actor,
     @UploadedFile() upload: FileUpload,

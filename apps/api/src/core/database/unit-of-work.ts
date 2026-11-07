@@ -13,6 +13,8 @@ interface Scope {
   readonly mayEnter: boolean;
   readonly afterCommit: (() => Promise<void>)[];
   readonly afterRollback: (() => Promise<void>)[];
+  // Items gathered for one after-commit step each, by the key that gathers them.
+  readonly gathered: Map<object, unknown[]>;
 }
 
 // The only way to Organisation data. Each unit of work is one transaction on one connection; the current
@@ -112,6 +114,29 @@ export class UnitOfWork {
   }
 
   /**
+   * Gather an item for one after-commit step that receives all items gathered under the same key in the
+   * current unit of work, such as jobs sent to the queue in one round trip.
+   * @param key what gathers the items, the same object on every call
+   * @param item the item
+   * @param flush runs once after the commit with every item, in the order they were gathered
+   */
+  public gatherAfterCommit<T>(key: object, item: T, flush: (items: T[]) => Promise<void>): void {
+    const scope = this.current();
+    const items = scope.gathered.get(key);
+
+    if (items !== undefined) {
+      items.push(item);
+
+      return;
+    }
+
+    const first: T[] = [item];
+
+    scope.gathered.set(key, first);
+    scope.afterCommit.push(() => flush(first));
+  }
+
+  /**
    * Run work after the current unit of work rolls back, to undo an effect outside the database; never when
    * it commits.
    * @param work runs outside any unit of work, before the rollback's error reaches the caller; it must not
@@ -135,6 +160,7 @@ export class UnitOfWork {
 
     const afterCommit: (() => Promise<void>)[] = [];
     const afterRollback: (() => Promise<void>)[] = [];
+    const gathered = new Map<object, unknown[]>();
     let result: T;
 
     try {
@@ -144,7 +170,7 @@ export class UnitOfWork {
           await db.execute(sql`select set_config(${ORGANISATION_SETTING}, ${organisationId}, true)`);
         }
 
-        return this.scope.run({ db, organisationId, mayEnter, afterCommit, afterRollback }, work);
+        return this.scope.run({ db, organisationId, mayEnter, afterCommit, afterRollback, gathered }, work);
       });
     } catch (error) {
       for (const callback of afterRollback) {

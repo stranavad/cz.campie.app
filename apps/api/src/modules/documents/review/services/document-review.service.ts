@@ -306,7 +306,7 @@ export class DocumentReviewService {
     const participant = await this.childOf(params.registrationId, params.participantId);
     const registration = await this.registrations.getByIdOrThrow(params.registrationId);
     const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
-    const requirement = await this.types.lockOrThrow(turnus.campId, params.documentTypeId);
+    const requirement = await this.types.holdOrThrow(turnus.campId, params.documentTypeId);
 
     if (requirement.kind !== 'requirement') {
       throw new NotFoundException();

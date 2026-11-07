@@ -1,4 +1,4 @@
-import { Controller, UseInterceptors } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 
 import {
   createDocumentTypeEndpoint,
@@ -17,7 +17,7 @@ import { Access } from '../../../core/access/access.decorator.ts';
 import { Requires } from '../../../core/access/permission.ts';
 import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
-import { FileUploadInterceptor, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
+import { FileUploadGuard, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { DocumentTypeService } from './services/document-type.service.ts';
 
@@ -63,7 +63,7 @@ export class DocumentTypeController {
 
   @Endpoint(setDocumentTypeFileEndpoint)
   @Requires('campSettings', 'write')
-  @UseInterceptors(FileUploadInterceptor)
+  @UseGuards(FileUploadGuard)
   public setFile(
     @RequestActor() actor: Actor,
     @EndpointParams(setDocumentTypeFileEndpoint) { campId, documentTypeId }: DocumentTypeParams,

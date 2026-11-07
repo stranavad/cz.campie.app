@@ -11,6 +11,9 @@ export type Transaction = PgAsyncTransaction<PgQueryResultHKT, typeof relations>
 // holding them forever.
 export const CONNECTION_TIMEOUT_MS = 10_000;
 
+// Connections per API process: requests and in-process jobs share them; the default of 10 runs out at a deadline.
+export const POOL_MAX = 25;
+
 // The connection pool, as the application role. Only the unit of work opens transactions on it.
 export abstract class Database {
   public abstract readonly drizzle: Drizzle;

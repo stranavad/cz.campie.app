@@ -28,6 +28,10 @@ export const auditEntries = p.snakeCase.table.withRLS(
       .notNull()
       .default(sql`'{}'`),
   },
-  // A record's history lists the entries that target it.
-  (table) => [p.index('audit_entries_target_id_idx').on(table.targetId), organisationPolicy()],
+  // A record's history lists the entries that target it; the log browser pages an Organisation's newest first.
+  (table) => [
+    p.index('audit_entries_target_id_idx').on(table.targetId),
+    p.index('audit_entries_organisation_id_occurred_at_idx').on(table.organisationId, table.occurredAt, table.id),
+    organisationPolicy(),
+  ],
 );

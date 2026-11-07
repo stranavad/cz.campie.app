@@ -4,7 +4,7 @@ import pg from 'pg';
 
 import { relations } from '../../db/relations.ts';
 import type { Env } from '../config/env.schema.ts';
-import { CONNECTION_TIMEOUT_MS, Database } from './database.port.ts';
+import { CONNECTION_TIMEOUT_MS, Database, POOL_MAX } from './database.port.ts';
 
 // Standard PostgreSQL over TCP; locally the Compose PostgreSQL, in tests a container.
 export class PgDatabase extends Database implements OnModuleDestroy {
@@ -14,7 +14,11 @@ export class PgDatabase extends Database implements OnModuleDestroy {
 
   constructor(config: Env['database']) {
     super();
-    this.pool = new pg.Pool({ connectionString: config.url, connectionTimeoutMillis: CONNECTION_TIMEOUT_MS });
+    this.pool = new pg.Pool({
+      connectionString: config.url,
+      connectionTimeoutMillis: CONNECTION_TIMEOUT_MS,
+      max: POOL_MAX,
+    });
     // An idle connection that breaks is dropped from the pool; unheard, the error would end the process.
     this.pool.on('error', (error: Error) => this.logger.warn(`idle database connection failed: ${error.message}`));
     this.drizzle = drizzle({ client: this.pool, relations });

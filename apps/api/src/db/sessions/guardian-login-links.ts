@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import * as p from 'drizzle-orm/pg-core';
 
 import { id } from '../helpers/ids.ts';
@@ -14,5 +15,12 @@ export const guardianLoginLinks = p.snakeCase.table.withRLS(
     expiresAt: p.timestamp({ withTimezone: true }).notNull(),
     usedAt: p.timestamp({ withTimezone: true }),
   },
-  () => [organisationPolicy()],
+  // A login uses up the guardian's other unused links.
+  (table) => [
+    p
+      .index('guardian_login_links_unused_idx')
+      .on(table.organisationId, table.email)
+      .where(sql`${table.usedAt} IS NULL`),
+    organisationPolicy(),
+  ],
 );

@@ -3,11 +3,11 @@ import {
   createParamDecorator,
   Injectable,
   PayloadTooLargeException,
-  type CallHandler,
+  type CanActivate,
   type ExecutionContext,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import type { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import { z } from 'zod';
 
 import { MAX_FILE_BYTES, type FileErrorCode } from '@repo/schema/files';
@@ -39,12 +39,16 @@ const MulterInterceptor = FileInterceptor('file', {
   defParamCharset: 'utf8',
 });
 
-// Reads the one file of a multipart request in the field `file`, read with @UploadedFile().
+// Reads the one file of a multipart request in the field `file`, read with @UploadedFile(). A guard, not an
+// interceptor: guards run before the route's unit of work opens, so a slow upload from a phone never holds
+// a database connection, while the access guard, which runs first, still keeps strangers from sending one.
 @Injectable()
-export class FileUploadInterceptor extends MulterInterceptor {
-  public override async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
+export class FileUploadGuard implements CanActivate {
+  private readonly multer = new MulterInterceptor();
+
+  public async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
-      return await super.intercept(context, next);
+      await this.multer.intercept(context, { handle: () => of(undefined) });
     } catch (error) {
       if (error instanceof PayloadTooLargeException) {
         throw uploadRejected('file_too_large');
@@ -52,10 +56,12 @@ export class FileUploadInterceptor extends MulterInterceptor {
 
       throw error;
     }
+
+    return true;
   }
 }
 
-// The file read by FileUploadInterceptor; a request without one is rejected.
+// The file read by FileUploadGuard; a request without one is rejected.
 export const UploadedFile = createParamDecorator((_data: unknown, context: ExecutionContext): FileUpload => {
   const parsed = receivedFile.safeParse(context.switchToHttp().getRequest<{ file?: unknown }>().file);
 

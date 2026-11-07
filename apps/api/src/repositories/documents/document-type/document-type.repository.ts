@@ -47,6 +47,27 @@ export class DocumentTypeRepository {
   }
 
   /**
+   * Get a Document type of a Camp and keep it from changing or going until the unit of work ends, while
+   * others may hold it too: every child's upload to one requirement takes it at once.
+   * @param campId Camp id
+   * @param id Document type id
+   * @throws {NotFoundException} when the Camp has no such Document type
+   */
+  public async holdOrThrow(campId: string, id: string): Promise<DocumentTypeRow> {
+    const [row] = await this.unitOfWork.db
+      .select()
+      .from(documentTypes)
+      .where(and(eq(documentTypes.campId, campId), eq(documentTypes.id, id)))
+      .for('share');
+
+    if (row === undefined) {
+      throw new NotFoundException();
+    }
+
+    return row;
+  }
+
+  /**
    * Create a Document type of a Camp in the current Organisation.
    * @param campId Camp id
    * @param fields its kind, name, description, due date and Turnusy

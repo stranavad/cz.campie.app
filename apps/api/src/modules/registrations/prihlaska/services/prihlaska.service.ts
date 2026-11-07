@@ -85,22 +85,16 @@ export class PrihlaskaService {
 
   /**
    * Render and store one Participant's Přihláška, point the Participant to it and remove the earlier one,
-   * audited. The Participant stays locked meanwhile, so two generations never both remove the same file.
+   * audited. It renders before taking any lock, so a slow renderer never holds up the Registration's
+   * payments, signatures or uploads; under the locks it renders again only when the child changed meanwhile.
+   * The Participant stays locked to the end, so two generations never both remove the same file.
    * @param actor who asks
    * @param basis what the Registration's Přihlášky show
    * @param participantId Participant id
    */
   private async generateFor(actor: Actor, basis: PrihlaskaBasis, participantId: string): Promise<void> {
-    // The Registration's lock keeps an erasure out until this commits; one that came first leaves nothing
-    // to print.
-    const { registrationId } = await this.registrations.getParticipantOrThrow(participantId);
-
-    if ((await this.registrations.lockById(registrationId))?.erasedAt !== null) {
-      return;
-    }
-
-    const participant = await this.registrations.lockParticipantOrThrow(participantId);
-    const props: PrihlaskaProps = {
+    const before = await this.registrations.getParticipantOrThrow(participantId);
+    const propsOf = (participant: typeof before): PrihlaskaProps => ({
       ...basis.shared,
       participant: {
         name: `${participant.firstName} ${participant.lastName}`,
@@ -110,13 +104,25 @@ export class PrihlaskaService {
       otherParticipants: basis.participants
         .filter(({ id }) => id !== participant.id)
         .map(({ firstName, lastName }) => `${firstName} ${lastName}`),
-    };
-    const fileId = await this.documents.store(
-      PrihlaskaDocument,
-      props,
-      `prihlaska-${basis.variableSymbol}-${participant.position + 1}.pdf`,
-      basis.branding,
-    );
+    });
+    const rendered = await this.documents.render(PrihlaskaDocument, propsOf(before), basis.branding);
+
+    // The Registration's lock keeps an erasure out until this commits; one that came first leaves nothing
+    // to print.
+    if ((await this.registrations.lockById(before.registrationId))?.erasedAt !== null) {
+      return;
+    }
+
+    const participant = await this.registrations.lockParticipantOrThrow(participantId);
+    const props = propsOf(participant);
+    const bytes =
+      JSON.stringify(props) === JSON.stringify(propsOf(before))
+        ? rendered
+        : await this.documents.render(PrihlaskaDocument, props, basis.branding);
+    const fileId = await this.files.store({
+      name: `prihlaska-${basis.variableSymbol}-${participant.position + 1}.pdf`,
+      bytes,
+    });
 
     await this.registrations.setPrihlaska(participant.id, fileId);
 

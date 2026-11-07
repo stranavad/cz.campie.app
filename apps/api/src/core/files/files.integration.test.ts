@@ -1,4 +1,4 @@
-import { ConflictException, Controller, Delete, HttpCode, Param, Post, UseInterceptors } from '@nestjs/common';
+import { ConflictException, Controller, Delete, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { fileLinkSchema, type FileLink } from '@repo/schema/files';
@@ -8,7 +8,7 @@ import { withClient } from '../../testing/services/postgres.ts';
 import { useTestApp } from '../../testing/test-app.ts';
 import { Access } from '../access/access.decorator.ts';
 import { Requires } from '../access/permission.ts';
-import { FileUploadInterceptor, UploadedFile, type FileUpload } from './file-upload.ts';
+import { FileUploadGuard, UploadedFile, type FileUpload } from './file-upload.ts';
 import { FileService } from './file.service.ts';
 
 // Stands in for the features that will upload, link and delete files, each after its own permission check.
@@ -19,14 +19,14 @@ class TestFilesController {
   constructor(private readonly files: FileService) {}
 
   @Post()
-  @UseInterceptors(FileUploadInterceptor)
+  @UseGuards(FileUploadGuard)
   public async upload(@UploadedFile() upload: FileUpload) {
     return { id: await this.files.store(upload) };
   }
 
   // A feature that stores a file and then fails, rolling its unit of work back.
   @Post('failing')
-  @UseInterceptors(FileUploadInterceptor)
+  @UseGuards(FileUploadGuard)
   public async uploadThenFail(@UploadedFile() upload: FileUpload) {
     await this.files.store(upload);
 

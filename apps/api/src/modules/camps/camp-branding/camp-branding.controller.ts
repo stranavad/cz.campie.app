@@ -1,4 +1,4 @@
-import { Controller, UseInterceptors } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 
 import {
   getCampBrandingEndpoint,
@@ -14,7 +14,7 @@ import { Access } from '../../../core/access/access.decorator.ts';
 import { Requires } from '../../../core/access/permission.ts';
 import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
-import { FileUploadInterceptor, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
+import { FileUploadGuard, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { CampBrandingService } from './services/camp-branding.service.ts';
 
@@ -41,7 +41,7 @@ export class CampBrandingController {
 
   @Endpoint(setCampLogoEndpoint)
   @Requires('campSettings', 'write')
-  @UseInterceptors(FileUploadInterceptor)
+  @UseGuards(FileUploadGuard)
   public setLogo(
     @RequestActor() actor: Actor,
     @EndpointParams(setCampLogoEndpoint) { campId }: CampBrandingParams,

@@ -128,14 +128,7 @@ export class GuardianDocumentService {
     }
 
     await this.rateLimiter.admit(this.limit, { ipAddress: actor.ipAddress, target: actor.identity });
-    // The Registration's lock keeps an erasure out until the document commits; after one, the family is gone.
-    await this.registrations.lockById(params.registrationId);
-    const { camp, participants } = await this.familyOf(actor.identity, params.registrationId);
-    const participant = participants.find(({ id }) => id === params.participantId);
-
-    if (!camp.modules.includes('documents') || participant === undefined) {
-      throw new NotFoundException();
-    }
+    const { participant } = await this.childOf(actor.identity, params);
 
     // Checked once before the file is stored, so a refused upload costs no storage, and again under the
     // locks below.
@@ -143,9 +136,13 @@ export class GuardianDocumentService {
 
     // Stored before the locks, so they are held only for the checks; a refusal rolls the object back.
     const fileId = await this.files.store(upload);
-    // The requirement and the child stay locked: the requirement is not removed meanwhile, the child not
-    // cancelled, and two uploads at once never both pass the check below.
-    const requirement = await this.types.lockOrThrow(camp.id, params.documentTypeId);
+    // The Registration's lock keeps an erasure out until the document commits; after one, the family is gone,
+    // so the child is looked up again under it.
+    await this.registrations.lockById(params.registrationId);
+    const { camp } = await this.childOf(actor.identity, params);
+    // The requirement is held and the child locked: the requirement is not changed or removed meanwhile,
+    // the child not cancelled, and two uploads for the child at once never both pass the check below.
+    const requirement = await this.types.holdOrThrow(camp.id, params.documentTypeId);
     const locked = await this.registrations.lockParticipantOrThrow(participant.id);
 
     if (requirement.kind !== 'requirement' || locked.status !== 'registered') {
@@ -169,6 +166,26 @@ export class GuardianDocumentService {
     });
 
     return this.list(actor.identity, params.registrationId);
+  }
+
+  /**
+   * Find the guardian's Registered child an upload is for, in a Camp that takes documents.
+   * @param email the guardian's email
+   * @param params the Registration and Participant
+   * @throws {NotFoundException} when the child is not the guardian's or the Camp takes no documents
+   */
+  private async childOf(
+    email: string,
+    params: UploadDocumentParams,
+  ): Promise<{ camp: { id: string }; participant: { id: string } }> {
+    const { camp, participants } = await this.familyOf(email, params.registrationId);
+    const participant = participants.find(({ id }) => id === params.participantId);
+
+    if (!camp.modules.includes('documents') || participant === undefined) {
+      throw new NotFoundException();
+    }
+
+    return { camp, participant };
   }
 
   /**

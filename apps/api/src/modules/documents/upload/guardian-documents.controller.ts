@@ -1,4 +1,4 @@
-import { Controller, UseInterceptors } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 
 import {
   listGuardianDocumentsEndpoint,
@@ -11,7 +11,7 @@ import {
 import { Access } from '../../../core/access/access.decorator.ts';
 import { RequestActor, RequestGuardianEmail } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
-import { FileUploadInterceptor, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
+import { FileUploadGuard, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
 import { Endpoint, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { GuardianDocumentService } from './services/guardian-document.service.ts';
 
@@ -29,7 +29,7 @@ export class GuardianDocumentsController {
   }
 
   @Endpoint(uploadDocumentEndpoint)
-  @UseInterceptors(FileUploadInterceptor)
+  @UseGuards(FileUploadGuard)
   public upload(
     @RequestActor() actor: Actor,
     @EndpointParams(uploadDocumentEndpoint) params: UploadDocumentParams,
