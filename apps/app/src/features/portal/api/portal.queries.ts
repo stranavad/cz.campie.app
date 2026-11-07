@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import type { AddGuardianBody, AnswerNewFieldsBody, GuardianContactBody, GuardianEdit } from '@repo/schema/portal';
+
 import { portalKeys } from '@/features/portal/api/portal.keys';
 import { portalService } from '@/features/portal/api/portal.service';
 
@@ -26,3 +28,49 @@ export const useGuardianRegistrationsQuery = () =>
     refetchInterval: LINK_REFRESH_MS,
     retry: false,
   });
+
+export const useGuardianEditQuery = (registrationId: string) =>
+  useQuery({
+    queryKey: portalKeys.edit(registrationId),
+    queryFn: ({ signal }) => portalService.edit(registrationId, signal),
+    retry: false,
+  });
+
+// Every edit answers with the Registration as it now stands; the overview's price may have changed too.
+const useEditMutation = <Variables>(
+  registrationId: string,
+  mutationFn: (variables: Variables) => Promise<GuardianEdit>,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn,
+    onSuccess: (edit) => {
+      queryClient.setQueryData(portalKeys.edit(registrationId), edit);
+      void queryClient.invalidateQueries({ queryKey: portalKeys.registrations() });
+    },
+  });
+};
+
+export const useUpdateGuardianContactMutation = (registrationId: string) =>
+  useEditMutation(registrationId, ({ position, body }: { position: number; body: GuardianContactBody }) =>
+    portalService.updateContact(registrationId, position, body),
+  );
+
+export const useAddGuardianMutation = (registrationId: string) =>
+  useEditMutation(registrationId, (body: AddGuardianBody) => portalService.addGuardian(registrationId, body));
+
+export const useAnswerNewFieldsMutation = (registrationId: string) =>
+  useEditMutation(registrationId, (body: AnswerNewFieldsBody) => portalService.answerNewFields(registrationId, body));
+
+export const useRequestEmailChangeMutation = (registrationId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ position, email }: { position: number; email: string }) =>
+      portalService.requestEmailChange(registrationId, position, email),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: portalKeys.edit(registrationId) }),
+  });
+};
+
+export const useConfirmEmailChangeMutation = () => useMutation({ mutationFn: portalService.confirmEmailChange });

@@ -21,6 +21,7 @@ export { organisationKeys } from './organisations/organisation-keys.ts';
 export { operators } from './operators/operators.ts';
 export { organisations, organisationStatus } from './organisations/organisations.ts';
 export { declarationAnswers } from './registrations/declaration-answers.ts';
+export { guardianEmailChanges } from './registrations/guardian-email-changes.ts';
 export { participants, participantStatus } from './registrations/participants.ts';
 export { paymentSource, payments } from './registrations/payments.ts';
 export { priceAdjustments } from './registrations/price-adjustments.ts';

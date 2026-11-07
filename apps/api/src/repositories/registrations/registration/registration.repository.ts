@@ -319,25 +319,101 @@ export class RegistrationRepository {
   }
 
   /**
+   * Change a guardian's name and phone, or email, on a Registration of the current Organisation.
+   * @param registrationId Registration id
+   * @param position the guardian's position, 1 or 2
+   * @param fields the fields to change
+   * @throws {NotFoundException} when the Registration has no guardian at this position
+   */
+  public async updateGuardian(
+    registrationId: string,
+    position: number,
+    fields: Partial<GuardianFields>,
+  ): Promise<void> {
+    const rows = await this.unitOfWork.db
+      .update(registrationGuardians)
+      .set(fields)
+      .where(
+        and(eq(registrationGuardians.registrationId, registrationId), eq(registrationGuardians.position, position)),
+      )
+      .returning({ id: registrationGuardians.id });
+
+    if (rows.length === 0) {
+      throw new NotFoundException();
+    }
+  }
+
+  /**
+   * Add a guardian at a position of a Registration of the current Organisation.
+   * @param registrationId Registration id
+   * @param position the position, 1 or 2
+   * @param guardian the guardian
+   */
+  public async addGuardian(registrationId: string, position: number, guardian: GuardianFields): Promise<void> {
+    await this.unitOfWork.db
+      .insert(registrationGuardians)
+      .values({ ...guardian, registrationId, position, organisationId: this.unitOfWork.organisationId });
+  }
+
+  /**
+   * Replace a Registration's per-Registration answers.
+   * @param registrationId Registration id
+   * @param answers all its answers beyond the core
+   */
+  public async setAnswers(registrationId: string, answers: Answers): Promise<void> {
+    await this.unitOfWork.db.update(registrations).set({ answers }).where(eq(registrations.id, registrationId));
+  }
+
+  /**
+   * Replace a Participant's answers beyond the core.
+   * @param participantId Participant id
+   * @param answers all its answers beyond the core
+   */
+  public async setParticipantAnswers(participantId: string, answers: Answers): Promise<void> {
+    await this.unitOfWork.db.update(participants).set({ answers }).where(eq(participants.id, participantId));
+  }
+
+  /**
+   * Add price lines after a Registration's existing ones, as a new answer with a surcharge does.
+   * @param registrationId Registration id
+   * @param lines the lines, a Participant's named by its position
+   * @param participantIds the Participants' ids by position
+   */
+  public async appendPriceLines(
+    registrationId: string,
+    lines: readonly PriceLineFields[],
+    participantIds: readonly string[],
+  ): Promise<void> {
+    const [row] = await this.unitOfWork.db
+      .select({ next: sql<number>`coalesce(max(${priceLines.position}) + 1, 0)`.mapWith(Number) })
+      .from(priceLines)
+      .where(eq(priceLines.registrationId, registrationId));
+
+    await this.addPriceLines(registrationId, lines, participantIds, row?.next ?? 0);
+  }
+
+  /**
    * Add a Registration's price lines in their order.
    * @param registrationId Registration id
    * @param lines the lines, a Participant's named by its position
    * @param participantIds the Participants' ids by position
+   * @param from the first line's position
    */
   public async addPriceLines(
     registrationId: string,
     lines: readonly PriceLineFields[],
     participantIds: readonly string[],
+    from = 0,
   ): Promise<void> {
     if (lines.length === 0) {
       return;
     }
 
     await this.unitOfWork.db.insert(priceLines).values(
-      lines.map(({ participant, ...line }, position) => ({
+      lines.map(({ participant, ...line }, index) => ({
         ...line,
         registrationId,
-        position,
+        position: from + index,
         participantId: participant === null ? null : (participantIds[participant] ?? null),
         organisationId: this.unitOfWork.organisationId,
       })),

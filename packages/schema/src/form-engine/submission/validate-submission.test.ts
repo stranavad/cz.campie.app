@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import type { FormDefinition } from '../definition/form-definition.ts';
 import { TEST_CATALOGUE } from '../testing-catalogue.ts';
-import { checkSubmission, formFields, submissionSchema, type Submission } from './validate-submission.ts';
+import {
+  checkAnswersTo,
+  checkSubmission,
+  formFields,
+  submissionSchema,
+  type Submission,
+} from './validate-submission.ts';
 
 const TSHIRT = '0190a2b4-0000-7000-8000-000000000001';
 const TRANSPORT = '0190a2b4-0000-7000-8000-000000000002';
@@ -289,5 +295,45 @@ describe('formFields', () => {
       ['custom', HEIGHT],
     ]);
     expect(formFields(DEFINITION, TEST_CATALOGUE, 'registration').map(({ key }) => key)).not.toContain('boardingPlace');
+  });
+});
+
+describe('checkAnswersTo', () => {
+  const fields = formFields(
+    {
+      standard: [],
+      custom: [
+        {
+          id: '0190a2b4-0000-7000-8000-0000000000a1',
+          type: 'short_text',
+          label: 'Tričko',
+          hint: null,
+          required: true,
+          scope: 'participant',
+        },
+      ],
+    },
+    TEST_CATALOGUE,
+    'participant',
+  ).filter(({ tier }) => tier === 'custom');
+
+  it('checks only the answers sent, requiring none, and clears an emptied one', () => {
+    expect(checkAnswersTo(fields, { '0190a2b4-0000-7000-8000-0000000000a1': '  M  ' }, ['answers'])).toEqual({
+      errors: [],
+      value: { '0190a2b4-0000-7000-8000-0000000000a1': 'M' },
+    });
+    expect(checkAnswersTo(fields, {}, ['answers'])).toEqual({ errors: [], value: {} });
+    expect(checkAnswersTo(fields, { '0190a2b4-0000-7000-8000-0000000000a1': '' }, ['answers']).value).toEqual({
+      '0190a2b4-0000-7000-8000-0000000000a1': null,
+    });
+  });
+
+  it('refuses an answer to a field not offered and an answer its field does not take', () => {
+    expect(
+      checkAnswersTo(fields, { firstName: 'Ema', '0190a2b4-0000-7000-8000-0000000000a1': 7 }, ['answers']).errors,
+    ).toEqual([
+      { path: ['answers', 'firstName'], code: 'form_answer_unknown' },
+      { path: ['answers', '0190a2b4-0000-7000-8000-0000000000a1'], code: 'form_answer_invalid' },
+    ]);
   });
 });

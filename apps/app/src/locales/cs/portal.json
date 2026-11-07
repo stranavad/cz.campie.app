@@ -51,5 +51,48 @@
   "overpaid": "Přeplatek",
   "rest": "Doplatek",
   "restBy": "{{amount}} do {{date}}",
-  "campContactWithPhone": "Dotazy k táboru: {{email}}, {{phone}}"
+  "campContactWithPhone": "Dotazy k táboru: {{email}}, {{phone}}",
+  "edit": {
+    "open": "Upravit údaje",
+    "back": "Zpět na přihlášky",
+    "title": "Údaje přihlášky",
+    "until": "Údaje můžete měnit do {{date}}.",
+    "readOnly": "Údaje už měnit nelze. S případnou změnou se obraťte na tábor.",
+    "guardian": "Zákonný zástupce {{number}}",
+    "firstName": "Jméno",
+    "lastName": "Příjmení",
+    "phone": "Telefon",
+    "save": "Uložit",
+    "saved": "Uloženo.",
+    "email": "E-mail: {{email}}",
+    "pendingEmail": "Čeká na potvrzení: {{email}}",
+    "newEmail": "Nový e-mail",
+    "changeEmail": "Změnit e-mail",
+    "emailSent": "Na novou adresu jsme poslali odkaz pro potvrzení. Změna platí až po něm.",
+    "addGuardian": "Přidat druhého zákonného zástupce",
+    "emailLabel": "E-mail",
+    "add": "Přidat",
+    "newFields": "Nové otázky v přihlášce",
+    "locked": "Odpověď: {{answer}} (změnu provede tábor)",
+    "yes": "Ano",
+    "no": "Ne",
+    "removed": "Otázky, které přihláška už nemá",
+    "removedAnswer": "{{label}}: {{answer}}",
+    "failure": {
+      "registration_locked": "Údaje už měnit nelze. S případnou změnou se obraťte na tábor.",
+      "guardian_second_exists": "Přihláška už má dva zákonné zástupce.",
+      "guardian_email_taken": "Tuto adresu už má druhý zákonný zástupce.",
+      "answer_locked": "Odpověď s příplatkem nebo slevou už měnit nelze. Obraťte se na tábor.",
+      "email_change_invalid": "Odkaz už neplatí.",
+      "submission_invalid": "Zkontrolujte prosím vyplněné údaje.",
+      "requests_throttled": "Žádostí bylo v poslední době příliš mnoho. Zkuste to prosím později.",
+      "unexpected": "Změny se nepodařilo uložit. Zkuste to prosím znovu."
+    }
+  },
+  "confirmEmail": {
+    "title": "Potvrzení e-mailu",
+    "confirm": "Potvrdit novou adresu",
+    "done": "Adresa je potvrzená. Přihláška teď patří k nové adrese.",
+    "invalid": "Odkaz už neplatí: byl použit, nebo vypršel."
+  }
 }

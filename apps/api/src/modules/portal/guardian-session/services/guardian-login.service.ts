@@ -62,6 +62,15 @@ export class GuardianLoginService {
   }
 
   /**
+   * Send a login link to a guardian just added to a Registration, as their invitation, without the request
+   * limit a guardian's own request counts against.
+   * @param email the new guardian's email
+   */
+  public async invite(email: string): Promise<void> {
+    this.jobs.enqueue(loginLinkRequestedJob, { requestId: await this.loginLinks.createRequest(email) });
+  }
+
+  /**
    * Take a request for a login link and, when its email is a guardian of the current Organisation's
    * Registrations, make a link and email it from the Camp of their latest one. Only the token's hash is
    * stored; the token goes into the link.

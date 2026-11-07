@@ -147,9 +147,16 @@ export async function submitRegistration(
     secondGuardian?: boolean;
     turnus?: Partial<TurnusBody>;
     paymentChoice?: PaymentChoice;
+    children?: readonly { firstName: string; lastName: string; birthDate: string }[];
   } = {},
 ): Promise<{ id: string; variableSymbol: string }> {
-  const { discountCode = null, secondGuardian = false, turnus: change = {}, paymentChoice = 'full' } = options;
+  const {
+    discountCode = null,
+    secondGuardian = false,
+    turnus: change = {},
+    paymentChoice = 'full',
+    children = [{ firstName: 'Ema', lastName: 'Testovací', birthDate: '2016-05-01' }],
+  } = options;
 
   return app.get(UnitOfWork).run(organisationId, async () => {
     const system = { kind: 'system' } as const;
@@ -178,7 +185,7 @@ export async function submitRegistration(
                 }
               : {}),
           },
-          participants: [{ firstName: 'Ema', lastName: 'Testovací', birthDate: '2016-05-01' }],
+          participants: children.map((child) => ({ ...child })),
         },
         paymentChoice,
         discountCode,

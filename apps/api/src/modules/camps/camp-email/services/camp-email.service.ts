@@ -191,6 +191,14 @@ export class CampEmailService {
   }
 
   /**
+   * Name whom a Camp's platform emails are from: the Camp, replying to its contact, else the Organisation's.
+   * @param campId Camp id
+   */
+  public async senderFor(campId: string): Promise<EmailSender> {
+    return this.senderOf(await this.camps.getByIdOrThrow(campId));
+  }
+
+  /**
    * Get a Camp's own wording of an email type.
    * @param campId Camp id
    * @param type the email type

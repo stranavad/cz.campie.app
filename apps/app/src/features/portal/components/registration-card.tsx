@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import type { GuardianRegistration } from '@repo/schema/portal';
@@ -34,6 +35,13 @@ export function RegistrationCard({ registration }: { registration: GuardianRegis
           {t('dates', { start: czechDate(registration.turnus.startDate), end: czechDate(registration.turnus.endDate) })}
         </h3>
         <p className="text-sm text-muted-foreground">{t('variableSymbol', { symbol: registration.variableSymbol })}</p>
+        <Link
+          to="/organisation/portal/$registrationId"
+          params={{ registrationId: registration.id }}
+          className="self-start text-sm underline"
+        >
+          {t('edit.open')}
+        </Link>
       </header>
       <ul className="flex flex-col gap-2">
         {registration.participants.map((participant) => (

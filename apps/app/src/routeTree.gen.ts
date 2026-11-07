@@ -26,6 +26,8 @@ import { Route as UnknownSplatRouteImport } from './routes/unknown/$'
 import { Route as OrganisationCampSlugIndexRouteImport } from './routes/organisation/$campSlug/index'
 import { Route as OrganisationCampSlugPrihlaskaRouteImport } from './routes/organisation/$campSlug/prihlaska'
 import { Route as OrganisationPortalIndexRouteImport } from './routes/organisation/portal/index'
+import { Route as OrganisationPortalRegistrationIdRouteImport } from './routes/organisation/portal/$registrationId'
+import { Route as OrganisationPortalPotvrzeniEmailuRouteImport } from './routes/organisation/portal/potvrzeni-emailu'
 import { Route as OrganisationPortalPrihlaseniRouteImport } from './routes/organisation/portal/prihlaseni'
 import { Route as PlatformTaboryNahledRouteImport } from './routes/platform/tabory_.nahled'
 
@@ -117,6 +119,18 @@ const OrganisationPortalIndexRoute = OrganisationPortalIndexRouteImport.update({
   path: '/portal/',
   getParentRoute: () => OrganisationRouteRoute,
 } as any)
+const OrganisationPortalRegistrationIdRoute =
+  OrganisationPortalRegistrationIdRouteImport.update({
+    id: '/portal/$registrationId',
+    path: '/portal/$registrationId',
+    getParentRoute: () => OrganisationRouteRoute,
+  } as any)
+const OrganisationPortalPotvrzeniEmailuRoute =
+  OrganisationPortalPotvrzeniEmailuRouteImport.update({
+    id: '/portal/potvrzeni-emailu',
+    path: '/portal/potvrzeni-emailu',
+    getParentRoute: () => OrganisationRouteRoute,
+  } as any)
 const OrganisationPortalPrihlaseniRoute =
   OrganisationPortalPrihlaseniRouteImport.update({
     id: '/portal/prihlaseni',
@@ -145,6 +159,8 @@ export interface FileRoutesByFullPath {
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/organisation/$campSlug/prihlaska': typeof OrganisationCampSlugPrihlaskaRoute
+  '/organisation/portal/$registrationId': typeof OrganisationPortalRegistrationIdRoute
+  '/organisation/portal/potvrzeni-emailu': typeof OrganisationPortalPotvrzeniEmailuRoute
   '/organisation/portal/prihlaseni': typeof OrganisationPortalPrihlaseniRoute
   '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug/': typeof OrganisationCampSlugIndexRoute
@@ -164,6 +180,8 @@ export interface FileRoutesByTo {
   '/organisation': typeof OrganisationIndexRoute
   '/platform': typeof PlatformIndexRoute
   '/organisation/$campSlug/prihlaska': typeof OrganisationCampSlugPrihlaskaRoute
+  '/organisation/portal/$registrationId': typeof OrganisationPortalRegistrationIdRoute
+  '/organisation/portal/potvrzeni-emailu': typeof OrganisationPortalPotvrzeniEmailuRoute
   '/organisation/portal/prihlaseni': typeof OrganisationPortalPrihlaseniRoute
   '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug': typeof OrganisationCampSlugIndexRoute
@@ -186,6 +204,8 @@ export interface FileRoutesById {
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/organisation/$campSlug/prihlaska': typeof OrganisationCampSlugPrihlaskaRoute
+  '/organisation/portal/$registrationId': typeof OrganisationPortalRegistrationIdRoute
+  '/organisation/portal/potvrzeni-emailu': typeof OrganisationPortalPotvrzeniEmailuRoute
   '/organisation/portal/prihlaseni': typeof OrganisationPortalPrihlaseniRoute
   '/platform/tabory_/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug/': typeof OrganisationCampSlugIndexRoute
@@ -209,6 +229,8 @@ export interface FileRouteTypes {
     | '/organisation/'
     | '/platform/'
     | '/organisation/$campSlug/prihlaska'
+    | '/organisation/portal/$registrationId'
+    | '/organisation/portal/potvrzeni-emailu'
     | '/organisation/portal/prihlaseni'
     | '/platform/tabory/nahled'
     | '/organisation/$campSlug/'
@@ -228,6 +250,8 @@ export interface FileRouteTypes {
     | '/organisation'
     | '/platform'
     | '/organisation/$campSlug/prihlaska'
+    | '/organisation/portal/$registrationId'
+    | '/organisation/portal/potvrzeni-emailu'
     | '/organisation/portal/prihlaseni'
     | '/platform/tabory/nahled'
     | '/organisation/$campSlug'
@@ -249,6 +273,8 @@ export interface FileRouteTypes {
     | '/organisation/'
     | '/platform/'
     | '/organisation/$campSlug/prihlaska'
+    | '/organisation/portal/$registrationId'
+    | '/organisation/portal/potvrzeni-emailu'
     | '/organisation/portal/prihlaseni'
     | '/platform/tabory_/nahled'
     | '/organisation/$campSlug/'
@@ -382,6 +408,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrganisationPortalIndexRouteImport
       parentRoute: typeof OrganisationRouteRoute
     }
+    '/organisation/portal/$registrationId': {
+      id: '/organisation/portal/$registrationId'
+      path: '/portal/$registrationId'
+      fullPath: '/organisation/portal/$registrationId'
+      preLoaderRoute: typeof OrganisationPortalRegistrationIdRouteImport
+      parentRoute: typeof OrganisationRouteRoute
+    }
+    '/organisation/portal/potvrzeni-emailu': {
+      id: '/organisation/portal/potvrzeni-emailu'
+      path: '/portal/potvrzeni-emailu'
+      fullPath: '/organisation/portal/potvrzeni-emailu'
+      preLoaderRoute: typeof OrganisationPortalPotvrzeniEmailuRouteImport
+      parentRoute: typeof OrganisationRouteRoute
+    }
     '/organisation/portal/prihlaseni': {
       id: '/organisation/portal/prihlaseni'
       path: '/portal/prihlaseni'
@@ -402,6 +442,8 @@ declare module '@tanstack/react-router' {
 interface OrganisationRouteRouteChildren {
   OrganisationIndexRoute: typeof OrganisationIndexRoute
   OrganisationCampSlugPrihlaskaRoute: typeof OrganisationCampSlugPrihlaskaRoute
+  OrganisationPortalRegistrationIdRoute: typeof OrganisationPortalRegistrationIdRoute
+  OrganisationPortalPotvrzeniEmailuRoute: typeof OrganisationPortalPotvrzeniEmailuRoute
   OrganisationPortalPrihlaseniRoute: typeof OrganisationPortalPrihlaseniRoute
   OrganisationCampSlugIndexRoute: typeof OrganisationCampSlugIndexRoute
   OrganisationPortalIndexRoute: typeof OrganisationPortalIndexRoute
@@ -410,6 +452,9 @@ interface OrganisationRouteRouteChildren {
 const OrganisationRouteRouteChildren: OrganisationRouteRouteChildren = {
   OrganisationIndexRoute: OrganisationIndexRoute,
   OrganisationCampSlugPrihlaskaRoute: OrganisationCampSlugPrihlaskaRoute,
+  OrganisationPortalRegistrationIdRoute: OrganisationPortalRegistrationIdRoute,
+  OrganisationPortalPotvrzeniEmailuRoute:
+    OrganisationPortalPotvrzeniEmailuRoute,
   OrganisationPortalPrihlaseniRoute: OrganisationPortalPrihlaseniRoute,
   OrganisationCampSlugIndexRoute: OrganisationCampSlugIndexRoute,
   OrganisationPortalIndexRoute: OrganisationPortalIndexRoute,

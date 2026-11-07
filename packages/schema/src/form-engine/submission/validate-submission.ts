@@ -306,6 +306,47 @@ function checkAnswers(
 }
 
 /**
+ * Check answers to some of a form's fields, as an edit after submission sends them: each answer valid for
+ * its field, none to a field not offered. Nothing is required; an emptied answer comes back as null, to
+ * clear it.
+ * @param fields the fields that may be answered
+ * @param answers the answers sent
+ * @param path where the answers sit in the request
+ */
+export function checkAnswersTo(
+  fields: readonly FormField[],
+  answers: Answers,
+  path: readonly (string | number)[],
+): { errors: FormAnswerError[]; value: Record<string, AnswerValue> } {
+  const errors: FormAnswerError[] = [];
+  const value: Record<string, AnswerValue> = {};
+
+  for (const [key, answer] of Object.entries(answers)) {
+    const field = fields.find((candidate) => candidate.key === key);
+
+    if (field === undefined) {
+      errors.push({ path: [...path, key], code: 'form_answer_unknown' });
+      continue;
+    }
+
+    if (isEmpty(answer)) {
+      value[key] = null;
+      continue;
+    }
+
+    const checked = checkField(field, answer);
+
+    if (checked.ok) {
+      value[key] = checked.value;
+    } else {
+      errors.push({ path: [...path, key], ...checked.error });
+    }
+  }
+
+  return { errors, value };
+}
+
+/**
  * Check a submission against a form definition and normalise it: text trimmed, the email lowercased,
  * empty answers dropped.
  * @param definition the form
