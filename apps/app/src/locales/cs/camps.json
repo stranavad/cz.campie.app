@@ -1,0 +1,48 @@
+{
+  "title": "Nastavení táborů",
+  "loading": "Načítáme…",
+  "error": "Tábory se nepodařilo načíst. Zkuste stránku načíst znovu.",
+  "noAccess": "K nastavení táborů nemáte přístup.",
+  "readOnly": "Nastavení táborů můžete jen prohlížet.",
+  "backHome": "Zpět na přehled",
+  "switcher": "Tábory",
+  "save": "Uložit",
+  "saved": "Uloženo.",
+  "failure": "Změny se nepodařilo uložit. Zkuste to prosím znovu.",
+  "camp": {
+    "title": "Tábor",
+    "name": "Název tábora",
+    "slug": "Adresa tábora",
+    "slugHint": "Část adresy přihlášek za názvem organizace. Odkazy na dřívější adresu budou fungovat dál.",
+    "websiteUrl": "Web tábora",
+    "contactName": "Kontaktní osoba",
+    "contactHint": "Rodiče uvidí tento kontakt a odpovědi na e-maily tábora půjdou na tento e-mail.",
+    "contactEmail": "Kontaktní e-mail",
+    "contactPhone": "Kontaktní telefon"
+  },
+  "modules": {
+    "title": "Moduly",
+    "intro": "Vypnutý modul se skryje, jeho data zůstanou zachovaná.",
+    "consents": "Souhlasy",
+    "documents": "Dokumenty",
+    "generatedDocuments": "Generované dokumenty",
+    "healthRecord": "Zdravotní záznam",
+    "campHealthLog": "Zdravotnický deník",
+    "oddily": "Oddíly",
+    "vedouci": "Vedoucí"
+  },
+  "branding": {
+    "title": "Vzhled tábora",
+    "intro": "Bez vlastního loga a barvy má tábor vzhled organizace.",
+    "organisationLogo": "Tábor používá logo organizace.",
+    "ownColour": "Vlastní barva tábora",
+    "accentColour": "Barva",
+    "accentColourHint": "Barvu textu k ní zvolíme sami, aby byl vždy čitelný."
+  },
+  "create": {
+    "open": "Přidat tábor",
+    "title": "Nový tábor",
+    "submit": "Přidat tábor",
+    "failure": "Tábor se nepodařilo přidat. Zkuste to prosím znovu."
+  }
+}

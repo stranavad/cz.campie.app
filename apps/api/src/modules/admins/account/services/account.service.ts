@@ -5,6 +5,7 @@ import type { Account } from '@repo/schema/admins';
 
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
 import { memberships, organisations } from '../../../../db/schema.ts';
+import { permissionsOf } from '../../../../repositories/admins/membership/membership.entity.ts';
 import { OperatorRepository } from '../../../../repositories/operators/operator/operator.repository.ts';
 import { AdminService } from '../../admin/services/admin.service.ts';
 import { TotpService } from '../../totp/services/totp.service.ts';
@@ -20,7 +21,7 @@ export class AccountService {
 
   /**
    * Get an admin's own account: their email, whether they are the Platform operator, their TOTP and this
-   * session's, and the Organisations they are a member of, with each one's status. Reads platform tables
+   * session's, and the Organisations they are a member of, with each one's status and their permissions. Reads platform tables
    * only, so it runs in a platform unit of work.
    * @param adminId the signed-in admin
    * @param session their session
@@ -30,11 +31,13 @@ export class AccountService {
 
     const rows = await this.unitOfWork.db
       .select({
-        owner: memberships.owner,
-        id: organisations.id,
-        displayName: organisations.displayName,
-        subdomain: organisations.subdomain,
-        status: organisations.status,
+        membership: memberships,
+        organisation: {
+          id: organisations.id,
+          displayName: organisations.displayName,
+          subdomain: organisations.subdomain,
+          status: organisations.status,
+        },
       })
       .from(memberships)
       .innerJoin(organisations, eq(organisations.id, memberships.organisationId))
@@ -46,7 +49,11 @@ export class AccountService {
       operator: await this.operators.isOperator(adminId),
       totpEnabled: await this.totp.isEnabled(adminId),
       secondFactor: session.secondFactor,
-      memberships: rows.map(({ owner, ...organisation }) => ({ owner, organisation })),
+      memberships: rows.map(({ membership, organisation }) => ({
+        owner: membership.owner,
+        permissions: permissionsOf(membership),
+        organisation,
+      })),
     };
   }
 }

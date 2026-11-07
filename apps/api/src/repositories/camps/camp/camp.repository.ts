@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
-import { camps } from '../../../db/schema.ts';
+import { camps, campSlugs } from '../../../db/schema.ts';
 import { CampEntity, type CampInsertModel } from './camp.entity.ts';
 
 export type CreateCamp = Omit<CampInsertModel, 'id' | 'organisationId'>;
@@ -11,6 +11,30 @@ export type UpdateCamp = Partial<Omit<CampInsertModel, 'id' | 'organisationId'>>
 @Injectable()
 export class CampRepository {
   constructor(private readonly unitOfWork: UnitOfWork) {}
+
+  /**
+   * List the current Organisation's Camps by name.
+   */
+  public async list(): Promise<CampEntity[]> {
+    const rows = await this.unitOfWork.db.select().from(camps).orderBy(asc(camps.name), asc(camps.id));
+
+    return rows.map((row) => new CampEntity(row));
+  }
+
+  /**
+   * Get a Camp of the current Organisation by id, or throw if missing.
+   * @param id Camp id
+   * @throws {NotFoundException} when no Camp has this id in the current Organisation
+   */
+  public async getByIdOrThrow(id: string): Promise<CampEntity> {
+    const [row] = await this.unitOfWork.db.select().from(camps).where(eq(camps.id, id));
+
+    if (row === undefined) {
+      throw new NotFoundException();
+    }
+
+    return new CampEntity(row);
+  }
 
   /**
    * Get a Camp of the current Organisation by id, locked until the unit of work ends, or throw if missing.
@@ -28,18 +52,17 @@ export class CampRepository {
   }
 
   /**
-   * Get a Camp of the current Organisation by id, or throw if missing.
-   * @param id Camp id
-   * @throws {NotFoundException} when no Camp has this id in the current Organisation
+   * Get the Camp of the current Organisation that has or had a slug.
+   * @param slug the slug, lowercase
    */
-  public async getByIdOrThrow(id: string): Promise<CampEntity> {
-    const [row] = await this.unitOfWork.db.select().from(camps).where(eq(camps.id, id));
+  public async getBySlug(slug: string): Promise<CampEntity | null> {
+    const [row] = await this.unitOfWork.db
+      .select({ camp: camps })
+      .from(campSlugs)
+      .innerJoin(camps, and(eq(camps.organisationId, campSlugs.organisationId), eq(camps.id, campSlugs.campId)))
+      .where(eq(campSlugs.slug, slug));
 
-    if (row === undefined) {
-      throw new NotFoundException();
-    }
-
-    return new CampEntity(row);
+    return row === undefined ? null : new CampEntity(row.camp);
   }
 
   /**
@@ -88,5 +111,26 @@ export class CampRepository {
     }
 
     return new CampEntity(row);
+  }
+
+  /**
+   * Keep a slug for a Camp of the current Organisation, unless another of its Camps has or had it. A
+   * simultaneous claim of the same slug waits for this one to commit or roll back.
+   * @param campId Camp id
+   * @param slug the slug, lowercase
+   * @returns whether the slug is the Camp's now
+   */
+  public async claimSlug(campId: string, slug: string): Promise<boolean> {
+    await this.unitOfWork.db
+      .insert(campSlugs)
+      .values({ organisationId: this.unitOfWork.organisationId, slug, campId })
+      .onConflictDoNothing();
+
+    const [owner] = await this.unitOfWork.db
+      .select({ campId: campSlugs.campId })
+      .from(campSlugs)
+      .where(eq(campSlugs.slug, slug));
+
+    return owner?.campId === campId;
   }
 }

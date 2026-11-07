@@ -3,7 +3,7 @@ import type { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import type { Permissions } from '@repo/schema/admins';
-import { ACCESS_HEADERS } from '@repo/schema/shared';
+import { ACCESS_HEADERS, slugify } from '@repo/schema/shared';
 
 import type { Env } from '../core/config/env.schema.ts';
 import { UnitOfWork } from '../core/database/unit-of-work.ts';
@@ -74,15 +74,28 @@ export async function brandOrganisation(
 }
 
 /**
- * Create a Camp in an Organisation, its slug taken from its name, as signup creates the first one.
+ * Create a Camp in an Organisation, without contact or modules.
  * @param app the running test app
  * @param organisationId the Organisation
  * @param name the Camp's name
+ * @param slug the Camp's slug, from its name where omitted
  */
-export async function createCamp(app: INestApplication, organisationId: string, name = 'Letní tábor'): Promise<string> {
+export async function createCamp(
+  app: INestApplication,
+  organisationId: string,
+  name = 'Letní tábor',
+  slug = slugify(name),
+): Promise<string> {
   const camp = await app
     .get(UnitOfWork)
-    .run(organisationId, () => app.get(CampService).createFirst({ kind: 'system' }, { name }));
+    .run(organisationId, () =>
+      app
+        .get(CampService)
+        .create(
+          { kind: 'system' },
+          { name, slug, websiteUrl: null, contactName: null, contactEmail: null, contactPhone: null },
+        ),
+    );
 
   return camp.id;
 }

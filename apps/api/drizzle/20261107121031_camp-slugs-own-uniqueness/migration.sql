@@ -1,0 +1,1 @@
+ALTER TABLE "camps" DROP CONSTRAINT "camps_organisation_id_slug_unique";

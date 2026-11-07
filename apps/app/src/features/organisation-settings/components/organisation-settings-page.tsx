@@ -1,9 +1,9 @@
 import { Link, Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { LogoField } from '@/core/branding';
 import { BrandingForm } from '@/features/organisation-settings/components/branding-form/branding-form';
 import { IdentityForm } from '@/features/organisation-settings/components/identity-form/identity-form';
-import { LogoField } from '@/features/organisation-settings/components/logo-field/logo-field';
 import { useOrganisationSettingsPage } from '@/features/organisation-settings/components/use-organisation-settings-page.hook';
 
 // The Owner's settings of the Organisation: legal identity, bank account, contacts and branding.
@@ -41,7 +41,12 @@ export function OrganisationSettingsPage() {
           <h2 className="text-lg font-semibold">{t('branding.title')}</h2>
           <p className="text-sm text-muted-foreground">{t('branding.intro')}</p>
         </div>
-        <LogoField organisationId={page.organisationId} logo={page.settings.logo} />
+        <LogoField
+          logo={page.settings.logo}
+          emptyText={t('logoNone')}
+          setLogo={page.setLogo}
+          removeLogo={page.removeLogo}
+        />
         <BrandingForm organisationId={page.organisationId} settings={page.settings} />
       </section>
     </div>

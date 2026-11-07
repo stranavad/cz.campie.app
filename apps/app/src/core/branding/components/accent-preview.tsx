@@ -8,7 +8,7 @@ interface AccentPreviewProps {
 
 // How the accent will look on the public pages, with the text colours derived for it.
 export function AccentPreview({ accentColour }: AccentPreviewProps) {
-  const { t } = useTranslation('organisationSettings');
+  const { t } = useTranslation();
   const parsed = accentColourSchema.safeParse(accentColour);
 
   if (!parsed.success) {
@@ -20,10 +20,10 @@ export function AccentPreview({ accentColour }: AccentPreviewProps) {
   return (
     <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border p-4">
       <span className="rounded-lg px-3 py-2 text-sm font-medium" style={{ backgroundColor: accent, color: onAccent }}>
-        {t('branding.previewButton')}
+        {t('accentPreview.button')}
       </span>
       <span className="text-sm font-medium underline" style={{ color: accentText }}>
-        {t('branding.previewLink')}
+        {t('accentPreview.link')}
       </span>
     </div>
   );

@@ -7,7 +7,8 @@ import { useAdminHome } from '@/features/admin-home/components/use-admin-home.ho
 
 export function AdminHomePage() {
   const { t } = useTranslation('adminHome');
-  const { isLoading, isSignedOut, isError, hasNoMembership, organisation, isOwner, isOperator } = useAdminHome();
+  const { isLoading, isSignedOut, isError, hasNoMembership, organisation, isOwner, canSeeCamps, isOperator } =
+    useAdminHome();
   const consoleLink = isOperator ? (
     <Link to="/platform/konzole" className={buttonVariants({ variant: 'outline' })}>
       {t('openConsole')}
@@ -39,6 +40,11 @@ export function AdminHomePage() {
   return (
     <div className="flex flex-col items-start gap-2">
       <OrganisationStatusNotice organisation={organisation} />
+      {canSeeCamps ? (
+        <Link to="/platform/tabory" className={buttonVariants({ variant: 'outline' })}>
+          {t('campSettings')}
+        </Link>
+      ) : null}
       {isOwner ? (
         <div className="flex flex-wrap gap-2">
           <Link to="/platform/uzivatele" className={buttonVariants({ variant: 'outline' })}>

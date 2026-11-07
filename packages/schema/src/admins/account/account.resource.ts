@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { ORGANISATION_STATUSES } from '@repo/schema/organisations';
 
+import { permissionsSchema } from '../membership/membership.resource.ts';
+
 // The signed-in admin's own identity, their second factor and the Organisations they are a member of.
 export const accountSchema = z.object({
   email: z.string(),
@@ -13,6 +15,8 @@ export const accountSchema = z.object({
   memberships: z.array(
     z.object({
       owner: z.boolean(),
+      // What the member may do in each area; an Owner may do everything whatever these say.
+      permissions: permissionsSchema,
       organisation: z.object({
         id: z.uuid(),
         displayName: z.string(),

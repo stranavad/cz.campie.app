@@ -41,4 +41,4 @@ export const useSetOrganisationLogoMutation = (organisationId: string) =>
   useSettingsMutation(organisationId, (file: File) => organisationSettingsService.setLogo(organisationId, file));
 
 export const useRemoveOrganisationLogoMutation = (organisationId: string) =>
-  useSettingsMutation(organisationId, () => organisationSettingsService.removeLogo(organisationId));
+  useSettingsMutation<void>(organisationId, () => organisationSettingsService.removeLogo(organisationId));

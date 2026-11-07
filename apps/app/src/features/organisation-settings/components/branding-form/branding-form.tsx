@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { accentColourSchema, type OrganisationSettings } from '@repo/schema/organisations';
 
-import { AccentPreview } from '@/features/organisation-settings/components/branding-form/accent-preview';
+import { AccentPreview } from '@/core/branding';
 import { useBrandingForm } from '@/features/organisation-settings/components/branding-form/use-branding-form.hook';
 
 interface BrandingFormProps {

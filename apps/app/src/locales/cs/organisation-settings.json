@@ -30,23 +30,7 @@
     "displayNameHint": "Pod tímto názvem uvidí organizaci rodiče.",
     "accentColour": "Barva",
     "accentColourHint": "Barvu textu k ní zvolíme sami, aby byl vždy čitelný.",
-    "accentPicker": "Vybrat barvu",
-    "previewButton": "Odeslat přihlášku",
-    "previewLink": "Odkaz v textu"
+    "accentPicker": "Vybrat barvu"
   },
-  "logo": {
-    "title": "Logo",
-    "none": "Organizace zatím nemá logo.",
-    "current": "Současné logo",
-    "upload": "Nahrát logo",
-    "replace": "Nahrát jiné logo",
-    "remove": "Odebrat logo",
-    "hint": "Obrázek PNG nebo JPG, nejvýše 1 MB.",
-    "failure": {
-      "file_missing": "Vyberte soubor s logem.",
-      "file_too_large": "Logo může mít nejvýše 1 MB.",
-      "file_type_not_allowed": "Logo musí být obrázek PNG nebo JPG.",
-      "unexpected": "Logo se nepodařilo uložit. Zkuste to prosím znovu."
-    }
-  }
+  "logoNone": "Organizace zatím nemá logo."
 }

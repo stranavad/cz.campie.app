@@ -96,6 +96,7 @@ describe('organisation signup', () => {
       memberships: [
         {
           owner: true,
+          permissions: { registrations: 'none', campSettings: 'none', health: 'none', oddily: 'none', vedouci: 'none' },
           organisation: {
             id: expect.any(String),
             displayName: 'Letní tábor Pokusník',

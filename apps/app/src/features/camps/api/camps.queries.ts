@@ -1,0 +1,75 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import type { CampBranding, CreateCampBody, UpdateCampBody, UpdateCampBrandingBody } from '@repo/schema/camps';
+
+import { campsKeys } from '@/features/camps/api/camps.keys';
+import { campsService } from '@/features/camps/api/camps.service';
+
+export const useCampsQuery = (organisationId: string, enabled: boolean) =>
+  useQuery({
+    queryKey: campsKeys.list(organisationId),
+    queryFn: ({ signal }) => campsService.list(organisationId, signal),
+    enabled,
+  });
+
+export const useCampQuery = (organisationId: string, campId: string) =>
+  useQuery({
+    queryKey: campsKeys.detail(organisationId, campId),
+    queryFn: ({ signal }) => campsService.get(organisationId, campId, signal),
+  });
+
+// The fallback shown follows the Organisation's branding, which another page changes, so it is refetched
+// whenever the section opens.
+export const useCampBrandingQuery = (organisationId: string, campId: string) =>
+  useQuery({
+    queryKey: campsKeys.branding(organisationId, campId),
+    queryFn: ({ signal }) => campsService.getBranding(organisationId, campId, signal),
+    refetchOnMount: 'always',
+  });
+
+// The list shows names and slugs, so it is refetched after any change.
+export const useCreateCampMutation = (organisationId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: CreateCampBody) => campsService.create(organisationId, body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.list(organisationId) }),
+  });
+};
+
+export const useUpdateCampMutation = (organisationId: string, campId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: UpdateCampBody) => campsService.update(organisationId, campId, body),
+    onSuccess: async (camp) => {
+      queryClient.setQueryData(campsKeys.detail(organisationId, campId), camp);
+      await queryClient.invalidateQueries({ queryKey: campsKeys.list(organisationId) });
+    },
+  });
+};
+
+// Every branding change answers with the branding as it now is.
+function useBrandingMutation<Variables>(
+  organisationId: string,
+  campId: string,
+  mutationFn: (variables: Variables) => Promise<CampBranding>,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn,
+    onSuccess: (branding) => queryClient.setQueryData(campsKeys.branding(organisationId, campId), branding),
+  });
+}
+
+export const useUpdateCampBrandingMutation = (organisationId: string, campId: string) =>
+  useBrandingMutation(organisationId, campId, (body: UpdateCampBrandingBody) =>
+    campsService.updateBranding(organisationId, campId, body),
+  );
+
+export const useSetCampLogoMutation = (organisationId: string, campId: string) =>
+  useBrandingMutation(organisationId, campId, (file: File) => campsService.setLogo(organisationId, campId, file));
+
+export const useRemoveCampLogoMutation = (organisationId: string, campId: string) =>
+  useBrandingMutation<void>(organisationId, campId, () => campsService.removeLogo(organisationId, campId));

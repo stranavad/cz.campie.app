@@ -1,4 +1,4 @@
-import { useAccountQuery, useCurrentMembership } from '@/core/account';
+import { membershipAllows, useAccountQuery, useCurrentMembership } from '@/core/account';
 
 export function useAdminHome() {
   const { membership, ...state } = useCurrentMembership();
@@ -8,6 +8,7 @@ export function useAdminHome() {
     ...state,
     organisation: membership?.organisation,
     isOwner: membership?.owner === true,
+    canSeeCamps: membershipAllows(membership, 'campSettings', 'read'),
     isOperator: account.data?.operator === true,
   };
 }

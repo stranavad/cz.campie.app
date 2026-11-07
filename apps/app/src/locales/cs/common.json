@@ -34,6 +34,27 @@
     "email_taken": "S tímto e-mailem už účet existuje.",
     "consent_required": "Bez souhlasu nelze organizaci založit.",
     "already_member": "Tento e-mail už patří správci organizace.",
-    "totp_code_malformed": "Zadejte šest číslic z ověřovací aplikace."
+    "totp_code_malformed": "Zadejte šest číslic z ověřovací aplikace.",
+    "camp_slug_malformed": "Adresa může obsahovat jen malá písmena bez diakritiky, číslice a pomlčky mezi nimi.",
+    "camp_slug_reserved": "Tuto adresu nelze použít, vyberte jinou.",
+    "camp_slug_taken": "Tuto adresu má nebo měl jiný tábor organizace."
+  },
+  "logoField": {
+    "title": "Logo",
+    "current": "Současné logo",
+    "upload": "Nahrát logo",
+    "replace": "Nahrát jiné logo",
+    "remove": "Odebrat logo",
+    "hint": "Obrázek PNG nebo JPG, nejvýše 1 MB.",
+    "failure": {
+      "file_missing": "Vyberte soubor s logem.",
+      "file_too_large": "Logo může mít nejvýše 1 MB.",
+      "file_type_not_allowed": "Logo musí být obrázek PNG nebo JPG.",
+      "unexpected": "Logo se nepodařilo uložit. Zkuste to prosím znovu."
+    }
+  },
+  "accentPreview": {
+    "button": "Odeslat přihlášku",
+    "link": "Odkaz v textu"
   }
 }

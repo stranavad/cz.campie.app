@@ -1,19 +1,19 @@
+import type { UseMutationResult } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { FILE_ERROR_CODES, type FileErrorCode } from '@repo/schema/files';
 import { MAX_LOGO_BYTES } from '@repo/schema/organisations';
 
-import {
-  useRemoveOrganisationLogoMutation,
-  useSetOrganisationLogoMutation,
-} from '@/features/organisation-settings/api/organisation-settings.queries';
 import { HttpError } from '@/lib/api';
 
 export type LogoFailure = FileErrorCode | 'unexpected';
 
-export function useLogoField(organisationId: string) {
-  const setLogo = useSetOrganisationLogoMutation(organisationId);
-  const removeLogo = useRemoveOrganisationLogoMutation(organisationId);
+export interface LogoMutations {
+  setLogo: UseMutationResult<unknown, Error, File>;
+  removeLogo: UseMutationResult<unknown, Error, void>;
+}
+
+export function useLogoField({ setLogo, removeLogo }: LogoMutations) {
   const [failure, setFailure] = useState<LogoFailure | null>(null);
 
   const fail = (error: unknown) => {
