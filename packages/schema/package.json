@@ -37,6 +37,10 @@
       "types": "./dist/payments/index.d.ts",
       "default": "./dist/payments/index.js"
     },
+    "./portal": {
+      "types": "./dist/portal/index.d.ts",
+      "default": "./dist/portal/index.js"
+    },
     "./pricing": {
       "types": "./dist/pricing/index.d.ts",
       "default": "./dist/pricing/index.js"

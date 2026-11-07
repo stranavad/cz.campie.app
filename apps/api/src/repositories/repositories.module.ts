@@ -21,6 +21,7 @@ import { PaymentRepository } from './registrations/payment/payment.repository.ts
 import { PriceAdjustmentRepository } from './registrations/price-adjustment/price-adjustment.repository.ts';
 import { RegistrationRepository } from './registrations/registration/registration.repository.ts';
 import { AdminSessionRepository } from './sessions/admin-session/admin-session.repository.ts';
+import { GuardianLoginLinkRepository } from './sessions/guardian-login-link/guardian-login-link.repository.ts';
 import { GuardianSessionRepository } from './sessions/guardian-session/guardian-session.repository.ts';
 
 const REPOSITORIES = [
@@ -35,6 +36,7 @@ const REPOSITORIES = [
   OperatorRepository,
   AdminSessionRepository,
   GuardianSessionRepository,
+  GuardianLoginLinkRepository,
   AuditEntryRepository,
   PlatformAuditEntryRepository,
   FileRepository,

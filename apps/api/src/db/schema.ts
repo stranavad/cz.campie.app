@@ -28,4 +28,6 @@ export { priceLineKind, priceLines } from './registrations/price-lines.ts';
 export { registrationGuardians } from './registrations/registration-guardians.ts';
 export { paymentChoice, registrations } from './registrations/registrations.ts';
 export { adminSessions } from './sessions/admin-sessions.ts';
+export { guardianLoginLinks } from './sessions/guardian-login-links.ts';
+export { guardianLoginRequests } from './sessions/guardian-login-requests.ts';
 export { guardianSessions } from './sessions/guardian-sessions.ts';

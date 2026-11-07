@@ -1,0 +1,22 @@
+{
+  "title": "Moje přihlášky",
+  "signOut": "Odhlásit se",
+  "none": "K tomuto e-mailu zatím nepatří žádná přihláška.",
+  "error": "Přihlášky se nepodařilo načíst. Zkuste stránku načíst znovu.",
+  "registrationTitle": "{{camp}} - {{turnus}}",
+  "variableSymbol": "Variabilní symbol {{symbol}}",
+  "login": {
+    "title": "Přihlášení do portálu",
+    "intro": "Zadejte e-mail, který jste uvedli v přihlášce. Pošleme vám odkaz pro přihlášení.",
+    "email": "E-mail",
+    "submit": "Poslat odkaz",
+    "sent": "Pokud k tomuto e-mailu patří přihláška, poslali jsme na něj odkaz pro přihlášení. Odkaz platí 30 minut.",
+    "linkInvalid": "Odkaz už neplatí: byl použit, nebo vypršel. Požádejte o nový.",
+    "failure": {
+      "requests_throttled": "Žádostí o odkaz bylo v poslední době příliš mnoho. Zkuste to prosím později.",
+      "unexpected": "Odkaz se nepodařilo odeslat. Zkuste to prosím znovu."
+    },
+    "confirm": "Pokračujte tlačítkem níže. Odkaz platí jen jednou.",
+    "signIn": "Přihlásit se do portálu"
+  }
+}

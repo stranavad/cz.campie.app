@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, count, eq, inArray, sql, sum } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, sql, sum } from 'drizzle-orm';
 
 import type { Answers } from '@repo/schema/form-engine';
 import type { PriceLineKind } from '@repo/schema/pricing';
@@ -101,6 +101,37 @@ export class RegistrationRepository {
     }
 
     return new RegistrationEntity(row);
+  }
+
+  /**
+   * List the Registrations of the current Organisation that name a guardian by email, newest first.
+   * @param email the guardian's email, lowercase
+   */
+  public async listByGuardian(email: string): Promise<RegistrationEntity[]> {
+    const rows = await this.unitOfWork.db
+      .selectDistinct({ registration: registrations })
+      .from(registrations)
+      .innerJoin(registrationGuardians, eq(registrationGuardians.registrationId, registrations.id))
+      .where(eq(registrationGuardians.email, email))
+      .orderBy(desc(registrations.submittedAt), desc(registrations.id));
+
+    return rows.map(({ registration }) => new RegistrationEntity(registration));
+  }
+
+  /**
+   * Get a Registration of the current Organisation that names a guardian by email.
+   * @param email the guardian's email, lowercase
+   * @param id Registration id
+   */
+  public async getByGuardian(email: string, id: string): Promise<RegistrationEntity | null> {
+    const [row] = await this.unitOfWork.db
+      .select({ registration: registrations })
+      .from(registrations)
+      .innerJoin(registrationGuardians, eq(registrationGuardians.registrationId, registrations.id))
+      .where(and(eq(registrations.id, id), eq(registrationGuardians.email, email)))
+      .limit(1);
+
+    return row === undefined ? null : new RegistrationEntity(row.registration);
   }
 
   /**

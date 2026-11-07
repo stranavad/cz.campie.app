@@ -26,6 +26,10 @@ export const registrationGuardians = p.snakeCase.table.withRLS(
         foreignColumns: [registrations.organisationId, registrations.id],
       })
       .onDelete('cascade'),
+    // A guardian's portal finds their Registrations by email.
+    p.index('registration_guardians_organisation_id_email_idx').on(table.organisationId, table.email),
+    // Portal access compares emails as they are stored, so they are stored lowercase.
+    p.check('registration_guardians_email', sql`${table.email} = lower(${table.email})`),
     p.check('registration_guardians_position', sql`${table.position} IN (1, 2)`),
     organisationPolicy(),
   ],

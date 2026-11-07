@@ -25,6 +25,8 @@ import { Route as PlatformZapomenuteHesloRouteImport } from './routes/platform/z
 import { Route as UnknownSplatRouteImport } from './routes/unknown/$'
 import { Route as OrganisationCampSlugIndexRouteImport } from './routes/organisation/$campSlug/index'
 import { Route as OrganisationCampSlugPrihlaskaRouteImport } from './routes/organisation/$campSlug/prihlaska'
+import { Route as OrganisationPortalIndexRouteImport } from './routes/organisation/portal/index'
+import { Route as OrganisationPortalPrihlaseniRouteImport } from './routes/organisation/portal/prihlaseni'
 import { Route as PlatformTaboryNahledRouteImport } from './routes/platform/tabory_.nahled'
 
 const OrganisationRouteRoute = OrganisationRouteRouteImport.update({
@@ -110,6 +112,17 @@ const OrganisationCampSlugPrihlaskaRoute =
     path: '/$campSlug/prihlaska',
     getParentRoute: () => OrganisationRouteRoute,
   } as any)
+const OrganisationPortalIndexRoute = OrganisationPortalIndexRouteImport.update({
+  id: '/portal/',
+  path: '/portal/',
+  getParentRoute: () => OrganisationRouteRoute,
+} as any)
+const OrganisationPortalPrihlaseniRoute =
+  OrganisationPortalPrihlaseniRouteImport.update({
+    id: '/portal/prihlaseni',
+    path: '/portal/prihlaseni',
+    getParentRoute: () => OrganisationRouteRoute,
+  } as any)
 const PlatformTaboryNahledRoute = PlatformTaboryNahledRouteImport.update({
   id: '/tabory_/nahled',
   path: '/tabory/nahled',
@@ -132,8 +145,10 @@ export interface FileRoutesByFullPath {
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/organisation/$campSlug/prihlaska': typeof OrganisationCampSlugPrihlaskaRoute
+  '/organisation/portal/prihlaseni': typeof OrganisationPortalPrihlaseniRoute
   '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug/': typeof OrganisationCampSlugIndexRoute
+  '/organisation/portal/': typeof OrganisationPortalIndexRoute
 }
 export interface FileRoutesByTo {
   '/platform/konzole': typeof PlatformKonzoleRoute
@@ -149,8 +164,10 @@ export interface FileRoutesByTo {
   '/organisation': typeof OrganisationIndexRoute
   '/platform': typeof PlatformIndexRoute
   '/organisation/$campSlug/prihlaska': typeof OrganisationCampSlugPrihlaskaRoute
+  '/organisation/portal/prihlaseni': typeof OrganisationPortalPrihlaseniRoute
   '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug': typeof OrganisationCampSlugIndexRoute
+  '/organisation/portal': typeof OrganisationPortalIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -169,8 +186,10 @@ export interface FileRoutesById {
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/organisation/$campSlug/prihlaska': typeof OrganisationCampSlugPrihlaskaRoute
+  '/organisation/portal/prihlaseni': typeof OrganisationPortalPrihlaseniRoute
   '/platform/tabory_/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug/': typeof OrganisationCampSlugIndexRoute
+  '/organisation/portal/': typeof OrganisationPortalIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -190,8 +209,10 @@ export interface FileRouteTypes {
     | '/organisation/'
     | '/platform/'
     | '/organisation/$campSlug/prihlaska'
+    | '/organisation/portal/prihlaseni'
     | '/platform/tabory/nahled'
     | '/organisation/$campSlug/'
+    | '/organisation/portal/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/platform/konzole'
@@ -207,8 +228,10 @@ export interface FileRouteTypes {
     | '/organisation'
     | '/platform'
     | '/organisation/$campSlug/prihlaska'
+    | '/organisation/portal/prihlaseni'
     | '/platform/tabory/nahled'
     | '/organisation/$campSlug'
+    | '/organisation/portal'
   id:
     | '__root__'
     | '/organisation'
@@ -226,8 +249,10 @@ export interface FileRouteTypes {
     | '/organisation/'
     | '/platform/'
     | '/organisation/$campSlug/prihlaska'
+    | '/organisation/portal/prihlaseni'
     | '/platform/tabory_/nahled'
     | '/organisation/$campSlug/'
+    | '/organisation/portal/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -350,6 +375,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrganisationCampSlugPrihlaskaRouteImport
       parentRoute: typeof OrganisationRouteRoute
     }
+    '/organisation/portal/': {
+      id: '/organisation/portal/'
+      path: '/portal'
+      fullPath: '/organisation/portal/'
+      preLoaderRoute: typeof OrganisationPortalIndexRouteImport
+      parentRoute: typeof OrganisationRouteRoute
+    }
+    '/organisation/portal/prihlaseni': {
+      id: '/organisation/portal/prihlaseni'
+      path: '/portal/prihlaseni'
+      fullPath: '/organisation/portal/prihlaseni'
+      preLoaderRoute: typeof OrganisationPortalPrihlaseniRouteImport
+      parentRoute: typeof OrganisationRouteRoute
+    }
     '/platform/tabory_/nahled': {
       id: '/platform/tabory_/nahled'
       path: '/tabory/nahled'
@@ -363,13 +402,17 @@ declare module '@tanstack/react-router' {
 interface OrganisationRouteRouteChildren {
   OrganisationIndexRoute: typeof OrganisationIndexRoute
   OrganisationCampSlugPrihlaskaRoute: typeof OrganisationCampSlugPrihlaskaRoute
+  OrganisationPortalPrihlaseniRoute: typeof OrganisationPortalPrihlaseniRoute
   OrganisationCampSlugIndexRoute: typeof OrganisationCampSlugIndexRoute
+  OrganisationPortalIndexRoute: typeof OrganisationPortalIndexRoute
 }
 
 const OrganisationRouteRouteChildren: OrganisationRouteRouteChildren = {
   OrganisationIndexRoute: OrganisationIndexRoute,
   OrganisationCampSlugPrihlaskaRoute: OrganisationCampSlugPrihlaskaRoute,
+  OrganisationPortalPrihlaseniRoute: OrganisationPortalPrihlaseniRoute,
   OrganisationCampSlugIndexRoute: OrganisationCampSlugIndexRoute,
+  OrganisationPortalIndexRoute: OrganisationPortalIndexRoute,
 }
 
 const OrganisationRouteRouteWithChildren =

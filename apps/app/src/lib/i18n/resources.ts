@@ -8,6 +8,7 @@ import login from '@/locales/cs/login.json';
 import members from '@/locales/cs/members.json';
 import organisationSettings from '@/locales/cs/organisation-settings.json';
 import passwordReset from '@/locales/cs/password-reset.json';
+import portal from '@/locales/cs/portal.json';
 import registration from '@/locales/cs/registration.json';
 import signup from '@/locales/cs/signup.json';
 
@@ -26,6 +27,7 @@ export const resources = {
     camps,
     campPages,
     registration,
+    portal,
     console: consoleTexts,
   },
 };

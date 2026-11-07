@@ -50,6 +50,17 @@ export const RequestAdminId = createParamDecorator((_: unknown, context: Executi
   return scope.admin.id;
 });
 
+// The email of the guardian a guardian request is signed in as.
+export const RequestGuardianEmail = createParamDecorator((_: unknown, context: ExecutionContext): string => {
+  const scope = requestScope(context.switchToHttp().getRequest<Request>());
+
+  if (scope.access !== 'guardian') {
+    throw new Error(`A ${scope.access} request has no guardian`);
+  }
+
+  return scope.guardian.email;
+});
+
 // The membership an admin request acts through, for what a route shows by permission, such as health data
 // only with Health read.
 export const RequestMember = createParamDecorator((_: unknown, context: ExecutionContext): MemberAccess => {

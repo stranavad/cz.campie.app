@@ -82,6 +82,14 @@ export class SessionService {
   }
 
   /**
+   * End the guardian session a token opens in the current Organisation.
+   * @param token the token from the cookie
+   */
+  public async endGuardian(token: string): Promise<void> {
+    await this.guardianSessions.removeByTokenHash(hashSessionToken(token));
+  }
+
+  /**
    * Get the unexpired admin session a token opens.
    * @param token the token from the cookie
    */

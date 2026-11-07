@@ -41,4 +41,12 @@ export class GuardianSessionRepository {
 
     return new GuardianSessionEntity(row);
   }
+
+  /**
+   * Remove the guardian session of the current Organisation a token's hash opens, if any.
+   * @param tokenHash SHA-256 of the session token
+   */
+  public async removeByTokenHash(tokenHash: Buffer): Promise<void> {
+    await this.unitOfWork.db.delete(guardianSessions).where(eq(guardianSessions.tokenHash, tokenHash));
+  }
 }
