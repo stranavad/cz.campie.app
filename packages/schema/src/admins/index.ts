@@ -3,6 +3,7 @@ export * from './member/member.resource.ts';
 export * from './member/list-members.contract.ts';
 export * from './member/update-member.contract.ts';
 export * from './member/remove-member.contract.ts';
+export * from './member/reset-member-totp.contract.ts';
 export * from './invitation/invitation.resource.ts';
 export * from './invitation/list-invitations.contract.ts';
 export * from './invitation/create-invitation.contract.ts';

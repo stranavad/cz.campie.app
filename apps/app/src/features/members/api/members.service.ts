@@ -3,6 +3,7 @@ import {
   listInvitationsEndpoint,
   listMembersEndpoint,
   removeMemberEndpoint,
+  resetMemberTotpEndpoint,
   revokeInvitationEndpoint,
   updateMemberEndpoint,
   type CreateInvitationBody,
@@ -18,6 +19,8 @@ export const membersService = {
     apiClient.request(updateMemberEndpoint, { organisationId, params: { memberId }, body }),
   remove: (organisationId: string, memberId: string) =>
     apiClient.request(removeMemberEndpoint, { organisationId, params: { memberId } }),
+  resetTotp: (organisationId: string, memberId: string) =>
+    apiClient.request(resetMemberTotpEndpoint, { organisationId, params: { memberId } }),
   listInvitations: (organisationId: string, signal?: AbortSignal) =>
     apiClient.request(listInvitationsEndpoint, { organisationId, signal }),
   invite: (organisationId: string, body: CreateInvitationBody) =>

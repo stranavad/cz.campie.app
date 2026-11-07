@@ -5,7 +5,7 @@ import { totpCode } from '../../../core/totp/totp.ts';
 import { createAdmin, signIn, type RequestHeaders } from '../../../testing/fixtures.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
-import { decodeBase32, enrolOperatorTotp, withSessionFrom } from '../../../testing/totp.ts';
+import { decodeBase32, enrolTotp, withSessionFrom } from '../../../testing/totp.ts';
 
 const THIRTY_SECONDS = 30 * 1000;
 
@@ -41,7 +41,8 @@ describe('TOTP for the Platform operator', () => {
 
     const secret = decodeBase32(started.body.secret);
     const confirmed = await confirm(operator.headers, totpCode(secret, clock().now()));
-    expect(confirmed.status).toBe(204);
+    expect(confirmed.status).toBe(200);
+    expect(confirmed.body.recoveryCodes).toHaveLength(10);
 
     const passed = withSessionFrom(operator.headers, confirmed);
     expect(await account(passed)).toMatchObject({ operator: true, totpEnabled: true, secondFactor: true });
@@ -50,7 +51,7 @@ describe('TOTP for the Platform operator', () => {
 
   it('replaces the session that passed a code, so a copy of its cookie from before the code opens nothing', async () => {
     const operator = await createOperator();
-    const { secret } = await enrolOperatorTotp(http(), operator.headers, clock().now());
+    const { secret } = await enrolTotp(http(), operator.headers, clock().now());
     clock().advance(THIRTY_SECONDS);
     const beforeCode = await signIn(app(), operator.id);
 
@@ -67,7 +68,7 @@ describe('TOTP for the Platform operator', () => {
 
   it('stores the secret sealed, never as the app shows it', async () => {
     const operator = await createOperator();
-    const { secret } = await enrolOperatorTotp(http(), operator.headers, clock().now());
+    const { secret } = await enrolTotp(http(), operator.headers, clock().now());
 
     const [stored] = await withClient(database().ownerUrl, async (client) => {
       const { rows } = await client.query<{ secret: Buffer }>(`SELECT secret FROM totp_credentials`);
@@ -89,12 +90,12 @@ describe('TOTP for the Platform operator', () => {
     expect(wrong.headers['set-cookie']).toBeUndefined();
     expect(await account(operator.headers)).toMatchObject({ totpEnabled: false, secondFactor: false });
 
-    expect((await confirm(operator.headers, totpCode(second, clock().now()))).status).toBe(204);
+    expect((await confirm(operator.headers, totpCode(second, clock().now()))).status).toBe(200);
   });
 
   it('passes a later session with a code, each code once', async () => {
     const operator = await createOperator();
-    const { secret } = await enrolOperatorTotp(http(), operator.headers, clock().now());
+    const { secret } = await enrolTotp(http(), operator.headers, clock().now());
     clock().advance(THIRTY_SECONDS);
 
     const laterSession = await signIn(app(), operator.id);
@@ -115,7 +116,7 @@ describe('TOTP for the Platform operator', () => {
 
   it('locks the codes out after too many wrong ones, until the lockout period ends', async () => {
     const operator = await createOperator();
-    const { secret } = await enrolOperatorTotp(http(), operator.headers, clock().now());
+    const { secret } = await enrolTotp(http(), operator.headers, clock().now());
     clock().advance(THIRTY_SECONDS);
     const laterSession = await signIn(app(), operator.id);
 
@@ -131,17 +132,10 @@ describe('TOTP for the Platform operator', () => {
     expect((await verify(laterSession, totpCode(secret, clock().now()))).status).toBe(204);
   });
 
-  it('refuses steps out of order, and the setup to anyone but the Platform operator', async () => {
+  it('refuses steps out of order', async () => {
     const operator = await createOperator();
-    const admin = await createAdmin(app(), { memberOf: [] });
-    const adminHeaders = await signIn(app(), admin.id);
 
     expect((await confirm(operator.headers, '123456')).body).toMatchObject({ code: 'totp_not_started' });
     expect((await verify(operator.headers, '123456')).body).toMatchObject({ code: 'totp_not_enabled' });
-
-    const refused = await start(adminHeaders);
-    expect(refused.status).toBe(403);
-    expect(refused.body).toMatchObject({ code: 'not_operator' });
-    expect(await account(adminHeaders)).toMatchObject({ operator: false, totpEnabled: false });
   });
 });

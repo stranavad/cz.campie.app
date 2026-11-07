@@ -4,6 +4,7 @@ import type { ConsoleOrganisation } from '@repo/schema/console';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { OwnerTotpReset } from '@/features/console/components/organisation-list/owner-totp-reset';
 import { useOrganisationRow } from '@/features/console/components/organisation-list/use-organisation-row.hook';
 
 interface OrganisationRowProps {
@@ -103,6 +104,7 @@ export function OrganisationRow({ organisation }: OrganisationRowProps) {
           {t(`failure.${row.failure}`)}
         </p>
       )}
+      {isPending ? null : <OwnerTotpReset organisationId={organisation.id} />}
     </li>
   );
 }

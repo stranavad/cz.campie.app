@@ -86,6 +86,7 @@ describe('invitations', () => {
       email: 'nova-vedouci@example.com',
       owner: false,
       permissions: LEVELS,
+      totpEnabled: false,
     });
     expect((await platform('sessions', { email: 'nova-vedouci@example.com', password: PASSWORD })).status).toBe(204);
   });

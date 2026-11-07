@@ -102,6 +102,7 @@ describe('organisation signup', () => {
             displayName: 'Letní tábor Pokusník',
             subdomain: 'pokusnik',
             status: 'pending',
+            totpRequired: false,
           },
           support: null,
         },

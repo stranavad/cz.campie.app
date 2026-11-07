@@ -28,8 +28,13 @@
     "cancel": "Zrušit",
     "failure": {
       "last_owner": "Organizace musí mít alespoň jednoho vlastníka.",
-      "unexpected": "Změnu se nepodařilo uložit. Zkuste to prosím znovu."
-    }
+      "unexpected": "Změnu se nepodařilo uložit. Zkuste to prosím znovu.",
+      "totp_reset_elsewhere": "Tento správce má přístup i jinam (do jiné organizace nebo ke konzoli platformy), proto mu dvoufázové přihlášení může vypnout jen provozovatel platformy. Napište mu přes odkaz „Napsat zpětnou vazbu nebo nahlásit problém“."
+    },
+    "totpOn": "Dvoufázové přihlášení zapnuté",
+    "totpOff": "Bez dvoufázového přihlášení",
+    "resetTotp": "Vypnout dvoufázové přihlášení",
+    "confirmResetTotp": "Opravdu vypnout - správce si ho nastaví znovu"
   },
   "invitations": {
     "title": "Čekající pozvánky",

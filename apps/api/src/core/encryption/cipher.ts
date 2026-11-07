@@ -1,4 +1,12 @@
-import { createCipheriv, createDecipheriv, createSecretKey, hkdfSync, randomBytes, type KeyObject } from 'node:crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHmac,
+  createSecretKey,
+  hkdfSync,
+  randomBytes,
+  type KeyObject,
+} from 'node:crypto';
 import { Transform, type TransformCallback } from 'node:stream';
 
 // Every sealed value starts with the version of the scheme that sealed it, so the scheme can change
@@ -19,6 +27,7 @@ const SEGMENT_BYTES = 64 * 1024;
 const SEALED_SEGMENT_BYTES = SEGMENT_BYTES + TAG_BYTES;
 const MAX_SEGMENTS = 2 ** 32;
 const FILE_KEY_INFO = Buffer.from('campie file key');
+const DIGEST_KEY_INFO = Buffer.from('campie platform digest');
 const FILE_ERROR = 'A file failed to decrypt: wrong key, or altered or truncated ciphertext';
 
 declare const encrypted: unique symbol;
@@ -295,4 +304,18 @@ export class OrganisationCipher {
       },
     });
   }
+}
+
+/**
+ * Digest a short platform secret, such as a recovery code, with a key derived from the master key, so a copy
+ * of the database alone cannot test guesses against it.
+ * @param masterKey the platform master key
+ * @param context what the value belongs to, such as `recovery:<admin id>`
+ * @param value the value
+ * @returns the HMAC-SHA256, hex
+ */
+export function platformDigest(masterKey: KeyObject, context: string, value: string): string {
+  const key = createSecretKey(Buffer.from(hkdfSync('sha256', masterKey, NO_CONTEXT, DIGEST_KEY_INFO, KEY_BYTES)));
+
+  return createHmac('sha256', key).update(context).update('\0').update(value).digest('hex');
 }

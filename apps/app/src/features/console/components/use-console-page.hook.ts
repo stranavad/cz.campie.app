@@ -2,8 +2,8 @@ import { useAccountQuery } from '@/core/account';
 import { useConsoleOrganisationsQuery } from '@/features/console/api/console.queries';
 import { HttpError } from '@/lib/api';
 
-// What the console shows: the TOTP setup, the code of this login, or the Organisations.
-export type ConsoleStep = 'enrol' | 'verify' | 'organisations';
+// What the console shows: the TOTP setup, or the Organisations once this login passed a code.
+export type ConsoleStep = 'enrol' | 'organisations';
 
 export function useConsolePage() {
   const account = useAccountQuery();
@@ -11,11 +11,9 @@ export function useConsolePage() {
   const step: ConsoleStep | undefined =
     account.data === undefined
       ? undefined
-      : !account.data.totpEnabled
-        ? 'enrol'
-        : account.data.secondFactor
-          ? 'organisations'
-          : 'verify';
+      : account.data.totpEnabled && account.data.secondFactor
+        ? 'organisations'
+        : 'enrol';
   const showsOrganisations = account.data?.operator === true && step === 'organisations';
   const organisations = useConsoleOrganisationsQuery(showsOrganisations);
 

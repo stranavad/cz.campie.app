@@ -50,6 +50,11 @@ export const useSetOrganisationLogoMutation = (organisationId: string) =>
 export const useRemoveOrganisationLogoMutation = (organisationId: string) =>
   useSettingsMutation<void>(organisationId, () => organisationSettingsService.removeLogo(organisationId));
 
+export const useRequireTotpMutation = (organisationId: string) =>
+  useSettingsMutation(organisationId, (required: boolean) =>
+    organisationSettingsService.requireTotp(organisationId, required),
+  );
+
 export const usePaymentGatewayQuery = (organisationId: string) =>
   useQuery({
     queryKey: organisationSettingsKeys.paymentGateway(organisationId),

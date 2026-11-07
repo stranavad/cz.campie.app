@@ -23,6 +23,7 @@ import { Route as PlatformPrihlaseniRouteImport } from './routes/platform/prihla
 import { Route as PlatformPrihlaskyRouteImport } from './routes/platform/prihlasky'
 import { Route as PlatformRegistraceOrganizaceRouteImport } from './routes/platform/registrace-organizace'
 import { Route as PlatformTaboryRouteImport } from './routes/platform/tabory'
+import { Route as PlatformUcetRouteImport } from './routes/platform/ucet'
 import { Route as PlatformUzivateleRouteImport } from './routes/platform/uzivatele'
 import { Route as PlatformZapomenuteHesloRouteImport } from './routes/platform/zapomenute-heslo'
 import { Route as UnknownSplatRouteImport } from './routes/unknown/$'
@@ -107,6 +108,11 @@ const PlatformRegistraceOrganizaceRoute =
 const PlatformTaboryRoute = PlatformTaboryRouteImport.update({
   id: '/tabory',
   path: '/tabory',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformUcetRoute = PlatformUcetRouteImport.update({
+  id: '/ucet',
+  path: '/ucet',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
 const PlatformUzivateleRoute = PlatformUzivateleRouteImport.update({
@@ -201,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/platform/prihlasky': typeof PlatformPrihlaskyRoute
   '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
   '/platform/tabory': typeof PlatformTaboryRoute
+  '/platform/ucet': typeof PlatformUcetRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
   '/unknown/$': typeof UnknownSplatRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/platform/prihlasky': typeof PlatformPrihlaskyRoute
   '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
   '/platform/tabory': typeof PlatformTaboryRoute
+  '/platform/ucet': typeof PlatformUcetRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
   '/unknown/$': typeof UnknownSplatRoute
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/platform/prihlasky': typeof PlatformPrihlaskyRoute
   '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
   '/platform/tabory': typeof PlatformTaboryRoute
+  '/platform/ucet': typeof PlatformUcetRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
   '/unknown/$': typeof UnknownSplatRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/platform/prihlasky'
     | '/platform/registrace-organizace'
     | '/platform/tabory'
+    | '/platform/ucet'
     | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
     | '/unknown/$'
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/platform/prihlasky'
     | '/platform/registrace-organizace'
     | '/platform/tabory'
+    | '/platform/ucet'
     | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
     | '/unknown/$'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/platform/prihlasky'
     | '/platform/registrace-organizace'
     | '/platform/tabory'
+    | '/platform/ucet'
     | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
     | '/unknown/$'
@@ -472,6 +484,13 @@ declare module '@tanstack/react-router' {
       path: '/tabory'
       fullPath: '/platform/tabory'
       preLoaderRoute: typeof PlatformTaboryRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/ucet': {
+      id: '/platform/ucet'
+      path: '/ucet'
+      fullPath: '/platform/ucet'
+      preLoaderRoute: typeof PlatformUcetRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
     '/platform/uzivatele': {
@@ -617,6 +636,7 @@ interface PlatformRouteRouteChildren {
   PlatformPrihlaskyRoute: typeof PlatformPrihlaskyRoute
   PlatformRegistraceOrganizaceRoute: typeof PlatformRegistraceOrganizaceRoute
   PlatformTaboryRoute: typeof PlatformTaboryRoute
+  PlatformUcetRoute: typeof PlatformUcetRoute
   PlatformUzivateleRoute: typeof PlatformUzivateleRoute
   PlatformZapomenuteHesloRoute: typeof PlatformZapomenuteHesloRoute
   PlatformIndexRoute: typeof PlatformIndexRoute
@@ -635,6 +655,7 @@ const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformPrihlaskyRoute: PlatformPrihlaskyRoute,
   PlatformRegistraceOrganizaceRoute: PlatformRegistraceOrganizaceRoute,
   PlatformTaboryRoute: PlatformTaboryRoute,
+  PlatformUcetRoute: PlatformUcetRoute,
   PlatformUzivateleRoute: PlatformUzivateleRoute,
   PlatformZapomenuteHesloRoute: PlatformZapomenuteHesloRoute,
   PlatformIndexRoute: PlatformIndexRoute,

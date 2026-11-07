@@ -6,6 +6,7 @@ import { PERMISSION_AREAS, type Permissions } from '@repo/schema/admins';
 import type { AccessErrorCode } from '@repo/schema/shared';
 
 import { MembershipRepository } from '../../repositories/admins/membership/membership.repository.ts';
+import { TotpCredentialRepository } from '../../repositories/admins/totp-credential/totp-credential.repository.ts';
 import { OperatorRepository } from '../../repositories/operators/operator/operator.repository.ts';
 import { OrganisationRepository } from '../../repositories/organisations/organisation/organisation.repository.ts';
 import { SupportGrantRepository } from '../../repositories/organisations/support-grant/support-grant.repository.ts';
@@ -57,6 +58,7 @@ export class AccessService {
     private readonly operators: OperatorRepository,
     private readonly sessions: SessionService,
     private readonly supportGrants: SupportGrantRepository,
+    private readonly totpCredentials: TotpCredentialRepository,
     private readonly clock: Clock,
     config: ConfigService<Env, true>,
   ) {
@@ -129,6 +131,8 @@ export class AccessService {
         return support;
       }
 
+      await this.requireTwoStep(membership.organisationId, session);
+
       return {
         access: 'admin',
         organisationId: membership.organisationId,
@@ -138,6 +142,31 @@ export class AccessService {
         },
       };
     });
+  }
+
+  /**
+   * Refuse an admin who turned on two-step login but whose session has not passed a code, and, in an
+   * Organisation that requires two-step login, an admin who has not set it up; account routes, where they
+   * set it up, stay open to both.
+   * @param organisationId the Organisation the request acts in
+   * @param session the admin session
+   * @throws {ForbiddenException} second_factor_required, or totp_setup_required
+   */
+  private async requireTwoStep(
+    organisationId: string,
+    session: { readonly adminId: string; readonly secondFactor: boolean },
+  ): Promise<void> {
+    if (session.secondFactor) {
+      return;
+    }
+
+    if (await this.totpCredentials.isEnabled(session.adminId)) {
+      throw refusal('second_factor_required', 'The session has not passed a TOTP code');
+    }
+
+    if ((await this.organisations.getById(organisationId))?.totpRequired === true) {
+      throw refusal('totp_setup_required', 'The Organisation requires two-step login');
+    }
   }
 
   /**

@@ -2,33 +2,6 @@
   "loading": "Načítáme…",
   "error": "Konzoli se nepodařilo načíst. Zkuste stránku načíst znovu.",
   "notOperator": "Konzole je jen pro provozovatele platformy.",
-  "enrolment": {
-    "title": "Nastavení dvoufázového přihlášení",
-    "intro": "Do konzole se provozovatel přihlašuje vždy i kódem z ověřovací aplikace v telefonu, například Google Authenticator nebo Aegis.",
-    "start": "Vytvořit klíč",
-    "secret": "Klíč zadejte do aplikace, nebo otevřete odkaz v telefonu. Pak opište kód, který aplikace ukazuje.",
-    "openApp": "Otevřít v ověřovací aplikaci",
-    "failure": "Klíč se nepodařilo vytvořit. Zkuste to prosím znovu."
-  },
-  "verify": {
-    "title": "Ověření přihlášení",
-    "intro": "Zadejte kód, který právě ukazuje vaše ověřovací aplikace."
-  },
-  "totp": {
-    "code": "Kód z aplikace",
-    "submit": {
-      "confirm": "Zapnout dvoufázové přihlášení",
-      "verify": "Ověřit"
-    },
-    "failure": {
-      "totp_enabled": "Dvoufázové přihlášení už je zapnuté. Načtěte stránku znovu.",
-      "totp_not_started": "Nejdřív vytvořte klíč.",
-      "totp_not_enabled": "Dvoufázové přihlášení ještě není nastavené. Načtěte stránku znovu.",
-      "totp_code_invalid": "Kód nesouhlasí nebo už byl použit. Počkejte na další kód z aplikace.",
-      "totp_throttled": "Příliš mnoho chybných kódů. Zkuste to znovu za chvíli.",
-      "unexpected": "Kód se nepodařilo ověřit. Zkuste to prosím znovu."
-    }
-  },
   "organisations": {
     "title": "Organizace",
     "empty": "Zatím se nezaregistrovala žádná organizace."
@@ -90,5 +63,15 @@
     "anonymous": "bez kontaktu",
     "resolve": "Vyřízeno",
     "resolved": "vyřízeno"
+  },
+  "enrolmentIntro": "Do konzole se provozovatel přihlašuje vždy i kódem z ověřovací aplikace v telefonu, například Google Authenticator nebo Aegis.",
+  "ownerTotpReset": {
+    "title": "Vypnout dvoufázové přihlášení vlastníka",
+    "intro": "Jen když vlastník přišel o telefon i záložní kódy a ověřili jste jeho totožnost mimo platformu. Zapíše se do historie organizace a vlastníkovi přijde e-mail.",
+    "email": "E-mail vlastníka",
+    "submit": "Vypnout",
+    "done": "Vypnuto. Vlastník si dvoufázové přihlášení nastaví při příštím přihlášení.",
+    "unknown": "Organizace nemá vlastníka s tímto e-mailem.",
+    "failure": "Nepodařilo se. Zkuste to prosím znovu."
   }
 }

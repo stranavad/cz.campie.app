@@ -48,3 +48,4 @@ export { internalDocuments } from './documents/internal-documents.ts';
 export { exportPresets, exportSelections } from './registrations/export-presets.ts';
 export { supportGrants } from './organisations/support-grants.ts';
 export { problemReportKind, problemReports } from './console/problem-reports.ts';
+export { totpRecoveryCodes } from './admins/totp-recovery-codes.ts';

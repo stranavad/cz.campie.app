@@ -5,6 +5,7 @@ import { invitations } from './admins/invitations.ts';
 import { memberships } from './admins/memberships.ts';
 import { passwordResets } from './admins/password-resets.ts';
 import { totpCredentials } from './admins/totp-credentials.ts';
+import { totpRecoveryCodes } from './admins/totp-recovery-codes.ts';
 import { platformAuditEntries } from './audit/platform-audit-entries.ts';
 import { problemReports } from './console/problem-reports.ts';
 import { operators } from './operators/operators.ts';
@@ -25,6 +26,7 @@ export const PLATFORM_TABLES: readonly string[] = [
   invitations,
   passwordResets,
   totpCredentials,
+  totpRecoveryCodes,
   operators,
   adminSessions,
   platformAuditEntries,

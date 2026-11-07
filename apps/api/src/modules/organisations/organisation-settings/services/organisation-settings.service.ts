@@ -47,6 +47,15 @@ export class OrganisationSettingsService {
   }
 
   /**
+   * Require two-step login of every admin of the current Organisation, or stop requiring it; audited.
+   * @param actor who does it
+   * @param required whether it is required
+   */
+  public async requireTotp(actor: Actor, required: boolean): Promise<OrganisationSettingsView> {
+    return this.withLogo(await this.change(actor, { totpRequired: required }));
+  }
+
+  /**
    * Replace the current Organisation's logo by an uploaded image; the old one's file is removed.
    * @param actor who does it
    * @param upload the image

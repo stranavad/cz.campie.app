@@ -2,7 +2,6 @@ import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/r
 
 import type { RenameOrganisationSubdomainBody } from '@repo/schema/console';
 
-import { accountKeys } from '@/core/account';
 import { consoleKeys } from '@/features/console/api/console.keys';
 import { consoleService } from '@/features/console/api/console.service';
 
@@ -38,18 +37,8 @@ export const useRenameOrganisationMutation = () =>
       consoleService.rename(organisationId, body),
   );
 
-export const useStartTotpEnrolmentMutation = () => useMutation({ mutationFn: consoleService.startTotpEnrolment });
-
-// A passed code changes the account's TOTP and session state, which decides what the console shows.
-const useTotpCodeMutation = (mutationFn: (body: { code: string }) => Promise<void>) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({ mutationFn, onSuccess: () => queryClient.invalidateQueries({ queryKey: accountKeys.all }) });
-};
-
-export const useConfirmTotpEnrolmentMutation = () => useTotpCodeMutation(consoleService.confirmTotpEnrolment);
-
-export const useVerifyTotpMutation = () => useTotpCodeMutation(consoleService.verifyTotp);
+export const useResetOwnerTotpMutation = (organisationId: string) =>
+  useMutation({ mutationFn: (email: string) => consoleService.resetOwnerTotp(organisationId, email) });
 
 // Records the entry in the Organisation's log; the admin pages then act in it under the grant.
 export const useEnterSupportMutation = () =>

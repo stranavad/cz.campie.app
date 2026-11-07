@@ -6,6 +6,7 @@ import {
   generateWrappedDataKey,
   openPlatformSecret,
   OrganisationCipher,
+  platformDigest,
   sealPlatformSecret,
   unwrapDataKey,
 } from './cipher.ts';
@@ -61,5 +62,14 @@ export class EncryptionService {
    */
   public openPlatformSecret(context: string, sealed: Buffer): Buffer {
     return openPlatformSecret(this.keyProvider.masterKey(), sealed, context);
+  }
+
+  /**
+   * Digest a short platform secret for storing and comparing, keyed by the master key.
+   * @param context what the value belongs to, such as `recovery:<admin id>`
+   * @param value the value
+   */
+  public platformDigest(context: string, value: string): string {
+    return platformDigest(this.keyProvider.masterKey(), context, value);
   }
 }

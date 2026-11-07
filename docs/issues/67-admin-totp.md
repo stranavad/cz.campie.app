@@ -1,6 +1,6 @@
 # 67 - TOTP for admins and enforcement
 
-Status: ready-for-agent
+Status: done
 Stage: 1b
 Episode: E1 Organisations and identity
 Blocked by: 18, 21
@@ -22,3 +22,7 @@ Any admin can turn on two-step login with TOTP for their own account and receive
 
 - Spec sections: Identity, permissions and audit (Two-step login).
 - Admin identity is global; enforcement applies when the member logs in to that Organisation.
+
+## Comments
+
+2026-11-07 - **Done.** Any admin sets TOTP up on "Můj účet" (`/platform/ucet`): confirming the first code answers ten recovery codes (`abcd-ef23`, from a 31-character alphabet, stored as an HMAC keyed by the master key and bound to the admin in `totp_recovery_codes`), shown once, held above every page until the admin confirms they saved them. `POST /sessions/current/totp` takes a code or an unused recovery code; a wrong recovery code counts toward `LOGIN_MAX_FAILURES_PER_ACCOUNT` like a wrong code. `AccessService` refuses an admin request whose session has not passed a code when the admin has TOTP on (`second_factor_required`), and, in an Organisation with `totp_required`, one of an admin without TOTP (`totp_setup_required`); account routes stay open. Owners toggle the requirement (`PUT /organisation-settings/totp`, audited as `organisation.update`) and reset a member's TOTP (`DELETE /members/:id/totp`, audited `member.reset_totp`, the member is emailed, their sessions end); an admin who is the Platform operator or a member of another Organisation is refused with 409 `totp_reset_elsewhere`, since the identity is global, and goes to the console. The operator resets an Owner by email from the console (`POST /console/organisations/:id/owner-totp-reset`); since the console's unit of work never enters an Organisation, the reset itself, its audit entry and the email commit together in the Organisation's own unit of work right after the console's. The frontend's platform shell asks for the code, or for the setup, before any page.

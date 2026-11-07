@@ -1,16 +1,10 @@
 import {
-  confirmTotpEnrolmentEndpoint,
-  startTotpEnrolmentEndpoint,
-  verifyTotpEndpoint,
-  type ConfirmTotpEnrolmentBody,
-  type VerifyTotpBody,
-} from '@repo/schema/admins';
-import {
   approveOrganisationEndpoint,
   listConsoleOrganisationsEndpoint,
   listProblemReportsEndpoint,
   rejectOrganisationEndpoint,
   renameOrganisationSubdomainEndpoint,
+  resetOwnerTotpEndpoint,
   resolveProblemReportEndpoint,
   suspendOrganisationEndpoint,
   type RenameOrganisationSubdomainBody,
@@ -25,10 +19,9 @@ export const consoleService = {
   suspend: (organisationId: string) => apiClient.request(suspendOrganisationEndpoint, { params: { organisationId } }),
   rename: (organisationId: string, body: RenameOrganisationSubdomainBody) =>
     apiClient.request(renameOrganisationSubdomainEndpoint, { params: { organisationId }, body }),
+  resetOwnerTotp: (organisationId: string, email: string) =>
+    apiClient.request(resetOwnerTotpEndpoint, { params: { organisationId }, body: { email } }),
   reject: (organisationId: string) => apiClient.request(rejectOrganisationEndpoint, { params: { organisationId } }),
-  startTotpEnrolment: () => apiClient.request(startTotpEnrolmentEndpoint),
-  confirmTotpEnrolment: (body: ConfirmTotpEnrolmentBody) => apiClient.request(confirmTotpEnrolmentEndpoint, { body }),
-  verifyTotp: (body: VerifyTotpBody) => apiClient.request(verifyTotpEndpoint, { body }),
   enterSupport: (organisationId: string) => apiClient.request(enterSupportAccessEndpoint, { organisationId }),
   problemReports: (signal?: AbortSignal) => apiClient.request(listProblemReportsEndpoint, { signal }),
   resolveProblemReport: (reportId: string) => apiClient.request(resolveProblemReportEndpoint, { params: { reportId } }),

@@ -1,6 +1,6 @@
 import { expect } from 'vitest';
 
-import type { TotpEnrolment } from '@repo/schema/admins';
+import type { TotpEnabled, TotpEnrolment } from '@repo/schema/admins';
 
 import { SESSION_COOKIES } from '../core/sessions/session-cookie.ts';
 import { totpCode } from '../core/totp/totp.ts';
@@ -55,17 +55,18 @@ export function withSessionFrom(
 }
 
 /**
- * Set up TOTP for the Platform operator over HTTP, as their authenticator app would.
+ * Set up TOTP for an admin over HTTP, as their authenticator app would.
  * @param http the test app's client
- * @param headers the operator's main host headers
+ * @param headers the admin's main host headers
  * @param now the test clock's instant
- * @returns the secret, for codes at later logins, and the headers of the session that passed it
+ * @returns the secret, for codes at later logins, the recovery codes, and the headers of the session that
+ * passed it
  */
-export async function enrolOperatorTotp(
+export async function enrolTotp(
   http: Http,
   headers: RequestHeaders,
   now: Date,
-): Promise<{ secret: Buffer; headers: RequestHeaders }> {
+): Promise<{ secret: Buffer; recoveryCodes: string[]; headers: RequestHeaders }> {
   const started = await http.post('/api/account/totp').set(headers);
   expect(started.status).toBe(201);
   const secret = decodeBase32((started.body as TotpEnrolment).secret);
@@ -74,7 +75,11 @@ export async function enrolOperatorTotp(
     .post('/api/account/totp/confirm')
     .set(headers)
     .send({ code: totpCode(secret, now) });
-  expect(confirmed.status).toBe(204);
+  expect(confirmed.status).toBe(200);
 
-  return { secret, headers: withSessionFrom(headers, confirmed) };
+  return {
+    secret,
+    recoveryCodes: (confirmed.body as TotpEnabled).recoveryCodes,
+    headers: withSessionFrom(headers, confirmed),
+  };
 }

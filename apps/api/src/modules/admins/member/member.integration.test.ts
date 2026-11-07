@@ -84,6 +84,7 @@ describe('members', () => {
       email: member.email,
       owner: false,
       permissions: { ...NONE, registrations: 'read' },
+      totpEnabled: false,
     });
     expect(await readRegistrations(member)).toBe(200);
 

@@ -14,7 +14,8 @@
     "tagline": "Přihlášky na tábory",
     "logOut": "Odhlásit se",
     "supportReadOnly": "Režim podpory: jste v organizaci {{organisation}} jen pro čtení, do {{until}}.",
-    "supportWrites": "Režim podpory: jste v organizaci {{organisation}} se svolením ke změnám, do {{until}}. Každá změna se zapisuje do historie."
+    "supportWrites": "Režim podpory: jste v organizaci {{organisation}} se svolením ke změnám, do {{until}}. Každá změna se zapisuje do historie.",
+    "account": "Můj účet"
   },
   "notFound": {
     "title": "Stránka nenalezena",
@@ -41,6 +42,7 @@
     "consent_required": "Bez souhlasu nelze organizaci založit.",
     "already_member": "Tento e-mail už patří správci organizace.",
     "totp_code_malformed": "Zadejte šest číslic z ověřovací aplikace.",
+    "second_step_code_malformed": "Zadejte šest číslic z ověřovací aplikace, nebo záložní kód ve tvaru abcd-ef23.",
     "camp_slug_malformed": "Adresa může obsahovat jen malá písmena bez diakritiky, číslice a pomlčky mezi nimi.",
     "camp_slug_reserved": "Tuto adresu nelze použít, vyberte jinou.",
     "camp_slug_taken": "Tuto adresu má nebo měl jiný tábor organizace.",
@@ -140,5 +142,45 @@
     "cancel": "Zrušit",
     "sent": "Děkujeme, zpráva odešla správcům aplikace.",
     "failed": "Zprávu se nepodařilo odeslat. Zkuste to prosím později."
+  },
+  "twoStep": {
+    "code": "Kód z aplikace",
+    "codeOrRecovery": "Kód z aplikace nebo záložní kód",
+    "submit": {
+      "confirm": "Zapnout dvoufázové přihlášení",
+      "verify": "Ověřit"
+    },
+    "failure": {
+      "totp_enabled": "Dvoufázové přihlášení už je zapnuté. Načtěte stránku znovu.",
+      "totp_not_started": "Nejdřív vytvořte klíč.",
+      "totp_not_enabled": "Dvoufázové přihlášení ještě není nastavené. Načtěte stránku znovu.",
+      "totp_code_invalid": "Kód nesouhlasí nebo už byl použit. Počkejte na další kód z aplikace.",
+      "totp_throttled": "Příliš mnoho chybných kódů. Zkuste to znovu za chvíli.",
+      "unexpected": "Kód se nepodařilo ověřit. Zkuste to prosím znovu."
+    },
+    "enrolment": {
+      "title": "Nastavení dvoufázového přihlášení",
+      "voluntary": "Při přihlášení pak kromě hesla zadáte i kód z ověřovací aplikace v telefonu, například Google Authenticator nebo Aegis.",
+      "required": "Organizace {{organisation}} vyžaduje dvoufázové přihlášení. Než budete pokračovat, nastavte si ho: při přihlášení pak kromě hesla zadáte i kód z ověřovací aplikace v telefonu, například Google Authenticator nebo Aegis.",
+      "start": "Vytvořit klíč",
+      "secret": "Klíč zadejte do aplikace, nebo otevřete odkaz v telefonu. Pak opište kód, který aplikace ukazuje.",
+      "openApp": "Otevřít v ověřovací aplikaci",
+      "failure": "Klíč se nepodařilo vytvořit. Zkuste to prosím znovu."
+    },
+    "recovery": {
+      "title": "Záložní kódy",
+      "intro": "Dvoufázové přihlášení je zapnuté. Uložte si tyto kódy na bezpečné místo: když přijdete o telefon, přihlásíte se každým z nich jednou. Znovu už je neuvidíte.",
+      "done": "Kódy mám uložené"
+    },
+    "verify": {
+      "title": "Ověření přihlášení",
+      "intro": "Zadejte kód, který právě ukazuje vaše ověřovací aplikace, nebo jeden ze záložních kódů."
+    }
+  },
+  "accountSettings": {
+    "title": "Můj účet",
+    "loading": "Načítání…",
+    "error": "Účet se nepodařilo načíst. Zkuste to prosím znovu.",
+    "totpOn": "Dvoufázové přihlášení je zapnuté. Když přijdete o telefon i záložní kódy, požádejte vlastníka organizace, aby vám ho vypnul."
   }
 }

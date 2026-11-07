@@ -1,14 +1,13 @@
 import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { TotpEnrolment } from '@/core/two-step';
 import { OrganisationList } from '@/features/console/components/organisation-list/organisation-list';
 import { ProblemReports } from '@/features/console/components/problem-reports/problem-reports';
 import { SupportList } from '@/features/console/components/support-list/support-list';
-import { TotpCodeForm } from '@/features/console/components/totp-code-form/totp-code-form';
-import { TotpEnrolment } from '@/features/console/components/totp-enrolment/totp-enrolment';
 import { useConsolePage } from '@/features/console/components/use-console-page.hook';
 
-// The Platform operator's console: never without a TOTP code in this session.
+// The Platform operator's console: never without a TOTP code in this session, which the shell asks for.
 export function ConsolePage() {
   const { t } = useTranslation('console');
   const page = useConsolePage();
@@ -31,14 +30,7 @@ export function ConsolePage() {
 
   return (
     <div className="py-12">
-      {page.step === 'enrol' ? <TotpEnrolment /> : null}
-      {page.step === 'verify' ? (
-        <section className="flex max-w-xl flex-col gap-4">
-          <h1 className="text-2xl font-semibold">{t('verify.title')}</h1>
-          <p className="text-muted-foreground">{t('verify.intro')}</p>
-          <TotpCodeForm purpose="verify" />
-        </section>
-      ) : null}
+      {page.step === 'enrol' ? <TotpEnrolment intro={t('enrolmentIntro')} /> : null}
       {page.step === 'organisations' ? (
         <div className="flex flex-col gap-10">
           <SupportList />

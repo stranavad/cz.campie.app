@@ -6,6 +6,7 @@ import { BrandingForm } from '@/features/organisation-settings/components/brandi
 import { IdentityForm } from '@/features/organisation-settings/components/identity-form/identity-form';
 import { PaymentGatewayForm } from '@/features/organisation-settings/components/payment-gateway-form/payment-gateway-form';
 import { SupportAccessSection } from '@/features/organisation-settings/components/support-access-section/support-access-section';
+import { TwoStepSection } from '@/features/organisation-settings/components/two-step-section/two-step-section';
 import { useOrganisationSettingsPage } from '@/features/organisation-settings/components/use-organisation-settings-page.hook';
 
 // The Owner's settings of the Organisation: legal identity, bank account, contacts, branding and Comgate keys.
@@ -52,6 +53,7 @@ export function OrganisationSettingsPage() {
         <BrandingForm organisationId={page.organisationId} settings={page.settings} />
       </section>
       <PaymentGatewayForm organisationId={page.organisationId} />
+      <TwoStepSection organisationId={page.organisationId} required={page.settings.totpRequired} />
       <SupportAccessSection organisationId={page.organisationId} />
     </div>
   );

@@ -5,7 +5,7 @@ import { ACCESS_HEADERS } from '@repo/schema/shared';
 import { createAdmin, mainHost, signIn, type RequestHeaders } from '../testing/fixtures.ts';
 import { withClient } from '../testing/services/postgres.ts';
 import { useTestApp } from '../testing/test-app.ts';
-import { enrolOperatorTotp } from '../testing/totp.ts';
+import { enrolTotp } from '../testing/totp.ts';
 import { OperatorCommandError, runOperatorCommand } from './operator-command.ts';
 
 describe('operator command line', () => {
@@ -59,7 +59,7 @@ describe('operator command line', () => {
   it('resets the TOTP of an operator who lost their app, ending their sessions', async () => {
     const admin = await createAdmin(app(), { memberOf: [] });
     await runOperatorCommand(database().ownerUrl, ['grant', admin.email]);
-    const { headers } = await enrolOperatorTotp(http(), await signIn(app(), admin.id), clock().now());
+    const { headers } = await enrolTotp(http(), await signIn(app(), admin.id), clock().now());
     expect(await account(headers)).toMatchObject({ totpEnabled: true, secondFactor: true });
 
     await runOperatorCommand(database().ownerUrl, ['reset-totp', admin.email]);

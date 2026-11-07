@@ -8,6 +8,8 @@ export const memberSchema = z.object({
   email: z.string(),
   owner: z.boolean(),
   permissions: permissionsSchema,
+  // Whether the admin logs in with a TOTP code.
+  totpEnabled: z.boolean(),
 });
 
 export type Member = z.infer<typeof memberSchema>;

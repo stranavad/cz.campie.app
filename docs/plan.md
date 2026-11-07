@@ -111,7 +111,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 64  | Feedback and problem reports                   | E9           | done            | 21         |
 | 65  | Audit log browser                              | E9           | done            | 10, 19     |
 | 66  | Erase a Registration                           | E9           | done            | 12, 45     |
-| 67  | TOTP for admins and enforcement                | E1           | ready-for-agent | 18, 21     |
+| 67  | TOTP for admins and enforcement                | E1           | done            | 18, 21     |
 | 68  | Bounce and complaint handling                  | E3           | ready-for-agent | 16, 42     |
 
 ## Stage 2 - around May 2027 (to be broken down)

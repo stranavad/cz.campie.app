@@ -22,6 +22,8 @@ export const accountSchema = z.object({
         displayName: z.string(),
         subdomain: z.string(),
         status: z.enum(ORGANISATION_STATUSES),
+        // Whether its admins must log in with a TOTP code.
+        totpRequired: z.boolean(),
       }),
       // For the Platform operator only: an Organisation entered under its support grant, not a membership.
       support: z.object({ allowWrites: z.boolean(), expiresAt: z.iso.datetime() }).nullable(),

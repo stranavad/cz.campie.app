@@ -41,6 +41,7 @@ export class AccountService {
           displayName: organisations.displayName,
           subdomain: organisations.subdomain,
           status: organisations.status,
+          totpRequired: organisations.totpRequired,
         },
       })
       .from(memberships)
@@ -82,6 +83,7 @@ export class AccountService {
               displayName: organisations.displayName,
               subdomain: organisations.subdomain,
               status: organisations.status,
+              totpRequired: organisations.totpRequired,
             })
             .from(organisations)
             .where(

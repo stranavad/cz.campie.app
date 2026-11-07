@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, getColumns, sql } from 'drizzle-orm';
+import { and, asc, eq, getColumns, ne, sql } from 'drizzle-orm';
 
 import type { Permissions } from '@repo/schema/admins';
 
 import { violatedConstraint } from '../../../core/database/constraint-violation.ts';
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
-import { admins, memberships } from '../../../db/schema.ts';
+import { admins, memberships, totpCredentials } from '../../../db/schema.ts';
 import { MemberEntity } from '../member/member.entity.ts';
 import { MembershipEntity } from './membership.entity.ts';
 
@@ -30,6 +30,21 @@ export class MembershipRepository {
       .where(and(eq(memberships.organisationId, organisationId), eq(memberships.adminId, adminId)));
 
     return row === undefined ? null : new MembershipEntity(row);
+  }
+
+  /**
+   * Tell whether an admin is a member of any Organisation besides the current one; the one query of a
+   * member that looks past the current Organisation, so a reset there does not weaken another.
+   * @param adminId admin id
+   */
+  public async belongsElsewhere(adminId: string): Promise<boolean> {
+    const [row] = await this.unitOfWork.db
+      .select({ id: memberships.id })
+      .from(memberships)
+      .where(and(eq(memberships.adminId, adminId), ne(memberships.organisationId, this.unitOfWork.organisationId)))
+      .limit(1);
+
+    return row !== undefined;
   }
 
   /**
@@ -172,9 +187,14 @@ export class MembershipRepository {
    */
   private selectMembers() {
     return this.unitOfWork.db
-      .select({ ...getColumns(memberships), email: admins.email })
+      .select({
+        ...getColumns(memberships),
+        email: admins.email,
+        totpEnabled: sql<boolean>`${totpCredentials.confirmedAt} IS NOT NULL`,
+      })
       .from(memberships)
       .innerJoin(admins, eq(admins.id, memberships.adminId))
+      .leftJoin(totpCredentials, eq(totpCredentials.adminId, memberships.adminId))
       .$dynamic();
   }
 

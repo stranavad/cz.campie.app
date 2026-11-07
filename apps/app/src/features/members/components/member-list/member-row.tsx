@@ -20,6 +20,9 @@ export function MemberRow({ organisationId, member }: MemberRowProps) {
       <div className="flex flex-wrap items-baseline gap-2">
         <span className="font-medium">{member.email}</span>
         {member.owner ? <span className="text-sm text-muted-foreground">{t('members.owner')}</span> : null}
+        <span className="text-sm text-muted-foreground">
+          {member.totpEnabled ? t('members.totpOn') : t('members.totpOff')}
+        </span>
       </div>
       {member.owner ? (
         <p className="text-sm text-muted-foreground">{t('members.ownerHasAll')}</p>
@@ -46,6 +49,21 @@ export function MemberRow({ organisationId, member }: MemberRowProps) {
             {t('members.remove')}
           </Button>
         )}
+        {member.totpEnabled && !row.isConfirmingTotpReset ? (
+          <Button variant="ghost" size="sm" disabled={row.isBusy} onClick={row.askToResetTotp}>
+            {t('members.resetTotp')}
+          </Button>
+        ) : null}
+        {member.totpEnabled && row.isConfirmingTotpReset ? (
+          <>
+            <Button variant="destructive" size="sm" disabled={row.isBusy} onClick={row.resetTotp}>
+              {t('members.confirmResetTotp')}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={row.cancelTotpReset}>
+              {t('members.cancel')}
+            </Button>
+          </>
+        ) : null}
       </div>
       {row.failure === null ? null : (
         <p role="alert" className="text-sm text-destructive">

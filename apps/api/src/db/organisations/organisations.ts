@@ -27,6 +27,8 @@ export const organisations = p.snakeCase.table(
     // No foreign key to files: files reference organisations, and the reverse would be an import cycle
     // between the two schema files. The logo is replaced or removed through the Organisation, which clears it.
     logoFileId: p.uuid(),
+    // Every admin of the Organisation must log in with a TOTP code.
+    totpRequired: p.boolean().notNull().default(false),
   },
   // The colour is written into documents' and pages' CSS; anything but a hex colour could carry more CSS.
   (table) => [p.check('organisations_accent_colour_hex', sql`${table.accentColour} ~ '^#[0-9a-f]{6}$'`)],

@@ -3,9 +3,11 @@ import { Controller, UseInterceptors } from '@nestjs/common';
 import {
   getOrganisationSettingsEndpoint,
   removeOrganisationLogoEndpoint,
+  requireTotpEndpoint,
   setOrganisationLogoEndpoint,
   updateOrganisationSettingsEndpoint,
   type OrganisationSettings,
+  type RequireTotpBody,
   type UpdateOrganisationSettingsBody,
 } from '@repo/schema/organisations';
 
@@ -40,6 +42,14 @@ export class OrganisationSettingsController {
     @EndpointBody(updateOrganisationSettingsEndpoint) body: UpdateOrganisationSettingsBody,
   ): Promise<OrganisationSettings> {
     return toDto(await this.settings.update(actor, body));
+  }
+
+  @Endpoint(requireTotpEndpoint)
+  public async requireTotp(
+    @RequestActor() actor: Actor,
+    @EndpointBody(requireTotpEndpoint) { required }: RequireTotpBody,
+  ): Promise<OrganisationSettings> {
+    return toDto(await this.settings.requireTotp(actor, required));
   }
 
   @Endpoint(setOrganisationLogoEndpoint)

@@ -6,6 +6,7 @@ import {
   startTotpEnrolmentEndpoint,
   verifyTotpEndpoint,
   type ConfirmTotpEnrolmentBody,
+  type TotpEnabled,
   type TotpEnrolment,
   type VerifyTotpBody,
 } from '@repo/schema/admins';
@@ -32,8 +33,12 @@ export class TotpController {
     @RequestAdminSession() session: { id: string },
     @EndpointBody(confirmTotpEnrolmentEndpoint) body: ConfirmTotpEnrolmentBody,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<void> {
-    writeSessionCookie(response, 'admin', await this.totp.confirmEnrolment(adminId, session.id, body.code));
+  ): Promise<TotpEnabled> {
+    const { session: passed, recoveryCodes } = await this.totp.confirmEnrolment(adminId, session.id, body.code);
+
+    writeSessionCookie(response, 'admin', passed);
+
+    return { recoveryCodes };
   }
 
   @Endpoint(verifyTotpEndpoint)

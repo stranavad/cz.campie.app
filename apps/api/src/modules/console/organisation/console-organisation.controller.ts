@@ -5,22 +5,28 @@ import {
   listConsoleOrganisationsEndpoint,
   rejectOrganisationEndpoint,
   renameOrganisationSubdomainEndpoint,
+  resetOwnerTotpEndpoint,
   suspendOrganisationEndpoint,
   type ConsoleOrganisation,
   type ConsoleOrganisationParams,
   type RenameOrganisationSubdomainBody,
+  type ResetOwnerTotpBody,
 } from '@repo/schema/console';
 
 import { Access } from '../../../core/access/access.decorator.ts';
 import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
+import { TotpService } from '../../admins/totp/services/totp.service.ts';
 import { ConsoleOrganisationService } from './services/console-organisation.service.ts';
 
 @Access('operator')
 @Controller()
 export class ConsoleOrganisationController {
-  constructor(private readonly organisations: ConsoleOrganisationService) {}
+  constructor(
+    private readonly organisations: ConsoleOrganisationService,
+    private readonly totp: TotpService,
+  ) {}
 
   @Endpoint(listConsoleOrganisationsEndpoint)
   public async list(): Promise<ConsoleOrganisation[]> {
@@ -58,5 +64,14 @@ export class ConsoleOrganisationController {
     @EndpointParams(suspendOrganisationEndpoint) { organisationId }: ConsoleOrganisationParams,
   ): Promise<ConsoleOrganisation> {
     return (await this.organisations.suspend(actor, organisationId)).toConsoleDto();
+  }
+
+  @Endpoint(resetOwnerTotpEndpoint)
+  public resetOwnerTotp(
+    @RequestActor() actor: Actor,
+    @EndpointParams(resetOwnerTotpEndpoint) { organisationId }: ConsoleOrganisationParams,
+    @EndpointBody(resetOwnerTotpEndpoint) { email }: ResetOwnerTotpBody,
+  ): Promise<void> {
+    return this.totp.resetOwner(actor, organisationId, email);
   }
 }

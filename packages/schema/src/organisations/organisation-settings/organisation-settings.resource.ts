@@ -18,6 +18,8 @@ export const organisationSettingsSchema = z.object({
   displayName: z.string(),
   accentColour: z.string(),
   logo: fileLinkSchema.nullable(),
+  // Whether every admin must log in with a TOTP code.
+  totpRequired: z.boolean(),
 });
 
 export type OrganisationSettings = z.infer<typeof organisationSettingsSchema>;

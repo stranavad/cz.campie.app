@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { TOTP_ERROR_CODES, type TotpErrorCode } from '@repo/schema/admins';
 
 import { useAppForm } from '@/core/form';
-import { useConfirmTotpEnrolmentMutation, useVerifyTotpMutation } from '@/features/console/api/console.queries';
+import { useConfirmTotpEnrolmentMutation, useVerifyTotpMutation } from '@/core/two-step/api/two-step.queries';
 import {
   totpCodeFormOptions,
-  totpCodeFormSchema,
-} from '@/features/console/components/totp-code-form/totp-code-form.schema';
+  totpCodeFormSchemas,
+} from '@/core/two-step/components/totp-code-form/totp-code-form.schema';
 import { HttpError } from '@/lib/api';
 
 // confirm turns TOTP on with the first code; verify passes a later login.
@@ -21,18 +21,24 @@ function failureOf(error: unknown): TotpCodeFailure {
   return TOTP_ERROR_CODES.find((known) => known === code) ?? 'unexpected';
 }
 
-export function useTotpCodeForm(purpose: TotpCodePurpose) {
+export function useTotpCodeForm(purpose: TotpCodePurpose, onConfirmed?: (recoveryCodes: string[]) => void) {
   const confirm = useConfirmTotpEnrolmentMutation();
   const verify = useVerifyTotpMutation();
   const [failure, setFailure] = useState<TotpCodeFailure | null>(null);
+  const schema = totpCodeFormSchemas[purpose];
 
   const form = useAppForm({
     ...totpCodeFormOptions,
+    validators: { onSubmit: schema },
     onSubmit: async ({ value, formApi }) => {
       setFailure(null);
 
       try {
-        await (purpose === 'confirm' ? confirm : verify).mutateAsync(totpCodeFormSchema.parse(value));
+        if (purpose === 'confirm') {
+          onConfirmed?.((await confirm.mutateAsync(schema.parse(value))).recoveryCodes);
+        } else {
+          await verify.mutateAsync(schema.parse(value));
+        }
       } catch (error) {
         // A code is good for half a minute; the next attempt needs a fresh one.
         formApi.resetField('code');

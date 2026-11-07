@@ -53,6 +53,20 @@ export const useRemoveMemberMutation = (organisationId: string) => {
   });
 };
 
+// Resetting the admin's own two-step login changes their account too.
+export const useResetMemberTotpMutation = (organisationId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (memberId: string) => membersService.resetTotp(organisationId, memberId),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: membersKeys.list(organisationId) }),
+        queryClient.invalidateQueries({ queryKey: accountKeys.all }),
+      ]),
+  });
+};
+
 export const useInviteMutation = (organisationId: string) => {
   const queryClient = useQueryClient();
 

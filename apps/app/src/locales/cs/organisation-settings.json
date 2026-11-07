@@ -84,5 +84,13 @@
     "change": "{{field}}: {{old}} → {{new}}",
     "encrypted": "Změněné šifrované údaje: {{fields}}",
     "actionHint": "např. consent."
+  },
+  "twoStep": {
+    "title": "Dvoufázové přihlášení",
+    "intro": "Můžete vyžadovat, aby se všichni správci organizace přihlašovali i kódem z ověřovací aplikace v telefonu. Kdo ho ještě nemá, nastaví si ho při příštím přihlášení dřív, než se dostane k čemukoli jinému - pokud ho nemáte vy, hned teď.",
+    "on": "Všichni správci organizace se přihlašují i kódem z ověřovací aplikace.",
+    "require": "Vyžadovat dvoufázové přihlášení",
+    "stopRequiring": "Přestat vyžadovat",
+    "failure": "Změnu se nepodařilo uložit. Zkuste to prosím znovu."
   }
 }

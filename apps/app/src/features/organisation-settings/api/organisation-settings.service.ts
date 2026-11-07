@@ -6,6 +6,7 @@ import {
   listSupportGrantsEndpoint,
   removeOrganisationLogoEndpoint,
   removePaymentGatewayKeysEndpoint,
+  requireTotpEndpoint,
   revokeSupportAccessEndpoint,
   setOrganisationLogoEndpoint,
   setPaymentGatewayKeysEndpoint,
@@ -25,6 +26,8 @@ export const organisationSettingsService = {
     apiClient.request(updateOrganisationSettingsEndpoint, { organisationId, body }),
   setLogo: (organisationId: string, file: File) =>
     apiClient.request(setOrganisationLogoEndpoint, { organisationId, file }),
+  requireTotp: (organisationId: string, required: boolean) =>
+    apiClient.request(requireTotpEndpoint, { organisationId, body: { required } }),
   removeLogo: (organisationId: string) => apiClient.request(removeOrganisationLogoEndpoint, { organisationId }),
   paymentGateway: (organisationId: string, signal?: AbortSignal) =>
     apiClient.request(getPaymentGatewaySettingsEndpoint, { organisationId, signal }),

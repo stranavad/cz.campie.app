@@ -3,6 +3,7 @@ import { Controller } from '@nestjs/common';
 import {
   listMembersEndpoint,
   removeMemberEndpoint,
+  resetMemberTotpEndpoint,
   updateMemberEndpoint,
   type Member,
   type RemoveMemberParams,
@@ -16,12 +17,16 @@ import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { MembershipService } from '../membership/services/membership.service.ts';
+import { TotpService } from '../totp/services/totp.service.ts';
 
 @Access('admin')
 @Requires('owner')
 @Controller()
 export class MemberController {
-  constructor(private readonly memberships: MembershipService) {}
+  constructor(
+    private readonly memberships: MembershipService,
+    private readonly totp: TotpService,
+  ) {}
 
   @Endpoint(listMembersEndpoint)
   public async list(): Promise<Member[]> {
@@ -43,5 +48,13 @@ export class MemberController {
     @EndpointParams(removeMemberEndpoint) { memberId }: RemoveMemberParams,
   ): Promise<void> {
     return this.memberships.remove(actor, memberId);
+  }
+
+  @Endpoint(resetMemberTotpEndpoint)
+  public resetTotp(
+    @RequestActor() actor: Actor,
+    @EndpointParams(resetMemberTotpEndpoint) { memberId }: RemoveMemberParams,
+  ): Promise<void> {
+    return this.totp.resetMember(actor, memberId);
   }
 }

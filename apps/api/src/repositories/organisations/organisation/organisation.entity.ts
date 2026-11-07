@@ -25,6 +25,7 @@ export class OrganisationEntity {
   public readonly displayName: string;
   public readonly accentColour: string;
   public readonly logoFileId: string | null;
+  public readonly totpRequired: boolean;
 
   constructor(row: OrganisationSelectModel) {
     this.id = row.id;
@@ -42,6 +43,7 @@ export class OrganisationEntity {
     this.displayName = row.displayName;
     this.accentColour = row.accentColour;
     this.logoFileId = row.logoFileId;
+    this.totpRequired = row.totpRequired;
   }
 
   toConsoleDto(): ConsoleOrganisation {
@@ -82,6 +84,7 @@ export class OrganisationEntity {
       displayName: this.displayName,
       accentColour: this.accentColour,
       logo,
+      totpRequired: this.totpRequired,
     };
   }
 }
