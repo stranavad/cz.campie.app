@@ -8,24 +8,24 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 
 ### E0 Foundation - "empty platform runs locally and in CI"
 
-| #   | Issue                                                           | Status          | Blocked by |
-| --- | --------------------------------------------------------------- | --------------- | ---------- |
-| 01  | Verify stack versions, record as ADR                            | ready-for-human | -          |
-| 02  | Repo scaffold: pnpm + Turborepo, api/app/schema, AGPL, lint, CI | ready-for-agent | 01         |
-| 03  | Docker Compose local stack                                      | ready-for-agent | 02         |
-| 04  | Spike: RustFS as S3 for the AWS SDK                             | ready-for-agent | 03         |
-| 05  | Spike: Neon WebSocket driver with `SET LOCAL` in transactions   | ready-for-agent | 02         |
-| 06  | Ports and adapters skeleton                                     | ready-for-agent | 02, 04     |
-| 07  | DB core: Drizzle, RLS, non-bypass role, unit of work            | ready-for-agent | 05, 06     |
-| 08  | API test harness with real PostgreSQL and port fakes            | ready-for-agent | 07         |
-| 09  | Encryption core: per-Organisation data keys                     | ready-for-agent | 08         |
-| 10  | Audit log core                                                  | ready-for-agent | 08         |
-| 11  | Background jobs with Organisation context                       | ready-for-agent | 08         |
-| 12  | Encrypted file service and short-lived download links           | ready-for-agent | 06, 09     |
-| 13  | Frontend scaffold: hostname mode, i18n, `/api` proxy            | done            | 02         |
-| 14  | Cookie sessions, CSRF, Organisation resolution                  | done            | 08, 13     |
-| 15  | PDF pipeline                                                    | done            | 06, 11     |
-| 16  | Email pipeline: React templates, two streams                    | done            | 11         |
+| #   | Issue                                                           | Status | Blocked by |
+| --- | --------------------------------------------------------------- | ------ | ---------- |
+| 01  | Verify stack versions, record as ADR                            | done   | -          |
+| 02  | Repo scaffold: pnpm + Turborepo, api/app/schema, AGPL, lint, CI | done   | 01         |
+| 03  | Docker Compose local stack                                      | done   | 02         |
+| 04  | Spike: RustFS as S3 for the AWS SDK                             | done   | 03         |
+| 05  | Spike: Neon WebSocket driver with `SET LOCAL` in transactions   | done   | 02         |
+| 06  | Ports and adapters skeleton                                     | done   | 02, 04     |
+| 07  | DB core: Drizzle, RLS, non-bypass role, unit of work            | done   | 05, 06     |
+| 08  | API test harness with real PostgreSQL and port fakes            | done   | 07         |
+| 09  | Encryption core: per-Organisation data keys                     | done   | 08         |
+| 10  | Audit log core                                                  | done   | 08         |
+| 11  | Background jobs with Organisation context                       | done   | 08         |
+| 12  | Encrypted file service and short-lived download links           | done   | 06, 09     |
+| 13  | Frontend scaffold: hostname mode, i18n, `/api` proxy            | done   | 02         |
+| 14  | Cookie sessions, CSRF, Organisation resolution                  | done   | 08, 13     |
+| 15  | PDF pipeline                                                    | done   | 06, 11     |
+| 16  | Email pipeline: React templates, two streams                    | done   | 11         |
 
 ### E1 Organisations and identity - "a camp signs up, gets approved, invites colleagues"
 
