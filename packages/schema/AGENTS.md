@@ -56,6 +56,7 @@ src/
 - **`<resource>.resource.ts`**: the response shape of one resource, reused by its endpoints, plus its enums as const tuples.
 - **`<operation>.contract.ts`**: one endpoint: its `defineEndpoint` plus the shapes it takes (`Params`, `Body`, `Query`) and its own `Response` when it isn't a plain resource. Every endpoint has one.
 - **New module**: folder, `index.ts`, an `exports` entry in `package.json` (copy one).
+- **Test-only helpers** shared by a module's tests are `testing-<name>.ts`; the build leaves them out, as it does `*.test.ts`.
 
 ## Naming
 

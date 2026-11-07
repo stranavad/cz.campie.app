@@ -27,3 +27,7 @@ The admin form builder for a Camp's registration form. A new Camp starts with a 
 - Spec sections: Form engine.
 - Registrations keep the version they were submitted under; new and removed fields on existing Registrations are handled in issues 41 and 44.
 - Health note switching off by default with the Health record module is stage 2.
+
+## Comments
+
+2026-11-07 - **From issue 28.** `formDefinitionSchema(catalogue)` validates a definition. `diffVersions` also answers `changed`: custom ids kept with another type or scope, whose earlier answers no longer fit. Publishing such a version should be refused (or the builder should give a changed field a new id).

@@ -22,3 +22,7 @@ Freeze the list of standard fields of the registration form with their platform 
 - Spec sections: Form engine; Encryption; Non-code dependencies (pilot camps).
 - Port from Domino: `apps/web/lib/birth-number.ts` (parseBirthNumber), `apps/web/app/prihlaska/components/` (field set reference), `apps/api/src/participant-export/` (column naming reference).
 - Keys are stable forever once Registrations exist; renaming means migrations.
+
+## Comments
+
+2026-11-07 - **From issue 28.** The engine takes the catalogue as `StandardFieldCatalogue` (`@repo/schema/form-engine`): per stable key a scope, a label i18n key and a Zod schema. Rendering will also need each field's input kind and, for lists such as insurers or boarding places, its options; extend `StandardFieldSpec` with them. A key must not equal a core key (`CORE_FIELDS`).

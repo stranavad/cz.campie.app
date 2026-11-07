@@ -47,7 +47,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 25  | Turnusy with price list, Deposit and dates                   | done            | 24         |
 | 26  | Pricing pure module                                          | done            | 02         |
 | 27  | Sibling discount and Discount codes                          | done            | 25, 26     |
-| 28  | Form engine pure module                                      | ready-for-agent | 02         |
+| 28  | Form engine pure module                                      | done            | 02         |
 | 29  | Standard field catalogue                                     | ready-for-human | 28         |
 | 30  | Form builder and form versions                               | ready-for-agent | 24, 28     |
 | 31  | Registration declarations                                    | ready-for-agent | 12, 30     |
