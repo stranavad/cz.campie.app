@@ -1,4 +1,5 @@
 import adminHome from '@/locales/cs/admin-home.json';
+import campPages from '@/locales/cs/camp-pages.json';
 import camps from '@/locales/cs/camps.json';
 import common from '@/locales/cs/common.json';
 import consoleTexts from '@/locales/cs/console.json';
@@ -22,6 +23,7 @@ export const resources = {
     invitation,
     organisationSettings,
     camps,
+    campPages,
     console: consoleTexts,
   },
 };

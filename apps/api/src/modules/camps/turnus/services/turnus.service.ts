@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { turnusAvailability, type Turnus, type TurnusBody } from '@repo/schema/camps';
+import { turnusAvailability, type PublicTurnus, type Turnus, type TurnusBody } from '@repo/schema/camps';
 import { instantFromPragueLocal } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
@@ -28,6 +28,21 @@ export class TurnusService {
     await this.camps.getByIdOrThrow(campId);
 
     return (await this.turnusy.listByCamp(campId)).map((turnus) => this.withAvailability(turnus));
+  }
+
+  /**
+   * List a Camp's Turnusy by start date as its public page shows them: availability, places left and the
+   * price in force now.
+   * @param campId Camp id
+   */
+  public async listPublic(campId: string): Promise<PublicTurnus[]> {
+    const now = this.clock.now();
+
+    return (await this.turnusy.listByCamp(campId)).map((turnus) => {
+      const registered = this.registeredIn(turnus);
+
+      return turnus.toPublicDto(registered, turnusAvailability(turnus, registered, now), now);
+    });
   }
 
   /**
@@ -93,12 +108,19 @@ export class TurnusService {
   }
 
   /**
-   * Show a Turnus with its availability by the Clock. No Registrations exist yet, so no Turnus holds a
-   * Registered Participant.
+   * Count a Turnus's Registered Participants. No Registrations exist yet, so none holds any.
+   * @param _turnus the Turnus
+   */
+  private registeredIn(_turnus: TurnusEntity): number {
+    return 0;
+  }
+
+  /**
+   * Show a Turnus with its availability by the Clock.
    * @param turnus the Turnus
    */
   private withAvailability(turnus: TurnusEntity): Turnus {
-    const registered = 0;
+    const registered = this.registeredIn(turnus);
     const availability = turnusAvailability(turnus, registered, this.clock.now());
 
     return turnus.toDto(registered, availability);

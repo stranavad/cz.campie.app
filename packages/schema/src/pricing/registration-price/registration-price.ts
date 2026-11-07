@@ -79,6 +79,23 @@ export interface RegistrationPrice {
   readonly depositTotal: number | null;
 }
 
+/**
+ * Tell a child's price at an instant: the Early bird price through its last day in Prague, else the Base
+ * price.
+ * @param priceList the Turnus's prices
+ * @param at the instant, such as a submission or now
+ */
+export function priceInForce(
+  priceList: Pick<PriceList, 'basePrice' | 'earlyBirdPrice' | 'earlyBirdLastDay'>,
+  at: Date,
+): { kind: 'base_price' | 'early_bird_price'; amount: number } {
+  const { basePrice, earlyBirdPrice, earlyBirdLastDay } = priceList;
+
+  return earlyBirdPrice !== null && earlyBirdLastDay !== null && pragueDateOf(at) <= earlyBirdLastDay
+    ? { kind: 'early_bird_price', amount: earlyBirdPrice }
+    : { kind: 'base_price', amount: basePrice };
+}
+
 const sum = (lines: readonly PriceLine[]) => lines.reduce((total, { amount }) => total + amount, 0);
 
 /**
@@ -92,11 +109,7 @@ const sum = (lines: readonly PriceLine[]) => lines.reduce((total, { amount }) =>
 export function priceRegistration(input: PricingInput): RegistrationPrice {
   const { priceList, siblingDiscount, participants, discountCode, paymentChoice, submittedAt } = input;
   const submittedOn = pragueDateOf(submittedAt);
-  const { earlyBirdPrice, earlyBirdLastDay } = priceList;
-  const childPrice: Pick<PriceLine, 'kind' | 'amount'> =
-    earlyBirdPrice !== null && earlyBirdLastDay !== null && submittedOn <= earlyBirdLastDay
-      ? { kind: 'early_bird_price', amount: earlyBirdPrice }
-      : { kind: 'base_price', amount: priceList.basePrice };
+  const childPrice = priceInForce(priceList, submittedAt);
 
   const childPrices: PriceLine[] = participants.map((_, participant) => ({ ...childPrice, participant, label: null }));
   const surcharges: PriceLine[] = participants.flatMap(({ surcharges: answers }, participant) =>

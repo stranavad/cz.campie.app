@@ -9,8 +9,12 @@ describe('account', () => {
   const { app, http } = useTestApp();
 
   it("lists only the signed-in admin's own memberships, with each Organisation's status", async () => {
-    const organisationA = await createOrganisation(app(), { subdomain: 'tabor-a', displayName: 'Tábor A' });
-    const organisationB = await createOrganisation(app(), { subdomain: 'tabor-b' });
+    const organisationA = await createOrganisation(app(), {
+      subdomain: 'tabor-a',
+      displayName: 'Tábor A',
+      status: 'pending',
+    });
+    const organisationB = await createOrganisation(app(), { subdomain: 'tabor-b', status: 'pending' });
     const admin = await createAdmin(app(), { memberOf: [organisationA] });
     await createAdmin(app(), { memberOf: [organisationB] });
     const { [ACCESS_HEADERS.organisation]: _, ...headers } = admin.headers(organisationA);

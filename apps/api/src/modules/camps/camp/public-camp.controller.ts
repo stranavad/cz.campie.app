@@ -1,6 +1,13 @@
 import { Controller } from '@nestjs/common';
 
-import { getPublicCampEndpoint, type PublicCamp, type PublicCampParams } from '@repo/schema/camps';
+import {
+  getPublicCampEndpoint,
+  listPublicCampsEndpoint,
+  listPublicTurnusyEndpoint,
+  type PublicCamp,
+  type PublicCampParams,
+  type PublicTurnus,
+} from '@repo/schema/camps';
 
 import { Access } from '../../../core/access/access.decorator.ts';
 import { Endpoint, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
@@ -14,5 +21,15 @@ export class PublicCampController {
   @Endpoint(getPublicCampEndpoint)
   public get(@EndpointParams(getPublicCampEndpoint) { slug }: PublicCampParams): Promise<PublicCamp> {
     return this.camps.getPublic(slug);
+  }
+
+  @Endpoint(listPublicCampsEndpoint)
+  public list(): Promise<PublicCamp[]> {
+    return this.camps.listPublic();
+  }
+
+  @Endpoint(listPublicTurnusyEndpoint)
+  public turnusy(@EndpointParams(listPublicTurnusyEndpoint) { slug }: PublicCampParams): Promise<PublicTurnus[]> {
+    return this.camps.listPublicTurnusy(slug);
   }
 }

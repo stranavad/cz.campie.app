@@ -197,3 +197,10 @@ export const usePreviewEmailTextMutation = (organisationId: string, campId: stri
     mutationFn: (body: Pick<CampEmailTextBody, 'subject' | 'text'>) =>
       campsService.previewEmailText(organisationId, campId, type, body),
   });
+
+export const useCampPreviewQuery = (organisationId: string, campId: string, enabled: boolean) =>
+  useQuery({
+    queryKey: campsKeys.preview(organisationId, campId),
+    queryFn: ({ signal }) => campsService.preview(organisationId, campId, signal),
+    enabled,
+  });

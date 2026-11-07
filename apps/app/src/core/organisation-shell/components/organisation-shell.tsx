@@ -13,6 +13,8 @@ export function OrganisationShell() {
   const { t } = useTranslation();
   const organisation = usePublicOrganisationQuery();
   const isSuspended = organisation.error instanceof HttpError && organisation.error.code === 'organisation_suspended';
+  // Unknown, or awaiting approval: its pages are not public yet.
+  const isUnknown = organisation.error instanceof HttpError && organisation.error.code === 'organisation_unknown';
   const logoUrl = organisation.data?.logoUrl ?? null;
 
   return (
@@ -32,6 +34,11 @@ export function OrganisationShell() {
           <section className="flex flex-col gap-3 py-12">
             <h1 className="text-2xl font-semibold">{t('organisationShell.suspended.title')}</h1>
             <p className="text-muted-foreground">{t('organisationShell.suspended.description')}</p>
+          </section>
+        ) : isUnknown ? (
+          <section className="flex flex-col gap-3 py-12">
+            <h1 className="text-2xl font-semibold">{t('organisationShell.unknown.title')}</h1>
+            <p className="text-muted-foreground">{t('organisationShell.unknown.description')}</p>
           </section>
         ) : (
           <Outlet />

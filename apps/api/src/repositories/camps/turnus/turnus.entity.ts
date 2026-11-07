@@ -1,6 +1,7 @@
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
-import type { Turnus, TurnusAvailability } from '@repo/schema/camps';
+import type { PublicTurnus, Turnus, TurnusAvailability } from '@repo/schema/camps';
+import { priceInForce } from '@repo/schema/pricing';
 import { pragueLocalOf } from '@repo/schema/shared';
 
 import type { turnusy } from '../../../db/schema.ts';
@@ -75,6 +76,29 @@ export class TurnusEntity {
       balanceDueDate: this.balanceDueDate,
       availability,
       registered,
+    };
+  }
+
+  // Shows only the places left, never the capacity or the Registrations, and the price in force on the
+  // Prague date of `now`.
+  toPublicDto(registered: number, availability: TurnusAvailability, now: Date): PublicTurnus {
+    return {
+      id: this.id,
+      name: this.name,
+      startDate: this.startDate,
+      endDate: this.endDate,
+      place: this.place,
+      minAge: this.minAge,
+      maxAge: this.maxAge,
+      websiteUrl: this.websiteUrl,
+      basePrice: this.basePrice,
+      earlyBirdPrice: this.earlyBirdPrice,
+      earlyBirdLastDay: this.earlyBirdLastDay,
+      priceNow: priceInForce(this, now).amount,
+      opensAt: this.opensAt === null ? null : this.opensAt.toISOString(),
+      closesAt: this.closesAt === null ? null : this.closesAt.toISOString(),
+      availability,
+      remainingPlaces: Math.max(0, this.capacity - registered),
     };
   }
 }

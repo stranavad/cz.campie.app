@@ -4,9 +4,11 @@ import {
   createCampEndpoint,
   getCampEndpoint,
   listCampsEndpoint,
+  previewCampEndpoint,
   updateCampEndpoint,
   type Camp,
   type CampParams,
+  type CampPreview,
   type CampSummary,
   type CreateCampBody,
   type UpdateCampBody,
@@ -54,5 +56,12 @@ export class CampController {
     @EndpointBody(updateCampEndpoint) body: UpdateCampBody,
   ): Promise<Camp> {
     return (await this.camps.update(actor, campId, body)).toDto();
+  }
+
+  // Every admin of the Organisation sees what guardians will.
+  @Endpoint(previewCampEndpoint)
+  @Requires('member')
+  public preview(@EndpointParams(previewCampEndpoint) { campId }: CampParams): Promise<CampPreview> {
+    return this.camps.preview(campId);
   }
 }

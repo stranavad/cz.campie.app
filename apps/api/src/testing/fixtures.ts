@@ -27,9 +27,9 @@ import {
 export type RequestHeaders = Record<string, string>;
 
 /**
- * Create an Organisation, with its data key.
+ * Create an Organisation, with its data key, approved unless the options say otherwise.
  * @param app the running test app
- * @param options the subdomain, legal identity and branding; unique and made up where omitted
+ * @param options the subdomain, status, legal identity and branding; unique and made up where omitted
  */
 export async function createOrganisation(
   app: INestApplication,
@@ -47,6 +47,7 @@ export async function createOrganisation(
       contactPhone: '+420 123 456 789',
       billingEmail: `fakturace-${suffix}@example.com`,
       displayName: `Tábor ${suffix}`,
+      status: 'approved',
       ...options,
     }),
   );

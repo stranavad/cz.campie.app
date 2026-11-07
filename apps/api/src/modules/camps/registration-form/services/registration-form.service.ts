@@ -15,14 +15,12 @@ import { diffVersions, formDefinitionSchema, type FormDefinition } from '@repo/s
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
-import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
 import type { FileUpload } from '../../../../core/files/file-upload.ts';
 import { FileService } from '../../../../core/files/file.service.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { RegistrationFormDraftEntity } from '../../../../repositories/camps/registration-form/registration-form.entity.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
-import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 
 // The form a new Camp starts with: the locked core alone, ready to publish as it is.
 const PRESET: FormDefinition = { standard: [], custom: [] };
@@ -73,10 +71,8 @@ export class RegistrationFormService {
   constructor(
     private readonly forms: RegistrationFormRepository,
     private readonly camps: CampRepository,
-    private readonly organisations: OrganisationRepository,
     private readonly files: FileService,
     private readonly audit: AuditService,
-    private readonly unitOfWork: UnitOfWork,
     private readonly clock: Clock,
   ) {}
 
@@ -207,12 +203,11 @@ export class RegistrationFormService {
    * Get the latest published form of a Camp of the current Organisation, by its slug or a former one, as
    * guardians fill it in, with links that open the declarations' PDFs for a few minutes.
    * @param slug the slug from the address
-   * @throws {NotFoundException} when the Camp is unknown, has published nothing yet, or the Organisation
-   * is not approved
+   * @throws {NotFoundException} when the Camp is unknown or has published nothing yet (a pending
+   * Organisation's subdomain answers nobody)
    */
   public async getPublic(slug: string): Promise<RegistrationFormVersion> {
-    const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
-    const camp = organisation.status === 'approved' ? await this.camps.getBySlug(slug.toLowerCase()) : null;
+    const camp = await this.camps.getBySlug(slug.toLowerCase());
     const latest = camp === null ? null : await this.forms.getLatestVersion(camp.id);
 
     if (latest === null) {

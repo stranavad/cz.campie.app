@@ -125,7 +125,7 @@ describe('operator console', () => {
   it('lists every Organisation, newest first, with its identity and status only', async () => {
     const operator = await createOperator(testApp);
     const older = await createOrganisation(app(), { subdomain: 'starsi', status: 'approved' });
-    const newer = await createOrganisation(app(), { subdomain: 'novejsi' });
+    const newer = await createOrganisation(app(), { subdomain: 'novejsi', status: 'pending' });
 
     const response = await list(operator.headers);
 
@@ -149,7 +149,7 @@ describe('operator console', () => {
 
   it('approves a pending Organisation once, audited as the Platform operator', async () => {
     const operator = await createOperator(testApp);
-    const organisationId = await createOrganisation(app());
+    const organisationId = await createOrganisation(app(), { status: 'pending' });
 
     const approved = await act(operator.headers, organisationId, 'approve');
 
@@ -175,8 +175,8 @@ describe('operator console', () => {
 
   it('renames a pending Organisation within the subdomain rules, and never an approved one', async () => {
     const operator = await createOperator(testApp);
-    const organisationId = await createOrganisation(app(), { subdomain: 'puvodni' });
-    await createOrganisation(app(), { subdomain: 'obsazeno' });
+    const organisationId = await createOrganisation(app(), { subdomain: 'puvodni', status: 'pending' });
+    await createOrganisation(app(), { subdomain: 'obsazeno', status: 'pending' });
 
     expect((await rename(operator.headers, organisationId, 'admin')).body).toMatchObject({
       code: 'subdomain_reserved',
@@ -247,7 +247,7 @@ describe('operator console', () => {
     // Another Owner takes over the first Organisation; the founder then helps with a new, pending one.
     await createAdmin(app(), { memberOf: [founder?.organisation_id ?? ''], owner: true });
     await query(`DELETE FROM memberships WHERE admin_id = $1`, [founder?.id]);
-    const pending = await createOrganisation(app());
+    const pending = await createOrganisation(app(), { status: 'pending' });
     await query(`INSERT INTO memberships (organisation_id, admin_id, owner) VALUES ($1, $2, true)`, [
       pending,
       founder?.id,
@@ -312,7 +312,7 @@ describe('operator console', () => {
 
   it('suspends only an approved Organisation', async () => {
     const operator = await createOperator(testApp);
-    const organisationId = await createOrganisation(app());
+    const organisationId = await createOrganisation(app(), { status: 'pending' });
 
     expect((await act(operator.headers, organisationId, 'suspend')).body).toMatchObject({
       code: 'organisation_not_approved',
@@ -322,7 +322,7 @@ describe('operator console', () => {
 
   it("cannot reach any Organisation's own data, not even by entering it", async () => {
     const operator = await createOperator(testApp);
-    await createOrganisation(app());
+    await createOrganisation(app(), { status: 'pending' });
     expect(await query(`SELECT count(*)::int AS n FROM camps`)).toEqual([{ n: 0 }]);
     expect((await signUp('pokusnik', 'jana.testovaci@example.com')).status).toBe(204);
     expect(await query(`SELECT count(*)::int AS n FROM camps`)).toEqual([{ n: 1 }]);

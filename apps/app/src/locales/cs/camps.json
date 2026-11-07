@@ -227,5 +227,10 @@
       "new_registration_notification": "Zpráva táboru o nové přihlášce"
     },
     "previewSubject": "Předmět: {{subject}}"
+  },
+  "preview": {
+    "open": "Náhled stránky tábora pro rodiče",
+    "back": "Zpět do nastavení tábora",
+    "notice": "Náhled: takto stránku uvidí rodiče, jakmile bude organizace schválená."
   }
 }

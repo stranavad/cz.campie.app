@@ -8,6 +8,7 @@ import {
   listCampsEndpoint,
   listDiscountCodesEndpoint,
   listTurnusyEndpoint,
+  previewCampEndpoint,
   publishRegistrationFormEndpoint,
   removeCampLogoEndpoint,
   removeDiscountCodeEndpoint,
@@ -63,6 +64,8 @@ export const campsService = {
     apiClient.request(updateDiscountCodeEndpoint, { organisationId, params: { discountCodeId }, body }),
   removeDiscountCode: (organisationId: string, discountCodeId: string) =>
     apiClient.request(removeDiscountCodeEndpoint, { organisationId, params: { discountCodeId } }),
+  preview: (organisationId: string, campId: string, signal?: AbortSignal) =>
+    apiClient.request(previewCampEndpoint, { organisationId, params: { campId }, signal }),
   listEmailTexts: (organisationId: string, campId: string, signal?: AbortSignal) =>
     apiClient.request(listCampEmailTextsEndpoint, { organisationId, params: { campId }, signal }),
   saveEmailText: (organisationId: string, campId: string, type: EmailType, body: CampEmailTextBody) =>

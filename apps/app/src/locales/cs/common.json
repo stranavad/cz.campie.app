@@ -4,6 +4,10 @@
     "suspended": {
       "title": "Stránky jsou pozastavené",
       "description": "Provozovatel {{productName}} stránky této organizace pozastavil. Přihlášky ani přístup pro rodiče teď nejsou k dispozici."
+    },
+    "unknown": {
+      "title": "Stránky zatím nejsou zveřejněné",
+      "description": "Tato organizace zatím nemá zveřejněné přihlášky. Zkontrolujte adresu, nebo to zkuste později."
     }
   },
   "platformShell": {
@@ -88,5 +92,29 @@
     "surchargeExtra": "+{{amount}} Kč",
     "surchargeDiscount": "sleva {{amount}} Kč",
     "openDocument": "Přečíst"
+  },
+  "campPage": {
+    "website": "Web tábora",
+    "turnusWebsite": "Více o turnusu",
+    "turnusy": "Turnusy",
+    "noTurnusy": "Tábor zatím nevypsal žádný turnus.",
+    "dates": "{{start}} - {{end}}",
+    "ages": "Věk {{min}} až {{max}} let",
+    "earlyBird": "při přihlášení do {{date}}, potom {{base}}",
+    "opensAt": "Přihlašování začne {{date}}.",
+    "countdown": "Zbývá {{days}} d {{hours}} h {{minutes}} min {{seconds}} s",
+    "availability": {
+      "open_one": "Přihlašování otevřené, zbývá {{count}} místo",
+      "open_few": "Přihlašování otevřené, zbývají {{count}} místa",
+      "open_many": "Přihlašování otevřené, zbývá {{count}} místa",
+      "open_other": "Přihlašování otevřené, zbývá {{count}} míst",
+      "not_yet_open": "Přihlašování ještě nezačalo",
+      "closed_manually": "Přihlašování je uzavřené",
+      "closed_by_window": "Přihlašování skončilo",
+      "full": "Obsazeno"
+    },
+    "openingNow": "Přihlašování právě začíná, stránka se za chvíli obnoví.",
+    "agesFrom": "Od {{min}} let",
+    "agesTo": "Do {{max}} let"
   }
 }

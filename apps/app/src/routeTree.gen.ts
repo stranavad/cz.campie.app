@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as OrganisationRouteRouteImport } from './routes/organisation/route'
 import { Route as PlatformRouteRouteImport } from './routes/platform/route'
 import { Route as OrganisationIndexRouteImport } from './routes/organisation/index'
+import { Route as OrganisationCampSlugRouteImport } from './routes/organisation/$campSlug'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
 import { Route as PlatformKonzoleRouteImport } from './routes/platform/konzole'
 import { Route as PlatformNastaveniRouteImport } from './routes/platform/nastaveni'
@@ -23,6 +24,7 @@ import { Route as PlatformTaboryRouteImport } from './routes/platform/tabory'
 import { Route as PlatformUzivateleRouteImport } from './routes/platform/uzivatele'
 import { Route as PlatformZapomenuteHesloRouteImport } from './routes/platform/zapomenute-heslo'
 import { Route as UnknownSplatRouteImport } from './routes/unknown/$'
+import { Route as PlatformTaboryNahledRouteImport } from './routes/platform/tabory_.nahled'
 
 const OrganisationRouteRoute = OrganisationRouteRouteImport.update({
   id: '/organisation',
@@ -37,6 +39,11 @@ const PlatformRouteRoute = PlatformRouteRouteImport.update({
 const OrganisationIndexRoute = OrganisationIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => OrganisationRouteRoute,
+} as any)
+const OrganisationCampSlugRoute = OrganisationCampSlugRouteImport.update({
+  id: '/$campSlug',
+  path: '/$campSlug',
   getParentRoute: () => OrganisationRouteRoute,
 } as any)
 const PlatformIndexRoute = PlatformIndexRouteImport.update({
@@ -95,10 +102,16 @@ const UnknownSplatRoute = UnknownSplatRouteImport.update({
   path: '/unknown/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlatformTaboryNahledRoute = PlatformTaboryNahledRouteImport.update({
+  id: '/tabory_/nahled',
+  path: '/tabory/nahled',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
+  '/organisation/$campSlug': typeof OrganisationCampSlugRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -111,8 +124,10 @@ export interface FileRoutesByFullPath {
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
+  '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
 }
 export interface FileRoutesByTo {
+  '/organisation/$campSlug': typeof OrganisationCampSlugRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -125,11 +140,13 @@ export interface FileRoutesByTo {
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation': typeof OrganisationIndexRoute
   '/platform': typeof PlatformIndexRoute
+  '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
+  '/organisation/$campSlug': typeof OrganisationCampSlugRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -142,12 +159,14 @@ export interface FileRoutesById {
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
+  '/platform/tabory_/nahled': typeof PlatformTaboryNahledRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/organisation'
     | '/platform'
+    | '/organisation/$campSlug'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -160,8 +179,10 @@ export interface FileRouteTypes {
     | '/unknown/$'
     | '/organisation/'
     | '/platform/'
+    | '/platform/tabory/nahled'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/organisation/$campSlug'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -174,10 +195,12 @@ export interface FileRouteTypes {
     | '/unknown/$'
     | '/organisation'
     | '/platform'
+    | '/platform/tabory/nahled'
   id:
     | '__root__'
     | '/organisation'
     | '/platform'
+    | '/organisation/$campSlug'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -190,6 +213,7 @@ export interface FileRouteTypes {
     | '/unknown/$'
     | '/organisation/'
     | '/platform/'
+    | '/platform/tabory_/nahled'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -219,6 +243,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/organisation/'
       preLoaderRoute: typeof OrganisationIndexRouteImport
+      parentRoute: typeof OrganisationRouteRoute
+    }
+    '/organisation/$campSlug': {
+      id: '/organisation/$campSlug'
+      path: '/$campSlug'
+      fullPath: '/organisation/$campSlug'
+      preLoaderRoute: typeof OrganisationCampSlugRouteImport
       parentRoute: typeof OrganisationRouteRoute
     }
     '/platform/': {
@@ -298,14 +329,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UnknownSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/platform/tabory_/nahled': {
+      id: '/platform/tabory_/nahled'
+      path: '/tabory/nahled'
+      fullPath: '/platform/tabory/nahled'
+      preLoaderRoute: typeof PlatformTaboryNahledRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
   }
 }
 
 interface OrganisationRouteRouteChildren {
+  OrganisationCampSlugRoute: typeof OrganisationCampSlugRoute
   OrganisationIndexRoute: typeof OrganisationIndexRoute
 }
 
 const OrganisationRouteRouteChildren: OrganisationRouteRouteChildren = {
+  OrganisationCampSlugRoute: OrganisationCampSlugRoute,
   OrganisationIndexRoute: OrganisationIndexRoute,
 }
 
@@ -323,6 +363,7 @@ interface PlatformRouteRouteChildren {
   PlatformUzivateleRoute: typeof PlatformUzivateleRoute
   PlatformZapomenuteHesloRoute: typeof PlatformZapomenuteHesloRoute
   PlatformIndexRoute: typeof PlatformIndexRoute
+  PlatformTaboryNahledRoute: typeof PlatformTaboryNahledRoute
 }
 
 const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
@@ -336,6 +377,7 @@ const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformUzivateleRoute: PlatformUzivateleRoute,
   PlatformZapomenuteHesloRoute: PlatformZapomenuteHesloRoute,
   PlatformIndexRoute: PlatformIndexRoute,
+  PlatformTaboryNahledRoute: PlatformTaboryNahledRoute,
 }
 
 const PlatformRouteRouteWithChildren = PlatformRouteRoute._addFileChildren(

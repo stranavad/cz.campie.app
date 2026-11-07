@@ -4,9 +4,11 @@ import {
   CAMP_MODULES,
   campSlugProblem,
   type CampModules,
+  type CampPreview,
   type CampSlugErrorCode,
   type CreateCampBody,
   type PublicCamp,
+  type PublicTurnus,
   type UpdateCampBody,
 } from '@repo/schema/camps';
 import { slugify } from '@repo/schema/shared';
@@ -14,11 +16,16 @@ import { slugify } from '@repo/schema/shared';
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
+import { FileService } from '../../../../core/files/file.service.ts';
 import type { CampEntity } from '../../../../repositories/camps/camp/camp.entity.ts';
 import { CampRepository, type UpdateCamp } from '../../../../repositories/camps/camp/camp.repository.ts';
-import { publicLogoUrl } from '../../../../repositories/organisations/organisation/organisation.entity.ts';
+import {
+  publicLogoUrl,
+  type OrganisationEntity,
+} from '../../../../repositories/organisations/organisation/organisation.entity.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 import { effectiveBranding } from '../../camp-branding/services/camp-branding.service.ts';
+import { TurnusService } from '../../turnus/services/turnus.service.ts';
 
 // The slug of a name with nothing a slug can hold, or with a reserved one.
 const FALLBACK_SLUG = 'tabor';
@@ -28,6 +35,8 @@ export class CampService {
   constructor(
     private readonly camps: CampRepository,
     private readonly organisations: OrganisationRepository,
+    private readonly turnusy: TurnusService,
+    private readonly files: FileService,
     private readonly audit: AuditService,
     private readonly unitOfWork: UnitOfWork,
   ) {}
@@ -53,16 +62,61 @@ export class CampService {
    * @throws {NotFoundException} when no Camp of the Organisation has or had the slug
    */
   public async getPublic(slug: string): Promise<PublicCamp> {
+    return this.showPublic(await this.getBySlugOrThrow(slug));
+  }
+
+  /**
+   * List the current Organisation's Camps by name as its landing page shows them.
+   */
+  public async listPublic(): Promise<PublicCamp[]> {
+    const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
+
+    return (await this.camps.list()).map((camp) => publicOf(camp, organisation));
+  }
+
+  /**
+   * List a Camp's Turnusy as its public page shows them, the Camp found by its slug or a former one.
+   * @param slug the slug from the address
+   */
+  public async listPublicTurnusy(slug: string): Promise<PublicTurnus[]> {
+    return this.turnusy.listPublic((await this.getBySlugOrThrow(slug)).id);
+  }
+
+  /**
+   * Show a Camp's public page with its Turnusy for its Organisation's admins, before it goes live too.
+   * @param id Camp id
+   */
+  public async preview(id: string): Promise<CampPreview> {
+    const camp = await this.camps.getByIdOrThrow(id);
+    const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
+    const { logoFileId } = effectiveBranding(camp, organisation);
+    // The public logo address works only on the subdomain; the main host shows it through a short link.
+    const logoUrl = logoFileId === null ? null : (await this.files.link(logoFileId)).url;
+
+    return { camp: { ...publicOf(camp, organisation), logoUrl }, turnusy: await this.turnusy.listPublic(camp.id) };
+  }
+
+  /**
+   * Get a Camp of the current Organisation by its slug or a former one.
+   * @param slug the slug from the address
+   * @throws {NotFoundException} when no Camp of the Organisation has or had the slug
+   */
+  private async getBySlugOrThrow(slug: string): Promise<CampEntity> {
     const camp = await this.camps.getBySlug(slug.toLowerCase());
 
     if (camp === null) {
       throw new NotFoundException();
     }
 
-    const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
-    const { accentColour, logoFileId } = effectiveBranding(camp, organisation);
+    return camp;
+  }
 
-    return camp.toPublicDto({ accentColour, logoUrl: logoFileId === null ? null : publicLogoUrl(logoFileId) });
+  /**
+   * Show a Camp as its public pages do, in its own or its Organisation's branding.
+   * @param camp the Camp
+   */
+  private async showPublic(camp: CampEntity): Promise<PublicCamp> {
+    return publicOf(camp, await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId));
   }
 
   /**
@@ -133,6 +187,17 @@ export class CampService {
 
     return after;
   }
+}
+
+/**
+ * Show a Camp as its public pages do, in its own or its Organisation's branding.
+ * @param camp the Camp
+ * @param organisation its Organisation
+ */
+function publicOf(camp: CampEntity, organisation: OrganisationEntity): PublicCamp {
+  const { accentColour, logoFileId } = effectiveBranding(camp, organisation);
+
+  return camp.toPublicDto({ accentColour, logoUrl: logoFileId === null ? null : publicLogoUrl(logoFileId) });
 }
 
 /**

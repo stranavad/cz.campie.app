@@ -210,9 +210,11 @@ export class AccessService {
   }
 
   /**
-   * Find the Organisation whose subdomain a host is. A suspended Organisation's subdomain is offline.
+   * Find the Organisation whose subdomain a host is. An Organisation awaiting approval has no public
+   * pages yet, so its subdomain is unknown to everyone (its admins preview from the main host); a
+   * suspended one's is offline.
    * @param host the host the browser called
-   * @throws {NotFoundException} when the host is no Organisation's subdomain
+   * @throws {NotFoundException} when the host is no approved or suspended Organisation's subdomain
    * @throws {ForbiddenException} when the Organisation is suspended
    */
   private async organisationOfHost(host: string): Promise<string> {
@@ -223,7 +225,7 @@ export class AccessService {
         ? await this.unitOfWork.runForPlatform(() => this.organisations.getBySubdomain(parsed.subdomain))
         : null;
 
-    if (organisation === null) {
+    if (organisation === null || organisation.status === 'pending') {
       throw organisationUnknown();
     }
 

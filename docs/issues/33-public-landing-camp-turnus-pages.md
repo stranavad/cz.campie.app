@@ -1,6 +1,6 @@
 # 33 - Public landing, Camp and Turnus pages
 
-Status: ready-for-agent
+Status: done
 Stage: 1a
 Episode: E3 Public registration
 Blocked by: 13, 23, 25
@@ -12,15 +12,25 @@ The public pages on an Organisation's subdomain. `/` is the Organisation landing
 
 ## Acceptance criteria
 
-- [ ] API resolves the Organisation from the forwarded host (ADR-0001); an unknown subdomain returns 404.
-- [ ] Pending Organisation: public API returns 404 for anonymous requests; preview works for its admins.
-- [ ] Suspended Organisation: 404 (or an offline page) for everyone.
-- [ ] Turnus availability and remaining places match issue 25's rules using the controllable Clock.
-- [ ] Old Camp slug redirects to the current slug.
-- [ ] Public responses expose no capacity internals beyond remaining places and no other Organisation's data.
-- [ ] Mobile-friendly layout, Czech strings through i18n, readable text colour against the accent.
+- [x] API resolves the Organisation from the forwarded host (ADR-0001); an unknown subdomain returns 404.
+- [x] Pending Organisation: public API returns 404 for anonymous requests; preview works for its admins.
+- [x] Suspended Organisation: 404 (or an offline page) for everyone.
+- [x] Turnus availability and remaining places match issue 25's rules using the controllable Clock.
+- [x] Old Camp slug redirects to the current slug.
+- [x] Public responses expose no capacity internals beyond remaining places and no other Organisation's data.
+- [x] Mobile-friendly layout, Czech strings through i18n, readable text colour against the accent.
 
 ## Notes
 
 - Spec sections: Architecture (public addresses); Tenancy (status); Other (branding).
 - Port from Domino: `apps/web/components/registrations-closed.tsx` for the closed and not-yet-open states.
+
+## Comments
+
+2026-11-07 - **Implemented.** On an Organisation's subdomain, `/` lists its Camps as cards or goes straight to the only one; `/{camp-slug}` shows the Camp in its own branding (logo, accent, name, link to its website) with its Turnusy: dates, place, age limits, the price in force (Early bird with its last day), and open with the places left, not yet open with the opening time and a countdown, full or closed. A former slug moves the address to the current one.
+
+- API: `GET /public-camps` (the landing), `GET /public-camps/:slug/turnusy` (`PublicTurnus`: places left and the price in force, never the capacity or counts; opening and closing as instants), next to issue 24's `GET /public-camps/:slug`. The price in force is `priceInForce` in `@repo/schema/pricing`, the rule pricing uses.
+- A pending Organisation's subdomain now answers 404 `organisation_unknown` to every public and guardian request (access layer); a suspended one stays 403 `organisation_suspended`, shown as offline. Its admins preview a Camp's page from the main host at `/platform/tabory/nahled?tabor=<id>` (`GET /camps/:campId/preview`, any member; the logo comes as a short-lived link, since the public logo address works only on the subdomain), linked from the Camp settings page. The Platform operator cannot see a pending Organisation's pages.
+- `createOrganisation` in the test fixtures now makes an approved Organisation unless told otherwise.
+- Registered Participants are still counted as none (`TurnusService.registeredIn`), so places left equal the capacity until issue 35.
+- The page and the preview share `CampPageView` (`apps/app/src/core/camp-page`). The Turnusy refetch each minute; the countdown follows the browser's clock and says the registration is opening once it runs out.

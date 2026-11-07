@@ -44,6 +44,13 @@ export function CampsPage({ campId }: CampsPageProps) {
         </Link>
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
         {page.canWrite ? null : <p className="text-muted-foreground">{t('readOnly')}</p>}
+        <Link
+          to="/platform/tabory/nahled"
+          search={{ tabor: page.selected.id }}
+          className="self-start text-sm underline"
+        >
+          {t('preview.open')}
+        </Link>
       </header>
       {page.showsSwitcher ? <CampSwitcher camps={page.camps} selectedId={page.selected.id} /> : null}
       {/* Keyed by the Camp, so switching Camps starts their forms afresh. */}
