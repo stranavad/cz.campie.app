@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { CampBrandingSection } from '@/features/camps/components/camp-branding-section/camp-branding-section';
 import { CampForm } from '@/features/camps/components/camp-form/camp-form';
 import { CampSwitcher } from '@/features/camps/components/camp-switcher';
+import { ConsentsSection } from '@/features/camps/components/consents-section/consents-section';
 import { CreateCampForm } from '@/features/camps/components/create-camp-form/create-camp-form';
 import { DiscountCodeSection } from '@/features/camps/components/discount-code-section/discount-code-section';
 import { EmailTextsSection } from '@/features/camps/components/email-texts-section/email-texts-section';
@@ -74,6 +75,12 @@ export function CampsPage({ campId }: CampsPageProps) {
       />
       <DiscountCodeSection
         key={`codes-${page.selected.id}`}
+        organisationId={page.organisationId}
+        campId={page.selected.id}
+        canWrite={page.canWrite}
+      />
+      <ConsentsSection
+        key={`consents-${page.selected.id}`}
         organisationId={page.organisationId}
         campId={page.selected.id}
         canWrite={page.canWrite}

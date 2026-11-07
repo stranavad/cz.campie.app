@@ -20,6 +20,7 @@ import { RateLimitsModule } from './core/rate-limits/rate-limits.module.ts';
 import { SessionsModule } from './core/sessions/sessions.module.ts';
 import { AdminsModule } from './modules/admins/admins.module.ts';
 import { CampsModule } from './modules/camps/camps.module.ts';
+import { ConsentsModule } from './modules/consents/consents.module.ts';
 import { ConsoleModule } from './modules/console/console.module.ts';
 import { OrganisationsModule } from './modules/organisations/organisations.module.ts';
 import { PortalModule } from './modules/portal/portal.module.ts';
@@ -58,6 +59,7 @@ export class AppModule {
         CampsModule,
         RegistrationsModule,
         PortalModule,
+        ConsentsModule,
         ConsoleModule,
       ],
     };

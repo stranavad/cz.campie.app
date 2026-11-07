@@ -29,6 +29,14 @@ import {
   type UpdateDiscountCodeBody,
 } from '@repo/schema/camps';
 import {
+  createConsentEndpoint,
+  getConsentEndpoint,
+  listConsentsEndpoint,
+  publishConsentEndpoint,
+  uploadConsentFileEndpoint,
+  type ConsentContent,
+} from '@repo/schema/consents';
+import {
   listCampEmailTextsEndpoint,
   previewCampEmailTextEndpoint,
   resetCampEmailTextEndpoint,
@@ -94,4 +102,14 @@ export const campsService = {
     apiClient.request(updateTurnusEndpoint, { organisationId, params: { turnusId }, body }),
   removeTurnus: (organisationId: string, turnusId: string) =>
     apiClient.request(removeTurnusEndpoint, { organisationId, params: { turnusId } }),
+  consents: (organisationId: string, campId: string, signal?: AbortSignal) =>
+    apiClient.request(listConsentsEndpoint, { organisationId, params: { campId }, signal }),
+  consent: (organisationId: string, campId: string, consentId: string, signal?: AbortSignal) =>
+    apiClient.request(getConsentEndpoint, { organisationId, params: { campId, consentId }, signal }),
+  createConsent: (organisationId: string, campId: string, body: ConsentContent) =>
+    apiClient.request(createConsentEndpoint, { organisationId, params: { campId }, body }),
+  publishConsent: (organisationId: string, campId: string, consentId: string, body: ConsentContent) =>
+    apiClient.request(publishConsentEndpoint, { organisationId, params: { campId, consentId }, body }),
+  uploadConsentFile: (organisationId: string, campId: string, file: File) =>
+    apiClient.request(uploadConsentFileEndpoint, { organisationId, params: { campId }, file }),
 };

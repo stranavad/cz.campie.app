@@ -16,4 +16,8 @@ export const campsKeys = {
     [...campsKeys.detail(organisationId, campId), 'turnusy'] as const,
   branding: (organisationId: string, campId: string) =>
     [...campsKeys.detail(organisationId, campId), 'branding'] as const,
+  consents: (organisationId: string, campId: string) =>
+    [...campsKeys.detail(organisationId, campId), 'consents'] as const,
+  consent: (organisationId: string, campId: string, consentId: string) =>
+    [...campsKeys.consents(organisationId, campId), consentId] as const,
 };

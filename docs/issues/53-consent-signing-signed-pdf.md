@@ -25,3 +25,7 @@ In the portal, either guardian opens a Participant's Consent, reads it in full i
 - Spec sections: Consents; Generated documents; Emails.
 - Port from Domino: `apps/api/src/consent/parent-consent.controller.ts`, `apps/api/src/consent/services/consent.service.ts`, `apps/portal/src/pages/parent/ParticipantConsentSign.vue`.
 - Branding and legal identity are template inputs (one PDF pipeline).
+
+## Comments
+
+2026-11-07 - **From issue 51.** Versions are `ConsentRepository.listVersionsOf` / `listNewestVersionsOf` (`repositories/consents/consent/`); a signature names the `consent_versions.id`. Validate answers with `checkConsentAnswers(version.items, answers)` from `@repo/schema/consents`. Show a Camp's Consents to guardians only while the Camp's `consents` module is on; the version's PDF is `file_id` with `file_sha256`, which the signed PDF should print as evidence.

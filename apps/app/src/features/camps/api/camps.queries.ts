@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
   CampBranding,
@@ -10,6 +10,7 @@ import type {
   UpdateCampBrandingBody,
   UpdateDiscountCodeBody,
 } from '@repo/schema/camps';
+import type { ConsentContent } from '@repo/schema/consents';
 import type { CampEmailTextBody, EmailType } from '@repo/schema/emails';
 
 import { campsKeys } from '@/features/camps/api/camps.keys';
@@ -204,3 +205,35 @@ export const useCampPreviewQuery = (organisationId: string, campId: string, enab
     queryFn: ({ signal }) => campsService.preview(organisationId, campId, signal),
     enabled,
   });
+
+export const useConsentsQuery = (organisationId: string, campId: string) =>
+  useQuery({
+    queryKey: campsKeys.consents(organisationId, campId),
+    queryFn: ({ signal }) => campsService.consents(organisationId, campId, signal),
+  });
+
+export const useConsentQuery = (organisationId: string, campId: string, consentId: string | null) =>
+  useQuery({
+    queryKey: campsKeys.consent(organisationId, campId, consentId ?? ''),
+    queryFn:
+      consentId === null ? skipToken : ({ signal }) => campsService.consent(organisationId, campId, consentId, signal),
+  });
+
+// Creating or publishing answers the Consent with every version; the list shows its newest.
+export const useSaveConsentMutation = (organisationId: string, campId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ consentId, content }: { consentId: string | null; content: ConsentContent }) =>
+      consentId === null
+        ? campsService.createConsent(organisationId, campId, content)
+        : campsService.publishConsent(organisationId, campId, consentId, content),
+    onSuccess: (consent) => {
+      queryClient.setQueryData(campsKeys.consent(organisationId, campId, consent.id), consent);
+      return queryClient.invalidateQueries({ queryKey: campsKeys.consents(organisationId, campId), exact: true });
+    },
+  });
+};
+
+export const useUploadConsentFileMutation = (organisationId: string, campId: string) =>
+  useMutation({ mutationFn: (file: File) => campsService.uploadConsentFile(organisationId, campId, file) });

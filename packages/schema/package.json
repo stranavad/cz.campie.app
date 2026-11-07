@@ -33,6 +33,10 @@
       "types": "./dist/registrations/index.d.ts",
       "default": "./dist/registrations/index.js"
     },
+    "./consents": {
+      "types": "./dist/consents/index.d.ts",
+      "default": "./dist/consents/index.js"
+    },
     "./payments": {
       "types": "./dist/payments/index.d.ts",
       "default": "./dist/payments/index.js"

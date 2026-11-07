@@ -37,3 +37,6 @@ export { adminSessions } from './sessions/admin-sessions.ts';
 export { guardianLoginLinks } from './sessions/guardian-login-links.ts';
 export { guardianLoginRequests } from './sessions/guardian-login-requests.ts';
 export { guardianSessions } from './sessions/guardian-sessions.ts';
+export { consents } from './consents/consents.ts';
+export { consentVersions } from './consents/consent-versions.ts';
+export { consentFiles } from './consents/consent-files.ts';
