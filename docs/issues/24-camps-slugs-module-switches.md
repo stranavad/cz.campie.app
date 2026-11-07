@@ -1,6 +1,6 @@
 # 24 - Camps, slugs, module switches
 
-Status: in-progress
+Status: done
 Stage: 1a
 Episode: E2 Camp setup
 Blocked by: 19

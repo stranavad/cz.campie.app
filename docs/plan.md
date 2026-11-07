@@ -43,7 +43,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 
 | #   | Issue                                                        | Status          | Blocked by |
 | --- | ------------------------------------------------------------ | --------------- | ---------- |
-| 24  | Camps, slugs, module switches                                | ready-for-agent | 19         |
+| 24  | Camps, slugs, module switches                                | done            | 19         |
 | 25  | Turnusy with price list, Deposit and dates                   | ready-for-agent | 24         |
 | 26  | Pricing pure module                                          | ready-for-agent | 02         |
 | 27  | Sibling discount and Discount codes                          | ready-for-agent | 25, 26     |
