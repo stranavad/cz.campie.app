@@ -81,9 +81,13 @@ export function ParticipantsPage() {
       <ul className="flex flex-col divide-y rounded-lg border" aria-busy={page.isStale}>
         {page.rows.map((row) => (
           <li key={row.participantId} className="flex flex-col gap-1 p-3 sm:flex-row sm:items-center sm:gap-4">
-            <span className={`font-medium sm:w-48 ${row.status === 'cancelled' ? 'line-through' : ''}`}>
+            <Link
+              to="/platform/prihlasky/$registrationId"
+              params={{ registrationId: row.registrationId }}
+              className={`font-medium underline sm:w-48 ${row.status === 'cancelled' ? 'line-through' : ''}`}
+            >
               {t('name', { first: row.firstName, last: row.lastName })}
-            </span>
+            </Link>
             <span className="text-sm text-muted-foreground sm:w-16">{t('age', { count: row.ageOnStart })}</span>
             <span className="text-sm sm:flex-1">
               {t('guardian', { name: row.guardianName, email: row.guardianEmail })}

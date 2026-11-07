@@ -85,3 +85,18 @@ export function pricedFieldIds(definition: FormDefinition): string[] {
     return [];
   });
 }
+
+/**
+ * Name a choice answer's options by their labels, as people read it; any other answer stays as it is.
+ * @param field the custom field it answered
+ * @param value the answer
+ */
+export function withOptionLabels(field: CustomField, value: AnswerValue): AnswerValue {
+  if (field.type !== 'single_choice' && field.type !== 'multiple_choice') {
+    return value;
+  }
+
+  const labelOf = (id: string) => field.options.find((option) => option.id === id)?.label ?? id;
+
+  return Array.isArray(value) ? value.map(labelOf) : typeof value === 'string' ? labelOf(value) : value;
+}

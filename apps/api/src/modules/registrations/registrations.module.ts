@@ -10,6 +10,8 @@ import { ParticipantListController } from './participant-list/participant-list.c
 import { ParticipantListService } from './participant-list/services/participant-list.service.ts';
 import { GeneratePrihlaskyHandler } from './prihlaska/generate-prihlasky.handler.ts';
 import { PrihlaskaService } from './prihlaska/services/prihlaska.service.ts';
+import { RegistrationDetailController } from './registration-detail/registration-detail.controller.ts';
+import { RegistrationDetailService } from './registration-detail/services/registration-detail.service.ts';
 import { NotifyTeamHandler } from './registration/notify-team.handler.ts';
 import { PublicRegistrationController } from './registration/public-registration.controller.ts';
 import { RegistrationService } from './registration/services/registration.service.ts';
@@ -17,7 +19,12 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
 
 @Module({
   imports: [CampsModule],
-  controllers: [PublicRegistrationController, LedgerController, ParticipantListController],
+  controllers: [
+    PublicRegistrationController,
+    LedgerController,
+    ParticipantListController,
+    RegistrationDetailController,
+  ],
   providers: [
     RegistrationService,
     VariableSymbols,
@@ -25,6 +32,7 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     ConfirmationService,
     LedgerService,
     ParticipantListService,
+    RegistrationDetailService,
     NotifyTeamHandler,
     GeneratePrihlaskyHandler,
     SendConfirmationHandler,

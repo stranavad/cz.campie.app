@@ -17,6 +17,7 @@ import { OperatorRepository } from './operators/operator/operator.repository.ts'
 import { LegalAcceptanceRepository } from './organisations/legal-acceptance/legal-acceptance.repository.ts';
 import { OrganisationKeyRepository } from './organisations/organisation-key/organisation-key.repository.ts';
 import { OrganisationRepository } from './organisations/organisation/organisation.repository.ts';
+import { ClaimedDiscountVerificationRepository } from './registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
 import { GuardianEmailChangeRepository } from './registrations/guardian-email-change/guardian-email-change.repository.ts';
 import { PaymentRepository } from './registrations/payment/payment.repository.ts';
 import { PriceAdjustmentRepository } from './registrations/price-adjustment/price-adjustment.repository.ts';
@@ -50,6 +51,7 @@ const REPOSITORIES = [
   PaymentRepository,
   PriceAdjustmentRepository,
   GuardianEmailChangeRepository,
+  ClaimedDiscountVerificationRepository,
 ];
 
 @Global()

@@ -7,6 +7,7 @@ import {
   formFields,
   pricedFieldIds,
   surchargesOf,
+  withOptionLabels,
   type Answers,
   type AnswerValue,
   type CustomField,
@@ -346,7 +347,7 @@ export class GuardianEditService {
               {
                 participantId,
                 label: field?.label ?? key,
-                value: field === undefined ? value : optionLabels(field, value),
+                value: field === undefined ? value : withOptionLabels(field, value),
               },
             ];
       });
@@ -377,21 +378,6 @@ export class GuardianEditService {
       ],
     };
   }
-}
-
-/**
- * Name a choice answer's options by their labels; any other answer stays as it is.
- * @param field the field it answered
- * @param value the answer
- */
-function optionLabels(field: CustomField, value: AnswerValue): AnswerValue {
-  if (field.type !== 'single_choice' && field.type !== 'multiple_choice') {
-    return value;
-  }
-
-  const labelOf = (id: string) => field.options.find((option) => option.id === id)?.label ?? id;
-
-  return Array.isArray(value) ? value.map(labelOf) : typeof value === 'string' ? labelOf(value) : value;
 }
 
 /**

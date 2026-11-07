@@ -28,5 +28,6 @@ export const auditEntries = p.snakeCase.table.withRLS(
       .notNull()
       .default(sql`'{}'`),
   },
-  () => [organisationPolicy()],
+  // A record's history lists the entries that target it.
+  (table) => [p.index('audit_entries_target_id_idx').on(table.targetId), organisationPolicy()],
 );

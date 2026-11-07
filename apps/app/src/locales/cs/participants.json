@@ -25,5 +25,80 @@
   "age_one": "{{count}} rok",
   "age_few": "{{count}} roky",
   "age_many": "{{count}} roku",
-  "age_other": "{{count}} let"
+  "age_other": "{{count}} let",
+  "detail": {
+    "error": "Přihlášku se nepodařilo načíst.",
+    "back": "Zpět na seznam",
+    "title": "Přihláška {{symbol}}",
+    "subtitle": "{{camp}} - {{turnus}}, odesláno {{date}}, formulář verze {{version}}",
+    "guardians": "Zákonní zástupci",
+    "guardianLine": "{{name}}, {{email}} {{phone}}",
+    "participantCancelled": "{{last}} {{first}} (zrušeno)",
+    "birthDate": "Datum narození",
+    "ageOnStart": "Věk v den začátku",
+    "unanswered": "nevyplněno",
+    "yes": "Ano",
+    "no": "Ne",
+    "state": {
+      "added": "{{label}} (přidáno později)",
+      "removed": "{{label}} (už není ve formuláři)"
+    },
+    "prihlaska": "Přihláška (PDF)",
+    "claimed": "Sleva k ověření: {{label}} ({{amount}})",
+    "verified": "Ověřeno",
+    "verify": "Ověřit",
+    "unverified": "Neověřeno",
+    "price": "Cena",
+    "lineOf": "{{line}} ({{participant}})",
+    "adjustment": "Úprava ceny: {{note}}",
+    "total": "Celkem",
+    "payments": "Platby",
+    "source": {
+      "manual": "Platba {{date}}: {{note}}",
+      "gateway": "Platba kartou {{date}}",
+      "correction": "Oprava platby {{date}}: {{note}}"
+    },
+    "paid": "Zaplaceno",
+    "balance": "Zbývá",
+    "dueNow": "k úhradě {{amount}} do {{date}}",
+    "overdue": "Po splatnosti.",
+    "declarations": "Prohlášení",
+    "accepted": "Souhlasí: {{text}}",
+    "notAccepted": "Nesouhlasí: {{text}}",
+    "history": "Historie změn",
+    "historyLine": "{{actor}}: {{action}}",
+    "actor": {
+      "admin": "Správce",
+      "guardian": "Zákonný zástupce",
+      "operator": "Provozovatel",
+      "system": "Systém"
+    },
+    "action": {
+      "registration.submit": "odeslal přihlášku",
+      "payment.create": "zapsal platbu",
+      "price_adjustment.create": "upravil cenu",
+      "participant.generate_prihlaska": "vytvořil PDF přihlášky",
+      "claimed_discount.verify": "ověřil slevu",
+      "registration_guardian.update": "změnil údaje zástupce",
+      "registration_guardian.create": "přidal zástupce",
+      "registration_guardian.request_email_change": "požádal o změnu e-mailu",
+      "registration.answer": "doplnil odpovědi"
+    },
+    "addPayment": "Zapsat platbu",
+    "payment": "Platba",
+    "correction": "Oprava platby (vrácení)",
+    "amount": "Částka v Kč",
+    "note": "Poznámka",
+    "record": "Zapsat",
+    "addAdjustment": "Upravit cenu",
+    "adjustmentAmount": "Částka v Kč (záporná je sleva)",
+    "add": "Přidat",
+    "failure": {
+      "correction_exceeds_paid": "Oprava nesmí být vyšší než zaplacená částka.",
+      "price_adjustment_below_zero": "Cena by klesla pod nulu.",
+      "unexpected": "Zápis se nepodařil. Zkontrolujte údaje.",
+      "invalid_amount": "Zadejte celou částku v Kč."
+    },
+    "encryptedChanged": "Změněná chráněná pole: {{fields}}"
+  }
 }

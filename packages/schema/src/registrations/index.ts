@@ -5,3 +5,4 @@ export * from './ledger/record-payment.contract.ts';
 export * from './registration/participant-status.ts';
 export * from './registration/submit-registration.contract.ts';
 export * from './participant-list/participant-list.contracts.ts';
+export * from './registration-detail/registration-detail.contracts.ts';

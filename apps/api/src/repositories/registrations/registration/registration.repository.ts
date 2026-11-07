@@ -382,9 +382,15 @@ export class RegistrationRepository {
    * List a Registration's declaration answers.
    * @param registrationId Registration id
    */
-  public async listDeclarationAnswers(registrationId: string): Promise<{ declarationId: string; accepted: boolean }[]> {
+  public async listDeclarationAnswers(
+    registrationId: string,
+  ): Promise<{ declarationId: string; accepted: boolean; answeredAt: Date }[]> {
     return this.unitOfWork.db
-      .select({ declarationId: declarationAnswers.declarationId, accepted: declarationAnswers.accepted })
+      .select({
+        declarationId: declarationAnswers.declarationId,
+        accepted: declarationAnswers.accepted,
+        answeredAt: declarationAnswers.answeredAt,
+      })
       .from(declarationAnswers)
       .where(eq(declarationAnswers.registrationId, registrationId));
   }

@@ -52,6 +52,24 @@ export class AdminRepository {
   }
 
   /**
+   * List the emails of admins, in one query.
+   * @param ids admin ids
+   * @returns emails by admin id; an unknown id is missing
+   */
+  public async listEmailsByIds(ids: readonly string[]): Promise<Map<string, string>> {
+    if (ids.length === 0) {
+      return new Map();
+    }
+
+    const rows = await this.unitOfWork.db
+      .select({ id: admins.id, email: admins.email })
+      .from(admins)
+      .where(inArray(admins.id, [...ids]));
+
+    return new Map(rows.map(({ id, email }) => [id, email]));
+  }
+
+  /**
    * Create an admin identity.
    * @param input the admin
    * @throws {Error} when the database returns no row

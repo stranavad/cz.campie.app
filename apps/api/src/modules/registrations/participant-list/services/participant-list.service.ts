@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
 import { ageOnStart } from '@repo/schema/camps';
-import { surchargesOf } from '@repo/schema/form-engine';
 import { balanceOf } from '@repo/schema/pricing';
 import type { ParticipantListQuery, ParticipantRow, SelectedTurnus } from '@repo/schema/registrations';
 import { pragueDateOf } from '@repo/schema/shared';
@@ -11,9 +10,11 @@ import { MembershipRepository } from '../../../../repositories/admins/membership
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
+import { ClaimedDiscountVerificationRepository } from '../../../../repositories/registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
 import { PaymentRepository } from '../../../../repositories/registrations/payment/payment.repository.ts';
 import { PriceAdjustmentRepository } from '../../../../repositories/registrations/price-adjustment/price-adjustment.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
+import { answeredDefinition, claimedDiscountsOf } from '../../payment/claimed-discounts.helper.ts';
 
 /**
  * Write text as search compares it: lowercase, without diacritics.
@@ -36,6 +37,7 @@ export class ParticipantListService {
     private readonly camps: CampRepository,
     private readonly forms: RegistrationFormRepository,
     private readonly memberships: MembershipRepository,
+    private readonly verifications: ClaimedDiscountVerificationRepository,
     private readonly clock: Clock,
   ) {}
 
@@ -93,6 +95,8 @@ export class ParticipantListService {
       ]),
     );
     const byId = new Map(registrations.map((registration) => [registration.id, registration]));
+    const verifications = await this.verifications.listOf(participants.map(({ id }) => id));
+    const latestDefinition = (await this.forms.getLatestVersion(turnus.campId))?.definition;
     const today = pragueDateOf(this.clock.now());
     const words = searchable(query.search ?? '')
       .split(/\s+/)
@@ -134,13 +138,15 @@ export class ParticipantListService {
         },
         today,
       );
-      const surcharges =
+      const claimed =
         version === undefined
           ? []
-          : (surchargesOf(version.definition, {
-              registration: registration.answers,
-              participants: [participant.answers],
-            })[0]?.surcharges ?? []);
+          : claimedDiscountsOf(
+              answeredDefinition(version.definition, latestDefinition ?? version.definition),
+              registration.answers,
+              participant,
+              verifications,
+            );
 
       return [
         {
@@ -156,9 +162,7 @@ export class ParticipantListService {
           amountDue: { amount: balance.amountDue.amount, dueDate: balance.amountDue.dueDate },
           overdue: balance.overdue,
           status: participant.status,
-          unverifiedClaimedDiscount: surcharges.some(
-            ({ amount, needsVerification }) => amount < 0 && needsVerification,
-          ),
+          unverifiedClaimedDiscount: claimed.some(({ verifiedAt }) => verifiedAt === null),
         },
       ];
     });

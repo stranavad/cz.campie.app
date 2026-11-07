@@ -406,12 +406,25 @@ export class RegistrationService {
       identity: requiredTextOf(submission.registration, 'guardianEmail'),
       ipAddress,
     };
+    // What was submitted, as the history shows it; the address is the entry's own, not repeated inside.
     await this.audit.record(actor, {
       action: 'registration.submit',
       target: { type: 'registration', id: registration.id },
       change: {
         before: null,
-        after: { registration, guardians, participants, priceLines: price.lines, declarations },
+        after: {
+          variableSymbol: registration.variableSymbol,
+          turnusId: registration.turnusId,
+          paymentChoice: registration.paymentChoice,
+          depositTotal: registration.depositTotal,
+          guardians,
+          participants: children.map(({ firstName, lastName, birthDate }) => ({ firstName, lastName, birthDate })),
+          priceLines: price.lines,
+          declarations: declarations.map(({ declarationId, accepted: ticked }) => ({
+            declarationId,
+            accepted: ticked,
+          })),
+        },
       },
     });
     this.jobs.enqueue(generatePrihlaskyJob, { registrationId: registration.id });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { FormDefinition } from '../definition/form-definition.ts';
-import { pricedFieldIds, surchargesOf } from './surcharges.ts';
+import type { CustomField, FormDefinition } from '../definition/form-definition.ts';
+import { pricedFieldIds, surchargesOf, withOptionLabels } from './surcharges.ts';
 
 const TRANSPORT = '0190a2b4-0000-7000-8000-000000000002';
 const RETURNING = '0190a2b4-0000-7000-8000-000000000008';
@@ -100,5 +100,26 @@ describe('pricedFieldIds', () => {
         ],
       }),
     ).toEqual([]);
+  });
+});
+
+describe('withOptionLabels', () => {
+  const choice: CustomField = {
+    id: '0190a2b4-0000-7000-8000-0000000000d1',
+    type: 'multiple_choice',
+    label: 'Strava',
+    hint: null,
+    required: false,
+    scope: 'participant',
+    options: [
+      { id: 'veg', label: 'Vegetariánská', surcharge: null, needsVerification: false },
+      { id: 'gluten', label: 'Bezlepková', surcharge: null, needsVerification: false },
+    ],
+  };
+
+  it('names chosen options by their labels and leaves other answers alone', () => {
+    expect(withOptionLabels(choice, ['gluten', 'veg'])).toEqual(['Bezlepková', 'Vegetariánská']);
+    expect(withOptionLabels({ ...choice, type: 'single_choice' }, 'veg')).toBe('Vegetariánská');
+    expect(withOptionLabels({ ...choice, type: 'short_text' } as never, 'veg')).toBe('veg');
   });
 });
