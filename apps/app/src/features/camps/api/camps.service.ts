@@ -4,12 +4,15 @@ import {
   createTurnusEndpoint,
   getCampBrandingEndpoint,
   getCampEndpoint,
+  getRegistrationFormEndpoint,
   listCampsEndpoint,
   listDiscountCodesEndpoint,
   listTurnusyEndpoint,
+  publishRegistrationFormEndpoint,
   removeCampLogoEndpoint,
   removeDiscountCodeEndpoint,
   removeTurnusEndpoint,
+  saveRegistrationFormDraftEndpoint,
   setCampLogoEndpoint,
   updateCampBrandingEndpoint,
   updateCampEndpoint,
@@ -17,6 +20,7 @@ import {
   updateTurnusEndpoint,
   type CreateCampBody,
   type CreateDiscountCodeBody,
+  type SaveRegistrationFormDraftBody,
   type TurnusBody,
   type UpdateCampBody,
   type UpdateCampBrandingBody,
@@ -50,6 +54,12 @@ export const campsService = {
     apiClient.request(updateDiscountCodeEndpoint, { organisationId, params: { discountCodeId }, body }),
   removeDiscountCode: (organisationId: string, discountCodeId: string) =>
     apiClient.request(removeDiscountCodeEndpoint, { organisationId, params: { discountCodeId } }),
+  getRegistrationForm: (organisationId: string, campId: string, signal?: AbortSignal) =>
+    apiClient.request(getRegistrationFormEndpoint, { organisationId, params: { campId }, signal }),
+  saveRegistrationFormDraft: (organisationId: string, campId: string, body: SaveRegistrationFormDraftBody) =>
+    apiClient.request(saveRegistrationFormDraftEndpoint, { organisationId, params: { campId }, body }),
+  publishRegistrationForm: (organisationId: string, campId: string) =>
+    apiClient.request(publishRegistrationFormEndpoint, { organisationId, params: { campId } }),
   listTurnusy: (organisationId: string, campId: string, signal?: AbortSignal) =>
     apiClient.request(listTurnusyEndpoint, { organisationId, params: { campId }, signal }),
   createTurnus: (organisationId: string, campId: string, body: TurnusBody) =>

@@ -9,6 +9,7 @@ import { AuditEntryRepository } from './audit/audit-entry/audit-entry.repository
 import { PlatformAuditEntryRepository } from './audit/platform-audit-entry/platform-audit-entry.repository.ts';
 import { CampRepository } from './camps/camp/camp.repository.ts';
 import { DiscountCodeRepository } from './camps/discount-code/discount-code.repository.ts';
+import { RegistrationFormRepository } from './camps/registration-form/registration-form.repository.ts';
 import { TurnusRepository } from './camps/turnus/turnus.repository.ts';
 import { FileRepository } from './files/file/file.repository.ts';
 import { OperatorRepository } from './operators/operator/operator.repository.ts';
@@ -36,6 +37,7 @@ const REPOSITORIES = [
   CampRepository,
   TurnusRepository,
   DiscountCodeRepository,
+  RegistrationFormRepository,
 ];
 
 @Global()

@@ -129,5 +129,61 @@
     "deactivate": "Vypnout",
     "activate": "Zapnout",
     "remove": "Smazat"
+  },
+  "registrationForm": {
+    "title": "Přihláška",
+    "unpublished": "Přihláška zatím nebyla zveřejněna.",
+    "latest": "Rodiče vidí verzi {{version}}. Úpravy se jim ukážou až po zveřejnění.",
+    "maxParticipants": "Nejvíce dětí na jedné přihlášce",
+    "standard": "Standardní pole",
+    "custom": "Vlastní otázky",
+    "states": {
+      "off": "Vypnuto",
+      "optional": "Nepovinné",
+      "required": "Povinné"
+    },
+    "types": {
+      "short_text": "Krátký text",
+      "long_text": "Dlouhý text",
+      "single_choice": "Výběr jedné možnosti",
+      "multiple_choice": "Výběr více možností",
+      "yes_no": "Ano / ne",
+      "number": "Číslo",
+      "date": "Datum"
+    },
+    "scopes": {
+      "participant": "za každé dítě",
+      "registration": "jednou za přihlášku"
+    },
+    "label": "Otázka",
+    "hint": "Nápověda",
+    "required": "Povinné",
+    "scope": "Ptát se",
+    "options": "Možnosti",
+    "optionLabel": "Text možnosti",
+    "addOption": "Přidat možnost",
+    "removeOption": "Odebrat",
+    "surcharge": "Příplatek za dítě (Kč, záporný = sleva)",
+    "needsVerification": "Slevu musíme ověřit",
+    "moveUp": "Nahoru",
+    "moveDown": "Dolů",
+    "removeField": "Odebrat otázku",
+    "newFieldType": "Druh nové otázky",
+    "addField": "Přidat otázku",
+    "saveDraft": "Uložit koncept",
+    "publish": "Uložit a zveřejnit",
+    "showPreview": "Náhled",
+    "hidePreview": "Skrýt náhled",
+    "previewChild": "Dítě",
+    "previewGuardian": "Zákonný zástupce",
+    "status": {
+      "saved": "Koncept je uložený.",
+      "published": "Přihláška je zveřejněná.",
+      "invalid": "Přihlášku nejde uložit: každá otázka potřebuje text, výběr aspoň jednu možnost s textem, příplatky celé koruny a ověření jen u slevy.",
+      "form_field_changed": "Otázka, která už byla zveřejněná, nemůže změnit druh ani to, za koho se vyplňuje. Přidejte místo ní novou. Koncept je uložený.",
+      "failed": "Přihlášku se nepodařilo uložit. Zkuste to prosím znovu.",
+      "invalid_max": "Nejvíce dětí na přihlášce musí být 1 až 10.",
+      "form_definition_invalid": "Koncept už neodpovídá nabídce standardních polí. Zkontrolujte je a uložte znovu."
+    }
   }
 }

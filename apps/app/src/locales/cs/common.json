@@ -68,5 +68,21 @@
   "accentPreview": {
     "button": "Odeslat přihlášku",
     "link": "Odkaz v textu"
+  },
+  "form": {
+    "core": {
+      "firstName": "Jméno dítěte",
+      "lastName": "Příjmení dítěte",
+      "birthDate": "Datum narození",
+      "guardianFirstName": "Jméno zákonného zástupce",
+      "guardianLastName": "Příjmení zákonného zástupce",
+      "guardianEmail": "E-mail",
+      "guardianPhone": "Telefon"
+    },
+    "optional": "{{label}} (nepovinné)",
+    "yes": "Ano",
+    "no": "Ne",
+    "surchargeExtra": "+{{amount}} Kč",
+    "surchargeDiscount": "sleva {{amount}} Kč"
   }
 }

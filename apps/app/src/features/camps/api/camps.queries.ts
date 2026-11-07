@@ -4,6 +4,7 @@ import type {
   CampBranding,
   CreateCampBody,
   CreateDiscountCodeBody,
+  SaveRegistrationFormDraftBody,
   TurnusBody,
   UpdateCampBody,
   UpdateCampBrandingBody,
@@ -141,5 +142,26 @@ export const useRemoveDiscountCodeMutation = (organisationId: string, campId: st
   return useMutation({
     mutationFn: (discountCodeId: string) => campsService.removeDiscountCode(organisationId, discountCodeId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.discountCodes(organisationId, campId) }),
+  });
+};
+
+export const useRegistrationFormQuery = (organisationId: string, campId: string) =>
+  useQuery({
+    queryKey: campsKeys.registrationForm(organisationId, campId),
+    queryFn: ({ signal }) => campsService.getRegistrationForm(organisationId, campId, signal),
+  });
+
+// Saves the draft, and publishes it when asked, so what is published is what the builder shows. A
+// refused publish leaves the draft saved.
+export const useSaveRegistrationFormMutation = (organisationId: string, campId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ draft, publish }: { draft: SaveRegistrationFormDraftBody; publish: boolean }) => {
+      await campsService.saveRegistrationFormDraft(organisationId, campId, draft);
+
+      return publish ? campsService.publishRegistrationForm(organisationId, campId) : null;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.registrationForm(organisationId, campId) }),
   });
 };

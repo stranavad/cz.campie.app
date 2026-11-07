@@ -49,7 +49,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 27  | Sibling discount and Discount codes                          | done            | 25, 26     |
 | 28  | Form engine pure module                                      | done            | 02         |
 | 29  | Standard field catalogue                                     | ready-for-human | 28         |
-| 30  | Form builder and form versions                               | ready-for-agent | 24, 28     |
+| 30  | Form builder and form versions                               | done            | 24, 28     |
 | 31  | Registration declarations                                    | ready-for-agent | 12, 30     |
 | 32  | Email texts, notification recipients, contact-edit lock date | ready-for-agent | 16, 24     |
 

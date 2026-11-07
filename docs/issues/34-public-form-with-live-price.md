@@ -24,3 +24,7 @@ The public registration form at `/{camp-slug}/prihlaska?turnus={id}`, rendered f
 
 - Spec sections: Form engine; Pricing; Registration, placement and declarations.
 - Port from Domino: `apps/web/app/prihlaska/` (`PrihlasovaciFormularClient.tsx`, `components/PriceCard.tsx`, `PaymentStep.tsx`) as UI reference; rewritten in React with TanStack.
+
+## Comments
+
+2026-11-07 - **From issue 30.** `GET /public-camps/:slug/registration-form` serves the latest version; render its fields with `formFields` (`@repo/schema/form-engine`) and `RegistrationField` (`apps/app/src/core/registration-form`), as the builder's preview does (`form-preview.tsx`); move the child and guardian layout into `core/registration-form` when the form needs it. Standard fields render as plain text until issue 29 gives the catalogue input kinds and options. Core labels come from translations, not from the stored version.
