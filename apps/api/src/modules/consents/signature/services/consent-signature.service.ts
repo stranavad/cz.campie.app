@@ -1,4 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import {
   checkConsentAnswers,
@@ -15,10 +16,12 @@ import { czechDate, czechDateTime } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
+import type { Env } from '../../../../core/config/env.schema.ts';
 import { DocumentService } from '../../../../core/documents/document.service.ts';
 import { FileService } from '../../../../core/files/file.service.ts';
 import { JobQueue } from '../../../../core/jobs/job-queue.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
+import { RateLimiter, type RequestLimit } from '../../../../core/rate-limits/rate-limiter.ts';
 import type { CampEntity } from '../../../../repositories/camps/camp/camp.entity.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
@@ -52,6 +55,17 @@ interface Family {
 }
 
 /**
+ * Tell whether two sets of answers say the same.
+ * @param one answers by item id
+ * @param other answers by item id
+ */
+function sameAnswers(one: Readonly<Record<string, boolean>>, other: Readonly<Record<string, boolean>>): boolean {
+  const keys = Object.keys(one);
+
+  return keys.length === Object.keys(other).length && keys.every((key) => one[key] === other[key]);
+}
+
+/**
  * Tell a child's state of a Consent by its newest signature.
  * @param signature the newest signature, if any
  * @param withdrawn when signatures were withdrawn, by id
@@ -68,6 +82,8 @@ function stateOf(signature: ConsentSignatureRow | undefined, withdrawn: Readonly
 // electronic signature whose evidence is the guardian session. Guardians and access emails alike may sign.
 @Injectable()
 export class ConsentSignatureService {
+  private readonly limit: RequestLimit;
+
   constructor(
     private readonly signatures: ConsentSignatureRepository,
     private readonly consents: ConsentRepository,
@@ -81,7 +97,11 @@ export class ConsentSignatureService {
     private readonly audit: AuditService,
     private readonly jobs: JobQueue,
     private readonly clock: Clock,
-  ) {}
+    private readonly rateLimiter: RateLimiter,
+    config: ConfigService<Env, true>,
+  ) {
+    this.limit = config.get('requestLimits', { infer: true }).guardianAction;
+  }
 
   /**
    * List every Consent of the Camp for each Registered child of a guardian's Registration, with its state.
@@ -173,6 +193,7 @@ export class ConsentSignatureService {
       throw new Error('Only a guardian signs a Consent');
     }
 
+    await this.rateLimiter.admit(this.limit, { ipAddress: actor.ipAddress, target: actor.identity });
     const { participant, version } = await this.signable(actor.identity, params, true);
 
     if (version.id !== body.consentVersionId) {
@@ -191,6 +212,18 @@ export class ConsentSignatureService {
         message: 'The answers do not fit the Consent',
         fields: errors.map(({ itemId, code: reason }) => ({ path: ['answers', itemId], code: reason })),
       });
+    }
+
+    // Signing again the same answers to the same version, in force, changes nothing and sends nothing.
+    const inForce = await this.signatures.getNewest(participant.id, params.consentId);
+
+    if (
+      inForce !== null &&
+      inForce.consentVersionId === version.id &&
+      !(await this.signatures.withdrawnAtOf([inForce.id])).has(inForce.id) &&
+      sameAnswers(inForce.answers, body.answers)
+    ) {
+      return this.show(participant, version, inForce);
     }
 
     const signature = await this.signatures.create({

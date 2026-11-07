@@ -42,15 +42,22 @@ export function testJobs(app: INestApplication, redisUrl: string) {
   return {
     /**
      * Run queued jobs one at a time through the app's runner until none is left, including jobs they
-     * enqueue; a retry runs at once instead of after its backoff, which the attempt reports.
+     * enqueue; a retry runs at once instead of after its backoff, which the attempt reports. A job enqueued
+     * to run later waits, unless asked for.
+     * @param options whether to run the jobs enqueued to run later too
      */
-    drain: () =>
+    drain: (options: { later?: boolean } = {}) =>
       withQueue(redisUrl, async (queue, worker) => {
         const runner = app.get(JobRunner);
         const attempts: DrainedAttempt[] = [];
 
         for (;;) {
-          await queue.promoteJobs();
+          for (const delayed of await queue.getDelayed()) {
+            if (options.later === true || delayed.attemptsMade > 0) {
+              await delayed.promote();
+            }
+          }
+
           const job = await worker.getNextJob(TOKEN, { block: false });
 
           if (job === undefined) {

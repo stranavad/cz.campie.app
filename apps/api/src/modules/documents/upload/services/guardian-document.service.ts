@@ -1,12 +1,15 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import type { GuardianDocuments, GuardianUpload, UploadDocumentParams, UploadErrorCode } from '@repo/schema/documents';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
+import type { Env } from '../../../../core/config/env.schema.ts';
 import type { FileUpload } from '../../../../core/files/file-upload.ts';
 import { FileService } from '../../../../core/files/file.service.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
+import { RateLimiter, type RequestLimit } from '../../../../core/rate-limits/rate-limiter.ts';
 import type { CampEntity } from '../../../../repositories/camps/camp/camp.entity.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import type { TurnusEntity } from '../../../../repositories/camps/turnus/turnus.entity.ts';
@@ -27,6 +30,8 @@ interface Family {
 // Camp's Documents module is on.
 @Injectable()
 export class GuardianDocumentService {
+  private readonly limit: RequestLimit;
+
   constructor(
     private readonly types: DocumentTypeRepository,
     private readonly uploads: DocumentUploadRepository,
@@ -36,7 +41,11 @@ export class GuardianDocumentService {
     private readonly files: FileService,
     private readonly audit: AuditService,
     private readonly clock: Clock,
-  ) {}
+    private readonly rateLimiter: RateLimiter,
+    config: ConfigService<Env, true>,
+  ) {
+    this.limit = config.get('requestLimits', { infer: true }).guardianAction;
+  }
 
   /**
    * List the documents of a guardian's Registration.
@@ -118,12 +127,17 @@ export class GuardianDocumentService {
       throw new Error('Only a guardian hands in a document');
     }
 
+    await this.rateLimiter.admit(this.limit, { ipAddress: actor.ipAddress, target: actor.identity });
     const { camp, participants } = await this.familyOf(actor.identity, params.registrationId);
     const participant = participants.find(({ id }) => id === params.participantId);
 
     if (!camp.modules.includes('documents') || participant === undefined) {
       throw new NotFoundException();
     }
+
+    // Checked once before the file is stored, so a refused upload costs no storage, and again under the
+    // locks below.
+    this.refuseUnneeded(await this.uploads.getNewest(participant.id, params.documentTypeId));
 
     // Stored before the locks, so they are held only for the checks; a refusal rolls the object back.
     const fileId = await this.files.store(upload);
@@ -136,13 +150,7 @@ export class GuardianDocumentService {
       throw new NotFoundException();
     }
 
-    const newest = await this.uploads.getNewest(participant.id, requirement.id);
-
-    if (newest !== null && newest.status !== 'returned') {
-      const code: UploadErrorCode = 'document_upload_not_needed';
-
-      throw new ConflictException({ code, message: 'The requirement takes no document now' });
-    }
+    this.refuseUnneeded(await this.uploads.getNewest(participant.id, requirement.id));
 
     const created = await this.uploads.create({
       participantId: participant.id,
@@ -183,5 +191,18 @@ export class GuardianDocumentService {
         ({ status }) => status === 'registered',
       ),
     };
+  }
+
+  /**
+   * Refuse a document for a requirement whose newest one waits for review or was approved.
+   * @param newest the newest document handed in, or null
+   * @throws {ConflictException} document_upload_not_needed
+   */
+  private refuseUnneeded(newest: { status: string } | null): void {
+    if (newest !== null && newest.status !== 'returned') {
+      const code: UploadErrorCode = 'document_upload_not_needed';
+
+      throw new ConflictException({ code, message: 'The requirement takes no document now' });
+    }
   }
 }

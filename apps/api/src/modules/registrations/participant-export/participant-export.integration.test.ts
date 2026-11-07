@@ -190,4 +190,14 @@ describe('participant export', () => {
       [registration?.variable_symbol, '13. 4. 2027', 1000, 'Platba kartou', 'Platba kartou', 'AB12-CD34-EF56'],
     ]);
   });
+
+  it('removes an export and its file a day later', async () => {
+    await exportSheet();
+    expect(await query('SELECT FROM participant_exports')).toHaveLength(1);
+
+    await jobs().drain({ later: true });
+
+    expect(await query('SELECT FROM participant_exports')).toEqual([]);
+    expect(await query(`SELECT FROM files WHERE content_type LIKE '%spreadsheet%'`)).toEqual([]);
+  });
 });

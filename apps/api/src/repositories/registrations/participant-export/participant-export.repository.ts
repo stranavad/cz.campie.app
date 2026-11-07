@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, asc, eq, isNull, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
+import { and, asc, eq, gt, isNull, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { exportPresets, exportSelections, participantExports } from '../../../db/schema.ts';
@@ -59,8 +59,9 @@ export class ParticipantExportRepository {
    * Get an export of a Turnus the admin started that is still waiting for its job.
    * @param adminId the admin
    * @param turnusId Turnus id, or null for the payments export
+   * @param since the oldest start still counted; one waiting longer failed
    */
-  public async getPending(adminId: string, turnusId: string | null): Promise<ParticipantExportRow | null> {
+  public async getPending(adminId: string, turnusId: string | null, since: Date): Promise<ParticipantExportRow | null> {
     const [row] = await this.unitOfWork.db
       .select()
       .from(participantExports)
@@ -69,6 +70,7 @@ export class ParticipantExportRepository {
           eq(participantExports.adminId, adminId),
           turnusId === null ? isNull(participantExports.turnusId) : eq(participantExports.turnusId, turnusId),
           eq(participantExports.status, 'pending'),
+          gt(participantExports.createdAt, since),
         ),
       )
       .limit(1);
@@ -86,6 +88,14 @@ export class ParticipantExportRepository {
       .update(participantExports)
       .set({ status: 'ready', fileId })
       .where(eq(participantExports.id, id));
+  }
+
+  /**
+   * Remove an export record.
+   * @param id export id
+   */
+  public async remove(id: string): Promise<void> {
+    await this.unitOfWork.db.delete(participantExports).where(eq(participantExports.id, id));
   }
 
   /**

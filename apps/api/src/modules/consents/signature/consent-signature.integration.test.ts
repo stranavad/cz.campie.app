@@ -146,6 +146,15 @@ describe('signing Consents', () => {
     expect(mail().sent).toEqual([]);
   });
 
+  it('records signing the same answers again as nothing new, and sends no second copy', async () => {
+    await sign(guardian);
+    await sign(guardian);
+    await jobs().drain();
+
+    expect(await query('SELECT FROM consent_signatures')).toHaveLength(1);
+    expect(mail().sent.filter(({ subject }) => subject.startsWith('Kopie podepsaného souhlasu'))).toHaveLength(2);
+  });
+
   it('refuses a version replaced meanwhile', async () => {
     await http()
       .put(`/api/camps/${campId}/consents/${consentId}`)

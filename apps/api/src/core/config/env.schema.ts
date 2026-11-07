@@ -176,6 +176,8 @@ const requestLimits = z
     CARD_PAYMENT_LIMIT_PER_IP: positiveInteger,
     CARD_PAYMENT_LIMIT_PER_ORGANISATION: positiveInteger,
     PAYMENT_REMINDER_LIMIT_PER_ORGANISATION: positiveInteger,
+    GUARDIAN_ACTION_LIMIT_PER_IP: positiveInteger,
+    GUARDIAN_ACTION_LIMIT_PER_EMAIL: positiveInteger,
   })
   .transform((env) => {
     const windowMs = env.REQUEST_LIMIT_WINDOW_MINUTES * 60 * 1000;
@@ -218,6 +220,12 @@ const requestLimits = z
           'payment-reminder',
           env.PAYMENT_REMINDER_LIMIT_PER_ORGANISATION,
           env.PAYMENT_REMINDER_LIMIT_PER_ORGANISATION,
+        ),
+        // A signed guardian's actions that store files and send mail: signing a Consent, handing in a document.
+        guardianAction: limitOf(
+          'guardian-action',
+          env.GUARDIAN_ACTION_LIMIT_PER_IP,
+          env.GUARDIAN_ACTION_LIMIT_PER_EMAIL,
         ),
         // The open-items reminder, as often as the payment reminder, counted apart.
         openItemsReminder: limitOf(

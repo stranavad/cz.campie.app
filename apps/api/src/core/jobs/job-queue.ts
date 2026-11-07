@@ -43,8 +43,13 @@ export class JobQueue implements OnModuleDestroy {
    * Enqueue a job for when the current unit of work commits; an Organisation job takes its Organisation.
    * @param job the job's definition
    * @param payload ids the job works on, never personal data
+   * @param options how long after the commit it runs, if not at once
    */
-  public enqueue<Payload extends z.ZodType>(job: JobDefinition<Payload>, payload: z.input<Payload>): void {
+  public enqueue<Payload extends z.ZodType>(
+    job: JobDefinition<Payload>,
+    payload: z.input<Payload>,
+    options: { delayMs?: number } = {},
+  ): void {
     // Checked now, so a bad payload fails the change that enqueues it; stored as given, since the runner
     // parses it again.
     job.payload.parse(payload);
@@ -55,7 +60,7 @@ export class JobQueue implements OnModuleDestroy {
 
     // Sent only after the commit, so a job never runs for a change that rolled back or before the change
     // is visible.
-    this.unitOfWork.afterCommit(() => this.send(job.name, envelope));
+    this.unitOfWork.afterCommit(() => this.send(job.name, envelope, options.delayMs));
   }
 
   public async onModuleDestroy(): Promise<void> {
@@ -66,12 +71,13 @@ export class JobQueue implements OnModuleDestroy {
    * Add a job to the queue, waiting for it a short while at most.
    * @param name the job's name
    * @param envelope its Organisation and payload
+   * @param delayMs how long it waits before it runs, if at all
    */
-  private async send(name: string, envelope: JobEnvelope): Promise<void> {
+  private async send(name: string, envelope: JobEnvelope, delayMs?: number): Promise<void> {
     // The change is committed by now, so a failure is logged rather than thrown: failing the request
     // would invite repeating a change that happened. While Redis is unreachable an add waits for it
     // without end; the request goes on, and the add with it in the background.
-    const added = this.queue.add(name, envelope).then(
+    const added = this.queue.add(name, envelope, delayMs === undefined ? {} : { delay: delayMs }).then(
       () => true,
       (error: unknown) => {
         this.logger.error(`Job ${name} was not enqueued: ${error instanceof Error ? error.message : String(error)}`);

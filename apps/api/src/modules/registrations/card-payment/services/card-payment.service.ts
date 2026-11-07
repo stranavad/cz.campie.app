@@ -159,6 +159,14 @@ export class CardPaymentService {
    * @param ipAddress where the notification came from
    */
   public async handleNotification(transactionId: string, ipAddress: string): Promise<void> {
+    // A transaction this Organisation never started is answered at once, without asking Comgate or counting
+    // against the Organisation, so made-up notifications cannot use up the limit real ones need.
+    if ((await this.cardPayments.getByTransactionId(transactionId)) === null) {
+      await this.rateLimiter.admitAddress(this.notificationLimit, ipAddress);
+
+      return;
+    }
+
     await this.rateLimiter.admit(this.notificationLimit, { ipAddress, target: this.unitOfWork.organisationId });
     const credentials = await this.gatewayAccounts.credentials();
 

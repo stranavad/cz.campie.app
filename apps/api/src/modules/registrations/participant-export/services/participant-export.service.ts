@@ -45,9 +45,14 @@ import {
   type GuardianFields,
 } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
-import { exportParticipantsJob } from '../export-participants.job.ts';
+import { exportParticipantsJob, removeExportJob } from '../export-participants.job.ts';
 
 type Cell = string | number | null;
+
+// An export holds children's personal data, so its file goes once its admin had a day to download it.
+const EXPORT_KEPT_MS = 24 * 60 * 60 * 1000;
+// A job runs within seconds; one still waiting this long has failed, and a new start makes a new one.
+const PENDING_FOR_MS = 15 * 60 * 1000;
 
 // One Participant as a row of the export: the child, its Registration, guardians and money.
 interface Row {
@@ -321,7 +326,11 @@ export class ParticipantExportService {
     }
 
     // A repeated click waits for the export already being made instead of building the same file again.
-    const pending = await this.exports.getPending(actor.identity, turnusId);
+    const pending = await this.exports.getPending(
+      actor.identity,
+      turnusId,
+      new Date(this.clock.now().getTime() - PENDING_FOR_MS),
+    );
 
     if (pending !== null) {
       return { id: pending.id, status: 'pending', file: null };
@@ -456,6 +465,25 @@ export class ParticipantExportService {
     );
 
     await this.exports.complete(exportId, fileId);
+    this.jobs.enqueue(removeExportJob, { exportId }, { delayMs: EXPORT_KEPT_MS });
+  }
+
+  /**
+   * Remove an export and its file.
+   * @param exportId export id
+   */
+  public async remove(exportId: string): Promise<void> {
+    const found = await this.exports.getByIdForUpdate(exportId);
+
+    if (found === null) {
+      return;
+    }
+
+    await this.exports.remove(found.id);
+
+    if (found.fileId !== null) {
+      await this.files.remove(found.fileId);
+    }
   }
 }
 
