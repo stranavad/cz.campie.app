@@ -44,3 +44,4 @@ export { consentSignatures } from './consents/consent-signatures.ts';
 export { consentWithdrawals } from './consents/consent-withdrawals.ts';
 export { documentTypeKind, documentTypes } from './documents/document-types.ts';
 export { documentUploads, uploadStatus } from './documents/document-uploads.ts';
+export { internalDocuments } from './documents/internal-documents.ts';

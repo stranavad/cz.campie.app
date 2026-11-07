@@ -30,20 +30,20 @@ export class FileRepository {
    * @throws {Error} when the database returns no row
    */
   /**
-   * List which of file ids exist in the current Organisation, in one query.
+   * List the file records of ids in the current Organisation, in one query; a missing one is left out.
    * @param ids file ids
    */
-  public async listExisting(ids: readonly string[]): Promise<string[]> {
+  public async listByIds(ids: readonly string[]): Promise<FileEntity[]> {
     if (ids.length === 0) {
       return [];
     }
 
     const rows = await this.unitOfWork.db
-      .select({ id: files.id })
+      .select()
       .from(files)
       .where(inArray(files.id, [...new Set(ids)]));
 
-    return rows.map(({ id }) => id);
+    return rows.map((row) => new FileEntity(row));
   }
 
   public async create(input: Omit<InferInsertModel<typeof files>, 'id' | 'organisationId'>): Promise<FileEntity> {

@@ -27,3 +27,5 @@ Removing a Registration offers Cancel all (issue 45) or Erase. Erase is Owner on
 ## Comments
 
 2026-11-07 - **From issue 53.** The API role may neither delete nor update `consent_signatures` (only attach `file_id`), and the same holds for `consent_versions` and `consent_files`: erasure needs its own path for signatures and their PDFs (the signed PDFs are files to remove through `FileService`).
+
+2026-11-07 - **From issues 57 and 58.** `document_uploads` and `internal_documents` cascade from `participants`, which would leave their stored files behind: erasure must remove their files through `FileService` (and the consent signature PDFs, see above) before any Participant row goes.

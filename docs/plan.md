@@ -102,7 +102,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 55  | Admin Consent status and downloads             | E7           | done            | 53         |
 | 56  | Document types                                 | E8 Documents | done            | 12, 24     |
 | 57  | Guardian document upload                       | E8           | done            | 39, 56     |
-| 58  | Admin document review and Internal documents   | E8           | ready-for-agent | 57         |
+| 58  | Admin document review and Internal documents   | E8           | done            | 57         |
 | 59  | Participant checklist                          | E5           | ready-for-agent | 41, 53, 57 |
 | 60  | Open-items reminder                            | E5           | ready-for-agent | 59         |
 | 61  | Turnus overview and list filters               | E6           | ready-for-agent | 38, 42, 59 |

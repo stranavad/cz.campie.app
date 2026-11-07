@@ -133,11 +133,11 @@ export class FileService {
    * @returns a link by file id; a file that does not exist has none
    */
   public async links(fileIds: readonly string[]): Promise<Map<string, FileLink>> {
-    const existing = await this.files.listExisting(fileIds);
+    const existing = await this.files.listByIds(fileIds);
     const expiresAt = new Date(this.clock.now().getTime() + LINK_LIFETIME_MS);
 
     return new Map(
-      existing.map((fileId) => {
+      existing.map(({ id: fileId }) => {
         const token = signDownloadToken(this.linkKey(), {
           organisationId: this.unitOfWork.organisationId,
           fileId,
@@ -147,6 +147,23 @@ export class FileService {
         return [fileId, { url: `/api/downloads/${token}`, expiresAt: expiresAt.toISOString() }];
       }),
     );
+  }
+
+  /**
+   * Read the names files were uploaded with, decrypted, in one query.
+   * @param fileIds the files' ids
+   * @returns a name by file id; a file that does not exist has none
+   */
+  public async names(fileIds: readonly string[]): Promise<Map<string, string>> {
+    const existing = await this.files.listByIds(fileIds);
+
+    if (existing.length === 0) {
+      return new Map();
+    }
+
+    const cipher = await this.encryption.cipher();
+
+    return new Map(existing.map((file) => [file.id, cipher.decrypt(file.name)]));
   }
 
   /**

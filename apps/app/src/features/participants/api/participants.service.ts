@@ -4,6 +4,16 @@ import {
   getTurnusConsentsEndpoint,
 } from '@repo/schema/consents';
 import {
+  addInternalDocumentEndpoint,
+  approveDocumentEndpoint,
+  getRegistrationDocumentsEndpoint,
+  markDocumentOnPaperEndpoint,
+  removeInternalDocumentEndpoint,
+  returnDocumentEndpoint,
+  uploadDocumentOnBehalfEndpoint,
+  type ChildRequirementParams,
+} from '@repo/schema/documents';
+import {
   addAccessEmailEndpoint,
   addParticipantEndpoint,
   addPriceAdjustmentEndpoint,
@@ -119,4 +129,18 @@ export const participantsService = {
     apiClient.request(getTurnusConsentsEndpoint, { organisationId, params: { turnusId }, signal }),
   downloadSignedConsent: (organisationId: string, signatureId: string) =>
     apiClient.request(downloadSignedConsentEndpoint, { organisationId, params: { signatureId } }),
+  registrationDocuments: (organisationId: string, registrationId: string, signal?: AbortSignal) =>
+    apiClient.request(getRegistrationDocumentsEndpoint, { organisationId, params: { registrationId }, signal }),
+  approveDocument: (organisationId: string, uploadId: string) =>
+    apiClient.request(approveDocumentEndpoint, { organisationId, params: { uploadId } }),
+  returnDocument: (organisationId: string, uploadId: string, note: string) =>
+    apiClient.request(returnDocumentEndpoint, { organisationId, params: { uploadId }, body: { note } }),
+  uploadDocumentOnBehalf: (organisationId: string, params: ChildRequirementParams, file: File) =>
+    apiClient.request(uploadDocumentOnBehalfEndpoint, { organisationId, params, file }),
+  markDocumentOnPaper: (organisationId: string, params: ChildRequirementParams) =>
+    apiClient.request(markDocumentOnPaperEndpoint, { organisationId, params }),
+  addInternalDocument: (organisationId: string, registrationId: string, participantId: string, file: File) =>
+    apiClient.request(addInternalDocumentEndpoint, { organisationId, params: { registrationId, participantId }, file }),
+  removeInternalDocument: (organisationId: string, internalDocumentId: string) =>
+    apiClient.request(removeInternalDocumentEndpoint, { organisationId, params: { internalDocumentId } }),
 };

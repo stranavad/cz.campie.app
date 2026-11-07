@@ -210,3 +210,29 @@ export const useDownloadSignedConsentMutation = (organisationId: string) =>
   useMutation({
     mutationFn: (signatureId: string) => participantsService.downloadSignedConsent(organisationId, signatureId),
   });
+
+const documentsKey = (organisationId: string, registrationId: string) =>
+  [...participantsKeys.detail(organisationId, registrationId), 'documents'] as const;
+
+export const useRegistrationDocumentsQuery = (organisationId: string, registrationId: string) =>
+  useQuery({
+    queryKey: documentsKey(organisationId, registrationId),
+    queryFn: ({ signal }) => participantsService.registrationDocuments(organisationId, registrationId, signal),
+    // The links inside last five minutes.
+    refetchInterval: 4 * 60_000,
+  });
+
+// Every review or hand-in changes the Registration's documents, which are read again.
+export const useDocumentReview = <Variables, Result>(
+  organisationId: string,
+  registrationId: string,
+  mutationFn: (variables: Variables) => Promise<Result>,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn,
+    // A refusal means the page was behind, so it is read again either way.
+    onSettled: () => queryClient.invalidateQueries({ queryKey: documentsKey(organisationId, registrationId) }),
+  });
+};

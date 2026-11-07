@@ -11,6 +11,7 @@ import { AdminActions } from '@/features/participants/components/admin-actions';
 import { LedgerForms } from '@/features/participants/components/ledger-forms';
 import { RegistrationConsents } from '@/features/participants/components/registration-consents';
 import { RegistrationControls } from '@/features/participants/components/registration-controls';
+import { RegistrationDocuments } from '@/features/participants/components/registration-documents';
 import { useRegistrationDetailPage } from '@/features/participants/components/use-registration-detail-page.hook';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -193,6 +194,11 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
         {page.canWrite ? <LedgerForms organisationId={page.organisationId} registrationId={registrationId} /> : null}
       </Section>
       <RegistrationConsents organisationId={page.organisationId} registrationId={registrationId} />
+      <RegistrationDocuments
+        organisationId={page.organisationId}
+        registrationId={registrationId}
+        canWrite={page.canWrite}
+      />
       {page.canWrite ? <AdminActions organisationId={page.organisationId} detail={detail} /> : null}
       {page.canWrite ? <RegistrationControls organisationId={page.organisationId} detail={detail} /> : null}
       <Section title={t('detail.declarations')}>

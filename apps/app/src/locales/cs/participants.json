@@ -206,5 +206,30 @@
     "child": "Dítě",
     "loadFailed": "Souhlasy se nepodařilo načíst.",
     "openPdf": "Otevřít PDF"
+  },
+  "documents": {
+    "title": "Dokumenty",
+    "loadFailed": "Dokumenty se nepodařilo načíst.",
+    "statuses": {
+      "missing": "Neodevzdáno",
+      "pending": "Čeká na kontrolu",
+      "approved": "Schváleno",
+      "returned": "Vráceno"
+    },
+    "approve": "Schválit",
+    "return": "Vrátit",
+    "returnNote": "Důvod vrácení (rodiče ho uvidí)",
+    "returnConfirm": "Vrátit a poslat e-mail",
+    "handedIn": "{{date}}, {{by}}",
+    "byAdmin": "odevzdáno za rodiče",
+    "onPaper": "na papíře",
+    "open": "Otevřít",
+    "onBehalf": "Nahrát za rodiče",
+    "markPaper": "Odevzdáno na papíře",
+    "internal": "Interní dokumenty (rodiče je nevidí)",
+    "noInternal": "Žádné interní dokumenty.",
+    "addInternal": "Přidat interní dokument",
+    "removeInternal": "Smazat",
+    "actionFailed": "Akci se nepodařilo provést. Načtěte stránku a zkuste to znovu."
   }
 }
