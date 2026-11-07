@@ -29,15 +29,15 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 
 ### E1 Organisations and identity - "a camp signs up, gets approved, invites colleagues"
 
-| #   | Issue                                         | Status          | Blocked by |
-| --- | --------------------------------------------- | --------------- | ---------- |
-| 17  | Organisation signup                           | done            | 10, 14, 16 |
-| 18  | Admin password auth                           | done            | 14, 16     |
-| 19  | Memberships, permission areas, Owners         | done            | 17, 18     |
-| 20  | Invitations and user management               | done            | 19         |
-| 21  | Platform operator console with mandatory TOTP | done            | 19         |
-| 22  | Rate limiting                                 | done            | 14         |
-| 23  | Organisation settings and branding            | ready-for-agent | 12, 19     |
+| #   | Issue                                         | Status | Blocked by |
+| --- | --------------------------------------------- | ------ | ---------- |
+| 17  | Organisation signup                           | done   | 10, 14, 16 |
+| 18  | Admin password auth                           | done   | 14, 16     |
+| 19  | Memberships, permission areas, Owners         | done   | 17, 18     |
+| 20  | Invitations and user management               | done   | 19         |
+| 21  | Platform operator console with mandatory TOTP | done   | 19         |
+| 22  | Rate limiting                                 | done   | 14         |
+| 23  | Organisation settings and branding            | done   | 12, 19     |
 
 ### E2 Camp setup - "admin configures a Camp end to end"
 
