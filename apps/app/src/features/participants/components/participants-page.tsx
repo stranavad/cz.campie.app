@@ -55,7 +55,12 @@ export function ParticipantsPage() {
           </select>
         </label>
         {page.turnusId === null ? null : (
-          <ParticipantExport key={page.turnusId} organisationId={page.organisationId} turnusId={page.turnusId} />
+          <ParticipantExport
+            key={page.turnusId}
+            organisationId={page.organisationId}
+            turnusId={page.turnusId}
+            campId={page.turnusy.find(({ id }) => id === page.turnusId)?.campId ?? null}
+          />
         )}
         {page.turnusId === null ? null : (
           <TurnusOverview

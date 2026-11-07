@@ -31,8 +31,8 @@ describe('participant export', () => {
       .send({ definition: { standard: [], custom }, maxParticipants: 3, declarations: [] });
     await http().post(`/api/camps/${campId}/registration-form/versions`).set(owner);
   };
-  const exportSheet = async () => {
-    const started = await http().post(`/api/turnusy/${turnusId}/exports`).set(owner);
+  const exportSheet = async (body: object = {}, path = `/api/turnusy/${turnusId}/exports`) => {
+    const started = await http().post(path).set(owner).send(body);
     expect(started.body).toMatchObject({ status: 'pending', file: null });
     await jobs().drain();
     const ready = await http().get(`/api/exports/${started.body.id}`).set(owner);
@@ -121,5 +121,73 @@ describe('participant export', () => {
       http().post(`/api/turnusy/${turnusId}/exports`).set(headers),
     );
     await expectIsolated(() => http().post(`/api/turnusy/${turnusId}/exports`).set(asOther));
+  });
+
+  it('exports only the columns chosen and remembers the choice for the admin', async () => {
+    const [headers] = await exportSheet({ columns: ['lastName', `field:${SHIRT}`, 'paid'] });
+
+    expect(headers).toEqual(['Příjmení', 'Tričko', 'Zaplaceno']);
+    expect((await http().get(`/api/turnusy/${turnusId}/export-options`).set(owner)).body).toMatchObject({
+      formColumns: [
+        { id: `field:${SHIRT}`, label: 'Tričko', removed: false },
+        { id: `field:${DIET}`, label: 'Strava', removed: false },
+      ],
+      lastSelection: ['lastName', `field:${SHIRT}`, 'paid'],
+    });
+  });
+
+  it('shares a preset with the Organisation for its Camp only', async () => {
+    const colleague = (await createAdmin(app(), { memberOf: [organisationId], owner: true })).headers(organisationId);
+    const otherCamp = await createCamp(app(), organisationId, 'Zimní tábor', 'zimni-tabor');
+    const otherTurnus = (await submitRegistration(app(), organisationId, otherCamp)).id;
+    const otherTurnusId =
+      (await query<{ turnus_id: string }>('SELECT turnus_id FROM registrations WHERE id = $1', [otherTurnus]))[0]
+        ?.turnus_id ?? '';
+
+    await http()
+      .post(`/api/camps/${campId}/export-presets`)
+      .set(owner)
+      .send({ name: 'Autobus', columns: ['lastName', 'firstName', 'guardianPhone'] });
+
+    expect((await http().get(`/api/turnusy/${turnusId}/export-options`).set(colleague)).body).toMatchObject({
+      presets: [{ name: 'Autobus', columns: ['lastName', 'firstName', 'guardianPhone'] }],
+      lastSelection: null,
+    });
+    expect((await http().get(`/api/turnusy/${otherTurnusId}/export-options`).set(colleague)).body.presets).toEqual([]);
+  });
+
+  it('exports the whole payment ledger with corrections and card payments for the accountant', async () => {
+    const [registration] = await query<{ id: string; variable_symbol: string }>(
+      'SELECT id, variable_symbol FROM registrations',
+    );
+    const pay = (body: object) =>
+      http()
+        .post(`/api/registrations/${registration?.id}/payments`)
+        .set(owner)
+        .send({ paidOn: '2027-04-12', note: 'Převodem', ...body });
+    await pay({ kind: 'payment', amount: 3000 });
+    await pay({ kind: 'correction', amount: 500, note: 'Vratka' });
+    await query(
+      `INSERT INTO payments (organisation_id, registration_id, source, amount, paid_on, note, recorded_at, gateway_transaction_id)
+       VALUES ($1, $2, 'gateway', 1000, '2027-04-13', 'Platba kartou', now(), 'AB12-CD34-EF56')`,
+      [organisationId, registration?.id],
+    );
+
+    const [headers, ...rows] = await exportSheet({}, '/api/payment-exports');
+
+    expect(headers).toEqual([
+      'Variabilní symbol',
+      'Datum',
+      'Částka',
+      'Druh',
+      'Poznámka',
+      'Transakce platební brány',
+      'Zapsáno',
+    ]);
+    expect(rows.map((row) => row.slice(0, 6))).toEqual([
+      [registration?.variable_symbol, '12. 4. 2027', 3000, 'Platba', 'Převodem', undefined],
+      [registration?.variable_symbol, '12. 4. 2027', -500, 'Oprava', 'Vratka', undefined],
+      [registration?.variable_symbol, '13. 4. 2027', 1000, 'Platba kartou', 'Platba kartou', 'AB12-CD34-EF56'],
+    ]);
   });
 });

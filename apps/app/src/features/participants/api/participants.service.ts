@@ -23,6 +23,7 @@ import {
   createRegistrationEndpoint,
   editAnswersEndpoint,
   editGuardianEndpoint,
+  getExportOptionsEndpoint,
   getParticipantExportEndpoint,
   getRegistrationDetailEndpoint,
   getRegistrationHistoryEndpoint,
@@ -37,10 +38,13 @@ import {
   recordPaymentEndpoint,
   regeneratePrihlaskaEndpoint,
   removeAccessEmailEndpoint,
+  removeExportPresetEndpoint,
   removeGuardianEndpoint,
+  saveExportPresetEndpoint,
   sendPaymentRemindersEndpoint,
   setSelectedTurnusEndpoint,
   startParticipantExportEndpoint,
+  startPaymentsExportEndpoint,
   verifyClaimedDiscountEndpoint,
   type AddParticipantBody,
   type AddPriceAdjustmentBody,
@@ -121,8 +125,19 @@ export const participantsService = {
     }),
   regeneratePrihlaska: (organisationId: string, registrationId: string, participantId: string) =>
     apiClient.request(regeneratePrihlaskaEndpoint, { organisationId, params: { registrationId, participantId } }),
-  startExport: (organisationId: string, turnusId: string) =>
-    apiClient.request(startParticipantExportEndpoint, { organisationId, params: { turnusId } }),
+  startExport: (organisationId: string, turnusId: string, columns?: string[]) =>
+    apiClient.request(startParticipantExportEndpoint, {
+      organisationId,
+      params: { turnusId },
+      body: columns === undefined ? {} : { columns },
+    }),
+  startPaymentsExport: (organisationId: string) => apiClient.request(startPaymentsExportEndpoint, { organisationId }),
+  exportOptions: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
+    apiClient.request(getExportOptionsEndpoint, { organisationId, params: { turnusId }, signal }),
+  savePreset: (organisationId: string, campId: string, name: string, columns: string[]) =>
+    apiClient.request(saveExportPresetEndpoint, { organisationId, params: { campId }, body: { name, columns } }),
+  removePreset: (organisationId: string, presetId: string) =>
+    apiClient.request(removeExportPresetEndpoint, { organisationId, params: { presetId } }),
   export: (organisationId: string, exportId: string, signal?: AbortSignal) =>
     apiClient.request(getParticipantExportEndpoint, { organisationId, params: { exportId }, signal }),
   reminderPreview: (organisationId: string, turnusId: string, signal?: AbortSignal) =>

@@ -24,7 +24,7 @@ export { paymentGatewayAccounts } from './organisations/payment-gateway-accounts
 export { claimedDiscountVerifications } from './registrations/claimed-discount-verifications.ts';
 export { declarationAnswers } from './registrations/declaration-answers.ts';
 export { guardianEmailChanges } from './registrations/guardian-email-changes.ts';
-export { exportStatus, participantExports } from './registrations/participant-exports.ts';
+export { exportKind, exportStatus, participantExports } from './registrations/participant-exports.ts';
 export { participants, participantStatus } from './registrations/participants.ts';
 export { paymentSource, payments } from './registrations/payments.ts';
 export { cardPayments } from './registrations/card-payments.ts';
@@ -45,3 +45,4 @@ export { consentWithdrawals } from './consents/consent-withdrawals.ts';
 export { documentTypeKind, documentTypes } from './documents/document-types.ts';
 export { documentUploads, uploadStatus } from './documents/document-uploads.ts';
 export { internalDocuments } from './documents/internal-documents.ts';
+export { exportPresets, exportSelections } from './registrations/export-presets.ts';

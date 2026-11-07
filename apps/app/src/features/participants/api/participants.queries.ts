@@ -154,8 +154,40 @@ export const useRegeneratePrihlaskaMutation = (organisationId: string, registrat
     participantsService.regeneratePrihlaska(organisationId, registrationId, participantId),
   );
 
+// Starts an export: a Turnus's Participants with the columns chosen, or the payment ledger without a Turnus.
 export const useStartExportMutation = (organisationId: string) =>
-  useMutation({ mutationFn: (turnusId: string) => participantsService.startExport(organisationId, turnusId) });
+  useMutation({
+    mutationFn: ({ turnusId, columns }: { turnusId: string | null; columns?: string[] }) =>
+      turnusId === null
+        ? participantsService.startPaymentsExport(organisationId)
+        : participantsService.startExport(organisationId, turnusId, columns),
+  });
+
+const exportOptionsKey = (organisationId: string, turnusId: string) =>
+  [...participantsKeys.organisation(organisationId), 'export-options', turnusId] as const;
+
+export const useExportOptionsQuery = (organisationId: string, turnusId: string, enabled: boolean) =>
+  useQuery({
+    queryKey: exportOptionsKey(organisationId, turnusId),
+    queryFn: enabled ? ({ signal }) => participantsService.exportOptions(organisationId, turnusId, signal) : skipToken,
+  });
+
+export const usePresetMutations = (organisationId: string, turnusId: string) => {
+  const queryClient = useQueryClient();
+  const refresh = () => queryClient.invalidateQueries({ queryKey: exportOptionsKey(organisationId, turnusId) });
+
+  return {
+    save: useMutation({
+      mutationFn: ({ campId, name, columns }: { campId: string; name: string; columns: string[] }) =>
+        participantsService.savePreset(organisationId, campId, name, columns),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({
+      mutationFn: (presetId: string) => participantsService.removePreset(organisationId, presetId),
+      onSuccess: refresh,
+    }),
+  };
+};
 
 // The job usually finishes within seconds: poll until the file is there, then renew its five-minute link.
 // A job still waiting after two minutes is retrying with growing delays, so the page stops asking.

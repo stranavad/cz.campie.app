@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { asc, eq, inArray, isNotNull, sum } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, sum } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
-import { payments } from '../../../db/schema.ts';
+import { payments, registrations } from '../../../db/schema.ts';
 import { PaymentEntity, type PaymentInsertModel } from './payment.entity.ts';
 
 export type CreatePayment = Omit<PaymentInsertModel, 'id' | 'organisationId' | 'gatewayTransactionId'>;
@@ -84,6 +84,22 @@ export class PaymentRepository {
       .where(eq(payments.gatewayTransactionId, transactionId));
 
     return row !== undefined;
+  }
+
+  /**
+   * List the current Organisation's whole ledger with each entry's Variable symbol, oldest payment first.
+   */
+  public async listAllWithVariableSymbol(): Promise<(PaymentEntity & { variableSymbol: string })[]> {
+    const rows = await this.unitOfWork.db
+      .select({ payment: payments, variableSymbol: registrations.variableSymbol })
+      .from(payments)
+      .innerJoin(
+        registrations,
+        and(eq(registrations.organisationId, payments.organisationId), eq(registrations.id, payments.registrationId)),
+      )
+      .orderBy(asc(payments.paidOn), asc(payments.recordedAt), asc(payments.id));
+
+    return rows.map(({ payment, variableSymbol }) => Object.assign(new PaymentEntity(payment), { variableSymbol }));
   }
 
   /**

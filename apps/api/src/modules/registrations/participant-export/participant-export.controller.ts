@@ -1,18 +1,28 @@
 import { Controller } from '@nestjs/common';
 
 import {
+  getExportOptionsEndpoint,
   getParticipantExportEndpoint,
+  removeExportPresetEndpoint,
+  saveExportPresetEndpoint,
   startParticipantExportEndpoint,
+  startPaymentsExportEndpoint,
+  type CampExportPresetsParams,
+  type ExportOptions,
+  type ExportPreset,
+  type ExportPresetParams,
   type ParticipantExport,
   type ParticipantExportParams,
   type ParticipantListParams,
+  type SaveExportPresetBody,
+  type StartParticipantExportBody,
 } from '@repo/schema/registrations';
 
 import { Access } from '../../../core/access/access.decorator.ts';
 import { Requires } from '../../../core/access/permission.ts';
 import { RequestActor, RequestAdminId } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
-import { Endpoint, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
+import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { ParticipantExportService } from './services/participant-export.service.ts';
 
 @Access('admin')
@@ -21,12 +31,43 @@ import { ParticipantExportService } from './services/participant-export.service.
 export class ParticipantExportController {
   constructor(private readonly exports: ParticipantExportService) {}
 
+  @Endpoint(getExportOptionsEndpoint)
+  public options(
+    @RequestAdminId() adminId: string,
+    @EndpointParams(getExportOptionsEndpoint) { turnusId }: ParticipantListParams,
+  ): Promise<ExportOptions> {
+    return this.exports.options(adminId, turnusId);
+  }
+
   @Endpoint(startParticipantExportEndpoint)
   public start(
     @RequestActor() actor: Actor,
     @EndpointParams(startParticipantExportEndpoint) { turnusId }: ParticipantListParams,
+    @EndpointBody(startParticipantExportEndpoint) body: StartParticipantExportBody,
   ): Promise<ParticipantExport> {
-    return this.exports.start(actor, turnusId);
+    return this.exports.start(actor, turnusId, body);
+  }
+
+  @Endpoint(startPaymentsExportEndpoint)
+  public startPayments(@RequestActor() actor: Actor): Promise<ParticipantExport> {
+    return this.exports.startPayments(actor);
+  }
+
+  @Endpoint(saveExportPresetEndpoint)
+  public savePreset(
+    @RequestActor() actor: Actor,
+    @EndpointParams(saveExportPresetEndpoint) { campId }: CampExportPresetsParams,
+    @EndpointBody(saveExportPresetEndpoint) body: SaveExportPresetBody,
+  ): Promise<ExportPreset> {
+    return this.exports.savePreset(actor, campId, body);
+  }
+
+  @Endpoint(removeExportPresetEndpoint)
+  public removePreset(
+    @RequestActor() actor: Actor,
+    @EndpointParams(removeExportPresetEndpoint) { presetId }: ExportPresetParams,
+  ): Promise<void> {
+    return this.exports.removePreset(actor, presetId);
   }
 
   @Endpoint(getParticipantExportEndpoint)
