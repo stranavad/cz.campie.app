@@ -22,6 +22,8 @@ export const participants = p.snakeCase.table.withRLS(
     birthDate: p.date({ mode: 'string' }).notNull(),
     status: participantStatus().notNull().default('registered'),
     answers: p.jsonb().$type<Answers>().notNull().default({}),
+    // No foreign key to files, as for logos: the Přihláška is replaced or removed through the Participant.
+    prihlaskaFileId: p.uuid(),
   },
   (table) => [
     p.unique('participants_organisation_id_id_key').on(table.organisationId, table.id),

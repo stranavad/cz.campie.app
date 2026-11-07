@@ -23,3 +23,7 @@ An admin with Registrations write cancels a Participant: the place is freed, the
 ## Notes
 
 - Spec sections: Registration (cancel); Removing a Registration; Emails.
+
+## Comments
+
+2026-11-07 - **From issue 36.** `PrihlaskaService.regenerate(actor, participantId)` exists (replaces the file, removes the old one, audits `participant.generate_prihlaska`). It renders, so wire it through a job enqueued by the admin route, never call it in the request.

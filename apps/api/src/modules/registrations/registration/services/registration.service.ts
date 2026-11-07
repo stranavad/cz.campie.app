@@ -55,7 +55,8 @@ import {
 } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { CampEmailService } from '../../../camps/camp-email/services/camp-email.service.ts';
 import { DiscountCodeService } from '../../../camps/discount-code/services/discount-code.service.ts';
-import { registrationSubmittedJob } from '../registration-submitted.job.ts';
+import { generatePrihlaskyJob } from '../../prihlaska/generate-prihlasky.job.ts';
+import { notifyTeamJob } from '../notify-team.job.ts';
 import { VariableSymbols } from './variable-symbols.ts';
 
 // A clash of eight random digits among an Organisation's Registrations is rare; this many in a row means
@@ -413,7 +414,8 @@ export class RegistrationService {
         after: { registration, guardians, participants, priceLines: price.lines, declarations },
       },
     });
-    this.jobs.enqueue(registrationSubmittedJob, { registrationId: registration.id });
+    this.jobs.enqueue(generatePrihlaskyJob, { registrationId: registration.id });
+    this.jobs.enqueue(notifyTeamJob, { registrationId: registration.id });
 
     return {
       id: registration.id,

@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
-import { countdownOf, czechDateTime } from '@/core/camp-page/helpers/camp-page.helper';
+import { czechDateTime } from '@repo/schema/shared';
+
+import { countdownOf } from '@/core/camp-page/helpers/camp-page.helper';
 import { useNow } from '@/core/camp-page/hooks/use-now.hook';
 
 interface OpeningCountdownProps {

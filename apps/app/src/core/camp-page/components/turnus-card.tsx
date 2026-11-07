@@ -2,9 +2,10 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { PublicTurnus } from '@repo/schema/camps';
+import { czechDate, czk } from '@repo/schema/shared';
 
 import { OpeningCountdown } from '@/core/camp-page/components/opening-countdown';
-import { ageLimits, czechDate, czk } from '@/core/camp-page/helpers/camp-page.helper';
+import { ageLimits } from '@/core/camp-page/helpers/camp-page.helper';
 
 interface TurnusCardProps {
   turnus: PublicTurnus;

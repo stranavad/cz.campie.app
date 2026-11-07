@@ -177,6 +177,101 @@ export class RegistrationRepository {
   }
 
   /**
+   * Get a Participant of the current Organisation by id, or throw if missing.
+   * @param id Participant id
+   * @throws {NotFoundException} when no Participant has this id in the current Organisation
+   */
+  public async getParticipantOrThrow(id: string): Promise<ParticipantEntity> {
+    const [row] = await this.unitOfWork.db.select().from(participants).where(eq(participants.id, id));
+
+    if (row === undefined) {
+      throw new NotFoundException();
+    }
+
+    return new ParticipantEntity(row);
+  }
+
+  /**
+   * Get a Participant of the current Organisation by id and lock its row until the unit of work ends, so
+   * changes to it run one at a time.
+   * @param id Participant id
+   * @throws {NotFoundException} when no Participant has this id in the current Organisation
+   */
+  public async lockParticipantOrThrow(id: string): Promise<ParticipantEntity> {
+    const [row] = await this.unitOfWork.db.select().from(participants).where(eq(participants.id, id)).for('update');
+
+    if (row === undefined) {
+      throw new NotFoundException();
+    }
+
+    return new ParticipantEntity(row);
+  }
+
+  /**
+   * Point a Participant to its Přihláška PDF.
+   * @param id Participant id
+   * @param fileId the stored PDF
+   * @throws {NotFoundException} when no Participant has this id in the current Organisation
+   */
+  public async setPrihlaska(id: string, fileId: string): Promise<void> {
+    const rows = await this.unitOfWork.db
+      .update(participants)
+      .set({ prihlaskaFileId: fileId })
+      .where(eq(participants.id, id))
+      .returning({ id: participants.id });
+
+    if (rows.length === 0) {
+      throw new NotFoundException();
+    }
+  }
+
+  /**
+   * List a Registration's guardians, the first one first.
+   * @param registrationId Registration id
+   */
+  public async listGuardians(registrationId: string): Promise<GuardianFields[]> {
+    return this.unitOfWork.db
+      .select({
+        firstName: registrationGuardians.firstName,
+        lastName: registrationGuardians.lastName,
+        email: registrationGuardians.email,
+        phone: registrationGuardians.phone,
+      })
+      .from(registrationGuardians)
+      .where(eq(registrationGuardians.registrationId, registrationId))
+      .orderBy(asc(registrationGuardians.position));
+  }
+
+  /**
+   * List a Registration's price lines in their order, a Participant's named by its position.
+   * @param registrationId Registration id
+   */
+  public async listPriceLines(registrationId: string): Promise<PriceLineFields[]> {
+    return this.unitOfWork.db
+      .select({
+        kind: priceLines.kind,
+        participant: participants.position,
+        label: priceLines.label,
+        amount: priceLines.amount,
+      })
+      .from(priceLines)
+      .leftJoin(participants, eq(participants.id, priceLines.participantId))
+      .where(eq(priceLines.registrationId, registrationId))
+      .orderBy(asc(priceLines.position));
+  }
+
+  /**
+   * List a Registration's declaration answers.
+   * @param registrationId Registration id
+   */
+  public async listDeclarationAnswers(registrationId: string): Promise<{ declarationId: string; accepted: boolean }[]> {
+    return this.unitOfWork.db
+      .select({ declarationId: declarationAnswers.declarationId, accepted: declarationAnswers.accepted })
+      .from(declarationAnswers)
+      .where(eq(declarationAnswers.registrationId, registrationId));
+  }
+
+  /**
    * Add a Registration's price lines in their order.
    * @param registrationId Registration id
    * @param lines the lines, a Participant's named by its position

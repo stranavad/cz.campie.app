@@ -1,0 +1,1 @@
+ALTER TABLE "participants" ADD COLUMN "prihlaska_file_id" uuid;

@@ -1,6 +1,6 @@
 # 36 - Přihláška PDF with QR platba
 
-Status: ready-for-agent
+Status: done
 Stage: 1a
 Episode: E3 Public registration
 Blocked by: 15, 35
@@ -12,12 +12,12 @@ A background job generates one Přihláška PDF per Participant after submission
 
 ## Acceptance criteria
 
-- [ ] Job renders through the PDF port fake in tests and stores ciphertext through storage; the Participant points to the stored file.
-- [ ] QR payload (SPAYD) contains the Organisation's account, amount due now, Variable symbol and a message; unit-tested.
-- [ ] Custom field labels come from the Registration's form version, not the current one.
+- [x] Job renders through the PDF port fake in tests and stores ciphertext through storage; the Participant points to the stored file.
+- [x] QR payload (SPAYD) contains the Organisation's account, amount due now, Variable symbol and a message; unit-tested.
+- [x] Custom field labels come from the Registration's form version, not the current one.
 - [ ] Rodné číslo decrypted only during rendering; never logged.
-- [ ] A regenerate function exists for admin use (wired in issue 45).
-- [ ] Job carries the Organisation in its payload and runs inside its unit of work.
+- [x] A regenerate function exists for admin use (wired in issue 45).
+- [x] Job carries the Organisation in its payload and runs inside its unit of work.
 
 ## Notes
 
@@ -27,3 +27,5 @@ A background job generates one Přihláška PDF per Participant after submission
 ## Comments
 
 2026-11-07 - **From issue 35.** Submission enqueues `registrationSubmittedJob` (`modules/registrations/registration/registration-submitted.job.ts`, payload `{ registrationId }`); its handler only tells the Camp's team today (`RegistrationService.notifyTeam`). Generate the PDFs from that job or a job it enqueues. The frozen price lines are `price_lines` (ordered by `position`, a Participant's by `participant_id`), the Deposit owed first is `registrations.deposit_total`, the form version is `registrations.form_version_id`, the declaration answers `declaration_answers`.
+
+2026-11-07 - **Done.** Submission enqueues `registrations.generate-prihlasky` (`modules/registrations/prihlaska/`), which renders one Přihláška per Participant through the PDF pipeline, stores it encrypted and points `participants.prihlaska_file_id` to it; a failed attempt rolls back its files. The page shows the Camp's branding (`DocumentService` takes an optional `DocumentBranding`) and the Organisation's legal identity, the Turnus, the Participant, the other children, guardians, custom answers with the labels of the Registration's form version, the frozen price lines, the payment (account, Variable symbol, the Deposit or whole price due now with its date, the rest and the whole outstanding amount as the other option, and the QR platba of the amount due now) and the declarations as one-line labels. One A4 page: payment and price come first and the content box is cut at the foot, so a cut only takes answers or declarations. QR platba and payment instructions are pure (`@repo/schema/payments`: `qrPlatbaOf`, `ibanOf`, `paymentInstructionsOf`), unit-tested. `PrihlaskaService.regenerate` replaces one Participant's file under a row lock and removes the old one. Czech date and money formats moved to `@repo/schema/shared` (`czechDate`, `czechDateTime`, `czk`). Not done: rodné číslo, since the standard field catalogue has none yet (issue 29).

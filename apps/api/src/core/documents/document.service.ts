@@ -12,6 +12,14 @@ import type { Letterhead } from './document-layout.tsx';
 // always the pipeline's to give, never the caller's.
 export type DocumentTemplate<Props extends object> = (props: Props & { letterhead: Letterhead }) => ReactElement;
 
+// Whose branding a document carries instead of its Organisation's, such as a Camp's; the legal identity
+// stays the Organisation's.
+export interface DocumentBranding {
+  readonly displayName: string;
+  readonly accentColour: string;
+  readonly logoFileId: string | null;
+}
+
 // The one pipeline every generated document goes through: a React template, rendered to static markup with
 // the current Organisation's letterhead, then to a PDF. Rendering takes a renderer round trip, so call it
 // from a job, never from a request.
@@ -30,9 +38,14 @@ export class DocumentService {
    * Render a document of the current Organisation to a PDF.
    * @param template the document's template
    * @param props what the template shows besides the letterhead
+   * @param branding a Camp's branding over the Organisation's, if any
    */
-  public async render<Props extends object>(template: DocumentTemplate<Props>, props: Props): Promise<Buffer> {
-    const letterhead = await this.letterhead();
+  public async render<Props extends object>(
+    template: DocumentTemplate<Props>,
+    props: Props,
+    branding?: DocumentBranding,
+  ): Promise<Buffer> {
+    const letterhead = await this.letterhead(branding);
 
     const html = `<!doctype html>${renderToStaticMarkup(createElement(template, { ...props, letterhead }))}`;
 
@@ -44,28 +57,32 @@ export class DocumentService {
    * @param template the document's template
    * @param props what the template shows besides the letterhead
    * @param name the stored file's name, ending in .pdf
+   * @param branding a Camp's branding over the Organisation's, if any
    * @returns the stored file's id, for the record that owns the document
    */
   public async store<Props extends object>(
     template: DocumentTemplate<Props>,
     props: Props,
     name: string,
+    branding?: DocumentBranding,
   ): Promise<string> {
-    const bytes = await this.render(template, props);
+    const bytes = await this.render(template, props, branding);
 
     return this.files.store({ name, bytes });
   }
 
   /**
-   * Load the current Organisation's branding and legal identity, its logo inlined.
+   * Load the current Organisation's branding, or the one given, and its legal identity, the logo inlined.
+   * @param branding a Camp's branding over the Organisation's, if any
    */
-  private async letterhead(): Promise<Letterhead> {
+  private async letterhead(branding?: DocumentBranding): Promise<Letterhead> {
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
+    const { displayName, accentColour, logoFileId } = branding ?? organisation;
 
     return {
-      displayName: organisation.displayName,
-      accentColour: organisation.accentColour,
-      logo: organisation.logoFileId === null ? null : await this.logo(organisation.logoFileId),
+      displayName,
+      accentColour,
+      logo: logoFileId === null ? null : await this.logo(logoFileId),
       legalName: organisation.legalName,
       ico: organisation.ico,
       address: organisation.address,

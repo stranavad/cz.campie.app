@@ -16,6 +16,7 @@ export class ParticipantEntity {
   public readonly birthDate: string;
   public readonly status: ParticipantStatus;
   public readonly answers: Answers;
+  public readonly prihlaskaFileId: string | null;
 
   constructor(row: ParticipantSelectModel) {
     this.id = row.id;
@@ -26,5 +27,6 @@ export class ParticipantEntity {
     this.birthDate = row.birthDate;
     this.status = row.status;
     this.answers = row.answers;
+    this.prihlaskaFileId = row.prihlaskaFileId;
   }
 }

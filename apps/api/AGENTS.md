@@ -113,7 +113,7 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 ## Generated documents
 
 - One pipeline (`core/documents/`): a React template, rendered to static markup, sent to the `PdfRenderer` port. A template is a `DocumentTemplate<Props>`: a component that wraps its content in `DocumentLayout` and receives the `letterhead` (display name, accent colour, logo, legal name, IČO, address) from `DocumentService`, which loads it from the current Organisation. A template never names an Organisation, address or logo itself.
-- `documents.store(template, props, name)` renders and stores the PDF through `FileService` and returns the file id for the owning record; `documents.render(template, props)` returns the bytes. Call either from a job declared by the feature, never from a request.
+- `documents.store(template, props, name, branding?)` renders and stores the PDF through `FileService` and returns the file id for the owning record; `documents.render(template, props, branding?)` returns the bytes. `branding` (display name, accent colour, logo file) puts a Camp's branding in the letterhead (`effectiveBranding`); the legal identity stays the Organisation's. Call either from a job declared by the feature, never from a request.
 - Wording is fixed by the platform and Czech. Camp data follows a label (`<Fact label="Tábor">`), never sits inside a sentence, so it needs no declension.
 - Paper and margins are the layout's `@page` rule; the logo is inlined as a data URL, since the renderer fetches nothing. Tests read the HTML from `pdfs().rendered`; `src/testing/sample-document.tsx` is the sample template.
 

@@ -61,15 +61,16 @@ export async function createOrganisation(
 }
 
 /**
- * Change an Organisation's legal name, accent colour or logo, as its Owner would in its settings.
+ * Change an Organisation's legal name, accent colour, logo or bank account, as its Owner would in its
+ * settings.
  * @param app the running test app
  * @param organisationId the Organisation
- * @param changes the new values; the logo as the bytes of a PNG
+ * @param changes the new values; the logo as the bytes of a PNG, the account in its canonical form
  */
 export async function brandOrganisation(
   app: INestApplication,
   organisationId: string,
-  { logo, ...changes }: { legalName?: string; accentColour?: string; logo?: Buffer },
+  { logo, ...changes }: { legalName?: string; accentColour?: string; logo?: Buffer; bankAccount?: string },
 ): Promise<void> {
   await app.get(UnitOfWork).run(organisationId, async () => {
     const logoFileId =

@@ -1,31 +1,6 @@
 import type { TFunction } from 'i18next';
 
 /**
- * Write a calendar date as Czech readers write it.
- * @param date YYYY-MM-DD
- */
-export function czechDate(date: string): string {
-  const [year, month, day] = date.split('-').map(Number);
-
-  return `${day}. ${month}. ${year}`;
-}
-
-/**
- * Write a Prague date and time of an instant as Czech readers do.
- * @param instant ISO instant
- */
-export function czechDateTime(instant: string): string {
-  return new Intl.DateTimeFormat('cs-CZ', {
-    timeZone: 'Europe/Prague',
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(instant));
-}
-
-/**
  * Split the time left into days, hours, minutes and seconds.
  * @param milliseconds time left, never below zero
  */
@@ -38,14 +13,6 @@ export function countdownOf(milliseconds: number): { days: number; hours: number
     minutes: Math.floor((total % 3600) / 60),
     seconds: total % 60,
   };
-}
-
-/**
- * Write whole CZK as Czech readers write money.
- * @param amount whole CZK
- */
-export function czk(amount: number): string {
-  return `${new Intl.NumberFormat('cs-CZ').format(amount)} Kč`;
 }
 
 /**

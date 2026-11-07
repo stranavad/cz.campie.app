@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { PublicCamp } from '@repo/schema/camps';
 import type { SubmittedRegistration } from '@repo/schema/registrations';
-
-import { czk } from '@/core/camp-page';
+import { czk } from '@repo/schema/shared';
 
 interface SubmittedViewProps {
   camp: PublicCamp;

@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import type { PreviewPriceResponse } from '@repo/schema/camps';
-
-import { czk } from '@/core/camp-page';
+import { czk } from '@repo/schema/shared';
 
 interface PriceCardProps {
   price: PreviewPriceResponse | undefined;

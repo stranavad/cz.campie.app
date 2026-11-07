@@ -150,6 +150,24 @@ export class RegistrationFormRepository {
   }
 
   /**
+   * Get a published version by id, as a Registration names the one it was submitted under.
+   * @param id version id
+   * @throws {NotFoundException} when no version has this id in the current Organisation
+   */
+  public async getVersionByIdOrThrow(id: string): Promise<RegistrationFormVersionEntity> {
+    const [row] = await this.unitOfWork.db
+      .select()
+      .from(registrationFormVersions)
+      .where(eq(registrationFormVersions.id, id));
+
+    if (row === undefined) {
+      throw new NotFoundException();
+    }
+
+    return new RegistrationFormVersionEntity(row);
+  }
+
+  /**
    * Publish a version of a Camp's form.
    * @param campId Camp id
    * @param input its number, definition, most children and time
