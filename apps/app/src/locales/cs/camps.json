@@ -86,5 +86,48 @@
       "balanceDueDate": "Doplatek zaplatit do",
       "closedManually": "Přihlašování ručně uzavřít"
     }
+  },
+  "siblingDiscount": {
+    "title": "Sourozenecká sleva",
+    "amount": "Sleva na dítě (Kč)",
+    "amountHint": "Platí, když jedna přihláška obsahuje více dětí. 0 = bez slevy.",
+    "appliesTo": "Komu sleva patří",
+    "modes": {
+      "every_child": "Každému dítěti",
+      "from_second_child": "Až od druhého dítěte"
+    }
+  },
+  "discountCodes": {
+    "title": "Slevové kódy",
+    "empty": "Tábor zatím nemá žádný slevový kód.",
+    "create": "Nový slevový kód",
+    "code": "Kód",
+    "codeHint": "Písmena bez diakritiky, číslice a pomlčky. Na velikosti písmen nezáleží. Kód, který nikdo nepoužil, jde smazat.",
+    "kind": "Druh slevy",
+    "kinds": {
+      "percentage": "Procenta z ceny",
+      "fixed": "Pevná částka"
+    },
+    "value": "Výše slevy",
+    "usageLimit": "Nejvýše použití",
+    "expiresOn": "Platí do (včetně)",
+    "optional": "Nepovinné.",
+    "submit": "Přidat kód",
+    "values": {
+      "percentage": "{{value}} %",
+      "fixed": "{{value}} Kč"
+    },
+    "uses": "Použito {{uses}} z {{limit}}",
+    "until": "platí do {{date}}",
+    "statuses": {
+      "valid": "platný",
+      "expired": "vypršel",
+      "exhausted": "vyčerpaný",
+      "inactive": "vypnutý",
+      "unknown": "neznámý"
+    },
+    "deactivate": "Vypnout",
+    "activate": "Zapnout",
+    "remove": "Smazat"
   }
 }

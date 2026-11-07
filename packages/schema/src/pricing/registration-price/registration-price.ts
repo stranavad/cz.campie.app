@@ -34,15 +34,24 @@ export interface PriceList {
   readonly balanceDueDate: string | null;
 }
 
+// Whom the Sibling discount goes to, when a Registration holds more than one Participant.
+export const SIBLING_DISCOUNT_MODES = ['every_child', 'from_second_child'] as const;
+
+export type SiblingDiscountMode = (typeof SIBLING_DISCOUNT_MODES)[number];
+
 export interface SiblingDiscount {
   // Per child, whole CZK.
   readonly amount: number;
-  readonly appliesTo: 'every_child' | 'from_second_child';
+  readonly appliesTo: SiblingDiscountMode;
 }
+
+export const DISCOUNT_CODE_KINDS = ['percentage', 'fixed'] as const;
+
+export type DiscountCodeKind = (typeof DISCOUNT_CODE_KINDS)[number];
 
 export interface DiscountCode {
   readonly code: string;
-  readonly kind: 'percentage' | 'fixed';
+  readonly kind: DiscountCodeKind;
   // A percentage, or whole CZK.
   readonly value: number;
 }

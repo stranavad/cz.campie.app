@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import { CAMP_MODULES, type Camp } from '@repo/schema/camps';
+import { SIBLING_DISCOUNT_MODES } from '@repo/schema/pricing';
 
 import { useCampForm } from '@/features/camps/components/camp-form/use-camp-form.hook';
 
@@ -40,6 +41,30 @@ export function CampFormFields({ organisationId, camp, canWrite }: CampFormField
         </form.AppField>
         <form.AppField name="contactPhone">
           {(field) => <field.TextField label={t('camp.contactPhone')} type="tel" />}
+        </form.AppField>
+      </fieldset>
+      <fieldset disabled={!canWrite} className="flex flex-col gap-5">
+        <legend className="mb-3 text-lg font-semibold">{t('siblingDiscount.title')}</legend>
+        <form.AppField name="siblingDiscountAmount">
+          {(field) => (
+            <field.TextField
+              label={t('siblingDiscount.amount')}
+              description={t('siblingDiscount.amountHint')}
+              type="number"
+              inputMode="numeric"
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="siblingDiscountAppliesTo">
+          {(field) => (
+            <field.SelectField
+              label={t('siblingDiscount.appliesTo')}
+              options={SIBLING_DISCOUNT_MODES.map((mode) => ({
+                value: mode,
+                label: t(`siblingDiscount.modes.${mode}`),
+              }))}
+            />
+          )}
         </form.AppField>
       </fieldset>
       <fieldset disabled={!canWrite} className="flex flex-col gap-3">

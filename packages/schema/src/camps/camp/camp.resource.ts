@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { SIBLING_DISCOUNT_MODES } from '@repo/schema/pricing';
+
 // What a Camp can switch on or off. Switching one off hides it and keeps its data.
 export const CAMP_MODULES = [
   'consents',
@@ -29,6 +31,9 @@ export const campSchema = z.object({
   contactEmail: z.string().nullable(),
   contactPhone: z.string().nullable(),
   modules: campModulesSchema,
+  // Per child in whole CZK, 0 for none.
+  siblingDiscountAmount: z.number().int(),
+  siblingDiscountAppliesTo: z.enum(SIBLING_DISCOUNT_MODES),
 });
 
 export type Camp = z.infer<typeof campSchema>;

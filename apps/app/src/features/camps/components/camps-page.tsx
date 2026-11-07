@@ -5,6 +5,7 @@ import { CampBrandingSection } from '@/features/camps/components/camp-branding-s
 import { CampForm } from '@/features/camps/components/camp-form/camp-form';
 import { CampSwitcher } from '@/features/camps/components/camp-switcher';
 import { CreateCampForm } from '@/features/camps/components/create-camp-form/create-camp-form';
+import { DiscountCodeSection } from '@/features/camps/components/discount-code-section/discount-code-section';
 import { TurnusSection } from '@/features/camps/components/turnus-section/turnus-section';
 import { useCampsPage } from '@/features/camps/components/use-camps-page.hook';
 
@@ -52,6 +53,12 @@ export function CampsPage({ campId }: CampsPageProps) {
       />
       <TurnusSection
         key={`turnusy-${page.selected.id}`}
+        organisationId={page.organisationId}
+        campId={page.selected.id}
+        canWrite={page.canWrite}
+      />
+      <DiscountCodeSection
+        key={`codes-${page.selected.id}`}
         organisationId={page.organisationId}
         campId={page.selected.id}
         canWrite={page.canWrite}

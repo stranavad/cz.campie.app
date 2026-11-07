@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import { defineEndpoint, emailSchema, phoneSchema, requiredText } from '@repo/schema/shared';
+import { SIBLING_DISCOUNT_MODES } from '@repo/schema/pricing';
+import { czkSchema, defineEndpoint, emailSchema, phoneSchema, requiredText } from '@repo/schema/shared';
 
 import { campSlugSchema } from './camp-slug.ts';
 import { campModulesSchema, campSchema } from './camp.resource.ts';
@@ -9,7 +10,7 @@ import { campModulesSchema, campSchema } from './camp.resource.ts';
 const optional = <T extends z.ZodType<string | null>>(schema: T) =>
   z.union([z.literal('').transform(() => null), z.null(), schema]);
 
-// Every field of a Camp an admin sets; create takes them all but the modules, update any of them.
+// Every field of a Camp an admin sets; create takes its identity and contact, update any of them.
 export const campFieldsSchema = z.object({
   name: requiredText(120),
   slug: campSlugSchema,
@@ -19,14 +20,20 @@ export const campFieldsSchema = z.object({
   contactEmail: optional(emailSchema),
   contactPhone: optional(phoneSchema),
   modules: campModulesSchema,
+  siblingDiscountAmount: czkSchema,
+  siblingDiscountAppliesTo: z.enum(SIBLING_DISCOUNT_MODES),
 });
 
-export const createCampBodySchema = campFieldsSchema.omit({ modules: true });
+export const createCampBodySchema = campFieldsSchema.omit({
+  modules: true,
+  siblingDiscountAmount: true,
+  siblingDiscountAppliesTo: true,
+});
 
 export type CreateCampBody = z.infer<typeof createCampBodySchema>;
 
-// Adds a Camp to the current Organisation, every module off; Camp settings write. A taken slug answers
-// camp_slug_taken.
+// Adds a Camp to the current Organisation, every module off and no Sibling discount; Camp settings write.
+// A taken slug answers camp_slug_taken.
 export const createCampEndpoint = defineEndpoint({
   method: 'POST',
   path: '/camps',

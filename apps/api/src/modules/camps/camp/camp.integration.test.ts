@@ -81,6 +81,8 @@ describe('camps', () => {
         oddily: false,
         vedouci: false,
       },
+      siblingDiscountAmount: 0,
+      siblingDiscountAppliesTo: 'every_child',
     });
     expect(
       await query('SELECT actor_identity, action, target_id FROM audit_entries WHERE target_id = $1', [
@@ -127,7 +129,28 @@ describe('camps', () => {
     ]);
   });
 
+  it('sets the Sibling discount and whom it goes to, audited', async () => {
+    const response = await update(owner.headers(organisationId), {
+      siblingDiscountAmount: 500,
+      siblingDiscountAppliesTo: 'from_second_child',
+    });
+
+    expect(response.body).toMatchObject({ siblingDiscountAmount: 500, siblingDiscountAppliesTo: 'from_second_child' });
+    expect(
+      await query('SELECT changes FROM audit_entries WHERE action = $1 AND target_id = $2', ['camp.update', campId]),
+    ).toEqual([
+      {
+        changes: {
+          siblingDiscountAmount: { old: 0, new: 500 },
+          siblingDiscountAppliesTo: { old: 'every_child', new: 'from_second_child' },
+        },
+      },
+    ]);
+  });
+
   it.each([
+    { siblingDiscountAmount: -100 },
+    { siblingDiscountAppliesTo: 'kazde_druhe' },
     { slug: 'Letní tábor' },
     { slug: 'portal' },
     { websiteUrl: 'javascript:alert(1)' },

@@ -3,9 +3,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   CampBranding,
   CreateCampBody,
+  CreateDiscountCodeBody,
   TurnusBody,
   UpdateCampBody,
   UpdateCampBrandingBody,
+  UpdateDiscountCodeBody,
 } from '@repo/schema/camps';
 
 import { campsKeys } from '@/features/camps/api/camps.keys';
@@ -105,5 +107,39 @@ export const useRemoveTurnusMutation = (organisationId: string, campId: string) 
   return useMutation({
     mutationFn: (turnusId: string) => campsService.removeTurnus(organisationId, turnusId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.turnusy(organisationId, campId) }),
+  });
+};
+
+export const useDiscountCodesQuery = (organisationId: string, campId: string) =>
+  useQuery({
+    queryKey: campsKeys.discountCodes(organisationId, campId),
+    queryFn: ({ signal }) => campsService.listDiscountCodes(organisationId, campId, signal),
+  });
+
+export const useCreateDiscountCodeMutation = (organisationId: string, campId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: CreateDiscountCodeBody) => campsService.createDiscountCode(organisationId, campId, body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.discountCodes(organisationId, campId) }),
+  });
+};
+
+export const useUpdateDiscountCodeMutation = (organisationId: string, campId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ discountCodeId, body }: { discountCodeId: string; body: UpdateDiscountCodeBody }) =>
+      campsService.updateDiscountCode(organisationId, discountCodeId, body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.discountCodes(organisationId, campId) }),
+  });
+};
+
+export const useRemoveDiscountCodeMutation = (organisationId: string, campId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (discountCodeId: string) => campsService.removeDiscountCode(organisationId, discountCodeId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.discountCodes(organisationId, campId) }),
   });
 };

@@ -10,6 +10,7 @@ import {
   type PublicCamp,
 } from '@repo/schema/camps';
 import type { FileLink } from '@repo/schema/files';
+import type { SiblingDiscount, SiblingDiscountMode } from '@repo/schema/pricing';
 
 import type { camps } from '../../../db/schema.ts';
 
@@ -26,6 +27,8 @@ export class CampEntity {
   public readonly contactEmail: string | null;
   public readonly contactPhone: string | null;
   public readonly modules: readonly CampModule[];
+  public readonly siblingDiscountAmount: number;
+  public readonly siblingDiscountAppliesTo: SiblingDiscountMode;
   public readonly accentColour: string | null;
   public readonly logoFileId: string | null;
 
@@ -40,6 +43,8 @@ export class CampEntity {
     this.contactPhone = row.contactPhone;
     // Stored sorted, so an audit entry shows a change of switches, not of their order.
     this.modules = CAMP_MODULES.filter((module) => row.modules.includes(module));
+    this.siblingDiscountAmount = row.siblingDiscountAmount;
+    this.siblingDiscountAppliesTo = row.siblingDiscountAppliesTo;
     this.accentColour = row.accentColour;
     this.logoFileId = row.logoFileId;
   }
@@ -54,7 +59,16 @@ export class CampEntity {
       contactEmail: this.contactEmail,
       contactPhone: this.contactPhone,
       modules: modulesRecord(this.modules),
+      siblingDiscountAmount: this.siblingDiscountAmount,
+      siblingDiscountAppliesTo: this.siblingDiscountAppliesTo,
     };
+  }
+
+  // The Sibling discount as pricing takes it; an amount of 0 is none.
+  toSiblingDiscount(): SiblingDiscount | null {
+    return this.siblingDiscountAmount === 0
+      ? null
+      : { amount: this.siblingDiscountAmount, appliesTo: this.siblingDiscountAppliesTo };
   }
 
   toSummaryDto(): CampSummary {

@@ -44,7 +44,12 @@
     "turnus_early_bird_day_required": "Zadejte poslední den včasného přihlášení.",
     "turnus_early_bird_price_required": "Zadejte cenu při včasném přihlášení, nebo poslední den smažte.",
     "prague_local_invalid": "Zadejte datum a čas.",
-    "date_invalid": "Zadejte platné datum."
+    "date_invalid": "Zadejte platné datum.",
+    "czk_invalid": "Zadejte celou částku v Kč, nejméně 0.",
+    "discount_code_malformed": "Kód musí mít 3 až 40 znaků: písmena bez diakritiky, číslice a pomlčky.",
+    "discount_code_taken": "Tento kód už tábor má.",
+    "discount_percentage_invalid": "Procenta musí být mezi 1 a 100.",
+    "discount_amount_invalid": "Zadejte kladnou celou částku v Kč."
   },
   "logoField": {
     "title": "Logo",
