@@ -3,6 +3,8 @@ import type { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import type { Permissions } from '@repo/schema/admins';
+import type { TurnusBody } from '@repo/schema/camps';
+import type { PaymentChoice } from '@repo/schema/pricing';
 import { ACCESS_HEADERS, slugify } from '@repo/schema/shared';
 
 import type { Env } from '../core/config/env.schema.ts';
@@ -134,18 +136,25 @@ export const OPEN_TURNUS = {
  * @param app the running test app
  * @param organisationId the Organisation
  * @param campId the Camp
- * @param discountCode the code typed, if any
+ * @param options the code typed, a second guardian, the Turnus's prices and dates, the Deposit chosen
  */
 export async function submitRegistration(
   app: INestApplication,
   organisationId: string,
   campId: string,
-  discountCode: string | null = null,
+  options: {
+    discountCode?: string;
+    secondGuardian?: boolean;
+    turnus?: Partial<TurnusBody>;
+    paymentChoice?: PaymentChoice;
+  } = {},
 ): Promise<{ id: string; variableSymbol: string }> {
+  const { discountCode = null, secondGuardian = false, turnus: change = {}, paymentChoice = 'full' } = options;
+
   return app.get(UnitOfWork).run(organisationId, async () => {
     const system = { kind: 'system' } as const;
     const camp = await app.get(CampRepository).getByIdOrThrow(campId);
-    const turnus = await app.get(TurnusService).create(system, campId, OPEN_TURNUS);
+    const turnus = await app.get(TurnusService).create(system, campId, { ...OPEN_TURNUS, ...change });
     const forms = app.get(RegistrationFormRepository);
     const form =
       (await forms.getLatestVersion(campId)) ?? (await app.get(RegistrationFormService).publish(system, campId));
@@ -161,10 +170,17 @@ export async function submitRegistration(
             guardianLastName: 'Testovací',
             guardianEmail: 'jana.testovaci@example.com',
             guardianPhone: '+420 123 456 789',
+            ...(secondGuardian
+              ? {
+                  secondGuardianFirstName: 'Petr',
+                  secondGuardianLastName: 'Testovací',
+                  secondGuardianEmail: 'petr.testovaci@example.com',
+                }
+              : {}),
           },
           participants: [{ firstName: 'Ema', lastName: 'Testovací', birthDate: '2016-05-01' }],
         },
-        paymentChoice: 'full',
+        paymentChoice,
         discountCode,
         declarations: form.declarations.map(({ id }) => ({ id, accepted: true })),
       },

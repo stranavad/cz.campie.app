@@ -65,9 +65,9 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 
 ### E4 Money - "payments are tracked"
 
-| #   | Issue                                   | Status          | Blocked by |
-| --- | --------------------------------------- | --------------- | ---------- |
-| 38  | Payment ledger, amount due now, Overdue | ready-for-agent | 35         |
+| #   | Issue                                   | Status | Blocked by |
+| --- | --------------------------------------- | ------ | ---------- |
+| 38  | Payment ledger, amount due now, Overdue | done   | 35         |
 
 ### E5 Guardian portal - "guardian comes back"
 

@@ -13,7 +13,9 @@ export interface AmountDueInput {
   readonly balanceDueDate: string | null;
 }
 
-export type AmountDuePhase = 'deposit' | 'balance' | 'full' | 'settled';
+export const AMOUNT_DUE_PHASES = ['deposit', 'balance', 'full', 'settled'] as const;
+
+export type AmountDuePhase = (typeof AMOUNT_DUE_PHASES)[number];
 
 export interface AmountDue {
   readonly phase: AmountDuePhase;

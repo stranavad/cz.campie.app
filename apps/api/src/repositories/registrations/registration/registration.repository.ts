@@ -88,6 +88,22 @@ export class RegistrationRepository {
   }
 
   /**
+   * Get a Registration of the current Organisation by id and lock its row until the unit of work ends, so
+   * changes to its money run one at a time.
+   * @param id Registration id
+   * @throws {NotFoundException} when no Registration has this id in the current Organisation
+   */
+  public async lockByIdOrThrow(id: string): Promise<RegistrationEntity> {
+    const [row] = await this.unitOfWork.db.select().from(registrations).where(eq(registrations.id, id)).for('update');
+
+    if (row === undefined) {
+      throw new NotFoundException();
+    }
+
+    return new RegistrationEntity(row);
+  }
+
+  /**
    * Count the Registered Participants of Turnusy, in one query.
    * @param turnusIds Turnus ids
    * @returns Registered Participants by Turnus id; a Turnus without any is missing

@@ -11,8 +11,9 @@ import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.r
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { CampEmailService } from '../../../camps/camp-email/services/camp-email.service.ts';
+import { LedgerService } from '../../ledger/services/ledger.service.ts';
+import { PaymentBlock, QR_PLATBA_CONTENT_ID } from '../../payment/payment-block.email.tsx';
 import { qrPlatbaPng, registrationPaymentOf } from '../../payment/payment-instructions.helper.ts';
-import { PaymentBlock, QR_PLATBA_CONTENT_ID } from '../payment-block.email.tsx';
 import { sendConfirmationJob } from '../send-confirmation.job.ts';
 
 // The registration confirmation each guardian gets: the Camp's wording, the platform's payment details
@@ -25,6 +26,7 @@ export class ConfirmationService {
     private readonly camps: CampRepository,
     private readonly organisations: OrganisationRepository,
     private readonly campEmails: CampEmailService,
+    private readonly ledgers: LedgerService,
     private readonly jobs: JobQueue,
     private readonly unitOfWork: UnitOfWork,
   ) {}
@@ -56,15 +58,8 @@ export class ConfirmationService {
     const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
     const camp = await this.camps.getByIdOrThrow(turnus.campId);
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
-    const payment = registrationPaymentOf({
-      registration,
-      turnus,
-      camp,
-      organisation,
-      total: await this.registrations.totalOf(registrationId),
-      // The payment ledger arrives later; until then nothing is paid at confirmation.
-      paid: 0,
-    });
+    const { total, paid } = await this.ledgers.balanceOf(registrationId);
+    const payment = registrationPaymentOf({ registration, turnus, camp, organisation, total, paid });
     const inlineImages: InlineImage[] =
       payment.qrPlatba === null
         ? []

@@ -178,7 +178,7 @@ describe('price preview', () => {
   it('reports a code expired after its last day, and exhausted at its limit', async () => {
     await createCode({ code: 'STARY', expiresOn: '2027-04-09' });
     await createCode({ code: 'POSLEDNI', usageLimit: 1 });
-    await submitRegistration(app(), state.organisationId, state.campId, 'POSLEDNI');
+    await submitRegistration(app(), state.organisationId, state.campId, { discountCode: 'POSLEDNI' });
 
     expect((await preview({ discountCode: 'STARY' })).body.discountCode).toBe('expired');
     expect((await preview({ discountCode: 'POSLEDNI' })).body.discountCode).toBe('exhausted');

@@ -22,6 +22,8 @@ export { operators } from './operators/operators.ts';
 export { organisations, organisationStatus } from './organisations/organisations.ts';
 export { declarationAnswers } from './registrations/declaration-answers.ts';
 export { participants, participantStatus } from './registrations/participants.ts';
+export { paymentSource, payments } from './registrations/payments.ts';
+export { priceAdjustments } from './registrations/price-adjustments.ts';
 export { priceLineKind, priceLines } from './registrations/price-lines.ts';
 export { registrationGuardians } from './registrations/registration-guardians.ts';
 export { paymentChoice, registrations } from './registrations/registrations.ts';

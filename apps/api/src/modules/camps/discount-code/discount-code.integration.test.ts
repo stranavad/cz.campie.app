@@ -40,7 +40,7 @@ describe('discount codes', () => {
   const list = (headers: RequestHeaders, id = campId) => http().get(`/api/camps/${id}/discount-codes`).set(headers);
 
   // Uses a code by a guardian's submission.
-  const recordUse = (code: string) => submitRegistration(app(), organisationId, campId, code);
+  const recordUse = (code: string) => submitRegistration(app(), organisationId, campId, { discountCode: code });
 
   it('creates a Discount code, switched on and unused, audited', async () => {
     const response = await create(owner.headers(organisationId));

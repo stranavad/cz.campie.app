@@ -23,3 +23,7 @@ One admin screen answering any guardian question: everything submitted (rendered
 
 - Spec sections: Admin Registrations stories; Identity, permissions and audit.
 - Port from Domino: `apps/portal/src/pages/admin/RegistrationDetail.vue`, `apps/api/src/admin-registration/services/admin-registration.service.ts`.
+
+## Comments
+
+2026-11-07 - **From issue 38.** The ledger API is ready without a UI: `GET /registrations/:id/ledger` (Registrations read) returns payments, Price adjustments, total, paid, balance, payment status, amount due now and Overdue; `POST /registrations/:id/payments` (`kind` payment or correction, amount, `paidOn`, note, required for a correction) and `POST /registrations/:id/price-adjustments` (Registrations write) return the ledger again. Refusals: 409 `correction_exceeds_paid`, `price_adjustment_below_zero`. Show and add them in the Registration detail.
