@@ -50,6 +50,8 @@ export const PRODUCTION_ENV = {
   SUBMISSION_LIMIT_PER_ORGANISATION: '5000',
   LOGIN_LINK_LIMIT_PER_IP: '30',
   LOGIN_LINK_LIMIT_PER_EMAIL: '5',
+  GATEWAY_NOTIFICATION_LIMIT_PER_IP: '20000',
+  GATEWAY_NOTIFICATION_LIMIT_PER_ORGANISATION: '2000',
 } satisfies Record<string, string>;
 
 const initialEnv = new Set(Object.keys(process.env));

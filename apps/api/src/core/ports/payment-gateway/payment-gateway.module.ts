@@ -12,10 +12,13 @@ import { PaymentGateway } from './payment-gateway.port.ts';
     {
       provide: PaymentGateway,
       inject: [ConfigService],
-      useFactory: (config: ConfigService<Env, true>): PaymentGateway =>
-        config.get('paymentGateway', { infer: true }).adapter === 'comgate'
-          ? new ComgatePaymentGateway()
-          : new FakePaymentGateway(),
+      useFactory: (config: ConfigService<Env, true>): PaymentGateway => {
+        const gateway = config.get('paymentGateway', { infer: true });
+
+        return gateway.adapter === 'comgate'
+          ? new ComgatePaymentGateway({ testPayments: gateway.testPayments })
+          : new FakePaymentGateway();
+      },
     },
   ],
   exports: [PaymentGateway],

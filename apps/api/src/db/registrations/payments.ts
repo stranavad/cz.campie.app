@@ -22,6 +22,8 @@ export const payments = p.snakeCase.table.withRLS(
     paidOn: p.date({ mode: 'string' }).notNull(),
     note: p.text().notNull(),
     recordedAt: p.timestamp({ withTimezone: true }).notNull(),
+    // The gateway's transaction, on its entries only; one entry per transaction.
+    gatewayTransactionId: p.text(),
   },
   (table) => [
     p.foreignKey({
@@ -34,6 +36,14 @@ export const payments = p.snakeCase.table.withRLS(
       'payments_amount',
       sql`(${table.source} = 'correction' AND ${table.amount} < 0) OR (${table.source} <> 'correction' AND ${table.amount} > 0)`,
     ),
+    p.check(
+      'payments_gateway_transaction',
+      sql`(${table.source} = 'gateway') = (${table.gatewayTransactionId} IS NOT NULL)`,
+    ),
+    p
+      .uniqueIndex('payments_gateway_transaction_id_key')
+      .on(table.organisationId, table.gatewayTransactionId)
+      .where(sql`${table.gatewayTransactionId} IS NOT NULL`),
     organisationPolicy(),
   ],
 );

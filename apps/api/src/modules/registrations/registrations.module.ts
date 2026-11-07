@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 
 import { CampsModule } from '../camps/camps.module.ts';
+import { OrganisationsModule } from '../organisations/organisations.module.ts';
 import { AdminRegistrationController } from './admin-registration/admin-registration.controller.ts';
 import { AdminRegistrationService } from './admin-registration/services/admin-registration.service.ts';
 import { SendCancellationHandler } from './cancellation/send-cancellation.handler.ts';
 import { CancellationService } from './cancellation/services/cancellation.service.ts';
+import { ComgateNotificationController } from './card-payment/comgate-notification.controller.ts';
+import { CardPaymentService } from './card-payment/services/card-payment.service.ts';
 import { SendConfirmationHandler } from './confirmation/send-confirmation.handler.ts';
 import { ConfirmationService } from './confirmation/services/confirmation.service.ts';
 import { EmailChangeConfirmedHandler } from './guardian-email/guardian-email-notice.handler.ts';
@@ -28,7 +31,7 @@ import { RegistrationService } from './registration/services/registration.servic
 import { VariableSymbols } from './registration/services/variable-symbols.ts';
 
 @Module({
-  imports: [CampsModule],
+  imports: [CampsModule, OrganisationsModule],
   controllers: [
     PublicRegistrationController,
     LedgerController,
@@ -36,6 +39,7 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     RegistrationDetailController,
     AdminRegistrationController,
     ParticipantExportController,
+    ComgateNotificationController,
   ],
   providers: [
     RegistrationService,
@@ -49,6 +53,7 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     GuardianEmailNoticeService,
     CancellationService,
     ParticipantExportService,
+    CardPaymentService,
     ExportParticipantsHandler,
     SendCancellationHandler,
     RegeneratePrihlaskaHandler,

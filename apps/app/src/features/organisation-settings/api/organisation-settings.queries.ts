@@ -1,6 +1,11 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { OrganisationSettings, UpdateOrganisationSettingsBody } from '@repo/schema/organisations';
+import type {
+  OrganisationSettings,
+  PaymentGatewaySettings,
+  SetPaymentGatewayKeysBody,
+  UpdateOrganisationSettingsBody,
+} from '@repo/schema/organisations';
 
 import { accountKeys } from '@/core/account';
 import { organisationSettingsKeys } from '@/features/organisation-settings/api/organisation-settings.keys';
@@ -42,3 +47,32 @@ export const useSetOrganisationLogoMutation = (organisationId: string) =>
 
 export const useRemoveOrganisationLogoMutation = (organisationId: string) =>
   useSettingsMutation<void>(organisationId, () => organisationSettingsService.removeLogo(organisationId));
+
+export const usePaymentGatewayQuery = (organisationId: string) =>
+  useQuery({
+    queryKey: organisationSettingsKeys.paymentGateway(organisationId),
+    queryFn: ({ signal }) => organisationSettingsService.paymentGateway(organisationId, signal),
+  });
+
+function usePaymentGatewayMutation<Variables>(
+  organisationId: string,
+  mutationFn: (variables: Variables) => Promise<PaymentGatewaySettings>,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn,
+    onSuccess: (settings) =>
+      queryClient.setQueryData(organisationSettingsKeys.paymentGateway(organisationId), settings),
+  });
+}
+
+export const useSetPaymentGatewayKeysMutation = (organisationId: string) =>
+  usePaymentGatewayMutation(organisationId, (body: SetPaymentGatewayKeysBody) =>
+    organisationSettingsService.setPaymentGatewayKeys(organisationId, body),
+  );
+
+export const useRemovePaymentGatewayKeysMutation = (organisationId: string) =>
+  usePaymentGatewayMutation<void>(organisationId, () =>
+    organisationSettingsService.removePaymentGatewayKeys(organisationId),
+  );

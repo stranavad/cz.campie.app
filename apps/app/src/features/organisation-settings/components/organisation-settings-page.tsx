@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { LogoField } from '@/core/branding';
 import { BrandingForm } from '@/features/organisation-settings/components/branding-form/branding-form';
 import { IdentityForm } from '@/features/organisation-settings/components/identity-form/identity-form';
+import { PaymentGatewayForm } from '@/features/organisation-settings/components/payment-gateway-form/payment-gateway-form';
 import { useOrganisationSettingsPage } from '@/features/organisation-settings/components/use-organisation-settings-page.hook';
 
-// The Owner's settings of the Organisation: legal identity, bank account, contacts and branding.
+// The Owner's settings of the Organisation: legal identity, bank account, contacts, branding and Comgate keys.
 export function OrganisationSettingsPage() {
   const { t } = useTranslation('organisationSettings');
   const page = useOrganisationSettingsPage();
@@ -49,6 +50,7 @@ export function OrganisationSettingsPage() {
         />
         <BrandingForm organisationId={page.organisationId} settings={page.settings} />
       </section>
+      <PaymentGatewayForm organisationId={page.organisationId} />
     </div>
   );
 }

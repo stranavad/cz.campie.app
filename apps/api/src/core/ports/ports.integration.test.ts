@@ -78,21 +78,91 @@ describe('ports', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('has only a Comgate stub, which refuses every call', async () => {
+  it('creates a Comgate payment with the account it is given, in haléře', async () => {
     app = await bootApp({ env: PRODUCTION_ENV });
-    const credentials = { merchantId: '123456', secret: 'dummy' };
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      Response.json({
+        code: 0,
+        message: 'OK',
+        transId: 'AB12-CD34-EF56',
+        redirect: 'https://payments.comgate.cz/client/instructions/index?id=AB12-CD34-EF56',
+      }),
+    );
+
+    const created = await app.get(PaymentGateway).createPayment({
+      credentials: { merchantId: '123456', secret: 'not-a-real-secret' },
+      referenceId: '0190d6c2-7a1e-7000-8000-000000000001',
+      amountCzk: 4200,
+      label: 'VS 27123456',
+      email: 'guardian@example.test',
+    });
+
+    const [url, init] = fetchSpy.mock.calls[0] ?? [];
+    expect(url).toBe('https://payments.comgate.cz/v2.0/payment.json');
+    expect(new Headers(init?.headers).get('authorization')).toBe(
+      `Basic ${Buffer.from('123456:not-a-real-secret').toString('base64')}`,
+    );
+    expect(JSON.parse(typeof init?.body === 'string' ? init.body : '')).toMatchObject({
+      price: 420_000,
+      curr: 'CZK',
+      test: false,
+      refId: '0190d6c2-7a1e-7000-8000-000000000001',
+    });
+    expect(created).toEqual({
+      transactionId: 'AB12-CD34-EF56',
+      redirectUrl: 'https://payments.comgate.cz/client/instructions/index?id=AB12-CD34-EF56',
+    });
+  });
+
+  it('refuses a Comgate redirect anywhere but its payment pages', async () => {
+    app = await bootApp({ env: PRODUCTION_ENV });
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      Response.json({ code: 0, transId: 'AB12-CD34-EF56', redirect: 'https://payments.example.test/pay' }),
+    );
 
     await expect(
       app.get(PaymentGateway).createPayment({
-        credentials,
+        credentials: { merchantId: '123456', secret: 'not-a-real-secret' },
         referenceId: '0190d6c2-7a1e-7000-8000-000000000001',
         amountCzk: 4200,
-        label: 'Turnus 1',
+        label: 'VS 27123456',
         email: 'guardian@example.test',
       }),
-    ).rejects.toThrow('not implemented');
-    await expect(app.get(PaymentGateway).getPaymentStatus(credentials, 'fake-transaction')).rejects.toThrow(
-      'not implemented',
-    );
+    ).rejects.toThrow('refused');
+  });
+
+  it('reads a Comgate transaction, knows none the account does not, and fails when Comgate does', async () => {
+    app = await bootApp({ env: PRODUCTION_ENV });
+    const credentials = { merchantId: '123456', secret: 'not-a-real-secret' };
+    const paid = {
+      code: 0,
+      transId: 'AB12-CD34-EF56',
+      status: 'PAID',
+      refId: 'ref',
+      price: '420000',
+      curr: 'CZK',
+      test: false,
+    };
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    fetchSpy.mockResolvedValueOnce(Response.json(paid));
+    expect(await app.get(PaymentGateway).getPayment(credentials, 'AB12-CD34-EF56')).toEqual({
+      transactionId: 'AB12-CD34-EF56',
+      status: 'paid',
+      referenceId: 'ref',
+      amountCzk: 4200,
+    });
+
+    fetchSpy.mockResolvedValueOnce(Response.json({ ...paid, test: true }));
+    expect(await app.get(PaymentGateway).getPayment(credentials, 'AB12-CD34-EF56')).toBeNull();
+
+    fetchSpy.mockResolvedValueOnce(Response.json({ code: 1400, message: 'Unknown' }, { status: 400 }));
+    expect(await app.get(PaymentGateway).getPayment(credentials, 'AB12-CD34-EF56')).toBeNull();
+
+    fetchSpy.mockResolvedValueOnce(Response.json({ ...paid, price: '420050' }));
+    await expect(app.get(PaymentGateway).getPayment(credentials, 'AB12-CD34-EF56')).rejects.toThrow('unexpected shape');
+
+    fetchSpy.mockResolvedValueOnce(new Response('', { status: 503 }));
+    await expect(app.get(PaymentGateway).getPayment(credentials, 'AB12-CD34-EF56')).rejects.toThrow('HTTP 503');
   });
 });

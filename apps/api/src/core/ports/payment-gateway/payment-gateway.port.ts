@@ -9,6 +9,7 @@ export interface CreatePaymentInput {
   // Our identifier, which the gateway reports back with the payment.
   referenceId: string;
   amountCzk: number;
+  // What the payer sees the payment as; at most 16 characters.
   label: string;
   email: string;
 }
@@ -21,6 +22,14 @@ export interface CreatedPayment {
 
 export type PaymentStatus = 'pending' | 'paid' | 'cancelled';
 
+// A transaction as the gateway reports it to the account it belongs to.
+export interface GatewayPayment {
+  transactionId: string;
+  status: PaymentStatus;
+  referenceId: string;
+  amountCzk: number;
+}
+
 export abstract class PaymentGateway {
   /**
    * Create a card payment at the gateway.
@@ -29,12 +38,14 @@ export abstract class PaymentGateway {
   public abstract createPayment(input: CreatePaymentInput): Promise<CreatedPayment>;
 
   /**
-   * Ask the gateway for the status of one of its transactions; rejects for an unknown one.
-   * @param credentials the account the transaction belongs to
+   * Ask the gateway for one of its transactions; rejects when the gateway cannot be reached, so the caller
+   * may try again.
+   * @param credentials the account the transaction must belong to
    * @param transactionId the gateway's transaction id
+   * @returns the transaction, or null when the account knows no such transaction
    */
-  public abstract getPaymentStatus(
+  public abstract getPayment(
     credentials: PaymentGatewayCredentials,
     transactionId: string,
-  ): Promise<PaymentStatus>;
+  ): Promise<GatewayPayment | null>;
 }

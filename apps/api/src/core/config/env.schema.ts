@@ -102,10 +102,19 @@ const pdfRenderer = z
 
 const paymentGateway = z
   .discriminatedUnion('PAYMENT_GATEWAY_ADAPTER', [
-    z.object({ PAYMENT_GATEWAY_ADAPTER: z.literal('comgate') }),
+    z.object({
+      PAYMENT_GATEWAY_ADAPTER: z.literal('comgate'),
+      // Comgate test payments, for a staging deployment against Organisations' test accounts.
+      COMGATE_TEST_PAYMENTS: z.enum(['true', 'false']).default('false'),
+    }),
     z.object({ PAYMENT_GATEWAY_ADAPTER: z.literal('fake') }),
   ])
-  .transform((env) => ({ paymentGateway: { adapter: env.PAYMENT_GATEWAY_ADAPTER } }));
+  .transform((env) => ({
+    paymentGateway:
+      env.PAYMENT_GATEWAY_ADAPTER === 'comgate'
+        ? { adapter: env.PAYMENT_GATEWAY_ADAPTER, testPayments: env.COMGATE_TEST_PAYMENTS === 'true' }
+        : { adapter: env.PAYMENT_GATEWAY_ADAPTER },
+  }));
 
 const MASTER_KEY_BYTES = 32;
 
@@ -162,6 +171,8 @@ const requestLimits = z
     SUBMISSION_LIMIT_PER_ORGANISATION: positiveInteger,
     LOGIN_LINK_LIMIT_PER_IP: positiveInteger,
     LOGIN_LINK_LIMIT_PER_EMAIL: positiveInteger,
+    GATEWAY_NOTIFICATION_LIMIT_PER_IP: positiveInteger,
+    GATEWAY_NOTIFICATION_LIMIT_PER_ORGANISATION: positiveInteger,
   })
   .transform((env) => {
     const windowMs = env.REQUEST_LIMIT_WINDOW_MINUTES * 60 * 1000;
@@ -184,6 +195,13 @@ const requestLimits = z
         // Per Organisation well above a popular Camp's opening rush, which may bring hundreds within minutes.
         submission: limitOf('submission', env.SUBMISSION_LIMIT_PER_IP, env.SUBMISSION_LIMIT_PER_ORGANISATION),
         loginLink: limitOf('login-link', env.LOGIN_LINK_LIMIT_PER_IP, env.LOGIN_LINK_LIMIT_PER_EMAIL),
+        // Each notification makes a call to Comgate. Comgate notifies every Organisation from a few
+        // addresses, so the address's limit is far above the Organisation's.
+        gatewayNotification: limitOf(
+          'gateway-notification',
+          env.GATEWAY_NOTIFICATION_LIMIT_PER_IP,
+          env.GATEWAY_NOTIFICATION_LIMIT_PER_ORGANISATION,
+        ),
       },
     };
   });

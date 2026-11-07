@@ -20,6 +20,7 @@ export { legalAcceptances, legalDocument } from './organisations/legal-acceptanc
 export { organisationKeys } from './organisations/organisation-keys.ts';
 export { operators } from './operators/operators.ts';
 export { organisations, organisationStatus } from './organisations/organisations.ts';
+export { paymentGatewayAccounts } from './organisations/payment-gateway-accounts.ts';
 export { claimedDiscountVerifications } from './registrations/claimed-discount-verifications.ts';
 export { declarationAnswers } from './registrations/declaration-answers.ts';
 export { guardianEmailChanges } from './registrations/guardian-email-changes.ts';

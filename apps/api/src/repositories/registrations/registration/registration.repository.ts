@@ -97,13 +97,23 @@ export class RegistrationRepository {
    * @throws {NotFoundException} when no Registration has this id in the current Organisation
    */
   public async lockByIdOrThrow(id: string): Promise<RegistrationEntity> {
-    const [row] = await this.unitOfWork.db.select().from(registrations).where(eq(registrations.id, id)).for('update');
+    const registration = await this.lockById(id);
 
-    if (row === undefined) {
+    if (registration === null) {
       throw new NotFoundException();
     }
 
-    return new RegistrationEntity(row);
+    return registration;
+  }
+
+  /**
+   * Get a Registration of the current Organisation by id and lock its row until the unit of work ends.
+   * @param id Registration id
+   */
+  public async lockById(id: string): Promise<RegistrationEntity | null> {
+    const [row] = await this.unitOfWork.db.select().from(registrations).where(eq(registrations.id, id)).for('update');
+
+    return row === undefined ? null : new RegistrationEntity(row);
   }
 
   /**

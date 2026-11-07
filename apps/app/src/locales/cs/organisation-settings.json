@@ -33,5 +33,19 @@
     "accentColourHint": "Barvu textu k ní zvolíme sami, aby byl vždy čitelný.",
     "accentPicker": "Vybrat barvu"
   },
-  "logoNone": "Organizace zatím nemá logo."
+  "logoNone": "Organizace zatím nemá logo.",
+  "paymentGateway": {
+    "title": "Platby kartou (Comgate)",
+    "intro": "Zadejte klíče vlastního účtu Comgate a rodiče budou moci platit kartou. Bez nich zůstává platba převodem.",
+    "none": "Platby kartou nejsou nastavené.",
+    "configured": "Platby kartou jdou přes účet Comgate {{merchantId}}.",
+    "remove": "Vypnout platby kartou",
+    "merchantId": "Identifikátor e-shopu (merchant)",
+    "secret": "Heslo pro komunikaci",
+    "secretHint": "Heslo uložíme šifrovaně a už ho nikdy nezobrazíme. Pro změnu zadejte klíče znovu.",
+    "save": "Uložit klíče",
+    "replace": "Nahradit klíče",
+    "saved": "Klíče jsou uložené.",
+    "removed": "Platby kartou jsou vypnuté."
+  }
 }

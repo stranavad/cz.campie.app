@@ -10,6 +10,8 @@ import { OrganisationSignedUpHandler } from './organisation/organisation-signed-
 import { OrganisationController } from './organisation/organisation.controller.ts';
 import { PublicOrganisationController } from './organisation/public-organisation.controller.ts';
 import { OrganisationService } from './organisation/services/organisation.service.ts';
+import { PaymentGatewayController } from './payment-gateway/payment-gateway.controller.ts';
+import { PaymentGatewayService } from './payment-gateway/services/payment-gateway.service.ts';
 
 @Module({
   imports: [AdminsModule, CampsModule],
@@ -18,8 +20,15 @@ import { OrganisationService } from './organisation/services/organisation.servic
     PublicOrganisationController,
     OrganisationSettingsController,
     PublicLogoController,
+    PaymentGatewayController,
   ],
-  providers: [OrganisationService, OrganisationSettingsService, LogoService, OrganisationSignedUpHandler],
-  exports: [OrganisationService],
+  providers: [
+    OrganisationService,
+    OrganisationSettingsService,
+    PaymentGatewayService,
+    LogoService,
+    OrganisationSignedUpHandler,
+  ],
+  exports: [OrganisationService, PaymentGatewayService],
 })
 export class OrganisationsModule {}

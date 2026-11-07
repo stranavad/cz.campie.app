@@ -109,14 +109,53 @@ export class LedgerService {
     });
 
     if (payment.source !== 'correction') {
-      const guardians = await this.registrations.listGuardians(registrationId);
-
-      guardians.forEach((_, index) =>
-        this.jobs.enqueue(sendPaymentReceivedJob, { paymentId: payment.id, guardian: index + 1 }),
-      );
+      await this.announce(payment);
     }
 
     return this.get(registrationId);
+  }
+
+  /**
+   * Record a card payment the gateway confirmed, once per gateway transaction, audited as the system's and
+   * emailed to both guardians.
+   * @param input the Registration, the gateway's transaction id and the amount it reports
+   * @returns the new entry, or null when the Registration is not the current Organisation's or the
+   * transaction was recorded before
+   */
+  public async recordGatewayPayment(input: {
+    registrationId: string;
+    transactionId: string;
+    amount: number;
+  }): Promise<PaymentEntity | null> {
+    if ((await this.registrations.lockById(input.registrationId)) === null) {
+      return null;
+    }
+
+    const now = this.clock.now();
+    const payment = await this.payments.createGatewayEntry({
+      registrationId: input.registrationId,
+      gatewayTransactionId: input.transactionId,
+      amount: input.amount,
+      paidOn: pragueDateOf(now),
+      note: 'Platba kartou',
+      recordedAt: now,
+    });
+
+    if (payment === null) {
+      return null;
+    }
+
+    await this.audit.record(
+      { kind: 'system' },
+      {
+        action: 'payment.create',
+        target: { type: 'registration', id: input.registrationId },
+        change: { before: null, after: payment },
+      },
+    );
+    await this.announce(payment);
+
+    return payment;
   }
 
   /**
@@ -145,6 +184,18 @@ export class LedgerService {
     });
 
     return this.get(registrationId);
+  }
+
+  /**
+   * Email a payment received to each guardian of its Registration, from jobs.
+   * @param payment the ledger entry
+   */
+  private async announce(payment: PaymentEntity): Promise<void> {
+    const guardians = await this.registrations.listGuardians(payment.registrationId);
+
+    guardians.forEach((_, index) =>
+      this.jobs.enqueue(sendPaymentReceivedJob, { paymentId: payment.id, guardian: index + 1 }),
+    );
   }
 
   /**

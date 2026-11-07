@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { asc, eq, inArray, sum } from 'drizzle-orm';
+import { asc, eq, inArray, isNotNull, sum } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { payments } from '../../../db/schema.ts';
 import { PaymentEntity, type PaymentInsertModel } from './payment.entity.ts';
 
-export type CreatePayment = Omit<PaymentInsertModel, 'id' | 'organisationId'>;
+export type CreatePayment = Omit<PaymentInsertModel, 'id' | 'organisationId' | 'gatewayTransactionId'>;
+export type CreateGatewayPayment = Omit<CreatePayment, 'source'> & { gatewayTransactionId: string };
 
 // The ledger is append-only: entries are added and read, never changed or removed.
 @Injectable()
@@ -52,6 +53,24 @@ export class PaymentRepository {
     }
 
     return new PaymentEntity(row);
+  }
+
+  /**
+   * Add the gateway's entry for one of its transactions, unless the transaction already has one.
+   * @param input the entry and the gateway's transaction id
+   * @returns the entry, or null when the transaction was recorded before
+   */
+  public async createGatewayEntry(input: CreateGatewayPayment): Promise<PaymentEntity | null> {
+    const [row] = await this.unitOfWork.db
+      .insert(payments)
+      .values({ ...input, source: 'gateway', organisationId: this.unitOfWork.organisationId })
+      .onConflictDoNothing({
+        target: [payments.organisationId, payments.gatewayTransactionId],
+        where: isNotNull(payments.gatewayTransactionId),
+      })
+      .returning();
+
+    return row === undefined ? null : new PaymentEntity(row);
   }
 
   /**

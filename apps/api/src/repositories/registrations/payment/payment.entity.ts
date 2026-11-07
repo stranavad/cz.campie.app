@@ -15,6 +15,7 @@ export class PaymentEntity {
   public readonly paidOn: string;
   public readonly note: string;
   public readonly recordedAt: Date;
+  public readonly gatewayTransactionId: string | null;
 
   constructor(row: PaymentSelectModel) {
     this.id = row.id;
@@ -24,6 +25,7 @@ export class PaymentEntity {
     this.paidOn = row.paidOn;
     this.note = row.note;
     this.recordedAt = row.recordedAt;
+    this.gatewayTransactionId = row.gatewayTransactionId;
   }
 
   toDto(): PaymentEntry {
