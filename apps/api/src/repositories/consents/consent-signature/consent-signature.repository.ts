@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { and, desc, eq, inArray, isNull, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
-import { consentSignatures } from '../../../db/schema.ts';
+import { consentSignatures, consentWithdrawals } from '../../../db/schema.ts';
 
 export type ConsentSignatureRow = InferSelectModel<typeof consentSignatures>;
+export type ConsentWithdrawalRow = InferSelectModel<typeof consentWithdrawals>;
 export type CreateConsentSignature = Omit<
   InferInsertModel<typeof consentSignatures>,
   'id' | 'organisationId' | 'fileId'
@@ -94,5 +95,43 @@ export class ConsentSignatureRepository {
       .returning({ id: consentSignatures.id });
 
     return rows.length > 0;
+  }
+
+  /**
+   * Record the withdrawal of a signature in the current Organisation.
+   * @param input the signature, who withdrew it, from where and when
+   * @throws {Error} when the database returns no row
+   */
+  public async addWithdrawal(
+    input: Omit<ConsentWithdrawalRow, 'id' | 'organisationId'>,
+  ): Promise<ConsentWithdrawalRow> {
+    const [row] = await this.unitOfWork.db
+      .insert(consentWithdrawals)
+      .values({ ...input, organisationId: this.unitOfWork.organisationId })
+      .returning();
+
+    if (row === undefined) {
+      throw new Error('The withdrawal was not recorded');
+    }
+
+    return row;
+  }
+
+  /**
+   * Find when each of signatures was withdrawn.
+   * @param signatureIds signature ids
+   * @returns the withdrawal time by signature id; one not withdrawn is missing
+   */
+  public async withdrawnAtOf(signatureIds: readonly string[]): Promise<Map<string, Date>> {
+    if (signatureIds.length === 0) {
+      return new Map();
+    }
+
+    const rows = await this.unitOfWork.db
+      .select({ signatureId: consentWithdrawals.signatureId, withdrawnAt: consentWithdrawals.withdrawnAt })
+      .from(consentWithdrawals)
+      .where(inArray(consentWithdrawals.signatureId, [...signatureIds]));
+
+    return new Map(rows.map(({ signatureId, withdrawnAt }) => [signatureId, withdrawnAt]));
   }
 }

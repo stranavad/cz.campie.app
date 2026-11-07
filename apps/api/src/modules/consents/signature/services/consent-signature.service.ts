@@ -2,12 +2,14 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 
 import {
   checkConsentAnswers,
+  type ConsentState,
   type ConsentVersion,
   type GuardianConsent,
   type GuardianConsentParams,
   type GuardianConsents,
   type SignConsentBody,
   type SignConsentErrorCode,
+  type WithdrawConsentErrorCode,
 } from '@repo/schema/consents';
 import { czechDate, czechDateTime } from '@repo/schema/shared';
 
@@ -36,9 +38,30 @@ import { CampEmailService } from '../../../camps/camp-email/services/camp-email.
 import { generateSignedConsentJob, sendConsentCopyJob } from '../signature.jobs.ts';
 import { SignedConsentDocument } from '../signed-consent.document.tsx';
 
+// A yes/no item a Participant's signature in force answered no, for printouts and filters.
+export interface DeclinedItem {
+  readonly participantId: string;
+  readonly consentId: string;
+  readonly itemId: string;
+  readonly text: string;
+}
+
 interface Family {
   readonly camp: CampEntity;
   readonly participants: readonly ParticipantEntity[];
+}
+
+/**
+ * Tell a child's state of a Consent by its newest signature.
+ * @param signature the newest signature, if any
+ * @param withdrawn when signatures were withdrawn, by id
+ */
+function stateOf(signature: ConsentSignatureRow | undefined, withdrawn: ReadonlyMap<string, Date>): ConsentState {
+  if (signature === undefined) {
+    return 'unsigned';
+  }
+
+  return withdrawn.has(signature.id) ? 'withdrawn' : 'signed';
 }
 
 // Guardians reading and signing their children's Consents in the portal, by typed name and place: a simple
@@ -80,6 +103,7 @@ export class ConsentSignatureService {
       ]),
     );
     const signed = await this.signatures.listNewestOf(participants.map(({ id }) => id));
+    const withdrawn = await this.signatures.withdrawnAtOf(signed.map(({ id }) => id));
     const versions = new Map(
       (await this.consents.listVersionsOf(consents.map(({ id }) => id))).map((version) => [version.id, version]),
     );
@@ -92,7 +116,7 @@ export class ConsentSignatureService {
       return {
         consentId,
         title: version.title,
-        state: signature === undefined ? ('unsigned' as const) : ('signed' as const),
+        state: stateOf(signature, withdrawn),
         signedVersion: signature === undefined ? null : (versions.get(signature.consentVersionId)?.version ?? null),
         signedAt: signature?.signedAt.toISOString() ?? null,
         signedPdf:
@@ -193,6 +217,74 @@ export class ConsentSignatureService {
   }
 
   /**
+   * Withdraw a child's newest signature of a withdrawable Consent, audited; its signed PDF stays.
+   * @param actor the guardian
+   * @param params the Registration, Participant and Consent
+   * @throws {ConflictException} consent_not_signed when no signature is in force; consent_not_withdrawable
+   * when the version signed cannot be withdrawn
+   */
+  public async withdraw(actor: Actor, params: GuardianConsentParams): Promise<GuardianConsent> {
+    if (actor.kind !== 'guardian') {
+      throw new Error('Only a guardian withdraws a Consent');
+    }
+
+    const { participant, version } = await this.signable(actor.identity, params, true);
+    const signature = await this.signatures.getNewest(participant.id, params.consentId);
+    const refuse = (code: WithdrawConsentErrorCode) =>
+      new ConflictException({ code, message: 'The signature cannot be withdrawn' });
+
+    if (signature === null || (await this.signatures.withdrawnAtOf([signature.id])).has(signature.id)) {
+      throw refuse('consent_not_signed');
+    }
+
+    if (!(await this.signedVersionOf(signature)).withdrawable) {
+      throw refuse('consent_not_withdrawable');
+    }
+
+    const withdrawal = await this.signatures.addWithdrawal({
+      signatureId: signature.id,
+      withdrawnByEmail: actor.identity,
+      ipAddress: actor.ipAddress,
+      withdrawnAt: this.clock.now(),
+    });
+
+    await this.audit.record(actor, {
+      action: 'consent.withdraw',
+      target: { type: 'participant', id: participant.id },
+      change: { before: null, after: withdrawal },
+    });
+
+    return this.show(participant, version, signature);
+  }
+
+  /**
+   * List the yes/no items each of Participants declined, read from their signatures in force only.
+   * @param participantIds Participant ids
+   */
+  public async declinedItemsOf(participantIds: readonly string[]): Promise<DeclinedItem[]> {
+    const signed = await this.signatures.listNewestOf(participantIds);
+    const withdrawn = await this.signatures.withdrawnAtOf(signed.map(({ id }) => id));
+    const inForce = signed.filter(({ id }) => !withdrawn.has(id));
+    const versions = new Map(
+      (await this.consents.listVersionsOf([...new Set(inForce.map(({ consentId }) => consentId))])).map((version) => [
+        version.id,
+        version,
+      ]),
+    );
+
+    return inForce.flatMap((signature) =>
+      (versions.get(signature.consentVersionId)?.items ?? [])
+        .filter(({ id, kind }) => kind === 'yes_no' && signature.answers[id] === false)
+        .map(({ id, text }) => ({
+          participantId: signature.participantId,
+          consentId: signature.consentId,
+          itemId: id,
+          text,
+        })),
+    );
+  }
+
+  /**
    * Render a signature's signed PDF, store it and have it emailed to the guardians.
    * @param signatureId signature id
    */
@@ -265,7 +357,12 @@ export class ConsentSignatureService {
   public async sendCopy(signatureId: string, guardian: number): Promise<void> {
     const signature = await this.signatures.getById(signatureId);
 
-    if (signature?.fileId === undefined || signature.fileId === null) {
+    // A signature withdrawn before its copy went out is not sent any more.
+    if (
+      signature?.fileId === undefined ||
+      signature.fileId === null ||
+      (await this.signatures.withdrawnAtOf([signature.id])).has(signature.id)
+    ) {
       return;
     }
 
@@ -335,6 +432,23 @@ export class ConsentSignatureService {
   }
 
   /**
+   * Find the version a signature signed.
+   * @param signature the signature
+   * @throws {Error} when the version is gone, which its foreign key prevents
+   */
+  private async signedVersionOf(signature: ConsentSignatureRow): Promise<ConsentVersionRow> {
+    const version = (await this.consents.listVersionsOf([signature.consentId])).find(
+      ({ id }) => id === signature.consentVersionId,
+    );
+
+    if (version === undefined) {
+      throw new Error('A signature names a version that does not exist');
+    }
+
+    return version;
+  }
+
+  /**
    * Show a Consent to sign for a child, with the child's newest signature.
    * @param participant the child
    * @param version the newest version
@@ -359,9 +473,15 @@ export class ConsentSignatureService {
       publishedAt: version.publishedAt.toISOString(),
     };
 
+    const withdrawnAt =
+      signature === null ? undefined : (await this.signatures.withdrawnAtOf([signature.id])).get(signature.id);
+    const withdrawable =
+      signature !== null && withdrawnAt === undefined && (await this.signedVersionOf(signature)).withdrawable;
+
     return {
       participant: { id: participant.id, firstName: participant.firstName, lastName: participant.lastName },
       version: shown,
+      withdrawable,
       signature:
         signature === null
           ? null
@@ -372,6 +492,7 @@ export class ConsentSignatureService {
               signerPlace: signature.signerPlace,
               signedAt: signature.signedAt.toISOString(),
               signedPdf: signature.fileId === null ? null : await this.files.link(signature.fileId),
+              withdrawnAt: withdrawnAt?.toISOString() ?? null,
             },
     };
   }

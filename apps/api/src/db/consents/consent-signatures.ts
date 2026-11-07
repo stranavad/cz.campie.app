@@ -27,6 +27,7 @@ export const consentSignatures = p.snakeCase.table.withRLS(
     fileId: p.uuid(),
   },
   (table) => [
+    p.unique('consent_signatures_organisation_id_id_key').on(table.organisationId, table.id),
     p
       .foreignKey({
         name: 'consent_signatures_participants_fkey',

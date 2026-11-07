@@ -6,7 +6,11 @@ import { czechDateTime } from '@repo/schema/shared';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useGuardianConsentQuery, useSignConsentMutation } from '@/features/portal/api/portal.queries';
+import {
+  useGuardianConsentQuery,
+  useSignConsentMutation,
+  useWithdrawConsentMutation,
+} from '@/features/portal/api/portal.queries';
 import { HttpError } from '@/lib/api';
 import { readErrorResponse } from '@/lib/api/error-response.helper';
 
@@ -15,6 +19,8 @@ export function ConsentSignForm({ params }: { params: GuardianConsentParams }) {
   const { t } = useTranslation('portal');
   const consent = useGuardianConsentQuery(params);
   const sign = useSignConsentMutation(params);
+  const withdraw = useWithdrawConsentMutation(params);
+  const [confirmWithdraw, setConfirmWithdraw] = useState(false);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const [signerName, setSignerName] = useState('');
   const [signerPlace, setSignerPlace] = useState('');
@@ -29,7 +35,7 @@ export function ConsentSignForm({ params }: { params: GuardianConsentParams }) {
     return consent.isError ? <p className="text-sm text-destructive">{t('consents.loadFailed')}</p> : null;
   }
 
-  const { version, signature } = consent.data;
+  const { version, signature, withdrawable } = consent.data;
   const answer = (itemId: string, value: boolean) => {
     sign.reset();
     setAnswers({ ...answers, [itemId]: value });
@@ -120,6 +126,11 @@ export function ConsentSignForm({ params }: { params: GuardianConsentParams }) {
       {signature === null ? null : (
         <p className="flex flex-wrap gap-x-2">
           {t('consents.signedAt', { name: signature.signerName, date: czechDateTime(signature.signedAt) })}
+          {signature.withdrawnAt === null ? null : (
+            <span className="font-medium">
+              {t('consents.withdrawnAt', { date: czechDateTime(signature.withdrawnAt) })}
+            </span>
+          )}
           {signature.signedPdf === null ? null : (
             <a href={signature.signedPdf.url} target="_blank" rel="noreferrer" className="underline">
               {t('consents.signedPdf')}
@@ -127,6 +138,19 @@ export function ConsentSignForm({ params }: { params: GuardianConsentParams }) {
           )}
         </p>
       )}
+      {withdrawable ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={withdraw.isPending}
+            onClick={() => (confirmWithdraw ? withdraw.mutate() : setConfirmWithdraw(true))}
+          >
+            {confirmWithdraw ? t('consents.withdrawConfirm') : t('consents.withdraw')}
+          </Button>
+          {withdraw.isError ? <span className="text-destructive">{t('consents.withdrawFailed')}</span> : null}
+        </div>
+      ) : null}
       <Button
         type="submit"
         className="self-start"

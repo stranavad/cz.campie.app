@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import {
   createAdmin,
   createCamp,
@@ -10,6 +11,7 @@ import {
 } from '../../../testing/fixtures.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
+import { ConsentSignatureService } from './services/consent-signature.service.ts';
 
 const INFO = '0190a2b4-0000-7000-8000-0000000000d1';
 const RULES = '0190a2b4-0000-7000-8000-0000000000d2';
@@ -176,5 +178,71 @@ describe('signing Consents', () => {
 
     await expectIsolated(() => sign(other));
     await expectIsolated(() => http().get(consentPath()).set(other));
+  });
+
+  describe('withdrawing, signing again and Declined items', () => {
+    const withdraw = (headers = guardian) => http().post(`${consentPath()}/withdrawal`).set(headers);
+    const stateNow = async () =>
+      (await http().get(`/api/portal/registrations/${registrationId}/consents`).set(guardian)).body.participants[0]
+        .consents[0];
+    const declined = () =>
+      app()
+        .get(UnitOfWork)
+        .run(organisationId, () => app().get(ConsentSignatureService).declinedItemsOf([participantId]));
+    const makeWithdrawable = async () => {
+      const published = await http()
+        .put(`/api/camps/${campId}/consents/${consentId}`)
+        .set(owner)
+        .send({ ...CONTENT, withdrawable: true });
+      versionId = published.body.versions[0].id;
+    };
+
+    it('refuses to withdraw a Consent that cannot be withdrawn, or one not signed', async () => {
+      expect((await withdraw()).body.code).toBe('consent_not_signed');
+      await sign(guardian);
+
+      expect((await withdraw()).body.code).toBe('consent_not_withdrawable');
+    });
+
+    it('withdraws a withdrawable signature, audited, keeping its signed PDF', async () => {
+      await makeWithdrawable();
+      await sign(guardian);
+      await jobs().drain();
+
+      const response = await withdraw();
+
+      expect(response.status).toBe(201);
+      expect(response.body).toMatchObject({ withdrawable: false, signature: { withdrawnAt: expect.any(String) } });
+      expect(await stateNow()).toMatchObject({ state: 'withdrawn', signedPdf: { url: expect.any(String) } });
+      expect(await query(`SELECT actor_kind FROM audit_entries WHERE action = 'consent.withdraw'`)).toEqual([
+        { actor_kind: 'guardian' },
+      ]);
+      expect((await withdraw()).body.code).toBe('consent_not_signed');
+    });
+
+    it('keeps every signature when signing again, the newest in force, and a new version changes nothing', async () => {
+      await sign(guardian, { [RULES]: true, [PHOTOS]: false });
+      expect(await declined()).toEqual([
+        { participantId, consentId, itemId: PHOTOS, text: 'Souhlasím s fotografováním dítěte.' },
+      ]);
+
+      await sign(guardian, { [RULES]: true, [PHOTOS]: true });
+      expect(await query('SELECT FROM consent_signatures')).toHaveLength(2);
+      expect(await declined()).toEqual([]);
+
+      await http()
+        .put(`/api/camps/${campId}/consents/${consentId}`)
+        .set(owner)
+        .send({ ...CONTENT, title: 'Nové znění' });
+      expect(await stateNow()).toMatchObject({ state: 'signed', signedVersion: 1 });
+    });
+
+    it('reads no Declined item from a withdrawn signature', async () => {
+      await makeWithdrawable();
+      await sign(guardian, { [RULES]: true, [PHOTOS]: false });
+      await withdraw();
+
+      expect(await declined()).toEqual([]);
+    });
   });
 });

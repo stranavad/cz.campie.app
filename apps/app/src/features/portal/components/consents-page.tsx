@@ -45,9 +45,11 @@ export function ConsentsPage({ registrationId }: { registrationId: string }) {
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="font-medium">{consent.title}</span>
                   <span className={consent.state === 'signed' ? '' : 'text-destructive'}>
-                    {consent.state === 'signed' && consent.signedAt !== null
-                      ? t('consents.signedOn', { date: czechDateTime(consent.signedAt) })
-                      : t('consents.unsigned')}
+                    {consent.state === 'unsigned' || consent.signedAt === null
+                      ? t('consents.unsigned')
+                      : consent.state === 'withdrawn'
+                        ? t('consents.withdrawn')
+                        : t('consents.signedOn', { date: czechDateTime(consent.signedAt) })}
                   </span>
                   {consent.signedPdf === null ? null : (
                     <a href={consent.signedPdf.url} target="_blank" rel="noreferrer" className="underline">

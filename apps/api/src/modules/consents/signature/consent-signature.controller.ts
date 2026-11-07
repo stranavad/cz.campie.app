@@ -4,6 +4,7 @@ import {
   getGuardianConsentEndpoint,
   listGuardianConsentsEndpoint,
   signConsentEndpoint,
+  withdrawConsentEndpoint,
   type GuardianConsent,
   type GuardianConsentParams,
   type GuardianConsents,
@@ -46,5 +47,13 @@ export class ConsentSignatureController {
     @EndpointBody(signConsentEndpoint) body: SignConsentBody,
   ): Promise<GuardianConsent> {
     return this.signatures.sign(actor, userAgent ?? '', params, body);
+  }
+
+  @Endpoint(withdrawConsentEndpoint)
+  public withdraw(
+    @RequestActor() actor: Actor,
+    @EndpointParams(withdrawConsentEndpoint) params: GuardianConsentParams,
+  ): Promise<GuardianConsent> {
+    return this.signatures.withdraw(actor, params);
   }
 }

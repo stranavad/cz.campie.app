@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { GuardianConsentParams, SignConsentBody } from '@repo/schema/consents';
+import type { GuardianConsent, GuardianConsentParams, SignConsentBody } from '@repo/schema/consents';
 import type {
   AddGuardianBody,
   AnswerNewFieldsBody,
@@ -103,12 +103,15 @@ export const useGuardianConsentQuery = (params: GuardianConsentParams) =>
     queryFn: ({ signal }) => portalService.consent(params, signal),
   });
 
-// A signature changes the child's state in the list; its PDF follows from a job.
-export const useSignConsentMutation = (params: GuardianConsentParams) => {
+// A signature or a withdrawal changes the child's state in the list; a signed PDF follows from a job.
+function useConsentChange<Variables>(
+  params: GuardianConsentParams,
+  mutationFn: (variables: Variables) => Promise<GuardianConsent>,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: SignConsentBody) => portalService.signConsent(params, body),
+    mutationFn,
     onSuccess: async (consent) => {
       queryClient.setQueryData(
         portalKeys.consent(params.registrationId, params.participantId, params.consentId),
@@ -117,4 +120,10 @@ export const useSignConsentMutation = (params: GuardianConsentParams) => {
       await queryClient.invalidateQueries({ queryKey: portalKeys.consents(params.registrationId), exact: true });
     },
   });
-};
+}
+
+export const useSignConsentMutation = (params: GuardianConsentParams) =>
+  useConsentChange(params, (body: SignConsentBody) => portalService.signConsent(params, body));
+
+export const useWithdrawConsentMutation = (params: GuardianConsentParams) =>
+  useConsentChange<void>(params, () => portalService.withdrawConsent(params));

@@ -129,6 +129,11 @@
       "consent_answer_missing": "Vyberte prosím odpověď.",
       "consent_agreement_required": "Bez souhlasu s tímto bodem nelze podepsat.",
       "consent_answer_unexpected": "Tento bod odpověď nepotřebuje."
-    }
+    },
+    "withdrawn": "Odvoláno",
+    "withdrawnAt": "Odvoláno {{date}}.",
+    "withdraw": "Odvolat souhlas",
+    "withdrawConfirm": "Opravdu odvolat? Klikněte znovu.",
+    "withdrawFailed": "Souhlas se nepodařilo odvolat."
   }
 }

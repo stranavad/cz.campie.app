@@ -5,8 +5,8 @@ import { defineEndpoint } from '@repo/schema/shared';
 
 import { consentVersionSchema } from '../consent/consent.resource.ts';
 
-// Per Participant and Consent: not signed yet, or signed (the newest signature counts).
-export const CONSENT_STATES = ['unsigned', 'signed'] as const;
+// Per Participant and Consent, by the newest signature: none yet, signed, or signed and then Withdrawn.
+export const CONSENT_STATES = ['unsigned', 'signed', 'withdrawn'] as const;
 
 export type ConsentState = (typeof CONSENT_STATES)[number];
 
@@ -63,6 +63,8 @@ export const consentSignatureSchema = z.object({
   signerPlace: z.string(),
   signedAt: z.iso.datetime(),
   signedPdf: fileLinkSchema.nullable(),
+  // When the guardians withdrew it; its signed PDF stays.
+  withdrawnAt: z.iso.datetime().nullable(),
 });
 
 export type ConsentSignature = z.infer<typeof consentSignatureSchema>;
@@ -72,6 +74,8 @@ export const guardianConsentSchema = z.object({
   participant: z.object({ id: z.uuid(), firstName: z.string(), lastName: z.string() }),
   version: consentVersionSchema,
   signature: consentSignatureSchema.nullable(),
+  // Whether the signature may be withdrawn: signed, not withdrawn, on a withdrawable version.
+  withdrawable: z.boolean(),
 });
 
 export type GuardianConsent = z.infer<typeof guardianConsentSchema>;
@@ -107,5 +111,19 @@ export const signConsentEndpoint = defineEndpoint({
   path: '/portal/registrations/:registrationId/participants/:participantId/consents/:consentId/signatures',
   params: guardianConsentParamsSchema,
   body: signConsentBodySchema,
+  response: guardianConsentSchema,
+});
+
+// `consent_not_withdrawable`: the version signed cannot be withdrawn; `consent_not_signed`: there is no
+// signature in force to withdraw.
+export const WITHDRAW_CONSENT_ERROR_CODES = ['consent_not_withdrawable', 'consent_not_signed'] as const;
+
+export type WithdrawConsentErrorCode = (typeof WITHDRAW_CONSENT_ERROR_CODES)[number];
+
+// Withdraws the child's newest signature of a withdrawable Consent, audited; its signed PDF stays.
+export const withdrawConsentEndpoint = defineEndpoint({
+  method: 'POST',
+  path: '/portal/registrations/:registrationId/participants/:participantId/consents/:consentId/withdrawal',
+  params: guardianConsentParamsSchema,
   response: guardianConsentSchema,
 });

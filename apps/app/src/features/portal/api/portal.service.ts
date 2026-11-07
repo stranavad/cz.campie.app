@@ -2,6 +2,7 @@ import {
   getGuardianConsentEndpoint,
   listGuardianConsentsEndpoint,
   signConsentEndpoint,
+  withdrawConsentEndpoint,
   type GuardianConsentParams,
   type SignConsentBody,
 } from '@repo/schema/consents';
@@ -57,4 +58,5 @@ export const portalService = {
     apiClient.request(getGuardianConsentEndpoint, { params, signal }),
   signConsent: (params: GuardianConsentParams, body: SignConsentBody) =>
     apiClient.request(signConsentEndpoint, { params, body }),
+  withdrawConsent: (params: GuardianConsentParams) => apiClient.request(withdrawConsentEndpoint, { params }),
 };
