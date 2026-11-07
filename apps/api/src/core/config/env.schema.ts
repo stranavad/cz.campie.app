@@ -158,6 +158,8 @@ const requestLimits = z
     PASSWORD_RESET_LIMIT_PER_EMAIL: positiveInteger,
     PRICE_PREVIEW_LIMIT_PER_IP: positiveInteger,
     PRICE_PREVIEW_LIMIT_PER_ORGANISATION: positiveInteger,
+    SUBMISSION_LIMIT_PER_IP: positiveInteger,
+    SUBMISSION_LIMIT_PER_ORGANISATION: positiveInteger,
   })
   .transform((env) => {
     const windowMs = env.REQUEST_LIMIT_WINDOW_MINUTES * 60 * 1000;
@@ -177,6 +179,8 @@ const requestLimits = z
           env.PRICE_PREVIEW_LIMIT_PER_IP,
           env.PRICE_PREVIEW_LIMIT_PER_ORGANISATION,
         ),
+        // Per Organisation well above a popular Camp's opening rush, which may bring hundreds within minutes.
+        submission: limitOf('submission', env.SUBMISSION_LIMIT_PER_IP, env.SUBMISSION_LIMIT_PER_ORGANISATION),
       },
     };
   });

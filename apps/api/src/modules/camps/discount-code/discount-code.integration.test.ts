@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
-import { createAdmin, createCamp, createOrganisation, signIn, type RequestHeaders } from '../../../testing/fixtures.ts';
+import {
+  createAdmin,
+  createCamp,
+  createOrganisation,
+  signIn,
+  submitRegistration,
+  type RequestHeaders,
+} from '../../../testing/fixtures.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { snapshot } from '../../../testing/tenant-isolation.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
@@ -32,12 +39,8 @@ describe('discount codes', () => {
     http().post(`/api/camps/${id}/discount-codes`).set(headers).send(body);
   const list = (headers: RequestHeaders, id = campId) => http().get(`/api/camps/${id}/discount-codes`).set(headers);
 
-  // Records a use, as a submission will, straight in the database.
-  const recordUse = (discountCodeId: string) =>
-    query('INSERT INTO discount_code_uses (organisation_id, discount_code_id, used_at) VALUES ($1, $2, now())', [
-      organisationId,
-      discountCodeId,
-    ]);
+  // Uses a code by a guardian's submission.
+  const recordUse = (code: string) => submitRegistration(app(), organisationId, campId, code);
 
   it('creates a Discount code, switched on and unused, audited', async () => {
     const response = await create(owner.headers(organisationId));
@@ -83,12 +86,12 @@ describe('discount codes', () => {
   });
 
   it('counts recorded uses and reports the code exhausted at its limit', async () => {
-    const { id } = (await create(owner.headers(organisationId))).body;
+    await create(owner.headers(organisationId));
 
-    await recordUse(id);
+    await recordUse(CODE.code);
     expect((await list(owner.headers(organisationId))).body).toMatchObject([{ uses: 1, status: 'valid' }]);
 
-    await recordUse(id);
+    await recordUse(CODE.code);
     expect((await list(owner.headers(organisationId))).body).toMatchObject([{ uses: 2, status: 'exhausted' }]);
   });
 
@@ -121,7 +124,7 @@ describe('discount codes', () => {
   it('removes a code nobody used, audited, and keeps a used one', async () => {
     const unused = (await create(owner.headers(organisationId))).body;
     const used = (await create(owner.headers(organisationId), { ...CODE, code: 'POUZITY' })).body;
-    await recordUse(used.id);
+    await recordUse('POUZITY');
 
     expect((await http().delete(`/api/discount-codes/${unused.id}`).set(owner.headers(organisationId))).status).toBe(
       204,
@@ -149,8 +152,8 @@ describe('discount codes', () => {
     expect(await check(otherCampId, 'LETO-2027')).toEqual({ code: null, status: 'unknown' });
     expect((await check(campId, 'ZIMA')).status).toBe('unknown');
 
-    await recordUse(id);
-    await recordUse(id);
+    await recordUse('leto-2027');
+    await recordUse('leto-2027');
     expect((await check(campId, 'LETO-2027')).status).toBe('exhausted');
   });
 

@@ -23,3 +23,7 @@ A background job generates one Přihláška PDF per Participant after submission
 
 - Spec sections: Generated documents and printouts; Payments.
 - Port from Domino: `packages/printouts/src/printouts/Prihlaska.tsx`, `apps/api/src/pdf/services/pdf.service.ts` (qrcode + spayd), `apps/api/src/pdf/services/prihlaska.helpers.ts` and its spec.
+
+## Comments
+
+2026-11-07 - **From issue 35.** Submission enqueues `registrationSubmittedJob` (`modules/registrations/registration/registration-submitted.job.ts`, payload `{ registrationId }`); its handler only tells the Camp's team today (`RegistrationService.notifyTeam`). Generate the PDFs from that job or a job it enqueues. The frozen price lines are `price_lines` (ordered by `position`, a Participant's by `participant_id`), the Deposit owed first is `registrations.deposit_total`, the form version is `registrations.form_version_id`, the declaration answers `declaration_answers`.

@@ -22,6 +22,7 @@ import { AdminsModule } from './modules/admins/admins.module.ts';
 import { CampsModule } from './modules/camps/camps.module.ts';
 import { ConsoleModule } from './modules/console/console.module.ts';
 import { OrganisationsModule } from './modules/organisations/organisations.module.ts';
+import { RegistrationsModule } from './modules/registrations/registrations.module.ts';
 import { RepositoriesModule } from './repositories/repositories.module.ts';
 
 @Module({})
@@ -54,6 +55,7 @@ export class AppModule {
         OrganisationsModule,
         AdminsModule,
         CampsModule,
+        RegistrationsModule,
         ConsoleModule,
       ],
     };

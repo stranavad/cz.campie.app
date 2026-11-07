@@ -1,9 +1,21 @@
 import { z } from 'zod';
 
+// One field's reason a request was refused, for a form to show at the field: where (as the request's
+// path), an i18n code, and what the code's text needs.
+export const fieldErrorSchema = z.object({
+  path: z.array(z.union([z.string(), z.number()])).max(10),
+  code: z.string(),
+  params: z.record(z.string(), z.number()).optional(),
+});
+
+export type FieldError = z.infer<typeof fieldErrorSchema>;
+
 export const errorResponseSchema = z.object({
   statusCode: z.number().int(),
   code: z.string().optional(),
   message: z.string(),
+  // A refused form's reasons per field, so it keeps its data and shows them where they belong.
+  fields: z.array(fieldErrorSchema).max(500).optional(),
 });
 
 export type ErrorResponse = z.infer<typeof errorResponseSchema>;

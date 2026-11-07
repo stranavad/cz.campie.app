@@ -2,14 +2,14 @@ import { useTranslation } from 'react-i18next';
 
 import type { PreviewPriceResponse } from '@repo/schema/camps';
 
+import { czk } from '@/core/camp-page';
+
 interface PriceCardProps {
   price: PreviewPriceResponse | undefined;
   // The price shown is of the answers before the last change, while the new one loads.
   isStale: boolean;
   isFailing: boolean;
 }
-
-const czk = (amount: number) => `${new Intl.NumberFormat('cs-CZ').format(amount)} Kč`;
 
 // The price as the camp will store it: every line, the total and what is owed first.
 export function PriceCard({ price, isStale, isFailing }: PriceCardProps) {

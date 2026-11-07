@@ -5,6 +5,7 @@ import {
   previewPriceEndpoint,
   type PreviewPriceBody,
 } from '@repo/schema/camps';
+import { submitRegistrationEndpoint, type SubmitRegistrationBody } from '@repo/schema/registrations';
 
 import { apiClient } from '@/lib/api';
 
@@ -16,4 +17,6 @@ export const registrationService = {
     apiClient.request(listPublicTurnusyEndpoint, { params: { slug }, signal }),
   price: (slug: string, body: PreviewPriceBody, signal?: AbortSignal) =>
     apiClient.request(previewPriceEndpoint, { params: { slug }, body, signal }),
+  submit: (slug: string, body: SubmitRegistrationBody) =>
+    apiClient.request(submitRegistrationEndpoint, { params: { slug }, body }),
 };

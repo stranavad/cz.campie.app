@@ -1,14 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 
-import { turnusAvailability, type PublicTurnus, type Turnus, type TurnusBody } from '@repo/schema/camps';
+import {
+  turnusAvailability,
+  type PublicTurnus,
+  type RemoveTurnusErrorCode,
+  type Turnus,
+  type TurnusAvailability,
+  type TurnusBody,
+} from '@repo/schema/camps';
 import { instantFromPragueLocal } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
+import { violatedConstraint } from '../../../../core/database/constraint-violation.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import type { TurnusEntity } from '../../../../repositories/camps/turnus/turnus.entity.ts';
 import { TurnusRepository, type TurnusFields } from '../../../../repositories/camps/turnus/turnus.repository.ts';
+import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 
 // The Turnusy of the current Organisation's Camps. Permission (Camp settings) is the route's.
 @Injectable()
@@ -16,6 +25,7 @@ export class TurnusService {
   constructor(
     private readonly turnusy: TurnusRepository,
     private readonly camps: CampRepository,
+    private readonly registrations: RegistrationRepository,
     private readonly audit: AuditService,
     private readonly clock: Clock,
   ) {}
@@ -27,7 +37,9 @@ export class TurnusService {
   public async listByCamp(campId: string): Promise<Turnus[]> {
     await this.camps.getByIdOrThrow(campId);
 
-    return (await this.turnusy.listByCamp(campId)).map((turnus) => this.withAvailability(turnus));
+    return (await this.availabilityOf(await this.turnusy.listByCamp(campId))).map(
+      ({ turnus, registered, availability }) => turnus.toDto(registered, availability),
+    );
   }
 
   /**
@@ -38,11 +50,9 @@ export class TurnusService {
   public async listPublic(campId: string): Promise<PublicTurnus[]> {
     const now = this.clock.now();
 
-    return (await this.turnusy.listByCamp(campId)).map((turnus) => {
-      const registered = this.registeredIn(turnus);
-
-      return turnus.toPublicDto(registered, turnusAvailability(turnus, registered, now), now);
-    });
+    return (await this.availabilityOf(await this.turnusy.listByCamp(campId))).map(
+      ({ turnus, registered, availability }) => turnus.toPublicDto(registered, availability, now),
+    );
   }
 
   /**
@@ -93,12 +103,12 @@ export class TurnusService {
   }
 
   /**
-   * Remove a Turnus, audited.
+   * Remove a Turnus no Registration was submitted to, audited.
    * @param actor who does it
    * @param id Turnus id
    */
   public async remove(actor: Actor, id: string): Promise<void> {
-    const removed = await this.turnusy.remove(id);
+    const removed = await this.removeUnregistered(id);
 
     await this.audit.record(actor, {
       action: 'turnus.remove',
@@ -108,22 +118,49 @@ export class TurnusService {
   }
 
   /**
-   * Count a Turnus's Registered Participants. No Registrations exist yet, so none holds any.
-   * @param _turnus the Turnus
+   * Remove a Turnus, unless Registrations hold it.
+   * @param id Turnus id
+   * @throws {ConflictException} turnus_has_registrations when a Registration was submitted to it
    */
-  private registeredIn(_turnus: TurnusEntity): number {
-    return 0;
+  private async removeUnregistered(id: string): Promise<TurnusEntity> {
+    try {
+      return await this.turnusy.remove(id);
+    } catch (error) {
+      if (violatedConstraint(error, 'foreignKey') === 'registrations_turnusy_fkey') {
+        const code: RemoveTurnusErrorCode = 'turnus_has_registrations';
+
+        throw new ConflictException({ code, message: 'Registrations were submitted to the Turnus' });
+      }
+
+      throw error;
+    }
   }
 
   /**
    * Show a Turnus with its availability by the Clock.
    * @param turnus the Turnus
    */
-  private withAvailability(turnus: TurnusEntity): Turnus {
-    const registered = this.registeredIn(turnus);
-    const availability = turnusAvailability(turnus, registered, this.clock.now());
+  private async withAvailability(turnus: TurnusEntity): Promise<Turnus> {
+    const [shown] = await this.availabilityOf([turnus]);
 
-    return turnus.toDto(registered, availability);
+    return turnus.toDto(shown?.registered ?? 0, shown?.availability ?? 'open');
+  }
+
+  /**
+   * Count Turnusy's Registered Participants in one query and tell their availability by the Clock.
+   * @param turnusy the Turnusy
+   */
+  private async availabilityOf(
+    turnusy: readonly TurnusEntity[],
+  ): Promise<{ turnus: TurnusEntity; registered: number; availability: TurnusAvailability }[]> {
+    const counts = await this.registrations.countRegistered(turnusy.map(({ id }) => id));
+    const now = this.clock.now();
+
+    return turnusy.map((turnus) => {
+      const registered = counts.get(turnus.id) ?? 0;
+
+      return { turnus, registered, availability: turnusAvailability(turnus, registered, now) };
+    });
   }
 }
 

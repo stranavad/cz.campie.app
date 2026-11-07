@@ -1,7 +1,7 @@
 import { Catch, HttpException, HttpStatus, Logger, type ArgumentsHost, type ExceptionFilter } from '@nestjs/common';
 import type { Response } from 'express';
 
-import type { ErrorResponse } from '@repo/schema/shared';
+import { errorResponseSchema, type ErrorResponse } from '@repo/schema/shared';
 
 @Catch()
 export class HttpErrorFilter implements ExceptionFilter {
@@ -16,11 +16,16 @@ export class HttpErrorFilter implements ExceptionFilter {
   private fromHttpException(exception: HttpException): ErrorResponse {
     const response = exception.getResponse();
     const code = typeof response === 'object' && 'code' in response ? response.code : undefined;
+    // Only field reasons in their declared shape pass, so nothing else a route put there leaks.
+    const fields = errorResponseSchema.shape.fields.safeParse(
+      typeof response === 'object' && 'fields' in response ? response.fields : undefined,
+    );
 
     return {
       statusCode: exception.getStatus(),
       ...(typeof code === 'string' ? { code } : {}),
       message: exception.message,
+      ...(fields.success && fields.data !== undefined ? { fields: fields.data } : {}),
     };
   }
 

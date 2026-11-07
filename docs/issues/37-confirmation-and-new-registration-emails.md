@@ -23,3 +23,7 @@ After the Přihláška PDFs exist, a job sends the registration confirmation to 
 
 - Spec sections: Emails.
 - Port from Domino: `apps/api/emails/confirmation.tsx`, `apps/api/src/email/services/email.service.ts`.
+
+## Comments
+
+2026-11-07 - **From issue 35.** The team notification (`new_registration_notification`) is already sent from the submission's job through `CampEmailService.send` (`RegistrationService.notifyTeam`), covered in `registration.integration.test.ts`. The guardian confirmation still needs the PDFs, so chain it after issue 36's job; guardians are `registration_guardians` (position 1 and 2).

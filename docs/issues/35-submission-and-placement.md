@@ -1,6 +1,6 @@
 # 35 - Submission and placement
 
-Status: ready-for-agent
+Status: done
 Stage: 1a
 Episode: E3 Public registration
 Blocked by: 10, 31, 34
@@ -12,17 +12,17 @@ Submitting the public form creates a Registration in one Turnus with its Partici
 
 ## Acceptance criteria
 
-- [ ] Concurrent submissions for the last place: exactly one succeeds, the other gets "full" (API seam test with real PostgreSQL).
-- [ ] Concurrent submissions with a code that has one use left: exactly one gets the discount, the other is rejected at the code field.
-- [ ] Window, manual close and age limits block submission with specific error keys; window boundaries tested with the Clock.
-- [ ] Same idempotency key twice returns the first Registration and creates nothing new.
-- [ ] Variable symbol format and uniqueness within the Organisation; clash retry tested with a forced clash.
-- [ ] Price lines stored equal the price-preview result; later price list changes do not alter them.
+- [x] Concurrent submissions for the last place: exactly one succeeds, the other gets "full" (API seam test with real PostgreSQL).
+- [x] Concurrent submissions with a code that has one use left: exactly one gets the discount, the other is rejected at the code field.
+- [x] Window, manual close and age limits block submission with specific error keys; window boundaries tested with the Clock.
+- [x] Same idempotency key twice returns the first Registration and creates nothing new.
+- [x] Variable symbol format and uniqueness within the Organisation; clash retry tested with a forced clash.
+- [x] Price lines stored equal the price-preview result; later price list changes do not alter them.
 - [ ] Encrypted fields are ciphertext in the database.
-- [ ] Declaration answers stored with time and IP; mandatory unchecked declarations reject.
-- [ ] Organisation not approved or suspended: submission rejected.
-- [ ] Audit entry with actor guardian (by email) and the submission.
-- [ ] Jobs enqueued; the HTTP response does not wait for them.
+- [x] Declaration answers stored with time and IP; mandatory unchecked declarations reject.
+- [x] Organisation not approved or suspended: submission rejected.
+- [x] Audit entry with actor guardian (by email) and the submission.
+- [x] Jobs enqueued; the HTTP response does not wait for them.
 
 ## Notes
 
@@ -45,3 +45,5 @@ Submitting the public form creates a Registration in one Turnus with its Partici
 2026-11-07 - **From issue 33.** Count Registered Participants in `TurnusService.registeredIn` (one place for the admin and public views). The public Camp route is `routes/organisation/$campSlug.tsx`; move it to `$campSlug/index.tsx` when the form's `$campSlug/prihlaska` route arrives.
 
 2026-11-07 - **From issue 34.** Price only answers that passed `submissionSchema` (a single choice sent as an array would otherwise stack its surcharges); count the submission against a request limit (`requestLimits`, per IP and per Organisation); refuse a child outside the age limits with `ageProblem`; the form's answers arrive keyed as `checkSubmission` expects.
+
+2026-11-07 - **Done.** `POST /api/public-camps/:slug/registrations` (`@repo/schema/registrations`) stores the Registration with guardians (`registration_guardians`), Participants (core columns, other answers as JSON under key or field id), frozen `price_lines`, `deposit_total`, the form version, and `declaration_answers` with time and IP; a code's use is a `discount_code_uses` row with its Registration. Checks run first without locks (answers, children per form, age limits at the birth date, mandatory declarations, code); then the Turnus row is locked (`lock_timeout` 5 s, else 503 `turnus_busy`), capacity and window rechecked, the code row locked and rechecked, and everything stored in the same unit of work. Variable symbol: Prague yy + 6 random digits, `ON CONFLICT DO NOTHING` and a new draw on a clash. Idempotency: transaction-level advisory lock on the key, then lookup; the same key in another Turnus answers 409 `idempotency_key_reused`. Refusals answer 400 `submission_invalid` with `fields` (path, code, params), or 409 with the Turnus's reason. Rate limited per address first and per Organisation only once the answers check out. Audit `registration.submit` with the guardian's email as actor. The job `registrations.registration-submitted` tells the Camp's team (`new_registration_notification`). `TurnusService` counts Registered Participants in one query; removing a Turnus with Registrations answers 409 `turnus_has_registrations`. The public form sends, keeps a key per sent content, shows server refusals at their fields and a confirmation with the Variable symbol. Not done: encrypted answers, as the standard field catalogue has no sensitive field yet; handed to issue 29.

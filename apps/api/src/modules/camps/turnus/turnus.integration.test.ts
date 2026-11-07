@@ -2,7 +2,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { instantFromPragueLocal } from '@repo/schema/shared';
 
-import { createAdmin, createCamp, createOrganisation, signIn, type RequestHeaders } from '../../../testing/fixtures.ts';
+import {
+  createAdmin,
+  createCamp,
+  createOrganisation,
+  signIn,
+  submitRegistration,
+  type RequestHeaders,
+} from '../../../testing/fixtures.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { snapshot } from '../../../testing/tenant-isolation.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
@@ -158,6 +165,18 @@ describe('turnusy', () => {
       { action: 'turnus.create' },
       { action: 'turnus.remove' },
     ]);
+  });
+
+  it('keeps a Turnus that has Registrations', async () => {
+    const { id } = await submitRegistration(app(), organisationId, campId);
+    const [registration] = await query<{ turnus_id: string }>('SELECT turnus_id FROM registrations WHERE id = $1', [
+      id,
+    ]);
+
+    const refused = await http().delete(`/api/turnusy/${registration?.turnus_id}`).set(owner.headers(organisationId));
+
+    expect(refused.status).toBe(409);
+    expect(refused.body).toMatchObject({ code: 'turnus_has_registrations' });
   });
 
   it('takes Camp settings read to see Turnusy and write to change them', async () => {

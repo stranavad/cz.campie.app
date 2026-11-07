@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import type { PreviewPriceBody, PublicTurnus } from '@repo/schema/camps';
 import { pricedFieldIds, type Answers, type FormDefinition } from '@repo/schema/form-engine';
+import type { PaymentChoice } from '@repo/schema/pricing';
 
 import { usePricePreviewQuery } from '@/features/registration/api/registration.queries';
 import { useDebouncedValue } from '@/features/registration/hooks/use-debounced-value.hook';
@@ -23,7 +24,7 @@ export function useLivePrice(
   turnus: PublicTurnus | undefined,
   answers: { registration: Answers; participants: readonly Answers[] },
 ) {
-  const [paymentChoice, setPaymentChoice] = useState<'full' | 'deposit'>('full');
+  const [paymentChoice, setPaymentChoice] = useState<PaymentChoice>('full');
   const [codeInput, setCodeInput] = useState('');
   const [discountCode, setDiscountCode] = useState<string | null>(null);
   const priced = definition === undefined ? [] : pricedFieldIds(definition);
@@ -55,6 +56,8 @@ export function useLivePrice(
     codeInput,
     setCodeInput,
     applyCode: () => setDiscountCode(codeInput.trim() === '' ? null : codeInput.trim()),
+    // The code the price is shown with, which a submission sends.
+    discountCode,
     // What the typed code turned out to be, while it is the one applied.
     codeCheck: discountCode !== null && discountCode === codeInput.trim() ? (current?.discountCode ?? null) : null,
   };

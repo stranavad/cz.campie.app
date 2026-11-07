@@ -47,6 +47,33 @@
       "zero_floor": "Vyrovnání na nulu"
     }
   },
-  "check": "Zkontrolovat přihlášku",
-  "checked": "Přihláška je vyplněná správně."
+  "send": "Odeslat přihlášku",
+  "sending": "Odesíláme přihlášku...",
+  "refused": {
+    "submission_invalid": "Přihláška neodpovídá formuláři. Načtěte prosím stránku znovu.",
+    "fields": "Přihlášku jsme nemohli přijmout. Opravte prosím vyznačené údaje.",
+    "unknown": "Přihlášku se nepodařilo odeslat. Zkuste to prosím znovu.",
+    "turnus_not_yet_open": "Přihlašování na tento turnus ještě nezačalo.",
+    "turnus_window_closed": "Přihlašování na tento turnus už skončilo.",
+    "turnus_closed_manually": "Tábor přihlašování na tento turnus uzavřel.",
+    "turnus_full": "Na tomto turnusu už nezbývá dost volných míst.",
+    "requests_throttled": "Z tohoto připojení přišlo příliš mnoho přihlášek. Zkuste to prosím později.",
+    "participants_too_many": "Na jednu přihlášku lze přihlásit nejvýše {{max}} dětí.",
+    "participant_too_young": "Dítě je na tento turnus mladší, než tábor bere (nejnižší věk v den začátku: {{min}}). Napište prosím táboru na {{contact}}.",
+    "participant_too_old": "Dítě je na tento turnus starší, než tábor bere (nejvyšší věk v den začátku: {{max}}). Napište prosím táboru na {{contact}}.",
+    "declaration_required": "Zaškrtněte prosím toto prohlášení.",
+    "discount_code_expired": "Platnost tohoto kódu mezitím skončila.",
+    "discount_code_exhausted": "Tento kód byl mezitím vyčerpán.",
+    "discount_code_inactive": "Tento kód už neplatí.",
+    "discount_code_unknown": "Takový kód neznáme. Zkontrolujte ho prosím.",
+    "turnus_busy": "Právě se přihlašuje mnoho lidí najednou. Zkuste prosím přihlášku odeslat znovu.",
+    "idempotency_key_reused": "Přihlášku se nepodařilo odeslat. Načtěte prosím stránku znovu."
+  },
+  "submitted": {
+    "title": "Přihláška je odeslaná",
+    "placed": "Místo na táboře {{camp}} je vaše.",
+    "variableSymbol": "Variabilní symbol",
+    "depositFirst": "Nejdřív zaplatíte zálohu",
+    "email": "Variabilní symbol si poznamenejte, budete ho potřebovat při platbě."
+  }
 }

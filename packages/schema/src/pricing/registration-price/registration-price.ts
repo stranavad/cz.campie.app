@@ -56,6 +56,11 @@ export interface DiscountCode {
   readonly value: number;
 }
 
+// Whether a guardian pays the whole price at once or the Deposit first.
+export const PAYMENT_CHOICES = ['full', 'deposit'] as const;
+
+export type PaymentChoice = (typeof PAYMENT_CHOICES)[number];
+
 export interface PricingInput {
   readonly priceList: PriceList;
   // The Camp's, null when it has none.
@@ -65,7 +70,7 @@ export interface PricingInput {
     readonly surcharges: readonly { readonly label: string; readonly amount: number }[];
   }[];
   readonly discountCode: DiscountCode | null;
-  readonly paymentChoice: 'full' | 'deposit';
+  readonly paymentChoice: PaymentChoice;
   readonly submittedAt: Date;
 }
 

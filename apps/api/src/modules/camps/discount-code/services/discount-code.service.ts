@@ -109,10 +109,30 @@ export class DiscountCodeService {
     campId: string,
     text: string,
   ): Promise<{ code: DiscountCodeEntity | null; status: DiscountCodeStatus }> {
-    const code = await this.discountCodes.getByCode(campId, text.trim());
-    const uses = code === null ? 0 : ((await this.discountCodes.countUses([code.id])).get(code.id) ?? 0);
+    return this.statusOf(await this.discountCodes.getByCode(campId, text.trim()));
+  }
 
-    return { code, status: discountCodeStatus(code, uses, this.clock.now()) };
+  /**
+   * Check a code as `check` does for a submission about to take a use of it, holding the code until the
+   * unit of work ends, so simultaneous submissions take its last use one at a time.
+   * @param campId Camp id
+   * @param text the code as typed, in any case
+   */
+  public async checkForUse(
+    campId: string,
+    text: string,
+  ): Promise<{ code: DiscountCodeEntity | null; status: DiscountCodeStatus }> {
+    return this.statusOf(await this.discountCodes.lockByCode(campId, text.trim()));
+  }
+
+  /**
+   * Record a Registration's use of a code it was priced with.
+   * @param codeId Discount code id
+   * @param registrationId Registration id
+   * @param usedAt when the Registration was submitted
+   */
+  public async recordUse(codeId: string, registrationId: string, usedAt: Date): Promise<void> {
+    await this.discountCodes.recordUse(codeId, registrationId, usedAt);
   }
 
   /**
@@ -133,6 +153,18 @@ export class DiscountCodeService {
 
       throw error;
     }
+  }
+
+  /**
+   * Tell a code's status now from its recorded uses.
+   * @param code the code, or null when the Camp has none such
+   */
+  private async statusOf(
+    code: DiscountCodeEntity | null,
+  ): Promise<{ code: DiscountCodeEntity | null; status: DiscountCodeStatus }> {
+    const uses = code === null ? 0 : ((await this.discountCodes.countUses([code.id])).get(code.id) ?? 0);
+
+    return { code, status: discountCodeStatus(code, uses, this.clock.now()) };
   }
 
   /**

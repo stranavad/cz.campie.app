@@ -7,6 +7,7 @@ import { GuardianSection } from '@/features/registration/components/guardian-sec
 import { ParticipantSection } from '@/features/registration/components/participant-section';
 import { PaymentSection } from '@/features/registration/components/payment-section';
 import { PriceCard } from '@/features/registration/components/price-card';
+import { SubmittedView } from '@/features/registration/components/submitted-view';
 import { useRegistrationPage } from '@/features/registration/components/use-registration-page.hook';
 
 interface RegistrationPageProps {
@@ -14,7 +15,7 @@ interface RegistrationPageProps {
   turnusId: string | undefined;
 }
 
-// The public registration form of a Camp, for one Turnus; sending it comes next.
+// The public registration form of a Camp, for one Turnus, and what the guardian sees once it is sent.
 export function RegistrationPage({ campSlug, turnusId }: RegistrationPageProps) {
   const { t } = useTranslation('registration');
   const page = useRegistrationPage(campSlug, turnusId);
@@ -25,6 +26,10 @@ export function RegistrationPage({ campSlug, turnusId }: RegistrationPageProps) 
 
   if (page.hasNoForm || page.isError || page.camp === undefined || page.form === undefined) {
     return <p className="py-12">{page.hasNoForm ? t('noForm') : t('error')}</p>;
+  }
+
+  if (page.submitted !== undefined) {
+    return <SubmittedView camp={page.camp} submitted={page.submitted} />;
   }
 
   return (
@@ -80,7 +85,7 @@ export function RegistrationPage({ campSlug, turnusId }: RegistrationPageProps) 
         codeInput={page.codeInput}
         onCodeInput={page.setCodeInput}
         onApplyCode={page.applyCode}
-        codeMessage={page.codeCheck === null ? null : t(`code.${page.codeCheck}`)}
+        codeMessage={page.messageAt(['discountCode']) ?? (page.codeCheck === null ? null : t(`code.${page.codeCheck}`))}
       />
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 font-medium">{t('declarations')}</legend>
@@ -99,9 +104,13 @@ export function RegistrationPage({ campSlug, turnusId }: RegistrationPageProps) 
         )}
       </fieldset>
       <PriceCard price={page.price} isStale={page.isPriceStale} isFailing={page.isPriceFailing} />
-      {page.isReady ? <output className="block text-sm">{t('checked')}</output> : null}
-      <Button type="button" className="self-start" onClick={page.check}>
-        {t('check')}
+      {page.refusalMessage === null && !page.hasFieldRefusal ? null : (
+        <p role="alert" className="text-sm text-destructive">
+          {page.refusalMessage ?? t('refused.fields')}
+        </p>
+      )}
+      <Button type="button" className="self-start" onClick={page.send} disabled={page.isSending}>
+        {page.isSending ? t('sending') : t('send')}
       </Button>
     </div>
   );

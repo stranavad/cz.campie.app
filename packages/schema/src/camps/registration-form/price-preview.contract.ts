@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { answerValueSchema } from '@repo/schema/form-engine';
-import { PRICE_LINE_KINDS } from '@repo/schema/pricing';
+import { PAYMENT_CHOICES, PRICE_LINE_KINDS } from '@repo/schema/pricing';
 import { defineEndpoint } from '@repo/schema/shared';
 
 import { publicCampParamsSchema } from '../camp/get-public-camp.contract.ts';
@@ -18,7 +18,7 @@ export const previewPriceBodySchema = z.object({
   // The answers that carry a surcharge, unchecked; the form sends no others, so typing a name asks
   // nothing. Each child is one entry, so the count is right.
   submission: z.object({ registration: answersSchema, participants: z.array(answersSchema).max(20) }),
-  paymentChoice: z.enum(['full', 'deposit']),
+  paymentChoice: z.enum(PAYMENT_CHOICES),
   discountCode: z.string().trim().max(40).nullable(),
 });
 

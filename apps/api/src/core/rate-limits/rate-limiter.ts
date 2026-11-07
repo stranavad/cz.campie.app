@@ -109,6 +109,31 @@ export class RateLimiter implements OnModuleDestroy {
   }
 
   /**
+   * Count an anonymous request against its IP address's limit alone, for a request that counts against
+   * its target only once it proves genuine (`admitTarget`).
+   * @param limit the kind of request's limits
+   * @param ipAddress the request's IP address
+   * @throws {HttpException} 429 requests_throttled when the limit is reached
+   */
+  public async admitAddress(limit: RequestLimit, ipAddress: string): Promise<void> {
+    if ((await this.take(limit.ip, addressSubject(ipAddress))) === null) {
+      throw requestsThrottled();
+    }
+  }
+
+  /**
+   * Count an anonymous request against its target's limit alone, after `admitAddress`.
+   * @param limit the kind of request's limits
+   * @param target the request's target, normalised
+   * @throws {HttpException} 429 requests_throttled when the limit is reached
+   */
+  public async admitTarget(limit: RequestLimit, target: string): Promise<void> {
+    if ((await this.take(limit.target, target)) === null) {
+      throw requestsThrottled();
+    }
+  }
+
+  /**
    * Forget every attempt a subject made under a limit.
    * @param limit the limit
    * @param subject whom the limit applies to

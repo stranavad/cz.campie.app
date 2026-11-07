@@ -6,6 +6,7 @@ import {
   createOrganisation,
   organisationHost,
   signIn,
+  submitRegistration,
   type RequestHeaders,
 } from '../../../testing/fixtures.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
@@ -176,13 +177,8 @@ describe('price preview', () => {
 
   it('reports a code expired after its last day, and exhausted at its limit', async () => {
     await createCode({ code: 'STARY', expiresOn: '2027-04-09' });
-    const { id } = await createCode({ code: 'POSLEDNI', usageLimit: 1 });
-    await withClient(database().ownerUrl, (client) =>
-      client.query(
-        'INSERT INTO discount_code_uses (organisation_id, discount_code_id, used_at) VALUES ($1, $2, now())',
-        [state.organisationId, id],
-      ),
-    );
+    await createCode({ code: 'POSLEDNI', usageLimit: 1 });
+    await submitRegistration(app(), state.organisationId, state.campId, 'POSLEDNI');
 
     expect((await preview({ discountCode: 'STARY' })).body.discountCode).toBe('expired');
     expect((await preview({ discountCode: 'POSLEDNI' })).body.discountCode).toBe('exhausted');

@@ -56,6 +56,34 @@ export class DiscountCodeRepository {
   }
 
   /**
+   * Get a Camp's Discount code by its text, in any case, and lock its row until the unit of work ends, so
+   * its uses are taken one at a time.
+   * @param campId Camp id
+   * @param code the code as a guardian typed it
+   */
+  public async lockByCode(campId: string, code: string): Promise<DiscountCodeEntity | null> {
+    const [row] = await this.unitOfWork.db
+      .select()
+      .from(discountCodes)
+      .where(and(eq(discountCodes.campId, campId), sql`lower(${discountCodes.code}) = lower(${code})`))
+      .for('update');
+
+    return row === undefined ? null : new DiscountCodeEntity(row);
+  }
+
+  /**
+   * Record a Registration's use of a Discount code.
+   * @param discountCodeId Discount code id
+   * @param registrationId Registration id
+   * @param usedAt when the Registration was submitted
+   */
+  public async recordUse(discountCodeId: string, registrationId: string, usedAt: Date): Promise<void> {
+    await this.unitOfWork.db
+      .insert(discountCodeUses)
+      .values({ discountCodeId, registrationId, usedAt, organisationId: this.unitOfWork.organisationId });
+  }
+
+  /**
    * Count the recorded uses of Discount codes, in one query.
    * @param ids Discount code ids
    * @returns uses by Discount code id; a code without uses is missing

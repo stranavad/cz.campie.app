@@ -17,6 +17,7 @@ import { OperatorRepository } from './operators/operator/operator.repository.ts'
 import { LegalAcceptanceRepository } from './organisations/legal-acceptance/legal-acceptance.repository.ts';
 import { OrganisationKeyRepository } from './organisations/organisation-key/organisation-key.repository.ts';
 import { OrganisationRepository } from './organisations/organisation/organisation.repository.ts';
+import { RegistrationRepository } from './registrations/registration/registration.repository.ts';
 import { AdminSessionRepository } from './sessions/admin-session/admin-session.repository.ts';
 import { GuardianSessionRepository } from './sessions/guardian-session/guardian-session.repository.ts';
 
@@ -40,6 +41,7 @@ const REPOSITORIES = [
   TurnusRepository,
   DiscountCodeRepository,
   RegistrationFormRepository,
+  RegistrationRepository,
 ];
 
 @Global()

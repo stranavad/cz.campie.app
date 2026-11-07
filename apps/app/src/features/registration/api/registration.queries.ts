@@ -1,6 +1,7 @@
-import { keepPreviousData, skipToken, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { PreviewPriceBody } from '@repo/schema/camps';
+import type { SubmitRegistrationBody } from '@repo/schema/registrations';
 
 import { registrationKeys } from '@/features/registration/api/registration.keys';
 import { registrationService } from '@/features/registration/api/registration.service';
@@ -34,3 +35,13 @@ export const usePricePreviewQuery = (slug: string, body: PreviewPriceBody | null
     placeholderData: keepPreviousData,
     retry: false,
   });
+
+// Sends the form; the places left change with it.
+export const useSubmitRegistrationMutation = (slug: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: SubmitRegistrationBody) => registrationService.submit(slug, body),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: registrationKeys.turnusy(slug) }),
+  });
+};

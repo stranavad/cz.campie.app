@@ -1,11 +1,13 @@
 import { useTranslation } from 'react-i18next';
 
+import { PAYMENT_CHOICES, type PaymentChoice } from '@repo/schema/pricing';
+
 import { Input } from '@/components/ui/input';
 
 interface PaymentSectionProps {
   depositAvailable: boolean;
-  paymentChoice: 'full' | 'deposit';
-  onPaymentChoice: (choice: 'full' | 'deposit') => void;
+  paymentChoice: PaymentChoice;
+  onPaymentChoice: (choice: PaymentChoice) => void;
   codeInput: string;
   onCodeInput: (code: string) => void;
   onApplyCode: () => void;
@@ -22,7 +24,7 @@ export function PaymentSection(props: PaymentSectionProps) {
       <legend className="px-1 font-medium">{t('payment.title')}</legend>
       {props.depositAvailable ? (
         <div className="flex flex-col gap-2 text-sm">
-          {(['full', 'deposit'] as const).map((choice) => (
+          {PAYMENT_CHOICES.map((choice) => (
             <label key={choice} className="flex items-center gap-2">
               <input
                 type="radio"

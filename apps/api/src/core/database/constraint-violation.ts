@@ -1,5 +1,5 @@
 // PostgreSQL's codes for the constraint violations the app answers with a code of its own.
-const VIOLATION_CODES = { unique: '23505', check: '23514' } as const;
+const VIOLATION_CODES = { unique: '23505', check: '23514', foreignKey: '23503' } as const;
 
 export type ConstraintKind = keyof typeof VIOLATION_CODES;
 

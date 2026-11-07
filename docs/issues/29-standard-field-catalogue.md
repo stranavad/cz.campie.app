@@ -26,3 +26,5 @@ Freeze the list of standard fields of the registration form with their platform 
 ## Comments
 
 2026-11-07 - **From issue 28.** The engine takes the catalogue as `StandardFieldCatalogue` (`@repo/schema/form-engine`): per stable key a scope, a label i18n key and a Zod schema. Rendering will also need each field's input kind and, for lists such as insurers or boarding places, its options; extend `StandardFieldSpec` with them. A key must not equal a core key (`CORE_FIELDS`).
+
+2026-11-07 - **From issue 35.** Registrations store core answers as columns and every other answer as JSON (`registrations.answers`, `participants.answers`) under its key or field id; nothing is encrypted yet, since the catalogue has no sensitive field. With the catalogue, flag sensitive fields on `StandardFieldSpec`, store their answers in an `encrypted()` column beside `answers` (one per scope, sealed once per unit of work with `EncryptionService.cipher()`), split them in `RegistrationService.store`, and add the issue 35 test left open: encrypted answers are ciphertext in the database and only their names reach the audit entry (the submission's audit entry carries the answers today).

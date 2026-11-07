@@ -13,8 +13,13 @@ import { SESSION_COOKIES } from '../core/sessions/session-cookie.ts';
 import { SessionService } from '../core/sessions/session.service.ts';
 import { AdminService } from '../modules/admins/admin/services/admin.service.ts';
 import { CampService } from '../modules/camps/camp/services/camp.service.ts';
+import { RegistrationFormService } from '../modules/camps/registration-form/services/registration-form.service.ts';
+import { TurnusService } from '../modules/camps/turnus/services/turnus.service.ts';
 import { OrganisationService } from '../modules/organisations/organisation/services/organisation.service.ts';
+import { RegistrationService } from '../modules/registrations/registration/services/registration.service.ts';
 import { MembershipRepository } from '../repositories/admins/membership/membership.repository.ts';
+import { CampRepository } from '../repositories/camps/camp/camp.repository.ts';
+import { RegistrationFormRepository } from '../repositories/camps/registration-form/registration-form.repository.ts';
 import {
   OrganisationRepository,
   type CreateOrganisation,
@@ -99,6 +104,72 @@ export async function createCamp(
     );
 
   return camp.id;
+}
+
+// A Turnus that takes Registrations whenever a test runs, for children of any age.
+export const OPEN_TURNUS = {
+  name: 'Turnus 1',
+  startDate: '2027-07-04',
+  endDate: '2027-07-17',
+  place: 'Pokusov',
+  capacity: 40,
+  minAge: null,
+  maxAge: null,
+  opensAt: null,
+  closesAt: null,
+  closedManually: false,
+  websiteUrl: null,
+  basePrice: 6500,
+  earlyBirdPrice: null,
+  earlyBirdLastDay: null,
+  deposit: null,
+  depositDueDays: 14,
+  balanceDueDate: null,
+} as const;
+
+/**
+ * Submit a Registration of one made-up child to a Camp, as a guardian would, with a new open Turnus and the
+ * core-only form published first where the Camp has none.
+ * @param app the running test app
+ * @param organisationId the Organisation
+ * @param campId the Camp
+ * @param discountCode the code typed, if any
+ */
+export async function submitRegistration(
+  app: INestApplication,
+  organisationId: string,
+  campId: string,
+  discountCode: string | null = null,
+): Promise<{ id: string; variableSymbol: string }> {
+  return app.get(UnitOfWork).run(organisationId, async () => {
+    const system = { kind: 'system' } as const;
+    const camp = await app.get(CampRepository).getByIdOrThrow(campId);
+    const turnus = await app.get(TurnusService).create(system, campId, OPEN_TURNUS);
+    const forms = app.get(RegistrationFormRepository);
+    const form =
+      (await forms.getLatestVersion(campId)) ?? (await app.get(RegistrationFormService).publish(system, campId));
+
+    return app.get(RegistrationService).submit(
+      camp.slug,
+      {
+        idempotencyKey: randomUUID(),
+        turnusId: turnus.id,
+        submission: {
+          registration: {
+            guardianFirstName: 'Jana',
+            guardianLastName: 'Testovací',
+            guardianEmail: 'jana.testovaci@example.com',
+            guardianPhone: '+420 123 456 789',
+          },
+          participants: [{ firstName: 'Ema', lastName: 'Testovací', birthDate: '2016-05-01' }],
+        },
+        paymentChoice: 'full',
+        discountCode,
+        declarations: form.declarations.map(({ id }) => ({ id, accepted: true })),
+      },
+      '203.0.113.7',
+    );
+  });
 }
 
 /**

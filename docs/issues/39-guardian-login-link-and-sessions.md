@@ -28,3 +28,5 @@ Guardians log in to `/portal` on the Organisation's subdomain with a link sent b
 ## Comments
 
 2026-11-07 - **From issue 22.** Login-link requests must be rate limited: add `LOGIN_LINK_LIMIT_PER_IP` and `LOGIN_LINK_LIMIT_PER_EMAIL` to `requestLimits` in `env.schema.ts` and call `RateLimiter.admit` first in the request service, counting unknown emails alike (see `apps/api/AGENTS.md`, Access and sessions).
+
+2026-11-07 - **From issue 35.** Guardians of a Registration are `registration_guardians` (email lowercased by the form engine, position 1 the submitter). There is no index on their email yet; add one with the login lookup.
