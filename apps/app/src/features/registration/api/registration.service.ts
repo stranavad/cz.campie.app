@@ -5,7 +5,12 @@ import {
   previewPriceEndpoint,
   type PreviewPriceBody,
 } from '@repo/schema/camps';
-import { submitRegistrationEndpoint, type SubmitRegistrationBody } from '@repo/schema/registrations';
+import {
+  getCardPaymentResultEndpoint,
+  startSubmittedCardPaymentEndpoint,
+  submitRegistrationEndpoint,
+  type SubmitRegistrationBody,
+} from '@repo/schema/registrations';
 
 import { apiClient } from '@/lib/api';
 
@@ -19,4 +24,8 @@ export const registrationService = {
     apiClient.request(previewPriceEndpoint, { params: { slug }, body, signal }),
   submit: (slug: string, body: SubmitRegistrationBody) =>
     apiClient.request(submitRegistrationEndpoint, { params: { slug }, body }),
+  cardPaymentResult: (transactionId: string, signal?: AbortSignal) =>
+    apiClient.request(getCardPaymentResultEndpoint, { params: { transactionId }, signal }),
+  startCardPayment: (idempotencyKey: string) =>
+    apiClient.request(startSubmittedCardPaymentEndpoint, { body: { idempotencyKey } }),
 };

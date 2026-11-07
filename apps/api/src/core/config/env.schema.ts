@@ -173,6 +173,8 @@ const requestLimits = z
     LOGIN_LINK_LIMIT_PER_EMAIL: positiveInteger,
     GATEWAY_NOTIFICATION_LIMIT_PER_IP: positiveInteger,
     GATEWAY_NOTIFICATION_LIMIT_PER_ORGANISATION: positiveInteger,
+    CARD_PAYMENT_LIMIT_PER_IP: positiveInteger,
+    CARD_PAYMENT_LIMIT_PER_ORGANISATION: positiveInteger,
   })
   .transform((env) => {
     const windowMs = env.REQUEST_LIMIT_WINDOW_MINUTES * 60 * 1000;
@@ -201,6 +203,14 @@ const requestLimits = z
           'gateway-notification',
           env.GATEWAY_NOTIFICATION_LIMIT_PER_IP,
           env.GATEWAY_NOTIFICATION_LIMIT_PER_ORGANISATION,
+        ),
+        // Starting a card payment and showing how one ended each make a call to Comgate.
+        cardPayment: limitOf('card-payment', env.CARD_PAYMENT_LIMIT_PER_IP, env.CARD_PAYMENT_LIMIT_PER_ORGANISATION),
+        // Counted apart, so the result page's polling never uses up the starts.
+        cardPaymentResult: limitOf(
+          'card-payment-result',
+          env.CARD_PAYMENT_LIMIT_PER_IP,
+          env.CARD_PAYMENT_LIMIT_PER_ORGANISATION,
         ),
       },
     };

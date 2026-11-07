@@ -15,7 +15,10 @@
     "full": "Zaplatím celou částku najednou",
     "deposit": "Zaplatím nejdřív zálohu",
     "bankTransfer": "Platí se bankovním převodem, platební údaje přijdou e-mailem.",
-    "code": "Slevový kód (nepovinné)"
+    "code": "Slevový kód (nepovinné)",
+    "methodTransfer": "Bankovním převodem",
+    "methodCard": "Kartou online",
+    "cardNote": "Po odeslání přihlášky vás přesměrujeme na platební bránu Comgate."
   },
   "code": {
     "applied": "Slevový kód jsme započítali.",
@@ -74,6 +77,25 @@
     "placed": "Místo na táboře {{camp}} je vaše.",
     "variableSymbol": "Variabilní symbol",
     "depositFirst": "Nejdřív zaplatíte zálohu",
-    "email": "Variabilní symbol si poznamenejte, budete ho potřebovat při platbě."
+    "email": "Variabilní symbol si poznamenejte, budete ho potřebovat při platbě.",
+    "cardRedirecting": "Přesměrováváme vás na platbu kartou…",
+    "cardFailed": "Platbu kartou se teď nepodařilo spustit. Zaplaťte prosím převodem podle údajů v e-mailu, nebo kartou později v portálu."
+  },
+  "cardResult": {
+    "loading": "Ověřujeme platbu…",
+    "unknown": "Tuto platbu neznáme. Pokud jste platili kartou, podívejte se na stav platby v portálu.",
+    "website": "Zpět na stránky {{camp}}",
+    "paid": {
+      "title": "Děkujeme, platba proběhla",
+      "text": "Platbu za přihlášku na {{camp}} jsme přijali. Potvrzení přijde e-mailem."
+    },
+    "pending": {
+      "title": "Platbu ověřujeme",
+      "text": "Platba za přihlášku na {{camp}} se ještě zpracovává. Jakmile ji přijmeme, pošleme vám e-mail."
+    },
+    "failed": {
+      "title": "Platba neproběhla",
+      "text": "Platba kartou za přihlášku na {{camp}} se nepodařila. Můžete ji zkusit znovu v portálu, nebo zaplatit převodem podle údajů v e-mailu."
+    }
   }
 }

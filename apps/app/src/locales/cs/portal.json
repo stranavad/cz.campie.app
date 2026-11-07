@@ -94,5 +94,10 @@
     "confirm": "Potvrdit novou adresu",
     "done": "Adresa je potvrzená. Přihláška teď patří k nové adrese.",
     "invalid": "Odkaz už neplatí: byl použit, nebo vypršel."
+  },
+  "card": {
+    "payNow": "Zaplatit kartou {{amount}}",
+    "payAll": "Zaplatit kartou vše ({{amount}})",
+    "failed": "Platbu kartou se nepodařilo spustit. Zkuste to prosím znovu, nebo zaplaťte převodem."
   }
 }

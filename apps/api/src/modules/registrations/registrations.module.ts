@@ -7,6 +7,7 @@ import { AdminRegistrationService } from './admin-registration/services/admin-re
 import { SendCancellationHandler } from './cancellation/send-cancellation.handler.ts';
 import { CancellationService } from './cancellation/services/cancellation.service.ts';
 import { ComgateNotificationController } from './card-payment/comgate-notification.controller.ts';
+import { PublicCardPaymentController } from './card-payment/public-card-payment.controller.ts';
 import { CardPaymentService } from './card-payment/services/card-payment.service.ts';
 import { SendConfirmationHandler } from './confirmation/send-confirmation.handler.ts';
 import { ConfirmationService } from './confirmation/services/confirmation.service.ts';
@@ -40,6 +41,7 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     AdminRegistrationController,
     ParticipantExportController,
     ComgateNotificationController,
+    PublicCardPaymentController,
   ],
   providers: [
     RegistrationService,
@@ -63,6 +65,6 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     SendConfirmationHandler,
     SendPaymentReceivedHandler,
   ],
-  exports: [RegistrationService, PrihlaskaService, LedgerService],
+  exports: [RegistrationService, PrihlaskaService, LedgerService, CardPaymentService],
 })
 export class RegistrationsModule {}

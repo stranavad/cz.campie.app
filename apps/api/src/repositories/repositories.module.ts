@@ -18,6 +18,7 @@ import { LegalAcceptanceRepository } from './organisations/legal-acceptance/lega
 import { OrganisationKeyRepository } from './organisations/organisation-key/organisation-key.repository.ts';
 import { OrganisationRepository } from './organisations/organisation/organisation.repository.ts';
 import { PaymentGatewayAccountRepository } from './organisations/payment-gateway-account/payment-gateway-account.repository.ts';
+import { CardPaymentRepository } from './registrations/card-payment/card-payment.repository.ts';
 import { ClaimedDiscountVerificationRepository } from './registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
 import { GuardianEmailChangeRepository } from './registrations/guardian-email-change/guardian-email-change.repository.ts';
 import { ParticipantExportRepository } from './registrations/participant-export/participant-export.repository.ts';
@@ -32,6 +33,7 @@ const REPOSITORIES = [
   OrganisationRepository,
   OrganisationKeyRepository,
   PaymentGatewayAccountRepository,
+  CardPaymentRepository,
   LegalAcceptanceRepository,
   AdminRepository,
   MembershipRepository,

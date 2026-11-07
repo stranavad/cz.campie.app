@@ -45,3 +45,23 @@ export const useSubmitRegistrationMutation = (slug: string) => {
     onSettled: () => queryClient.invalidateQueries({ queryKey: registrationKeys.turnusy(slug) }),
   });
 };
+
+// Sends the guardian to Comgate once a card payment starts; a refusal leaves bank transfer.
+export const useStartCardPaymentMutation = () =>
+  useMutation({
+    mutationFn: (idempotencyKey: string) => registrationService.startCardPayment(idempotencyKey),
+    onSuccess: ({ redirectUrl }) => window.location.assign(redirectUrl),
+  });
+
+// Comgate may send the guardian back before it notifies the API: ask again for a minute while pending.
+const RESULT_POLLS = 20;
+
+export const useCardPaymentResultQuery = (transactionId: string) =>
+  useQuery({
+    queryKey: registrationKeys.cardPayment(transactionId),
+    queryFn: ({ signal }) => registrationService.cardPaymentResult(transactionId, signal),
+    enabled: transactionId !== '',
+    retry: false,
+    refetchInterval: ({ state }) =>
+      state.data?.state === 'pending' && state.dataUpdateCount < RESULT_POLLS ? 3000 : false,
+  });

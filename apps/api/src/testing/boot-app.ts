@@ -52,6 +52,8 @@ export const PRODUCTION_ENV = {
   LOGIN_LINK_LIMIT_PER_EMAIL: '5',
   GATEWAY_NOTIFICATION_LIMIT_PER_IP: '20000',
   GATEWAY_NOTIFICATION_LIMIT_PER_ORGANISATION: '2000',
+  CARD_PAYMENT_LIMIT_PER_IP: '100',
+  CARD_PAYMENT_LIMIT_PER_ORGANISATION: '5000',
 } satisfies Record<string, string>;
 
 const initialEnv = new Set(Object.keys(process.env));

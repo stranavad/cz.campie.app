@@ -8,12 +8,14 @@ import {
   requestGuardianEmailChangeEndpoint,
   requestLoginLinkEndpoint,
   startGuardianSessionEndpoint,
+  startPortalCardPaymentEndpoint,
   updateGuardianContactEndpoint,
   type AddGuardianBody,
   type AnswerNewFieldsBody,
   type GuardianContactBody,
   type RequestLoginLinkBody,
   type StartGuardianSessionBody,
+  type StartPortalCardPaymentBody,
 } from '@repo/schema/portal';
 
 import { apiClient } from '@/lib/api';
@@ -40,4 +42,6 @@ export const portalService = {
   confirmEmailChange: (token: string) => apiClient.request(confirmGuardianEmailChangeEndpoint, { body: { token } }),
   answerNewFields: (registrationId: string, body: AnswerNewFieldsBody) =>
     apiClient.request(answerNewFieldsEndpoint, { params: { registrationId }, body }),
+  startCardPayment: (registrationId: string, amount: StartPortalCardPaymentBody['amount']) =>
+    apiClient.request(startPortalCardPaymentEndpoint, { params: { registrationId }, body: { amount } }),
 };

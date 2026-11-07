@@ -77,6 +77,9 @@ export class ComgatePaymentGateway extends PaymentGateway {
         refId: input.referenceId,
         method: 'ALL',
         email: input.email,
+        url_paid: input.returnUrl,
+        url_cancelled: input.returnUrl,
+        url_pending: input.returnUrl,
       }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });

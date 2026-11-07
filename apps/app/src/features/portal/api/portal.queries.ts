@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { AddGuardianBody, AnswerNewFieldsBody, GuardianContactBody, GuardianEdit } from '@repo/schema/portal';
+import type {
+  AddGuardianBody,
+  AnswerNewFieldsBody,
+  GuardianContactBody,
+  GuardianEdit,
+  StartPortalCardPaymentBody,
+} from '@repo/schema/portal';
 
 import { portalKeys } from '@/features/portal/api/portal.keys';
 import { portalService } from '@/features/portal/api/portal.service';
@@ -74,3 +80,11 @@ export const useRequestEmailChangeMutation = (registrationId: string) => {
 };
 
 export const useConfirmEmailChangeMutation = () => useMutation({ mutationFn: portalService.confirmEmailChange });
+
+// Sends the guardian to Comgate once the card payment starts.
+export const useStartPortalCardPaymentMutation = (registrationId: string) =>
+  useMutation({
+    mutationFn: (amount: StartPortalCardPaymentBody['amount']) =>
+      portalService.startCardPayment(registrationId, amount),
+    onSuccess: ({ redirectUrl }) => window.location.assign(redirectUrl),
+  });

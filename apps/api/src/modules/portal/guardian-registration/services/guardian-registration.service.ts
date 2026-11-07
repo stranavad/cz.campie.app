@@ -9,6 +9,7 @@ import { FileService } from '../../../../core/files/file.service.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
+import { PaymentGatewayAccountRepository } from '../../../../repositories/organisations/payment-gateway-account/payment-gateway-account.repository.ts';
 import type { RegistrationEntity } from '../../../../repositories/registrations/registration/registration.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { campContactOf } from '../../../camps/camp/camp-contact.ts';
@@ -28,6 +29,7 @@ export class GuardianRegistrationService {
     private readonly organisations: OrganisationRepository,
     private readonly ledgers: LedgerService,
     private readonly files: FileService,
+    private readonly gatewayAccounts: PaymentGatewayAccountRepository,
     private readonly unitOfWork: UnitOfWork,
     config: ConfigService<Env, true>,
   ) {
@@ -41,10 +43,11 @@ export class GuardianRegistrationService {
    */
   public async list(email: string): Promise<GuardianPortal> {
     const registrations = await this.registrations.listByGuardian(email);
+    const card = await this.takesCards();
     const shown: GuardianRegistration[] = [];
 
     for (const registration of registrations) {
-      shown.push(await this.show(registration));
+      shown.push(await this.show(registration, card));
     }
 
     return { registrations: shown, technicalContact: this.technicalContact };
@@ -63,15 +66,23 @@ export class GuardianRegistrationService {
       throw new NotFoundException();
     }
 
-    return this.show(registration);
+    return this.show(registration, await this.takesCards());
+  }
+
+  /**
+   * Tell whether the current Organisation takes card payments.
+   */
+  private async takesCards(): Promise<boolean> {
+    return (await this.gatewayAccounts.get()) !== null;
   }
 
   /**
    * Show a Registration as the portal does: its Participants with their Přihláška links, its price, its
    * ledger and how to pay the rest.
    * @param registration the Registration
+   * @param card whether the Organisation takes card payments
    */
-  private async show(registration: RegistrationEntity): Promise<GuardianRegistration> {
+  private async show(registration: RegistrationEntity, card: boolean): Promise<GuardianRegistration> {
     const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
     const camp = await this.camps.getByIdOrThrow(turnus.campId);
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
@@ -119,6 +130,7 @@ export class GuardianRegistrationService {
       overdue: ledger.overdue,
       payment: {
         account: payment.account,
+        card,
         phase: ledger.amountDue.phase,
         amount: payment.amount,
         dueDate: payment.dueDate,

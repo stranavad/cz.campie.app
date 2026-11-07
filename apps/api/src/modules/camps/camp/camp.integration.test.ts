@@ -197,6 +197,7 @@ describe('camps', () => {
         contactPhone: '+420 123 456 789',
         accentColour: '#2b8a4e',
         logoUrl: null,
+        cardPayments: false,
       });
     }
 

@@ -84,6 +84,7 @@ export class CampEntity {
   toPublicDto(
     branding: { accentColour: string; logoUrl: string | null },
     contact: { contactEmail: string; contactPhone: string | null },
+    cardPayments: boolean,
   ): PublicCamp {
     return {
       id: this.id,
@@ -93,6 +94,7 @@ export class CampEntity {
       contactName: this.contactName,
       ...contact,
       ...branding,
+      cardPayments,
     };
   }
 

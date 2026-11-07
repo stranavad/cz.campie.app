@@ -8,17 +8,20 @@ import { czk } from '@repo/schema/shared';
 interface SubmittedViewProps {
   camp: PublicCamp;
   submitted: SubmittedRegistration;
+  cardStatus: 'redirecting' | 'failed' | null;
 }
 
 // What a guardian sees once the Registration is in: its Variable symbol and what it costs; the payment
 // details follow by email.
-export function SubmittedView({ camp, submitted }: SubmittedViewProps) {
+export function SubmittedView({ camp, submitted, cardStatus }: SubmittedViewProps) {
   const { t } = useTranslation('registration');
 
   return (
     <section className="flex flex-col gap-4 py-12" aria-live="polite">
       <h1 className="text-2xl font-semibold">{t('submitted.title')}</h1>
       <p>{t('submitted.placed', { camp: camp.name })}</p>
+      {cardStatus === 'redirecting' ? <p className="font-medium">{t('submitted.cardRedirecting')}</p> : null}
+      {cardStatus === 'failed' ? <p className="text-destructive">{t('submitted.cardFailed')}</p> : null}
       <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1">
         <dt className="text-muted-foreground">{t('submitted.variableSymbol')}</dt>
         <dd className="font-medium tabular-nums">{submitted.variableSymbol}</dd>

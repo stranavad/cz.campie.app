@@ -29,7 +29,7 @@ export function RegistrationPage({ campSlug, turnusId }: RegistrationPageProps) 
   }
 
   if (page.submitted !== undefined) {
-    return <SubmittedView camp={page.camp} submitted={page.submitted} />;
+    return <SubmittedView camp={page.camp} submitted={page.submitted} cardStatus={page.cardStatus} />;
   }
 
   return (
@@ -86,6 +86,9 @@ export function RegistrationPage({ campSlug, turnusId }: RegistrationPageProps) 
         onCodeInput={page.setCodeInput}
         onApplyCode={page.applyCode}
         codeMessage={page.messageAt(['discountCode']) ?? (page.codeCheck === null ? null : t(`code.${page.codeCheck}`))}
+        cardOffered={page.cardOffered}
+        byCard={page.byCard}
+        onByCard={page.setByCard}
       />
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 font-medium">{t('declarations')}</legend>

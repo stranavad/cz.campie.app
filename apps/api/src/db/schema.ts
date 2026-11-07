@@ -27,6 +27,7 @@ export { guardianEmailChanges } from './registrations/guardian-email-changes.ts'
 export { exportStatus, participantExports } from './registrations/participant-exports.ts';
 export { participants, participantStatus } from './registrations/participants.ts';
 export { paymentSource, payments } from './registrations/payments.ts';
+export { cardPayments } from './registrations/card-payments.ts';
 export { priceAdjustments } from './registrations/price-adjustments.ts';
 export { priceLineKind, priceLines } from './registrations/price-lines.ts';
 export { registrationAccessEmails } from './registrations/registration-access-emails.ts';

@@ -24,6 +24,7 @@ import {
   type OrganisationEntity,
 } from '../../../../repositories/organisations/organisation/organisation.entity.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
+import { PaymentGatewayAccountRepository } from '../../../../repositories/organisations/payment-gateway-account/payment-gateway-account.repository.ts';
 import { effectiveBranding } from '../../camp-branding/services/camp-branding.service.ts';
 import { TurnusService } from '../../turnus/services/turnus.service.ts';
 import { campContactOf } from '../camp-contact.ts';
@@ -36,6 +37,7 @@ export class CampService {
   constructor(
     private readonly camps: CampRepository,
     private readonly organisations: OrganisationRepository,
+    private readonly gatewayAccounts: PaymentGatewayAccountRepository,
     private readonly turnusy: TurnusService,
     private readonly files: FileService,
     private readonly audit: AuditService,
@@ -71,8 +73,9 @@ export class CampService {
    */
   public async listPublic(): Promise<PublicCamp[]> {
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
+    const cardPayments = (await this.gatewayAccounts.get()) !== null;
 
-    return (await this.camps.list()).map((camp) => publicOf(camp, organisation));
+    return (await this.camps.list()).map((camp) => publicOf(camp, organisation, cardPayments));
   }
 
   /**
@@ -94,7 +97,10 @@ export class CampService {
     // The public logo address works only on the subdomain; the main host shows it through a short link.
     const logoUrl = logoFileId === null ? null : (await this.files.link(logoFileId)).url;
 
-    return { camp: { ...publicOf(camp, organisation), logoUrl }, turnusy: await this.turnusy.listPublic(camp.id) };
+    return {
+      camp: { ...publicOf(camp, organisation, (await this.gatewayAccounts.get()) !== null), logoUrl },
+      turnusy: await this.turnusy.listPublic(camp.id),
+    };
   }
 
   /**
@@ -117,7 +123,9 @@ export class CampService {
    * @param camp the Camp
    */
   private async showPublic(camp: CampEntity): Promise<PublicCamp> {
-    return publicOf(camp, await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId));
+    const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
+
+    return publicOf(camp, organisation, (await this.gatewayAccounts.get()) !== null);
   }
 
   /**
@@ -194,13 +202,15 @@ export class CampService {
  * Show a Camp as its public pages do, in its own or its Organisation's branding.
  * @param camp the Camp
  * @param organisation its Organisation
+ * @param cardPayments whether the Organisation takes card payments
  */
-function publicOf(camp: CampEntity, organisation: OrganisationEntity): PublicCamp {
+function publicOf(camp: CampEntity, organisation: OrganisationEntity, cardPayments: boolean): PublicCamp {
   const { accentColour, logoFileId } = effectiveBranding(camp, organisation);
 
   return camp.toPublicDto(
     { accentColour, logoUrl: logoFileId === null ? null : publicLogoUrl(logoFileId) },
     campContactOf(camp, organisation),
+    cardPayments,
   );
 }
 

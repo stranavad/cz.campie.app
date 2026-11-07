@@ -12,10 +12,13 @@ interface PaymentSectionProps {
   onCodeInput: (code: string) => void;
   onApplyCode: () => void;
   codeMessage: string | null;
+  cardOffered: boolean;
+  byCard: boolean;
+  onByCard: (byCard: boolean) => void;
 }
 
-// How the guardian pays: in full or the Deposit first, when the Turnus has one, by bank transfer; and a
-// Discount code.
+// How the guardian pays: in full or the Deposit first, when the Turnus has one; by bank transfer, or by
+// card when the Organisation takes cards; and a Discount code.
 export function PaymentSection(props: PaymentSectionProps) {
   const { t } = useTranslation('registration');
 
@@ -37,7 +40,21 @@ export function PaymentSection(props: PaymentSectionProps) {
           ))}
         </div>
       ) : null}
-      <p className="text-sm text-muted-foreground">{t('payment.bankTransfer')}</p>
+      {props.cardOffered ? (
+        <div className="flex flex-col gap-2 text-sm">
+          <label className="flex items-center gap-2">
+            <input type="radio" name="paymentMethod" checked={!props.byCard} onChange={() => props.onByCard(false)} />
+            {t('payment.methodTransfer')}
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="radio" name="paymentMethod" checked={props.byCard} onChange={() => props.onByCard(true)} />
+            {t('payment.methodCard')}
+          </label>
+        </div>
+      ) : null}
+      <p className="text-sm text-muted-foreground">
+        {props.byCard ? t('payment.cardNote') : t('payment.bankTransfer')}
+      </p>
       <div className="flex flex-wrap items-end gap-2">
         <label className="flex flex-col gap-1 text-sm">
           {t('payment.code')}

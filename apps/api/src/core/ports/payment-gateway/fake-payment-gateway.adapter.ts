@@ -19,9 +19,15 @@ interface FakeTransaction {
 // transaction only to the account that created it, as the gateway does.
 export class FakePaymentGateway extends PaymentGateway {
   public readonly created: (CreatedPayment & { input: CreatePaymentInput })[] = [];
+  // Set by a test to make the gateway refuse every new payment, as an outage would.
+  public failing = false;
   private readonly transactions = new Map<string, FakeTransaction>();
 
   public createPayment(input: CreatePaymentInput): Promise<CreatedPayment> {
+    if (this.failing) {
+      return Promise.reject(new Error('The fake payment gateway is failing'));
+    }
+
     const transactionId = `FAKE-${randomUUID()}`;
     const payment = { transactionId, redirectUrl: `https://payment-gateway.invalid/pay/${transactionId}` };
 

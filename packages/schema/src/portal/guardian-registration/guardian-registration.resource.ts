@@ -54,6 +54,8 @@ export const guardianRegistrationSchema = z.object({
   // platba payload, null without the Organisation's account or anything to pay.
   payment: z.object({
     account: z.string().nullable(),
+    // Whether the Organisation takes card payments.
+    card: z.boolean(),
     phase: z.enum(AMOUNT_DUE_PHASES),
     amount,
     dueDate: calendarDateSchema.nullable(),

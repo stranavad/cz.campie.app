@@ -95,6 +95,7 @@ describe('ports', () => {
       amountCzk: 4200,
       label: 'VS 27123456',
       email: 'guardian@example.test',
+      returnUrl: 'https://tabor.example.test/platba?id=${id}',
     });
 
     const [url, init] = fetchSpy.mock.calls[0] ?? [];
@@ -127,6 +128,7 @@ describe('ports', () => {
         amountCzk: 4200,
         label: 'VS 27123456',
         email: 'guardian@example.test',
+        returnUrl: 'https://tabor.example.test/platba?id=${id}',
       }),
     ).rejects.toThrow('refused');
   });

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { GuardianRegistration } from '@repo/schema/portal';
 import { czechDate, czk } from '@repo/schema/shared';
 
+import { CardPaymentButtons } from '@/features/portal/components/card-payment-buttons';
 import { QrPlatba } from '@/features/portal/components/qr-platba';
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -106,6 +107,13 @@ export function RegistrationCard({ registration }: { registration: GuardianRegis
             <Row label={t('account')} value={payment.account} />
           )}
           <Row label={t('variableSymbolLabel')} value={registration.variableSymbol} />
+          {payment.card ? (
+            <CardPaymentButtons
+              registrationId={registration.id}
+              dueNow={payment.amount}
+              outstanding={payment.balance?.outstanding ?? null}
+            />
+          ) : null}
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="flex flex-col gap-1">
               <Row label={payment.phase === 'deposit' ? t('depositNow') : t('amountNow')} value={czk(payment.amount)} />

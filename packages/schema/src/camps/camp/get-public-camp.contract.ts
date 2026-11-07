@@ -19,6 +19,8 @@ export const publicCampSchema = z.object({
   contactPhone: z.string().nullable(),
   accentColour: z.string(),
   logoUrl: z.string().nullable(),
+  // Whether the Organisation takes card payments, so the form offers the choice.
+  cardPayments: z.boolean(),
 });
 
 export type PublicCamp = z.infer<typeof publicCampSchema>;

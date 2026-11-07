@@ -74,6 +74,19 @@ export class PaymentRepository {
   }
 
   /**
+   * Tell whether the current Organisation's ledger has recorded a gateway transaction.
+   * @param transactionId the gateway's transaction id
+   */
+  public async hasGatewayEntry(transactionId: string): Promise<boolean> {
+    const [row] = await this.unitOfWork.db
+      .select({ id: payments.id })
+      .from(payments)
+      .where(eq(payments.gatewayTransactionId, transactionId));
+
+    return row !== undefined;
+  }
+
+  /**
    * Sum the entries of each of Registrations, in one query.
    * @param registrationIds Registration ids
    * @returns the sum by Registration id; one without entries is missing

@@ -6,3 +6,4 @@ export * from './guardian-session/request-login-link.contract.ts';
 export * from './guardian-session/start-guardian-session.contract.ts';
 export * from './guardian-edit/guardian-edit.contracts.ts';
 export * from './guardian-edit/guardian-edit.resource.ts';
+export * from './card-payment/portal-card-payment.contract.ts';

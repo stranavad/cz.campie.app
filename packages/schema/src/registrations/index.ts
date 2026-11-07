@@ -9,3 +9,4 @@ export * from './registration-detail/registration-detail.contracts.ts';
 export * from './admin-registration/admin-registration.contracts.ts';
 export * from './participant-export/participant-export.contracts.ts';
 export * from './gateway-notification/gateway-notification.contracts.ts';
+export * from './card-payment/card-payment.contracts.ts';

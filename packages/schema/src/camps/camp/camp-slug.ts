@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Paths at the root of an Organisation's subdomain that are not Camps: the guardian portal, its login and
 // logout, the API. A Camp's slug sits beside them.
-export const RESERVED_CAMP_SLUGS = ['api', 'portal', 'prihlaseni', 'odhlaseni'] as const;
+export const RESERVED_CAMP_SLUGS = ['api', 'portal', 'prihlaseni', 'odhlaseni', 'platba'] as const;
 
 // Lowercase letters, digits and single hyphens between them.
 const CAMP_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;

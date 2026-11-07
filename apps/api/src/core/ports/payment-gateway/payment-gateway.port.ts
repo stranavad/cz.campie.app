@@ -12,6 +12,8 @@ export interface CreatePaymentInput {
   // What the payer sees the payment as; at most 16 characters.
   label: string;
   email: string;
+  // Where the gateway sends the payer back, paid or not; `${id}` in it stands for the transaction id.
+  returnUrl: string;
 }
 
 export interface CreatedPayment {

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as OrganisationRouteRouteImport } from './routes/organisation/route'
 import { Route as PlatformRouteRouteImport } from './routes/platform/route'
 import { Route as OrganisationIndexRouteImport } from './routes/organisation/index'
+import { Route as OrganisationPlatbaRouteImport } from './routes/organisation/platba'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
 import { Route as PlatformKonzoleRouteImport } from './routes/platform/konzole'
 import { Route as PlatformNastaveniRouteImport } from './routes/platform/nastaveni'
@@ -47,6 +48,11 @@ const PlatformRouteRoute = PlatformRouteRouteImport.update({
 const OrganisationIndexRoute = OrganisationIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => OrganisationRouteRoute,
+} as any)
+const OrganisationPlatbaRoute = OrganisationPlatbaRouteImport.update({
+  id: '/platba',
+  path: '/platba',
   getParentRoute: () => OrganisationRouteRoute,
 } as any)
 const PlatformIndexRoute = PlatformIndexRouteImport.update({
@@ -165,6 +171,7 @@ const PlatformTaboryNahledRoute = PlatformTaboryNahledRouteImport.update({
 export interface FileRoutesByFullPath {
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
+  '/organisation/platba': typeof OrganisationPlatbaRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/organisation/portal/': typeof OrganisationPortalIndexRoute
 }
 export interface FileRoutesByTo {
+  '/organisation/platba': typeof OrganisationPlatbaRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -216,6 +224,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
+  '/organisation/platba': typeof OrganisationPlatbaRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -244,6 +253,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/organisation'
     | '/platform'
+    | '/organisation/platba'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -268,6 +278,7 @@ export interface FileRouteTypes {
     | '/organisation/portal/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/organisation/platba'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/organisation'
     | '/platform'
+    | '/organisation/platba'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -345,6 +357,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/organisation/'
       preLoaderRoute: typeof OrganisationIndexRouteImport
+      parentRoute: typeof OrganisationRouteRoute
+    }
+    '/organisation/platba': {
+      id: '/organisation/platba'
+      path: '/platba'
+      fullPath: '/organisation/platba'
+      preLoaderRoute: typeof OrganisationPlatbaRouteImport
       parentRoute: typeof OrganisationRouteRoute
     }
     '/platform/': {
@@ -498,6 +517,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface OrganisationRouteRouteChildren {
+  OrganisationPlatbaRoute: typeof OrganisationPlatbaRoute
   OrganisationIndexRoute: typeof OrganisationIndexRoute
   OrganisationCampSlugPrihlaskaRoute: typeof OrganisationCampSlugPrihlaskaRoute
   OrganisationPortalRegistrationIdRoute: typeof OrganisationPortalRegistrationIdRoute
@@ -508,6 +528,7 @@ interface OrganisationRouteRouteChildren {
 }
 
 const OrganisationRouteRouteChildren: OrganisationRouteRouteChildren = {
+  OrganisationPlatbaRoute: OrganisationPlatbaRoute,
   OrganisationIndexRoute: OrganisationIndexRoute,
   OrganisationCampSlugPrihlaskaRoute: OrganisationCampSlugPrihlaskaRoute,
   OrganisationPortalRegistrationIdRoute: OrganisationPortalRegistrationIdRoute,

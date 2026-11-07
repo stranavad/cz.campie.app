@@ -22,6 +22,7 @@ import {
   useRegistrationCampQuery,
   useRegistrationFormQuery,
   useRegistrationTurnusyQuery,
+  useStartCardPaymentMutation,
   useSubmitRegistrationMutation,
 } from '@/features/registration/api/registration.queries';
 import { useLivePrice } from '@/features/registration/components/use-live-price.hook';
@@ -80,6 +81,9 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
   // one Registration comes of it; a changed form gets a new one.
   const [lastSent, setLastSent] = useState<{ key: string; content: string } | null>(null);
   const sending = useSubmitRegistrationMutation(slug);
+  const [byCard, setByCard] = useState(false);
+  const card = useStartCardPaymentMutation();
+  const cardOffered = camp.data?.cardPayments === true;
   // A change of the answers makes the server's last refusal stale.
   const edited = () => {
     if (sending.isError) {
@@ -207,6 +211,11 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
     hasFieldRefusal: refusal.fields.length > 0,
     isSending: sending.isPending,
     submitted: sending.data,
+    cardOffered,
+    byCard: cardOffered && byCard,
+    setByCard,
+    // Once the Registration is in, a card payment is on its way to Comgate, or failed and leaves bank transfer.
+    cardStatus: card.isError ? ('failed' as const) : card.isIdle ? null : ('redirecting' as const),
     // Sends the form once it checks out here; the server checks it all again.
     send: () => {
       setChecking(true);
@@ -223,7 +232,10 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
         const key = lastSent?.content === content ? lastSent.key : crypto.randomUUID();
 
         setLastSent({ key, content });
-        sending.mutate({ ...body, idempotencyKey: key });
+        sending.mutate(
+          { ...body, idempotencyKey: key },
+          { onSuccess: () => (cardOffered && byCard ? card.mutate(key) : undefined) },
+        );
       }
     },
   };

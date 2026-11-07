@@ -61,6 +61,7 @@ describe('test app', () => {
       amountCzk: 4200,
       label: 'Turnus 1',
       email: 'guardian@example.test',
+      returnUrl: 'https://tabor.example.test/platba?id=${id}',
     };
 
     const created = await app().get(PaymentGateway).createPayment(input);
