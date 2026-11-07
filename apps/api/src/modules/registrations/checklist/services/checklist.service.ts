@@ -14,7 +14,7 @@ import { DocumentTypeRepository } from '../../../../repositories/documents/docum
 import { DocumentUploadRepository } from '../../../../repositories/documents/document-upload/document-upload.repository.ts';
 import type { RegistrationEntity } from '../../../../repositories/registrations/registration/registration.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
-import { LedgerService } from '../../../registrations/ledger/services/ledger.service.ts';
+import { LedgerService } from '../../ledger/services/ledger.service.ts';
 
 // A child's checklist with who the child is.
 export interface ParticipantChecklist {

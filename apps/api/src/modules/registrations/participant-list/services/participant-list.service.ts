@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 import { ageOnStart } from '@repo/schema/camps';
-import type { ParticipantListQuery, ParticipantRow, SelectedTurnus } from '@repo/schema/registrations';
+import type { ChecklistItem } from '@repo/schema/checklist';
+import type { ParticipantListQuery, ParticipantRow, SelectedTurnus, TurnusOverview } from '@repo/schema/registrations';
 
 import { MembershipRepository } from '../../../../repositories/admins/membership/membership.repository.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
@@ -9,6 +10,7 @@ import { RegistrationFormRepository } from '../../../../repositories/camps/regis
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { ClaimedDiscountVerificationRepository } from '../../../../repositories/registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
+import { ChecklistService } from '../../checklist/services/checklist.service.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
 import { answeredDefinition, claimedDiscountsOf } from '../../payment/claimed-discounts.helper.ts';
 
@@ -18,6 +20,22 @@ import { answeredDefinition, claimedDiscountsOf } from '../../payment/claimed-di
  */
 function searchable(text: string): string {
   return text.normalize('NFD').replaceAll(/\p{M}/gu, '').toLowerCase();
+}
+
+/**
+ * Read from a child's checklist what the list marks and filters by.
+ * @param items the checklist's items
+ */
+function openItemsOf(
+  items: readonly ChecklistItem[],
+): Pick<ParticipantRow, 'unsignedConsent' | 'missingDocument' | 'missingAnswers'> {
+  return {
+    unsignedConsent: items.some(({ kind, state }) => kind === 'consent' && state === 'unsigned'),
+    missingDocument: items.some(
+      ({ kind, state }) => kind === 'document' && (state === 'missing' || state === 'returned'),
+    ),
+    missingAnswers: items.some(({ kind }) => kind === 'missing_answers'),
+  };
 }
 
 // The admin's working list: one row per Participant of a Turnus, with the money of its Registration.
@@ -33,6 +51,7 @@ export class ParticipantListService {
     private readonly forms: RegistrationFormRepository,
     private readonly memberships: MembershipRepository,
     private readonly verifications: ClaimedDiscountVerificationRepository,
+    private readonly checklists: ChecklistService,
   ) {}
 
   /**
@@ -94,6 +113,10 @@ export class ParticipantListService {
       .split(/\s+/)
       .filter((word) => word !== '');
 
+    // Cancelled children have no checklist, so no checklist filter finds them.
+    const checklistOf = new Map(
+      (await this.checklists.ofTurnus(turnusId)).map(({ participantId, items }) => [participantId, items]),
+    );
     const rows = participants.flatMap((participant): ParticipantRow[] => {
       const registration = byId.get(participant.registrationId);
       const named = guardians.get(participant.registrationId) ?? [];
@@ -149,6 +172,7 @@ export class ParticipantListService {
           overdue: balance.overdue,
           status: participant.status,
           unverifiedClaimedDiscount: claimed.some(({ verifiedAt }) => verifiedAt === null),
+          ...openItemsOf(checklistOf.get(participant.id) ?? []),
         },
       ];
     });
@@ -156,7 +180,11 @@ export class ParticipantListService {
       .filter(
         (row) =>
           (query.paymentStatus === undefined || row.paymentStatus === query.paymentStatus) &&
-          (query.unverifiedClaimedDiscount !== true || row.unverifiedClaimedDiscount),
+          (query.overdue !== true || row.overdue) &&
+          (query.unverifiedClaimedDiscount !== true || row.unverifiedClaimedDiscount) &&
+          (query.unsignedConsent !== true || row.unsignedConsent) &&
+          (query.missingDocument !== true || row.missingDocument) &&
+          (query.missingAnswers !== true || row.missingAnswers),
       )
       .sort(
         (one, other) =>
@@ -164,5 +192,27 @@ export class ParticipantListService {
           one.firstName.localeCompare(other.firstName, 'cs') ||
           one.participantId.localeCompare(other.participantId),
       );
+  }
+
+  /**
+   * Show a Turnus at a glance: places taken, and its money across every Registration.
+   * @param turnusId Turnus id
+   */
+  public async overview(turnusId: string): Promise<TurnusOverview> {
+    const turnus = await this.turnusy.getByIdOrThrow(turnusId);
+    const registrations = await this.registrations.listByTurnus(turnusId);
+    const participants = await this.registrations.listParticipantsOf(registrations.map(({ id }) => id));
+    const balances = [...(await this.ledger.balancesOf(turnus, registrations)).values()];
+    const sum = (amounts: readonly number[]) => amounts.reduce((total, amount) => total + amount, 0);
+
+    return {
+      capacity: turnus.capacity,
+      registered: participants.filter(({ status }) => status === 'registered').length,
+      expected: sum(balances.map(({ total }) => total)),
+      received: sum(balances.map(({ paid }) => paid)),
+      outstanding: sum(balances.map(({ balance }) => Math.max(balance, 0))),
+      overpaid: sum(balances.map(({ balance }) => Math.max(-balance, 0))),
+      overdueRegistrations: balances.filter(({ overdue }) => overdue).length,
+    };
   }
 }

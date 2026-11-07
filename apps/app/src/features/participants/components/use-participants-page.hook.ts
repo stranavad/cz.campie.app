@@ -21,6 +21,13 @@ export function useParticipantsPage() {
   const [search, setSearch] = useState('');
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | ''>('');
   const [unverified, setUnverified] = useState(false);
+  // The checklist and payment filters, each narrowing the list when on.
+  const [flags, setFlags] = useState({
+    overdue: false,
+    unsignedConsent: false,
+    missingDocument: false,
+    missingAnswers: false,
+  });
   const settledSearch = useDebouncedValue(search.trim(), 300);
   // The remembered Turnus, else the newest; the admin's choice is a view, not a state of the camp.
   const turnusId = selected.data?.turnusId ?? selected.data?.turnusy[0]?.id ?? null;
@@ -28,6 +35,10 @@ export function useParticipantsPage() {
     ...(settledSearch === '' ? {} : { search: settledSearch }),
     ...(paymentStatus === '' ? {} : { paymentStatus }),
     ...(unverified ? { unverifiedClaimedDiscount: true } : {}),
+    ...(flags.overdue ? { overdue: true } : {}),
+    ...(flags.unsignedConsent ? { unsignedConsent: true } : {}),
+    ...(flags.missingDocument ? { missingDocument: true } : {}),
+    ...(flags.missingAnswers ? { missingAnswers: true } : {}),
   });
 
   return {
@@ -45,6 +56,8 @@ export function useParticipantsPage() {
     setPaymentStatus: (value: string) => setPaymentStatus(PAYMENT_STATUSES.find((status) => status === value) ?? ''),
     unverified,
     setUnverified,
+    flags,
+    setFlag: (flag: keyof typeof flags, on: boolean) => setFlags({ ...flags, [flag]: on }),
     rows: participants.data ?? [],
     isEmpty: participants.data?.length === 0,
     isStale: participants.isPlaceholderData,

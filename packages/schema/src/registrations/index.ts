@@ -11,3 +11,4 @@ export * from './participant-export/participant-export.contracts.ts';
 export * from './gateway-notification/gateway-notification.contracts.ts';
 export * from './card-payment/card-payment.contracts.ts';
 export * from './payment-reminder/payment-reminder.contracts.ts';
+export * from './turnus-overview/turnus-overview.contracts.ts';

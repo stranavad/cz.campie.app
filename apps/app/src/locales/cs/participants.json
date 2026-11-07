@@ -236,5 +236,20 @@
     "open": "Připomenout chybějící věci",
     "intro": "Půjde rodičům dětí, kterým chybí podpis souhlasu, dokument nebo údaje v přihlášce. Platby připomíná zvláštní tlačítko.",
     "switchedOff": "Tábor má připomínku chybějících věcí vypnutou, nic se neodešle. Zapnout ji můžete v nastavení e-mailů tábora."
+  },
+  "overview": {
+    "places": "Obsazená místa",
+    "placesValue": "{{registered}} z {{capacity}}",
+    "expected": "Celkem k úhradě",
+    "received": "Přijato",
+    "outstanding": "Zbývá doplatit",
+    "overpaid": "Přeplaceno",
+    "overdue": "Přihlášky po splatnosti"
+  },
+  "filters": {
+    "overdue": "Po splatnosti",
+    "unsignedConsent": "Nepodepsaný souhlas",
+    "missingDocument": "Chybí dokument",
+    "missingAnswers": "Chybí údaje"
   }
 }

@@ -9,6 +9,8 @@ import { CancellationService } from './cancellation/services/cancellation.servic
 import { ComgateNotificationController } from './card-payment/comgate-notification.controller.ts';
 import { PublicCardPaymentController } from './card-payment/public-card-payment.controller.ts';
 import { CardPaymentService } from './card-payment/services/card-payment.service.ts';
+import { GuardianChecklistController } from './checklist/guardian-checklist.controller.ts';
+import { ChecklistService } from './checklist/services/checklist.service.ts';
 import { SendConfirmationHandler } from './confirmation/send-confirmation.handler.ts';
 import { ConfirmationService } from './confirmation/services/confirmation.service.ts';
 import { EmailChangeConfirmedHandler } from './guardian-email/guardian-email-notice.handler.ts';
@@ -16,6 +18,9 @@ import { GuardianEmailNoticeService } from './guardian-email/services/guardian-e
 import { LedgerController } from './ledger/ledger.controller.ts';
 import { SendPaymentReceivedHandler } from './ledger/send-payment-received.handler.ts';
 import { LedgerService } from './ledger/services/ledger.service.ts';
+import { OpenItemsReminderController } from './open-items-reminder/open-items-reminder.controller.ts';
+import { SendOpenItemsReminderHandler } from './open-items-reminder/send-open-items-reminder.handler.ts';
+import { OpenItemsReminderService } from './open-items-reminder/services/open-items-reminder.service.ts';
 import { ExportParticipantsHandler } from './participant-export/export-participants.handler.ts';
 import { ParticipantExportController } from './participant-export/participant-export.controller.ts';
 import { ParticipantExportService } from './participant-export/services/participant-export.service.ts';
@@ -46,6 +51,8 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     ComgateNotificationController,
     PublicCardPaymentController,
     PaymentReminderController,
+    GuardianChecklistController,
+    OpenItemsReminderController,
   ],
   providers: [
     RegistrationService,
@@ -61,6 +68,9 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     ParticipantExportService,
     CardPaymentService,
     PaymentReminderService,
+    ChecklistService,
+    OpenItemsReminderService,
+    SendOpenItemsReminderHandler,
     SendPaymentReminderHandler,
     ExportParticipantsHandler,
     SendCancellationHandler,

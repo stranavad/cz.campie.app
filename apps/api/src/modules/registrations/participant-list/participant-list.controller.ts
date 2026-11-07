@@ -2,6 +2,7 @@ import { Controller } from '@nestjs/common';
 
 import {
   getSelectedTurnusEndpoint,
+  getTurnusOverviewEndpoint,
   listParticipantsEndpoint,
   setSelectedTurnusEndpoint,
   type ParticipantListParams,
@@ -9,6 +10,7 @@ import {
   type ParticipantRow,
   type SelectedTurnus,
   type SetSelectedTurnusBody,
+  type TurnusOverview,
 } from '@repo/schema/registrations';
 
 import { Access } from '../../../core/access/access.decorator.ts';
@@ -42,5 +44,12 @@ export class ParticipantListController {
     @EndpointQuery(listParticipantsEndpoint) query: ParticipantListQuery,
   ): Promise<ParticipantRow[]> {
     return this.lists.list(turnusId, query);
+  }
+
+  @Endpoint(getTurnusOverviewEndpoint)
+  public overview(
+    @EndpointParams(getTurnusOverviewEndpoint) { turnusId }: ParticipantListParams,
+  ): Promise<TurnusOverview> {
+    return this.lists.overview(turnusId);
   }
 }

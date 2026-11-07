@@ -9,6 +9,7 @@ import { OpenItemsReminder } from '@/features/participants/components/open-items
 import { ParticipantExport } from '@/features/participants/components/participant-export';
 import { PaymentReminders } from '@/features/participants/components/payment-reminders';
 import { TurnusConsents } from '@/features/participants/components/turnus-consents';
+import { TurnusOverview } from '@/features/participants/components/turnus-overview';
 import { useParticipantsPage } from '@/features/participants/components/use-participants-page.hook';
 
 // The admin's working list: the Participants of the Selected Turnus, searched and filtered.
@@ -57,6 +58,13 @@ export function ParticipantsPage() {
           <ParticipantExport key={page.turnusId} organisationId={page.organisationId} turnusId={page.turnusId} />
         )}
         {page.turnusId === null ? null : (
+          <TurnusOverview
+            key={`overview-${page.turnusId}`}
+            organisationId={page.organisationId}
+            turnusId={page.turnusId}
+          />
+        )}
+        {page.turnusId === null ? null : (
           <TurnusConsents
             key={`consents-${page.turnusId}`}
             organisationId={page.organisationId}
@@ -102,6 +110,16 @@ export function ParticipantsPage() {
           />
           {t('unverified')}
         </label>
+        {(['overdue', 'unsignedConsent', 'missingDocument', 'missingAnswers'] as const).map((flag) => (
+          <label key={flag} className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={page.flags[flag]}
+              onChange={(event) => page.setFlag(flag, event.target.checked)}
+            />
+            {t(`filters.${flag}`)}
+          </label>
+        ))}
       </div>
       {page.isError ? <p className="text-destructive">{t('error')}</p> : null}
       {page.isEmpty ? <p className="text-muted-foreground">{t('empty')}</p> : null}

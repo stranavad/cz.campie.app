@@ -28,6 +28,7 @@ import {
   getRegistrationHistoryEndpoint,
   getSelectedTurnusEndpoint,
   getTurnusFormEndpoint,
+  getTurnusOverviewEndpoint,
   listParticipantsEndpoint,
   moveRegistrationEndpoint,
   previewAddParticipantEndpoint,
@@ -68,6 +69,10 @@ export const participantsService = {
         ...(filters.search === undefined ? {} : { search: filters.search }),
         ...(filters.paymentStatus === undefined ? {} : { paymentStatus: filters.paymentStatus }),
         ...(filters.unverifiedClaimedDiscount === true ? { unverifiedClaimedDiscount: 'true' as const } : {}),
+        ...(filters.overdue === true ? { overdue: 'true' as const } : {}),
+        ...(filters.unsignedConsent === true ? { unsignedConsent: 'true' as const } : {}),
+        ...(filters.missingDocument === true ? { missingDocument: 'true' as const } : {}),
+        ...(filters.missingAnswers === true ? { missingAnswers: 'true' as const } : {}),
       },
       signal,
     }),
@@ -148,4 +153,6 @@ export const participantsService = {
     apiClient.request(previewOpenItemsReminderEndpoint, { organisationId, params: { turnusId }, signal }),
   sendOpenItemsReminder: (organisationId: string, turnusId: string) =>
     apiClient.request(sendOpenItemsReminderEndpoint, { organisationId, params: { turnusId } }),
+  overview: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
+    apiClient.request(getTurnusOverviewEndpoint, { organisationId, params: { turnusId }, signal }),
 };

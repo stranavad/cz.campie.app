@@ -39,14 +39,22 @@ export const participantListParamsSchema = z.object({ turnusId: z.uuid() });
 
 export type ParticipantListParams = z.infer<typeof participantListParamsSchema>;
 
+const flag = z
+  .enum(['true', 'false'])
+  .transform((value) => value === 'true')
+  .optional();
+
 export const participantListQuerySchema = z.object({
   // Child or guardian name, email or Variable symbol, in any case and with or without diacritics.
   search: z.string().trim().max(100).optional(),
   paymentStatus: z.enum(PAYMENT_STATUSES).optional(),
-  unverifiedClaimedDiscount: z
-    .enum(['true', 'false'])
-    .transform((value) => value === 'true')
-    .optional(),
+  overdue: flag,
+  unverifiedClaimedDiscount: flag,
+  // From the child's checklist: a Consent not signed, a requirement nothing or a returned document was
+  // handed in for, answers owed to fields added later.
+  unsignedConsent: flag,
+  missingDocument: flag,
+  missingAnswers: flag,
 });
 
 export type ParticipantListQuery = z.output<typeof participantListQuerySchema>;
@@ -66,6 +74,9 @@ export const participantRowSchema = z.object({
   status: z.enum(PARTICIPANT_STATUSES),
   // A Claimed discount that needs the camp's verification was answered for this child.
   unverifiedClaimedDiscount: z.boolean(),
+  unsignedConsent: z.boolean(),
+  missingDocument: z.boolean(),
+  missingAnswers: z.boolean(),
 });
 
 export type ParticipantRow = z.infer<typeof participantRowSchema>;

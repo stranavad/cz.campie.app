@@ -24,6 +24,6 @@ An admin with Registrations write sends a reminder to the guardians of every Reg
 
 ## Comments
 
-2026-11-07 - **From issue 59.** `ChecklistService.ofTurnus(turnusId)` (`modules/checklist/checklist/services/checklist.service.ts`, exported by `ChecklistModule`) gives every Registered child's checklist items (`kind`, `key`, `label`, `state`, `done`, `dueDate`) in a few queries.
+2026-11-07 - **From issue 59.** `ChecklistService.ofTurnus(turnusId)` (`modules/registrations/checklist/services/checklist.service.ts`, in `RegistrationsModule`) gives every Registered child's checklist items (`kind`, `key`, `label`, `state`, `done`, `dueDate`) in a few queries.
 
 2026-11-07 - **Done.** `GET`/`POST /turnusy/:turnusId/open-items-reminders` (Registrations write) count and remind the Registrations with an item `isOpenForGuardians` (from `@repo/schema/checklist`: open, not payment, not a document waiting for the camp's review); `checklist.send-open-items-reminder` per guardian (never access emails) reads the checklist again when it sends and lists what is open per child below the Camp's `open_items_reminder` text (new `details` slot of the Camp emails), skipping one with nothing open any more. Audited `open_items_reminder.send` with the count; 409 `open_items_reminder_switched_off` when the Camp switched it off; counted per Organisation like the payment reminder (same limit, counted apart). Participants page: "Připomenout chybějící věci" with the count before a confirming click.

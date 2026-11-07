@@ -1,6 +1,6 @@
 # 61 - Turnus overview and list filters
 
-Status: ready-for-agent
+Status: done
 Stage: 1b
 Episode: E6 Admin Registrations
 Blocked by: 38, 42, 59
@@ -12,11 +12,11 @@ Add a Turnus overview for admins with Registrations read: places filled against 
 
 ## Acceptance criteria
 
-- [ ] Overview totals match the ledger and price lines for a fixture with paid, partly paid, overpaid and Cancelled Participants.
-- [ ] Each filter returns exactly the expected Participants in a fixture.
-- [ ] Confirming a Claimed discount clears it from the unverified filter and is audited.
-- [ ] Health filter is absent without Health read.
-- [ ] Overview of Organisation A's Turnus is unreachable for B.
+- [x] Overview totals match the ledger and price lines for a fixture with paid, partly paid, overpaid and Cancelled Participants.
+- [x] Each filter returns exactly the expected Participants in a fixture.
+- [x] Confirming a Claimed discount clears it from the unverified filter and is audited.
+- [x] Health filter is absent without Health read.
+- [x] Overview of Organisation A's Turnus is unreachable for B.
 
 ## Notes
 
@@ -25,4 +25,6 @@ Add a Turnus overview for admins with Registrations read: places filled against 
 
 ## Comments
 
-2026-11-07 - **From issue 59.** `ChecklistService.ofTurnus(turnusId)` (`modules/checklist/checklist/services/checklist.service.ts`, exported by `ChecklistModule`) gives every Registered child's checklist items (`kind`, `key`, `label`, `state`, `done`, `dueDate`) in a few queries.
+2026-11-07 - **From issue 59.** `ChecklistService.ofTurnus(turnusId)` (`modules/registrations/checklist/services/checklist.service.ts`, in `RegistrationsModule`) gives every Registered child's checklist items (`kind`, `key`, `label`, `state`, `done`, `dueDate`) in a few queries.
+
+2026-11-07 - **Done.** `GET /turnusy/:turnusId/overview` (Registrations read): capacity and Registered children, and summed over the Turnus's Registrations the totals, payments, what is still owed, what was overpaid, and the Overdue count, from `LedgerService.balancesOf`. The Participant list takes `overdue`, `unsignedConsent`, `missingDocument` (nothing or a returned document handed in for a requirement) and `missingAnswers`, read from `ChecklistService.ofTurnus`, and its rows carry the three checklist marks; a Cancelled child has no checklist, so no checklist filter finds one. The checklist feature moved into `RegistrationsModule` (`modules/registrations/checklist/`, `open-items-reminder/`), which the list needs. No Health filter exists until stage 2; Claimed discounts are confirmed in the detail as since issue 43, which already clears the unverified filter and audits it. Participants page: the overview above the list and the four filters.

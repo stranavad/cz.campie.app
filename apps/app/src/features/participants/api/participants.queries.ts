@@ -247,3 +247,10 @@ export const useOpenItemsPreviewQuery = (organisationId: string, turnusId: strin
 
 export const useSendOpenItemsReminderMutation = (organisationId: string, turnusId: string) =>
   useMutation({ mutationFn: () => participantsService.sendOpenItemsReminder(organisationId, turnusId) });
+
+export const useTurnusOverviewQuery = (organisationId: string, turnusId: string | null) =>
+  useQuery({
+    queryKey: [...participantsKeys.organisation(organisationId), 'overview', turnusId ?? ''],
+    queryFn:
+      turnusId === null ? skipToken : ({ signal }) => participantsService.overview(organisationId, turnusId, signal),
+  });
