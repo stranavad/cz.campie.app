@@ -8,8 +8,10 @@ import {
 import {
   approveOrganisationEndpoint,
   listConsoleOrganisationsEndpoint,
+  listProblemReportsEndpoint,
   rejectOrganisationEndpoint,
   renameOrganisationSubdomainEndpoint,
+  resolveProblemReportEndpoint,
   suspendOrganisationEndpoint,
   type RenameOrganisationSubdomainBody,
 } from '@repo/schema/console';
@@ -28,4 +30,6 @@ export const consoleService = {
   confirmTotpEnrolment: (body: ConfirmTotpEnrolmentBody) => apiClient.request(confirmTotpEnrolmentEndpoint, { body }),
   verifyTotp: (body: VerifyTotpBody) => apiClient.request(verifyTotpEndpoint, { body }),
   enterSupport: (organisationId: string) => apiClient.request(enterSupportAccessEndpoint, { organisationId }),
+  problemReports: (signal?: AbortSignal) => apiClient.request(listProblemReportsEndpoint, { signal }),
+  resolveProblemReport: (reportId: string) => apiClient.request(resolveProblemReportEndpoint, { params: { reportId } }),
 };

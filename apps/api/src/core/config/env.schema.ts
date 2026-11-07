@@ -178,6 +178,8 @@ const requestLimits = z
     PAYMENT_REMINDER_LIMIT_PER_ORGANISATION: positiveInteger,
     GUARDIAN_ACTION_LIMIT_PER_IP: positiveInteger,
     GUARDIAN_ACTION_LIMIT_PER_EMAIL: positiveInteger,
+    PROBLEM_REPORT_LIMIT_PER_IP: positiveInteger,
+    PROBLEM_REPORT_LIMIT_PER_TARGET: positiveInteger,
   })
   .transform((env) => {
     const windowMs = env.REQUEST_LIMIT_WINDOW_MINUTES * 60 * 1000;
@@ -227,6 +229,8 @@ const requestLimits = z
           env.GUARDIAN_ACTION_LIMIT_PER_IP,
           env.GUARDIAN_ACTION_LIMIT_PER_EMAIL,
         ),
+        // Feedback and problem reports to the Platform operator: per address, and per admin or Organisation.
+        problemReport: limitOf('problem-report', env.PROBLEM_REPORT_LIMIT_PER_IP, env.PROBLEM_REPORT_LIMIT_PER_TARGET),
         // The open-items reminder, as often as the payment reminder, counted apart.
         openItemsReminder: limitOf(
           'open-items-reminder',

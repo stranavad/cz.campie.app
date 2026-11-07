@@ -78,5 +78,17 @@
     "writes": "změny povoleny, do {{until}}",
     "enter": "Vstoupit",
     "failed": "Vstup se nepodařil. Přístup mohl mezitím skončit."
+  },
+  "reports": {
+    "title": "Zpětná vazba a hlášení problémů",
+    "none": "Žádná hlášení.",
+    "kinds": {
+      "admin": "Od správce",
+      "guardian": "Od rodiče"
+    },
+    "noOrganisation": "bez organizace",
+    "anonymous": "bez kontaktu",
+    "resolve": "Vyřízeno",
+    "resolved": "vyřízeno"
   }
 }

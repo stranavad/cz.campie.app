@@ -54,3 +54,17 @@ export const useVerifyTotpMutation = () => useTotpCodeMutation(consoleService.ve
 // Records the entry in the Organisation's log; the admin pages then act in it under the grant.
 export const useEnterSupportMutation = () =>
   useMutation({ mutationFn: (organisationId: string) => consoleService.enterSupport(organisationId) });
+
+const problemReportsKey = ['console', 'problem-reports'] as const;
+
+export const useProblemReportsQuery = () =>
+  useQuery({ queryKey: problemReportsKey, queryFn: ({ signal }) => consoleService.problemReports(signal) });
+
+export const useResolveProblemReportMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (reportId: string) => consoleService.resolveProblemReport(reportId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: problemReportsKey }),
+  });
+};

@@ -57,6 +57,8 @@ export const PRODUCTION_ENV = {
   PAYMENT_REMINDER_LIMIT_PER_ORGANISATION: '10',
   GUARDIAN_ACTION_LIMIT_PER_IP: '300',
   GUARDIAN_ACTION_LIMIT_PER_EMAIL: '100',
+  PROBLEM_REPORT_LIMIT_PER_IP: '20',
+  PROBLEM_REPORT_LIMIT_PER_TARGET: '50',
 } satisfies Record<string, string>;
 
 const initialEnv = new Set(Object.keys(process.env));

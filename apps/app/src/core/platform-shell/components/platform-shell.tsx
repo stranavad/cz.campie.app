@@ -2,6 +2,7 @@ import { Outlet } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { config } from '@/config';
+import { AdminFeedback } from '@/core/platform-shell/components/admin-feedback';
 import { LogOutButton } from '@/core/platform-shell/components/log-out-button';
 import { SupportBanner } from '@/core/platform-shell/components/support-banner';
 
@@ -22,6 +23,7 @@ export function PlatformShell() {
       <main className="mx-auto w-full max-w-5xl flex-1 px-4">
         <Outlet />
       </main>
+      <AdminFeedback />
     </div>
   );
 }

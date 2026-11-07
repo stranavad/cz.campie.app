@@ -108,7 +108,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 61  | Turnus overview and list filters               | E6           | done            | 38, 42, 59 |
 | 62  | Export presets and payments export             | E6           | done            | 46         |
 | 63  | Support access                                 | E9 Trust     | done            | 10, 21     |
-| 64  | Feedback and problem reports                   | E9           | ready-for-agent | 21         |
+| 64  | Feedback and problem reports                   | E9           | done            | 21         |
 | 65  | Audit log browser                              | E9           | ready-for-agent | 10, 19     |
 | 66  | Erase a Registration                           | E9           | ready-for-agent | 12, 45     |
 | 67  | TOTP for admins and enforcement                | E1           | ready-for-agent | 18, 21     |

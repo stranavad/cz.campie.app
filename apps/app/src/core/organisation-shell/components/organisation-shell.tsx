@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { DEFAULT_ACCENT_COLOUR } from '@repo/schema/organisations';
 
+import { feedbackService, ProblemForm } from '@/core/feedback';
 import { usePublicOrganisationQuery } from '@/core/organisation-shell/api/public-organisation.queries';
 import { brandTokens } from '@/core/organisation-shell/brand-tokens.helper';
 import { HttpError } from '@/lib/api';
@@ -44,7 +45,13 @@ export function OrganisationShell() {
           <Outlet />
         )}
       </main>
-      <footer className="mx-auto w-full max-w-3xl px-4 py-6 text-sm text-muted-foreground">
+      <footer className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground">
+        {/* Apart from the camp's contact: this reaches the platform's people, for the website itself. */}
+        <ProblemForm
+          label={t('feedback.technicalLink')}
+          askEmail
+          send={(text, email) => feedbackService.report({ text, email, pageUrl: window.location.href.slice(0, 500) })}
+        />
         {t('organisationShell.poweredBy')}
       </footer>
     </div>

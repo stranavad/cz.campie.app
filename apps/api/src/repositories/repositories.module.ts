@@ -14,6 +14,7 @@ import { RegistrationFormRepository } from './camps/registration-form/registrati
 import { TurnusRepository } from './camps/turnus/turnus.repository.ts';
 import { ConsentSignatureRepository } from './consents/consent-signature/consent-signature.repository.ts';
 import { ConsentRepository } from './consents/consent/consent.repository.ts';
+import { ProblemReportRepository } from './console/problem-report/problem-report.repository.ts';
 import { DocumentTypeRepository } from './documents/document-type/document-type.repository.ts';
 import { DocumentUploadRepository } from './documents/document-upload/document-upload.repository.ts';
 import { FileRepository } from './files/file/file.repository.ts';
@@ -39,6 +40,7 @@ const REPOSITORIES = [
   OrganisationKeyRepository,
   PaymentGatewayAccountRepository,
   SupportGrantRepository,
+  ProblemReportRepository,
   CardPaymentRepository,
   ConsentRepository,
   ConsentSignatureRepository,

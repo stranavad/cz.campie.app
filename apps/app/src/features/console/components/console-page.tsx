@@ -2,6 +2,7 @@ import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { OrganisationList } from '@/features/console/components/organisation-list/organisation-list';
+import { ProblemReports } from '@/features/console/components/problem-reports/problem-reports';
 import { SupportList } from '@/features/console/components/support-list/support-list';
 import { TotpCodeForm } from '@/features/console/components/totp-code-form/totp-code-form';
 import { TotpEnrolment } from '@/features/console/components/totp-enrolment/totp-enrolment';
@@ -41,6 +42,7 @@ export function ConsolePage() {
       {page.step === 'organisations' ? (
         <div className="flex flex-col gap-10">
           <SupportList />
+          <ProblemReports />
           <OrganisationList organisations={page.organisations} />
         </div>
       ) : null}

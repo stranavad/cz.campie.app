@@ -130,5 +130,15 @@
     "openingNow": "Přihlašování právě začíná, stránka se za chvíli obnoví.",
     "agesFrom": "Od {{min}} let",
     "agesTo": "Do {{max}} let"
+  },
+  "feedback": {
+    "technicalLink": "Technický problém s webem? Napište nám",
+    "adminLink": "Napsat zpětnou vazbu nebo nahlásit problém",
+    "text": "Co se stalo?",
+    "email": "E-mail pro odpověď (nepovinné)",
+    "send": "Odeslat",
+    "cancel": "Zrušit",
+    "sent": "Děkujeme, zpráva odešla správcům aplikace.",
+    "failed": "Zprávu se nepodařilo odeslat. Zkuste to prosím později."
   }
 }
