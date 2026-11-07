@@ -3,7 +3,8 @@ import { pipeline, Readable } from 'node:stream';
 import { buffer } from 'node:stream/consumers';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
-import { FILE_CONTENT_TYPES, type FileContentType, type FileLink } from '@repo/schema/files';
+import { FILE_CONTENT_TYPES, MAX_FILE_BYTES, type FileContentType, type FileLink } from '@repo/schema/files';
+import { LOGO_CONTENT_TYPES, MAX_LOGO_BYTES } from '@repo/schema/organisations';
 
 import { FileRepository } from '../../repositories/files/file/file.repository.ts';
 import { UnitOfWork } from '../database/unit-of-work.ts';
@@ -24,6 +25,15 @@ const FILE_TYPES: Record<FileContentType, { readonly signature: Buffer; readonly
   'image/jpeg': { signature: Buffer.from('ffd8ff', 'hex'), extensions: ['.jpg', '.jpeg'] },
   'image/png': { signature: Buffer.from('89504e470d0a1a0a', 'hex'), extensions: ['.png'] },
 };
+
+// What a feature narrows an upload to, such as a logo to small images.
+export interface StoreLimits {
+  readonly allow?: readonly FileContentType[];
+  readonly maxBytes?: number;
+}
+
+// An Organisation's or a Camp's logo: shown on every public page and in every document, so a small image.
+export const LOGO_LIMITS: StoreLimits = { allow: LOGO_CONTENT_TYPES, maxBytes: MAX_LOGO_BYTES };
 
 // Long enough to open a file on a slow phone, short enough that a forwarded or logged link soon dies.
 const LINK_LIFETIME_MS = 5 * 60 * 1000;
@@ -57,13 +67,20 @@ export class FileService {
   /**
    * Store an uploaded file encrypted with the current Organisation's key.
    * @param upload the file as uploaded
-   * @throws {BadRequestException} when the content is not a PDF, JPG or PNG, or the name says otherwise
+   * @param limits the types a feature takes and its size limit, narrower than every upload's
+   * @throws {BadRequestException} when the content is not an allowed type, or the name says otherwise
+   * @throws {PayloadTooLargeException} when the file is over the size limit
    */
-  public async store(upload: FileUpload): Promise<string> {
+  public async store(upload: FileUpload, limits: StoreLimits = {}): Promise<string> {
+    const { allow = FILE_CONTENT_TYPES, maxBytes = MAX_FILE_BYTES } = limits;
     const contentType = contentTypeOf(upload);
 
-    if (contentType === null) {
+    if (contentType === null || !allow.includes(contentType)) {
       throw uploadRejected('file_type_not_allowed');
+    }
+
+    if (upload.bytes.length > maxBytes) {
+      throw uploadRejected('file_too_large');
     }
 
     const cipher = await this.encryption.cipher();

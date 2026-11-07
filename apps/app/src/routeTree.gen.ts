@@ -14,6 +14,7 @@ import { Route as PlatformRouteRouteImport } from './routes/platform/route'
 import { Route as OrganisationIndexRouteImport } from './routes/organisation/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
 import { Route as PlatformKonzoleRouteImport } from './routes/platform/konzole'
+import { Route as PlatformNastaveniRouteImport } from './routes/platform/nastaveni'
 import { Route as PlatformNoveHesloRouteImport } from './routes/platform/nove-heslo'
 import { Route as PlatformPozvankaRouteImport } from './routes/platform/pozvanka'
 import { Route as PlatformPrihlaseniRouteImport } from './routes/platform/prihlaseni'
@@ -45,6 +46,11 @@ const PlatformIndexRoute = PlatformIndexRouteImport.update({
 const PlatformKonzoleRoute = PlatformKonzoleRouteImport.update({
   id: '/konzole',
   path: '/konzole',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformNastaveniRoute = PlatformNastaveniRouteImport.update({
+  id: '/nastaveni',
+  path: '/nastaveni',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
 const PlatformNoveHesloRoute = PlatformNoveHesloRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/platform/konzole': typeof PlatformKonzoleRoute
+  '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/platform/konzole': typeof PlatformKonzoleRoute
+  '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/platform/konzole': typeof PlatformKonzoleRoute
+  '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/organisation'
     | '/platform'
     | '/platform/konzole'
+    | '/platform/nastaveni'
     | '/platform/nove-heslo'
     | '/platform/pozvanka'
     | '/platform/prihlaseni'
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/platform/konzole'
+    | '/platform/nastaveni'
     | '/platform/nove-heslo'
     | '/platform/pozvanka'
     | '/platform/prihlaseni'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/organisation'
     | '/platform'
     | '/platform/konzole'
+    | '/platform/nastaveni'
     | '/platform/nove-heslo'
     | '/platform/pozvanka'
     | '/platform/prihlaseni'
@@ -209,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/konzole'
       fullPath: '/platform/konzole'
       preLoaderRoute: typeof PlatformKonzoleRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/nastaveni': {
+      id: '/platform/nastaveni'
+      path: '/nastaveni'
+      fullPath: '/platform/nastaveni'
+      preLoaderRoute: typeof PlatformNastaveniRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
     '/platform/nove-heslo': {
@@ -276,6 +295,7 @@ const OrganisationRouteRouteWithChildren =
 
 interface PlatformRouteRouteChildren {
   PlatformKonzoleRoute: typeof PlatformKonzoleRoute
+  PlatformNastaveniRoute: typeof PlatformNastaveniRoute
   PlatformNoveHesloRoute: typeof PlatformNoveHesloRoute
   PlatformPozvankaRoute: typeof PlatformPozvankaRoute
   PlatformPrihlaseniRoute: typeof PlatformPrihlaseniRoute
@@ -287,6 +307,7 @@ interface PlatformRouteRouteChildren {
 
 const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformKonzoleRoute: PlatformKonzoleRoute,
+  PlatformNastaveniRoute: PlatformNastaveniRoute,
   PlatformNoveHesloRoute: PlatformNoveHesloRoute,
   PlatformPozvankaRoute: PlatformPozvankaRoute,
   PlatformPrihlaseniRoute: PlatformPrihlaseniRoute,

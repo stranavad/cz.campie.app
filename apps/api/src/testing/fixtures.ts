@@ -12,6 +12,7 @@ import { hashPassword } from '../core/passwords/password-hash.ts';
 import { SESSION_COOKIES } from '../core/sessions/session-cookie.ts';
 import { SessionService } from '../core/sessions/session.service.ts';
 import { AdminService } from '../modules/admins/admin/services/admin.service.ts';
+import { CampService } from '../modules/camps/camp/services/camp.service.ts';
 import { OrganisationService } from '../modules/organisations/organisation/services/organisation.service.ts';
 import { MembershipRepository } from '../repositories/admins/membership/membership.repository.ts';
 import {
@@ -70,6 +71,20 @@ export async function brandOrganisation(
 
     await app.get(OrganisationRepository).update(organisationId, { ...changes, logoFileId });
   });
+}
+
+/**
+ * Create a Camp in an Organisation, its slug taken from its name, as signup creates the first one.
+ * @param app the running test app
+ * @param organisationId the Organisation
+ * @param name the Camp's name
+ */
+export async function createCamp(app: INestApplication, organisationId: string, name = 'Letní tábor'): Promise<string> {
+  const camp = await app
+    .get(UnitOfWork)
+    .run(organisationId, () => app.get(CampService).createFirst({ kind: 'system' }, { name }));
+
+  return camp.id;
 }
 
 /**

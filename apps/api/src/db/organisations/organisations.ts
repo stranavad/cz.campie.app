@@ -21,6 +21,7 @@ export const organisations = p.snakeCase.table(
     contactEmail: p.text().notNull(),
     contactPhone: p.text().notNull(),
     billingEmail: p.text().notNull(),
+    bankAccount: p.text(),
     displayName: p.text().notNull(),
     accentColour: p.text().notNull().default(DEFAULT_ACCENT_COLOUR),
     // No foreign key to files: files reference organisations, and the reverse would be an import cycle

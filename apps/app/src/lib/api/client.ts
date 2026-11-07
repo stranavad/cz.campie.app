@@ -28,6 +28,7 @@ interface UntypedOptions {
   params?: Record<string, string | number>;
   query?: Record<string, QueryValue | QueryValue[]>;
   body?: unknown;
+  file?: File;
   signal?: AbortSignal;
   organisationId?: string;
 }
@@ -63,7 +64,7 @@ async function readBody(response: Response): Promise<unknown> {
 
 async function send(
   endpoint: EndpointDefinition,
-  { params, query, body, signal, organisationId }: UntypedOptions,
+  { params, query, body, file, signal, organisationId }: UntypedOptions,
 ): Promise<unknown> {
   const path = endpointPath(endpoint, params);
   const timeout = AbortSignal.timeout(TIMEOUT_MS);
@@ -71,6 +72,14 @@ async function send(
 
   if (body !== undefined) {
     headers.set('Content-Type', 'application/json');
+  }
+
+  // An upload goes as multipart in the field the API reads; fetch sets its Content-Type and boundary.
+  let upload: FormData | undefined;
+
+  if (file !== undefined) {
+    upload = new FormData();
+    upload.append('file', file);
   }
 
   if (organisationId !== undefined) {
@@ -81,7 +90,7 @@ async function send(
     new Request(buildUrl(path, query), {
       method: endpoint.method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: upload ?? (body === undefined ? undefined : JSON.stringify(body)),
       signal: signal === undefined ? timeout : AbortSignal.any([signal, timeout]),
     }),
   );

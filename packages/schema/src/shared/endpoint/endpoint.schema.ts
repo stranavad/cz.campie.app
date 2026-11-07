@@ -21,6 +21,8 @@ export interface EndpointDefinition {
   readonly params?: z.ZodObject;
   readonly query?: z.ZodType;
   readonly body?: z.ZodType;
+  // Takes one file as a multipart upload in the field `file`, instead of a JSON body.
+  readonly upload?: true;
   // Omitted means the route answers without a body.
   readonly response?: z.ZodType;
   // Defaults to 204 without a response, 201 for POST, 200 otherwise.
@@ -55,7 +57,15 @@ export type EndpointRequest<Endpoint extends EndpointDefinition> = (Endpoint['pa
   ? { readonly params: Input<Endpoint['params']> }
   : { readonly params?: never }) &
   (Endpoint['query'] extends z.ZodType ? { readonly query: Input<Endpoint['query']> } : { readonly query?: never }) &
-  (Endpoint['body'] extends z.ZodType ? { readonly body: Input<Endpoint['body']> } : { readonly body?: never });
+  (Endpoint['body'] extends z.ZodType ? { readonly body: Input<Endpoint['body']> } : { readonly body?: never }) &
+  (Endpoint['upload'] extends true ? { readonly file: UploadFile } : { readonly file?: never });
+
+// The file an upload sends: the browser's File, described without the DOM types this package runs without.
+export interface UploadFile {
+  readonly name: string;
+  readonly size: number;
+  readonly type: string;
+}
 
 /**
  * The status an endpoint answers with on success.

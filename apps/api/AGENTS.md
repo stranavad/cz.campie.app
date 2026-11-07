@@ -104,9 +104,10 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 ## Files
 
 - Every file goes through `FileService` (`core/files/`), inside the unit of work of the record that owns it. A feature keeps the file id on its own record and does its own permission check and audit entry; the file service checks neither.
-- Uploads: `@UseInterceptors(FileUploadInterceptor)` and `@UploadedFile() upload: FileUpload` on the route (one multipart field `file`, at most `MAX_FILE_BYTES`), then `files.store(upload)`. The content decides the type (PDF, JPG, PNG) and the name's extension must agree; rejections carry a `FileErrorCode`.
+- Uploads: `@UseInterceptors(FileUploadInterceptor)` and `@UploadedFile() upload: FileUpload` on the route (one multipart field `file`, at most `MAX_FILE_BYTES`; its contract says `upload: true`), then `files.store(upload, limits?)`, where a feature narrows the types and size (a logo: `LOGO_CONTENT_TYPES`, `MAX_LOGO_BYTES`). The content decides the type (PDF, JPG, PNG) and the name's extension must agree; rejections carry a `FileErrorCode`.
 - Storage holds ciphertext under `<organisation id>/<file id>`; the file's name is an encrypted column. A store whose unit of work rolls back deletes its object (`UnitOfWork.afterRollback`).
 - Downloads: `files.link(fileId)` returns a `FileLink` to `/api/downloads/<token>`, valid 5 minutes, signed with a key derived from the master key. The download route opens the token's Organisation's unit of work, decrypts and streams the file inline, and aborts the response if decryption fails. Never expose a storage key or hand out storage URLs.
+- Logos are the one file served without a link: `/api/logos/<file id>` on the Organisation's subdomain (`publicLogoUrl`), only for the current logo of the Organisation or one of its Camps, cached for good since a new logo gets a new id. A Camp's own accent colour and logo fall back to its Organisation's (`effectiveBranding`).
 - `files.remove(fileId)` deletes the record; a job deletes the object once that commits. Delete a file through it, never by cascade from its owner's row, or the object stays in storage.
 
 ## Generated documents

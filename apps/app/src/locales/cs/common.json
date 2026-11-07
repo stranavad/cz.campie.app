@@ -22,6 +22,8 @@
     "ico_invalid": "Zadejte platné IČO, osm číslic.",
     "vat_id_invalid": "Zadejte DIČ ve tvaru CZ12345678, nebo pole nechte prázdné.",
     "phone_invalid": "Zadejte telefon, například +420 123 456 789.",
+    "bank_account_invalid": "Zadejte platné číslo účtu ve tvaru 123456789/0100, případně s předčíslím 19-123456789/0100.",
+    "accent_colour_invalid": "Zadejte barvu ve tvaru #1d3557.",
     "password_too_short": "Heslo musí mít alespoň 12 znaků.",
     "password_too_long": "Heslo může mít nejvýše 200 znaků.",
     "password_too_simple": "Heslo je příliš jednoduché: použijte víc různých znaků a vyhněte se řadám jako 12345 nebo qwerty.",

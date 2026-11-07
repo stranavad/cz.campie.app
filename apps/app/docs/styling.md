@@ -8,7 +8,7 @@ No `tailwind.config.js`: `src/index.css` holds the imports, theme variables, the
 
 - **Light theme only, mobile-first.** Guardians fill the form on a phone; design for the narrow screen and widen from there.
 - **Style through semantic theme tokens** (`bg-background`, `text-muted-foreground`, `bg-primary`), not raw colours or sizes. The tokens are the variables in `src/index.css`; a new token needs a variable and an `@theme` entry.
-- **Organisation branding** (issue 23) sets token values at runtime on the Organisation's pages, so a component that uses tokens is branded for free and one with raw colours is not.
+- **Organisation branding** sets token values at runtime on the Organisation's pages (`OrganisationShell`): `--primary` is the accent, `--primary-foreground` black or white, whichever reads on it, and `--ring` the accent darkened until it reads on white (`brandColours` in `@repo/schema/organisations`). A component that uses tokens is branded and readable for free; one with raw colours is not.
 - Combine conditional classes with `cn` from `@/lib/utils`. It resolves conflicts, so a `className` passed from outside overrides a component's defaults.
 
 ## shadcn/ui

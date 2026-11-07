@@ -40,9 +40,14 @@ export function AdminHomePage() {
     <div className="flex flex-col items-start gap-2">
       <OrganisationStatusNotice organisation={organisation} />
       {isOwner ? (
-        <Link to="/platform/uzivatele" className={buttonVariants({ variant: 'outline' })}>
-          {t('manageUsers')}
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/platform/uzivatele" className={buttonVariants({ variant: 'outline' })}>
+            {t('manageUsers')}
+          </Link>
+          <Link to="/platform/nastaveni" className={buttonVariants({ variant: 'outline' })}>
+            {t('organisationSettings')}
+          </Link>
+        </div>
       ) : null}
       {consoleLink}
     </div>

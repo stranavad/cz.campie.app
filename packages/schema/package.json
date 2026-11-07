@@ -25,6 +25,10 @@
       "types": "./dist/admins/index.d.ts",
       "default": "./dist/admins/index.js"
     },
+    "./camps": {
+      "types": "./dist/camps/index.d.ts",
+      "default": "./dist/camps/index.js"
+    },
     "./console": {
       "types": "./dist/console/index.d.ts",
       "default": "./dist/console/index.js"

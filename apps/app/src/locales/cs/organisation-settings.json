@@ -1,0 +1,52 @@
+{
+  "title": "Nastavení organizace",
+  "loading": "Načítáme…",
+  "error": "Nastavení se nepodařilo načíst. Zkuste stránku načíst znovu.",
+  "notOwner": "Nastavení organizace upravují jen vlastníci.",
+  "backHome": "Zpět na přehled",
+  "save": "Uložit",
+  "saved": "Uloženo.",
+  "failure": "Změny se nepodařilo uložit. Zkuste to prosím znovu.",
+  "identity": {
+    "title": "Údaje organizace",
+    "intro": "Tyto údaje se tisknou na přihlášky a další dokumenty a uvádějí se v platebních údajích.",
+    "legalName": "Název organizace",
+    "ico": "IČO",
+    "vatId": "DIČ",
+    "vatIdHint": "Jen pokud je organizace plátcem DPH.",
+    "address": "Sídlo",
+    "statutoryRepresentative": "Statutární zástupce",
+    "bankAccount": "Číslo účtu",
+    "bankAccountSample": "123456789/0100",
+    "bankAccountHint": "Na tento účet budou rodiče posílat platby. Ve tvaru předčíslí-číslo/kód banky.",
+    "contactEmail": "Kontaktní e-mail",
+    "contactPhone": "Telefon",
+    "billingEmail": "Fakturační e-mail"
+  },
+  "branding": {
+    "title": "Vzhled",
+    "intro": "Logo, barva a název, se kterými rodiče uvidí vaše stránky, e-maily a dokumenty. Každý tábor si je může nastavit zvlášť.",
+    "displayName": "Zobrazovaný název",
+    "displayNameHint": "Pod tímto názvem uvidí organizaci rodiče.",
+    "accentColour": "Barva",
+    "accentColourHint": "Barvu textu k ní zvolíme sami, aby byl vždy čitelný.",
+    "accentPicker": "Vybrat barvu",
+    "previewButton": "Odeslat přihlášku",
+    "previewLink": "Odkaz v textu"
+  },
+  "logo": {
+    "title": "Logo",
+    "none": "Organizace zatím nemá logo.",
+    "current": "Současné logo",
+    "upload": "Nahrát logo",
+    "replace": "Nahrát jiné logo",
+    "remove": "Odebrat logo",
+    "hint": "Obrázek PNG nebo JPG, nejvýše 1 MB.",
+    "failure": {
+      "file_missing": "Vyberte soubor s logem.",
+      "file_too_large": "Logo může mít nejvýše 1 MB.",
+      "file_type_not_allowed": "Logo musí být obrázek PNG nebo JPG.",
+      "unexpected": "Logo se nepodařilo uložit. Zkuste to prosím znovu."
+    }
+  }
+}

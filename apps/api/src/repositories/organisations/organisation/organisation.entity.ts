@@ -1,7 +1,8 @@
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
 import type { ConsoleOrganisation } from '@repo/schema/console';
-import type { OrganisationStatus, PublicOrganisation } from '@repo/schema/organisations';
+import type { FileLink } from '@repo/schema/files';
+import type { OrganisationSettings, OrganisationStatus, PublicOrganisation } from '@repo/schema/organisations';
 
 import type { organisations } from '../../../db/schema.ts';
 
@@ -20,6 +21,7 @@ export class OrganisationEntity {
   public readonly contactEmail: string;
   public readonly contactPhone: string;
   public readonly billingEmail: string;
+  public readonly bankAccount: string | null;
   public readonly displayName: string;
   public readonly accentColour: string;
   public readonly logoFileId: string | null;
@@ -36,6 +38,7 @@ export class OrganisationEntity {
     this.contactEmail = row.contactEmail;
     this.contactPhone = row.contactPhone;
     this.billingEmail = row.billingEmail;
+    this.bankAccount = row.bankAccount;
     this.displayName = row.displayName;
     this.accentColour = row.accentColour;
     this.logoFileId = row.logoFileId;
@@ -58,6 +61,36 @@ export class OrganisationEntity {
   }
 
   toPublicDto(): PublicOrganisation {
-    return { displayName: this.displayName };
+    return {
+      displayName: this.displayName,
+      accentColour: this.accentColour,
+      logoUrl: this.logoFileId === null ? null : publicLogoUrl(this.logoFileId),
+    };
   }
+
+  toSettingsDto(logo: FileLink | null): OrganisationSettings {
+    return {
+      legalName: this.legalName,
+      ico: this.ico,
+      vatId: this.vatId,
+      address: this.address,
+      statutoryRepresentative: this.statutoryRepresentative,
+      bankAccount: this.bankAccount,
+      contactEmail: this.contactEmail,
+      contactPhone: this.contactPhone,
+      billingEmail: this.billingEmail,
+      displayName: this.displayName,
+      accentColour: this.accentColour,
+      logo,
+    };
+  }
+}
+
+/**
+ * Build the address a logo is served at on its Organisation's subdomain. The file id is part of it, so a
+ * new logo gets a new address and browsers may keep a logo for good.
+ * @param fileId the logo's file id
+ */
+export function publicLogoUrl(fileId: string): string {
+  return `/api/logos/${fileId}`;
 }

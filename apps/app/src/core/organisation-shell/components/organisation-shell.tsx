@@ -1,20 +1,28 @@
 import { Outlet } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { DEFAULT_ACCENT_COLOUR } from '@repo/schema/organisations';
+
 import { usePublicOrganisationQuery } from '@/core/organisation-shell/api/public-organisation.queries';
+import { brandTokens } from '@/core/organisation-shell/brand-tokens.helper';
 import { HttpError } from '@/lib/api';
 
-// Public pages and the guardian portal on an Organisation's subdomain, or only a notice when the
-// Platform operator has suspended it. Branding comes with issue 23.
+// Public pages and the guardian portal on an Organisation's subdomain, branded with its logo, name and
+// accent colour, or only a notice when the Platform operator has suspended it.
 export function OrganisationShell() {
   const { t } = useTranslation();
   const organisation = usePublicOrganisationQuery();
   const isSuspended = organisation.error instanceof HttpError && organisation.error.code === 'organisation_suspended';
+  const logoUrl = organisation.data?.logoUrl ?? null;
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="border-b border-border">
-        <div className="mx-auto flex h-14 w-full max-w-3xl items-center px-4 text-lg font-semibold">
+    <div
+      className="flex min-h-dvh flex-col"
+      style={brandTokens(organisation.data?.accentColour ?? DEFAULT_ACCENT_COLOUR)}
+    >
+      <header className="border-b-4 border-primary">
+        <div className="mx-auto flex h-16 w-full max-w-3xl items-center gap-3 px-4 text-lg font-semibold">
+          {logoUrl === null ? null : <img src={logoUrl} alt="" className="h-10 w-auto" />}
           {organisation.data?.displayName}
         </div>
       </header>
