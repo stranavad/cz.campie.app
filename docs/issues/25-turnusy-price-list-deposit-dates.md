@@ -1,6 +1,6 @@
 # 25 - Turnusy with price list, Deposit and dates
 
-Status: in-progress
+Status: done
 Stage: 1a
 Episode: E2 Camp setup
 Blocked by: 24
