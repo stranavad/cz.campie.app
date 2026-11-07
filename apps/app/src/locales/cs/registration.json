@@ -1,0 +1,52 @@
+{
+  "title": "Přihláška: {{camp}}",
+  "back": "Zpět na {{camp}}",
+  "noForm": "Tábor zatím nezveřejnil přihlášku.",
+  "error": "Přihlášku se nepodařilo načíst. Zkuste stránku načíst znovu.",
+  "turnus": "Turnus",
+  "pickTurnus": "Vyberte turnus",
+  "child": "Dítě {{number}}",
+  "addChild": "Přidat další dítě",
+  "removeChild": "Odebrat dítě",
+  "guardian": "Zákonný zástupce",
+  "addSecondGuardian": "Přidat druhého zákonného zástupce",
+  "payment": {
+    "title": "Platba",
+    "full": "Zaplatím celou částku najednou",
+    "deposit": "Zaplatím nejdřív zálohu",
+    "bankTransfer": "Platí se bankovním převodem, platební údaje přijdou e-mailem.",
+    "code": "Slevový kód (nepovinné)"
+  },
+  "code": {
+    "applied": "Slevový kód jsme započítali.",
+    "expired": "Platnost tohoto kódu skončila.",
+    "exhausted": "Tento kód už byl vyčerpán.",
+    "inactive": "Tento kód už neplatí.",
+    "unknown": "Takový kód neznáme. Zkontrolujte ho prosím."
+  },
+  "declarations": "Prohlášení",
+  "declarationsMissing": "Zaškrtněte prosím všechna povinná prohlášení.",
+  "age": {
+    "too_young": "Dítě je na tento turnus mladší, než tábor bere (nejnižší věk v den začátku: {{min}}). Napište prosím táboru na {{contact}}.",
+    "too_old": "Dítě je na tento turnus starší, než tábor bere (nejvyšší věk v den začátku: {{max}}). Napište prosím táboru na {{contact}}."
+  },
+  "price": {
+    "title": "Cena",
+    "total": "Celkem",
+    "deposit": "Nejdřív zaplatíte zálohu {{amount}}.",
+    "pickTurnus": "Cenu spočítáme, jakmile vyberete turnus.",
+    "failing": "Cenu se teď nepodařilo spočítat.",
+    "child": "(dítě {{number}})",
+    "kinds": {
+      "base_price": "Základní cena",
+      "early_bird_price": "Cena při včasném přihlášení",
+      "paid_extra": "Příplatek",
+      "claimed_discount": "Sleva",
+      "sibling_discount": "Sourozenecká sleva",
+      "discount_code": "Slevový kód",
+      "zero_floor": "Vyrovnání na nulu"
+    }
+  },
+  "check": "Zkontrolovat přihlášku",
+  "checked": "Přihláška je vyplněná správně."
+}

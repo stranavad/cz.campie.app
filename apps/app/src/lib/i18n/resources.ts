@@ -8,6 +8,7 @@ import login from '@/locales/cs/login.json';
 import members from '@/locales/cs/members.json';
 import organisationSettings from '@/locales/cs/organisation-settings.json';
 import passwordReset from '@/locales/cs/password-reset.json';
+import registration from '@/locales/cs/registration.json';
 import signup from '@/locales/cs/signup.json';
 
 export const defaultNamespace = 'common';
@@ -24,6 +25,7 @@ export const resources = {
     organisationSettings,
     camps,
     campPages,
+    registration,
     console: consoleTexts,
   },
 };

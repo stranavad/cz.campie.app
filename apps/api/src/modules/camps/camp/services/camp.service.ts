@@ -197,7 +197,14 @@ export class CampService {
 function publicOf(camp: CampEntity, organisation: OrganisationEntity): PublicCamp {
   const { accentColour, logoFileId } = effectiveBranding(camp, organisation);
 
-  return camp.toPublicDto({ accentColour, logoUrl: logoFileId === null ? null : publicLogoUrl(logoFileId) });
+  return camp.toPublicDto(
+    { accentColour, logoUrl: logoFileId === null ? null : publicLogoUrl(logoFileId) },
+    // A Camp without its own contact is reached through its Organisation's.
+    {
+      contactEmail: camp.contactEmail ?? organisation.contactEmail,
+      contactPhone: camp.contactPhone ?? (camp.contactEmail === null ? organisation.contactPhone : null),
+    },
+  );
 }
 
 /**

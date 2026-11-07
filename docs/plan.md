@@ -58,7 +58,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | #   | Issue                                    | Status          | Blocked by |
 | --- | ---------------------------------------- | --------------- | ---------- |
 | 33  | Public landing, Camp and Turnus pages    | done            | 13, 23, 25 |
-| 34  | Public form with live price              | ready-for-agent | 27, 30, 33 |
+| 34  | Public form with live price              | done            | 27, 30, 33 |
 | 35  | Submission and placement                 | ready-for-agent | 10, 31, 34 |
 | 36  | Přihláška PDF with QR platba             | ready-for-agent | 15, 35     |
 | 37  | Confirmation and new-Registration emails | ready-for-agent | 32, 36     |

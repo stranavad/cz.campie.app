@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as OrganisationRouteRouteImport } from './routes/organisation/route'
 import { Route as PlatformRouteRouteImport } from './routes/platform/route'
 import { Route as OrganisationIndexRouteImport } from './routes/organisation/index'
-import { Route as OrganisationCampSlugRouteImport } from './routes/organisation/$campSlug'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
 import { Route as PlatformKonzoleRouteImport } from './routes/platform/konzole'
 import { Route as PlatformNastaveniRouteImport } from './routes/platform/nastaveni'
@@ -24,6 +23,8 @@ import { Route as PlatformTaboryRouteImport } from './routes/platform/tabory'
 import { Route as PlatformUzivateleRouteImport } from './routes/platform/uzivatele'
 import { Route as PlatformZapomenuteHesloRouteImport } from './routes/platform/zapomenute-heslo'
 import { Route as UnknownSplatRouteImport } from './routes/unknown/$'
+import { Route as OrganisationCampSlugIndexRouteImport } from './routes/organisation/$campSlug/index'
+import { Route as OrganisationCampSlugPrihlaskaRouteImport } from './routes/organisation/$campSlug/prihlaska'
 import { Route as PlatformTaboryNahledRouteImport } from './routes/platform/tabory_.nahled'
 
 const OrganisationRouteRoute = OrganisationRouteRouteImport.update({
@@ -39,11 +40,6 @@ const PlatformRouteRoute = PlatformRouteRouteImport.update({
 const OrganisationIndexRoute = OrganisationIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => OrganisationRouteRoute,
-} as any)
-const OrganisationCampSlugRoute = OrganisationCampSlugRouteImport.update({
-  id: '/$campSlug',
-  path: '/$campSlug',
   getParentRoute: () => OrganisationRouteRoute,
 } as any)
 const PlatformIndexRoute = PlatformIndexRouteImport.update({
@@ -102,6 +98,18 @@ const UnknownSplatRoute = UnknownSplatRouteImport.update({
   path: '/unknown/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrganisationCampSlugIndexRoute =
+  OrganisationCampSlugIndexRouteImport.update({
+    id: '/$campSlug/',
+    path: '/$campSlug/',
+    getParentRoute: () => OrganisationRouteRoute,
+  } as any)
+const OrganisationCampSlugPrihlaskaRoute =
+  OrganisationCampSlugPrihlaskaRouteImport.update({
+    id: '/$campSlug/prihlaska',
+    path: '/$campSlug/prihlaska',
+    getParentRoute: () => OrganisationRouteRoute,
+  } as any)
 const PlatformTaboryNahledRoute = PlatformTaboryNahledRouteImport.update({
   id: '/tabory_/nahled',
   path: '/tabory/nahled',
@@ -111,7 +119,6 @@ const PlatformTaboryNahledRoute = PlatformTaboryNahledRouteImport.update({
 export interface FileRoutesByFullPath {
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
-  '/organisation/$campSlug': typeof OrganisationCampSlugRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -124,10 +131,11 @@ export interface FileRoutesByFullPath {
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
+  '/organisation/$campSlug/prihlaska': typeof OrganisationCampSlugPrihlaskaRoute
   '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
+  '/organisation/$campSlug/': typeof OrganisationCampSlugIndexRoute
 }
 export interface FileRoutesByTo {
-  '/organisation/$campSlug': typeof OrganisationCampSlugRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -140,13 +148,14 @@ export interface FileRoutesByTo {
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation': typeof OrganisationIndexRoute
   '/platform': typeof PlatformIndexRoute
+  '/organisation/$campSlug/prihlaska': typeof OrganisationCampSlugPrihlaskaRoute
   '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
+  '/organisation/$campSlug': typeof OrganisationCampSlugIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
-  '/organisation/$campSlug': typeof OrganisationCampSlugRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -159,14 +168,15 @@ export interface FileRoutesById {
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
+  '/organisation/$campSlug/prihlaska': typeof OrganisationCampSlugPrihlaskaRoute
   '/platform/tabory_/nahled': typeof PlatformTaboryNahledRoute
+  '/organisation/$campSlug/': typeof OrganisationCampSlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/organisation'
     | '/platform'
-    | '/organisation/$campSlug'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -179,10 +189,11 @@ export interface FileRouteTypes {
     | '/unknown/$'
     | '/organisation/'
     | '/platform/'
+    | '/organisation/$campSlug/prihlaska'
     | '/platform/tabory/nahled'
+    | '/organisation/$campSlug/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/organisation/$campSlug'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -195,12 +206,13 @@ export interface FileRouteTypes {
     | '/unknown/$'
     | '/organisation'
     | '/platform'
+    | '/organisation/$campSlug/prihlaska'
     | '/platform/tabory/nahled'
+    | '/organisation/$campSlug'
   id:
     | '__root__'
     | '/organisation'
     | '/platform'
-    | '/organisation/$campSlug'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -213,7 +225,9 @@ export interface FileRouteTypes {
     | '/unknown/$'
     | '/organisation/'
     | '/platform/'
+    | '/organisation/$campSlug/prihlaska'
     | '/platform/tabory_/nahled'
+    | '/organisation/$campSlug/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -243,13 +257,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/organisation/'
       preLoaderRoute: typeof OrganisationIndexRouteImport
-      parentRoute: typeof OrganisationRouteRoute
-    }
-    '/organisation/$campSlug': {
-      id: '/organisation/$campSlug'
-      path: '/$campSlug'
-      fullPath: '/organisation/$campSlug'
-      preLoaderRoute: typeof OrganisationCampSlugRouteImport
       parentRoute: typeof OrganisationRouteRoute
     }
     '/platform/': {
@@ -329,6 +336,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UnknownSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/organisation/$campSlug/': {
+      id: '/organisation/$campSlug/'
+      path: '/$campSlug'
+      fullPath: '/organisation/$campSlug/'
+      preLoaderRoute: typeof OrganisationCampSlugIndexRouteImport
+      parentRoute: typeof OrganisationRouteRoute
+    }
+    '/organisation/$campSlug/prihlaska': {
+      id: '/organisation/$campSlug/prihlaska'
+      path: '/$campSlug/prihlaska'
+      fullPath: '/organisation/$campSlug/prihlaska'
+      preLoaderRoute: typeof OrganisationCampSlugPrihlaskaRouteImport
+      parentRoute: typeof OrganisationRouteRoute
+    }
     '/platform/tabory_/nahled': {
       id: '/platform/tabory_/nahled'
       path: '/tabory/nahled'
@@ -340,13 +361,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface OrganisationRouteRouteChildren {
-  OrganisationCampSlugRoute: typeof OrganisationCampSlugRoute
   OrganisationIndexRoute: typeof OrganisationIndexRoute
+  OrganisationCampSlugPrihlaskaRoute: typeof OrganisationCampSlugPrihlaskaRoute
+  OrganisationCampSlugIndexRoute: typeof OrganisationCampSlugIndexRoute
 }
 
 const OrganisationRouteRouteChildren: OrganisationRouteRouteChildren = {
-  OrganisationCampSlugRoute: OrganisationCampSlugRoute,
   OrganisationIndexRoute: OrganisationIndexRoute,
+  OrganisationCampSlugPrihlaskaRoute: OrganisationCampSlugPrihlaskaRoute,
+  OrganisationCampSlugIndexRoute: OrganisationCampSlugIndexRoute,
 }
 
 const OrganisationRouteRouteWithChildren =

@@ -203,6 +203,27 @@ describe('checkSubmission', () => {
     expect(value.participants[0]).toMatchObject({ [ALLERGIES]: 'pyl' });
   });
 
+  it('takes a second guardian optionally, needing a name and an email once any of theirs is given', () => {
+    expect(
+      errors({ ...SUBMISSION, registration: { ...SUBMISSION.registration, secondGuardianPhone: '+420 777 888 999' } }),
+    ).toEqual([
+      { path: ['registration', 'secondGuardianFirstName'], code: 'form_answer_required' },
+      { path: ['registration', 'secondGuardianLastName'], code: 'form_answer_required' },
+      { path: ['registration', 'secondGuardianEmail'], code: 'form_answer_required' },
+    ]);
+    expect(
+      errors({
+        ...SUBMISSION,
+        registration: {
+          ...SUBMISSION.registration,
+          secondGuardianFirstName: 'Petr',
+          secondGuardianLastName: 'Testovací',
+          secondGuardianEmail: 'petr@example.com',
+        },
+      }),
+    ).toEqual([]);
+  });
+
   it('requires at least one child', () => {
     expect(errors({ ...SUBMISSION, participants: [] })).toEqual([
       { path: ['participants'], code: 'form_participants_required' },

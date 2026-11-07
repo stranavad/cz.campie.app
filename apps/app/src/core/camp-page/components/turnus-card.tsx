@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { PublicTurnus } from '@repo/schema/camps';
@@ -7,10 +8,11 @@ import { ageLimits, czechDate, czk } from '@/core/camp-page/helpers/camp-page.he
 
 interface TurnusCardProps {
   turnus: PublicTurnus;
+  action?: ReactNode;
 }
 
 // One Turnus as guardians see it: when, where, for whom, for how much, and whether they can register.
-export function TurnusCard({ turnus }: TurnusCardProps) {
+export function TurnusCard({ turnus, action }: TurnusCardProps) {
   const { t } = useTranslation();
   const earlyBird = turnus.earlyBirdPrice !== null && turnus.priceNow === turnus.earlyBirdPrice;
 
@@ -39,6 +41,7 @@ export function TurnusCard({ turnus }: TurnusCardProps) {
           {t(`campPage.availability.${turnus.availability}`, { count: turnus.remainingPlaces })}
         </p>
       )}
+      {action}
       {turnus.websiteUrl === null ? null : (
         <a href={turnus.websiteUrl} className="text-sm underline" target="_blank" rel="noreferrer">
           {t('campPage.turnusWebsite')}

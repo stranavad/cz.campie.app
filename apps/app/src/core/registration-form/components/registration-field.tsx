@@ -12,16 +12,37 @@ export interface RegistrationFieldProps {
   field: FormField;
   value: AnswerValue | undefined;
   onChange: (value: AnswerValue) => void;
+  // What is wrong with the answer, already worded; shown under the field.
+  message?: string | null;
+  // More about the answer that is not an error, such as an age outside the Turnus's limits.
+  note?: string | null;
 }
 
 const CORE_INPUTS: Partial<Record<string, string>> = {
   birthDate: 'date',
   guardianEmail: 'email',
   guardianPhone: 'tel',
+  secondGuardianEmail: 'email',
+  secondGuardianPhone: 'tel',
 };
 
-// One field of the registration form, as guardians fill it in; the builder's preview shows the same.
-export function RegistrationField({ field, value, onChange }: RegistrationFieldProps) {
+// One field of the registration form, as guardians fill it in, with what is wrong with it; the builder's
+// preview shows the same.
+export function RegistrationField({ message = null, note = null, ...props }: RegistrationFieldProps) {
+  return (
+    <div className="flex flex-col gap-1">
+      <FieldInput {...props} />
+      {note === null ? null : <p className="text-sm text-muted-foreground">{note}</p>}
+      {message === null ? null : (
+        <p role="alert" className="text-sm text-destructive">
+          {message}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function FieldInput({ field, value, onChange }: Omit<RegistrationFieldProps, 'message' | 'note'>) {
   const { t } = useTranslation();
   const label = useFieldLabel()(field);
   const id = useId();

@@ -5,6 +5,8 @@ import { emailSchema, phoneSchema } from '@repo/schema/shared';
 import {
   CORE_FIELDS,
   coreLabelKey,
+  SECOND_GUARDIAN_FIELDS,
+  SECOND_GUARDIAN_NEEDED,
   type CoreFieldKey,
   type CustomField,
   type FieldScope,
@@ -116,6 +118,10 @@ const CORE_CHECKS: Readonly<Record<(typeof CORE_FIELDS)[number]['key'], (value: 
   guardianLastName: (value) => text(value, NAME_MAX),
   guardianEmail: (value) => bySchema(value, emailSchema),
   guardianPhone: (value) => bySchema(value, phoneSchema),
+  secondGuardianFirstName: (value) => text(value, NAME_MAX),
+  secondGuardianLastName: (value) => text(value, NAME_MAX),
+  secondGuardianEmail: (value) => bySchema(value, emailSchema),
+  secondGuardianPhone: (value) => bySchema(value, phoneSchema),
 };
 
 /**
@@ -167,7 +173,7 @@ export type FormField =
       readonly tier: 'core';
       readonly key: CoreFieldKey;
       readonly scope: FieldScope;
-      readonly required: true;
+      readonly required: boolean;
       readonly labelKey: string;
     }
   | {
@@ -198,11 +204,11 @@ export function formFields(
   catalogue: StandardFieldCatalogue,
   scope: FieldScope,
 ): FormField[] {
-  const core: FormField[] = CORE_FIELDS.filter((field) => field.scope === scope).map(({ key }) => ({
+  const core: FormField[] = CORE_FIELDS.filter((field) => field.scope === scope).map(({ key, required }) => ({
     tier: 'core',
     key,
     scope,
-    required: true,
+    required,
     labelKey: coreLabelKey(key),
   }));
   const standard: FormField[] = definition.standard.flatMap(({ key, state }) => {
@@ -233,6 +239,15 @@ function checkField(field: FormField, value: AnswerValue): Check {
     case 'custom':
       return customCheck(field.field, value);
   }
+}
+
+/**
+ * Tell whether a scope's fields include a key.
+ * @param fields the scope's fields
+ * @param key the key
+ */
+function asks(fields: readonly FormField[], key: string): boolean {
+  return fields.some((field) => field.key === key);
 }
 
 /**
@@ -267,6 +282,15 @@ function checkAnswers(
       value[field.key] = checked.value;
     } else {
       errors.push({ path: [...path, field.key], ...checked.error });
+    }
+  }
+
+  // A second guardian, once named at all, needs a name and an email to be reached.
+  if (SECOND_GUARDIAN_FIELDS.some((key) => asks(fields, key) && !isEmpty(answers[key]))) {
+    for (const key of SECOND_GUARDIAN_NEEDED) {
+      if (isEmpty(answers[key])) {
+        errors.push({ path: [...path, key], code: 'form_answer_required' });
+      }
     }
   }
 

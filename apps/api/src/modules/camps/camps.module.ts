@@ -11,6 +11,7 @@ import { DiscountCodeController } from './discount-code/discount-code.controller
 import { DiscountCodeService } from './discount-code/services/discount-code.service.ts';
 import { PublicRegistrationFormController } from './registration-form/public-registration-form.controller.ts';
 import { RegistrationFormController } from './registration-form/registration-form.controller.ts';
+import { PricePreviewService } from './registration-form/services/price-preview.service.ts';
 import { RegistrationFormService } from './registration-form/services/registration-form.service.ts';
 import { TurnusService } from './turnus/services/turnus.service.ts';
 import { TurnusController } from './turnus/turnus.controller.ts';
@@ -33,6 +34,7 @@ import { TurnusController } from './turnus/turnus.controller.ts';
     DiscountCodeService,
     RegistrationFormService,
     CampEmailService,
+    PricePreviewService,
   ],
   exports: [
     CampService,

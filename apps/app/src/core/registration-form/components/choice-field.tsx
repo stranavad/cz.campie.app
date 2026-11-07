@@ -3,7 +3,7 @@ import { useId } from 'react';
 import type { RegistrationFieldProps } from '@/core/registration-form/components/registration-field';
 import { useChoices } from '@/core/registration-form/hooks/use-choices.hook';
 
-interface ChoiceFieldProps extends RegistrationFieldProps {
+interface ChoiceFieldProps extends Omit<RegistrationFieldProps, 'message' | 'note'> {
   caption: string;
 }
 

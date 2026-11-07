@@ -47,7 +47,13 @@ export function IdentityForm({ organisationId, settings }: IdentityFormProps) {
           )}
         </form.AppField>
         <form.AppField name="contactEmail">
-          {(field) => <field.TextField label={t('identity.contactEmail')} type="email" />}
+          {(field) => (
+            <field.TextField
+              label={t('identity.contactEmail')}
+              description={t('identity.contactEmailHint')}
+              type="email"
+            />
+          )}
         </form.AppField>
         <form.AppField name="contactPhone">
           {(field) => <field.TextField label={t('identity.contactPhone')} type="tel" />}

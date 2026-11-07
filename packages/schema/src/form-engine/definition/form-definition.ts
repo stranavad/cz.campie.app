@@ -22,16 +22,34 @@ export const CUSTOM_FIELD_TYPES = [
 export type CustomFieldType = (typeof CUSTOM_FIELD_TYPES)[number];
 
 // The locked core every registration form asks, in its fixed order: the child's on each Participant, the
-// guardian's once.
+// guardian's once, and an optional second guardian, whose name and email are needed once any of theirs is
+// given.
 export const CORE_FIELDS = [
-  { key: 'firstName', scope: 'participant' },
-  { key: 'lastName', scope: 'participant' },
-  { key: 'birthDate', scope: 'participant' },
-  { key: 'guardianFirstName', scope: 'registration' },
-  { key: 'guardianLastName', scope: 'registration' },
-  { key: 'guardianEmail', scope: 'registration' },
-  { key: 'guardianPhone', scope: 'registration' },
-] as const satisfies readonly { key: string; scope: FieldScope }[];
+  { key: 'firstName', scope: 'participant', required: true },
+  { key: 'lastName', scope: 'participant', required: true },
+  { key: 'birthDate', scope: 'participant', required: true },
+  { key: 'guardianFirstName', scope: 'registration', required: true },
+  { key: 'guardianLastName', scope: 'registration', required: true },
+  { key: 'guardianEmail', scope: 'registration', required: true },
+  { key: 'guardianPhone', scope: 'registration', required: true },
+  { key: 'secondGuardianFirstName', scope: 'registration', required: false },
+  { key: 'secondGuardianLastName', scope: 'registration', required: false },
+  { key: 'secondGuardianEmail', scope: 'registration', required: false },
+  { key: 'secondGuardianPhone', scope: 'registration', required: false },
+] as const satisfies readonly { key: string; scope: FieldScope; required: boolean }[];
+
+// The second guardian's fields, and those of them needed once any is given.
+export const SECOND_GUARDIAN_FIELDS = [
+  'secondGuardianFirstName',
+  'secondGuardianLastName',
+  'secondGuardianEmail',
+  'secondGuardianPhone',
+] as const;
+export const SECOND_GUARDIAN_NEEDED = [
+  'secondGuardianFirstName',
+  'secondGuardianLastName',
+  'secondGuardianEmail',
+] as const;
 
 export type CoreFieldKey = (typeof CORE_FIELDS)[number]['key'];
 

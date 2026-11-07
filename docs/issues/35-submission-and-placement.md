@@ -43,3 +43,5 @@ Submitting the public form creates a Registration in one Turnus with its Partici
 2026-11-07 - **From issue 28.** `submissionSchema(definition, catalogue)` parses to `{ registration, participants }` keyed by core key, standard key and custom id; split each scope into the typed core columns, standard answers and custom answers when storing. The global error filter keeps only `code` and `message`, so the form's field-level errors (path, code, params) need a way into the response, such as an `errors` array on the 400.
 
 2026-11-07 - **From issue 33.** Count Registered Participants in `TurnusService.registeredIn` (one place for the admin and public views). The public Camp route is `routes/organisation/$campSlug.tsx`; move it to `$campSlug/index.tsx` when the form's `$campSlug/prihlaska` route arrives.
+
+2026-11-07 - **From issue 34.** Price only answers that passed `submissionSchema` (a single choice sent as an array would otherwise stack its surcharges); count the submission against a request limit (`requestLimits`, per IP and per Organisation); refuse a child outside the age limits with `ageProblem`; the form's answers arrive keyed as `checkSubmission` expects.

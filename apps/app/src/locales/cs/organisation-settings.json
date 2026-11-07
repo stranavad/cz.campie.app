@@ -21,7 +21,8 @@
     "bankAccountHint": "Na tento účet budou rodiče posílat platby. Ve tvaru předčíslí-číslo/kód banky.",
     "contactEmail": "Kontaktní e-mail",
     "contactPhone": "Telefon",
-    "billingEmail": "Fakturační e-mail"
+    "billingEmail": "Fakturační e-mail",
+    "contactEmailHint": "Rodiče ho uvidí u táborů, které nemají vlastní kontakt."
   },
   "branding": {
     "title": "Vzhled",

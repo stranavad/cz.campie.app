@@ -84,14 +84,25 @@
       "guardianFirstName": "Jméno zákonného zástupce",
       "guardianLastName": "Příjmení zákonného zástupce",
       "guardianEmail": "E-mail",
-      "guardianPhone": "Telefon"
+      "guardianPhone": "Telefon",
+      "secondGuardianFirstName": "Jméno druhého zákonného zástupce",
+      "secondGuardianLastName": "Příjmení druhého zákonného zástupce",
+      "secondGuardianEmail": "E-mail druhého zákonného zástupce",
+      "secondGuardianPhone": "Telefon druhého zákonného zástupce"
     },
     "optional": "{{label}} (nepovinné)",
     "yes": "Ano",
     "no": "Ne",
     "surchargeExtra": "+{{amount}} Kč",
     "surchargeDiscount": "sleva {{amount}} Kč",
-    "openDocument": "Přečíst"
+    "openDocument": "Přečíst",
+    "errors": {
+      "form_answer_required": "Vyplňte prosím.",
+      "form_answer_invalid": "Zkontrolujte prosím tento údaj.",
+      "form_answer_too_long": "Nejvýše {{max}} znaků.",
+      "form_answer_unknown": "Tento údaj formulář nečeká.",
+      "form_participants_required": "Přidejte aspoň jedno dítě."
+    }
   },
   "campPage": {
     "website": "Web tábora",

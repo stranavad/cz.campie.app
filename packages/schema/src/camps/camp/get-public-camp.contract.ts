@@ -13,6 +13,10 @@ export const publicCampSchema = z.object({
   name: z.string(),
   slug: z.string(),
   websiteUrl: z.string().nullable(),
+  // Whom guardians ask, shown with any problem the form cannot solve itself.
+  contactName: z.string().nullable(),
+  contactEmail: z.string(),
+  contactPhone: z.string().nullable(),
   accentColour: z.string(),
   logoUrl: z.string().nullable(),
 });

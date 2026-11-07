@@ -55,7 +55,7 @@ describe('columnCatalogue', () => {
   it('lists the core, then every field any version asked, the latest labels first and removed ones marked', () => {
     const columns = columnCatalogue([V1, V2], TEST_CATALOGUE);
 
-    expect(columns.slice(0, 7).map(({ key, tier }) => [key, tier])).toEqual([
+    expect(columns.slice(0, 11).map(({ key, tier }) => [key, tier])).toEqual([
       ['firstName', 'core'],
       ['lastName', 'core'],
       ['birthDate', 'core'],
@@ -63,8 +63,12 @@ describe('columnCatalogue', () => {
       ['guardianLastName', 'core'],
       ['guardianEmail', 'core'],
       ['guardianPhone', 'core'],
+      ['secondGuardianFirstName', 'core'],
+      ['secondGuardianLastName', 'core'],
+      ['secondGuardianEmail', 'core'],
+      ['secondGuardianPhone', 'core'],
     ]);
-    expect(columns.slice(7)).toEqual([
+    expect(columns.slice(11)).toEqual([
       {
         key: 'boardingPlace',
         tier: 'standard',

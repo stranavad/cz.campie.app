@@ -192,6 +192,9 @@ describe('camps', () => {
         name: 'Letní tábor Pokusník',
         slug: 'leto-pokusnik',
         websiteUrl: null,
+        contactName: null,
+        contactEmail: expect.stringMatching(/^kontakt-/),
+        contactPhone: '+420 123 456 789',
         accentColour: '#2b8a4e',
         logoUrl: null,
       });

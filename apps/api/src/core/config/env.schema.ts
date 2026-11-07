@@ -156,6 +156,8 @@ const requestLimits = z
     SIGNUP_LIMIT_PER_EMAIL: positiveInteger,
     PASSWORD_RESET_LIMIT_PER_IP: positiveInteger,
     PASSWORD_RESET_LIMIT_PER_EMAIL: positiveInteger,
+    PRICE_PREVIEW_LIMIT_PER_IP: positiveInteger,
+    PRICE_PREVIEW_LIMIT_PER_ORGANISATION: positiveInteger,
   })
   .transform((env) => {
     const windowMs = env.REQUEST_LIMIT_WINDOW_MINUTES * 60 * 1000;
@@ -168,6 +170,13 @@ const requestLimits = z
       requestLimits: {
         signup: limitOf('signup', env.SIGNUP_LIMIT_PER_IP, env.SIGNUP_LIMIT_PER_EMAIL),
         passwordReset: limitOf('password-reset', env.PASSWORD_RESET_LIMIT_PER_IP, env.PASSWORD_RESET_LIMIT_PER_EMAIL),
+        // A form asks again as it is filled in, so the price preview allows many; its target is the
+        // Organisation, so a flood from many addresses still stops.
+        pricePreview: limitOf(
+          'price-preview',
+          env.PRICE_PREVIEW_LIMIT_PER_IP,
+          env.PRICE_PREVIEW_LIMIT_PER_ORGANISATION,
+        ),
       },
     };
   });

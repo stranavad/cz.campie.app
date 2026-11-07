@@ -26,6 +26,16 @@ export class TurnusRepository {
   }
 
   /**
+   * Get a Turnus of the current Organisation by id.
+   * @param id Turnus id
+   */
+  public async getById(id: string): Promise<TurnusEntity | null> {
+    const [row] = await this.unitOfWork.db.select().from(turnusy).where(eq(turnusy.id, id));
+
+    return row === undefined ? null : new TurnusEntity(row);
+  }
+
+  /**
    * Get a Turnus of the current Organisation by id, or throw if missing.
    * @param id Turnus id
    * @throws {NotFoundException} when no Turnus has this id in the current Organisation

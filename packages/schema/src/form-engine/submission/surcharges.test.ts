@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { FormDefinition } from '../definition/form-definition.ts';
-import { surchargesOf } from './surcharges.ts';
+import { pricedFieldIds, surchargesOf } from './surcharges.ts';
 
 const TRANSPORT = '0190a2b4-0000-7000-8000-000000000002';
 const RETURNING = '0190a2b4-0000-7000-8000-000000000008';
@@ -86,5 +86,19 @@ describe('surchargesOf', () => {
     expect(surchargesOf(DEFINITION, { registration: { [TRANSPORT]: ['sami'] }, participants: [{}] })).toEqual([
       { surcharges: [] },
     ]);
+  });
+});
+
+describe('pricedFieldIds', () => {
+  it('lists the fields whose answers can change the price, and no others', () => {
+    expect(pricedFieldIds(DEFINITION)).toEqual([TRANSPORT, RETURNING, TSHIRT]);
+    expect(
+      pricedFieldIds({
+        standard: [],
+        custom: [
+          { id: TSHIRT, type: 'short_text', label: 'Alergie', hint: null, required: false, scope: 'participant' },
+        ],
+      }),
+    ).toEqual([]);
   });
 });

@@ -1,6 +1,7 @@
-import { Navigate } from '@tanstack/react-router';
+import { Link, Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { buttonVariants } from '@/components/ui/button';
 import { CampPageView } from '@/core/camp-page';
 import { useCampPage } from '@/features/camp-pages/components/use-camp-page.hook';
 
@@ -28,5 +29,22 @@ export function CampPage({ campSlug }: CampPageProps) {
     return <p className="py-12 text-destructive">{t('error')}</p>;
   }
 
-  return <CampPageView camp={page.camp} turnusy={page.turnusy} />;
+  return (
+    <CampPageView
+      camp={page.camp}
+      turnusy={page.turnusy}
+      actionOf={(turnus) =>
+        turnus.availability === 'open' ? (
+          <Link
+            to="/organisation/$campSlug/prihlaska"
+            params={{ campSlug: page.camp?.slug ?? campSlug }}
+            search={{ turnus: turnus.id }}
+            className={buttonVariants({ className: 'self-start' })}
+          >
+            {t('register')}
+          </Link>
+        ) : null
+      }
+    />
+  );
 }

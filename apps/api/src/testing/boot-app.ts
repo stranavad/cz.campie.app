@@ -44,6 +44,8 @@ export const PRODUCTION_ENV = {
   SIGNUP_LIMIT_PER_EMAIL: '5',
   PASSWORD_RESET_LIMIT_PER_IP: '20',
   PASSWORD_RESET_LIMIT_PER_EMAIL: '3',
+  PRICE_PREVIEW_LIMIT_PER_IP: '600',
+  PRICE_PREVIEW_LIMIT_PER_ORGANISATION: '20000',
 } satisfies Record<string, string>;
 
 const initialEnv = new Set(Object.keys(process.env));

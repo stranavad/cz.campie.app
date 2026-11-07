@@ -66,3 +66,22 @@ export function surchargesOf(definition: FormDefinition, submission: Submission)
     ),
   }));
 }
+
+/**
+ * List the custom fields whose answers can change the price: a choice with an option that carries a
+ * surcharge, or a yes that does. A live price needs only their answers.
+ * @param definition the form
+ */
+export function pricedFieldIds(definition: FormDefinition): string[] {
+  return definition.custom.flatMap((field) => {
+    if (field.type === 'yes_no') {
+      return field.surcharge !== null && field.surcharge !== 0 ? [field.id] : [];
+    }
+
+    if (field.type === 'single_choice' || field.type === 'multiple_choice') {
+      return field.options.some(({ surcharge }) => surcharge !== null && surcharge !== 0) ? [field.id] : [];
+    }
+
+    return [];
+  });
+}

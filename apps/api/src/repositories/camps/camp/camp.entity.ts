@@ -81,8 +81,19 @@ export class CampEntity {
     return { id: this.id, name: this.name, slug: this.slug };
   }
 
-  toPublicDto(branding: { accentColour: string; logoUrl: string | null }): PublicCamp {
-    return { id: this.id, name: this.name, slug: this.slug, websiteUrl: this.websiteUrl, ...branding };
+  toPublicDto(
+    branding: { accentColour: string; logoUrl: string | null },
+    contact: { contactEmail: string; contactPhone: string | null },
+  ): PublicCamp {
+    return {
+      id: this.id,
+      name: this.name,
+      slug: this.slug,
+      websiteUrl: this.websiteUrl,
+      contactName: this.contactName,
+      ...contact,
+      ...branding,
+    };
   }
 
   toBrandingDto(logo: FileLink | null, effective: { accentColour: string; logo: FileLink | null }): CampBranding {

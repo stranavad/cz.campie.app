@@ -151,6 +151,8 @@ services:
       SIGNUP_LIMIT_PER_EMAIL: 5
       PASSWORD_RESET_LIMIT_PER_IP: 20
       PASSWORD_RESET_LIMIT_PER_EMAIL: 3
+      PRICE_PREVIEW_LIMIT_PER_IP: 600
+      PRICE_PREVIEW_LIMIT_PER_ORGANISATION: 20000
     depends_on:
       deps:
         condition: service_completed_successfully
