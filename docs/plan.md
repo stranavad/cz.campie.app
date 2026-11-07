@@ -36,7 +36,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 19  | Memberships, permission areas, Owners         | done            | 17, 18     |
 | 20  | Invitations and user management               | done            | 19         |
 | 21  | Platform operator console with mandatory TOTP | done            | 19         |
-| 22  | Rate limiting                                 | ready-for-agent | 14         |
+| 22  | Rate limiting                                 | done            | 14         |
 | 23  | Organisation settings and branding            | ready-for-agent | 12, 19     |
 
 ### E2 Camp setup - "admin configures a Camp end to end"
