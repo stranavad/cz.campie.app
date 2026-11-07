@@ -53,8 +53,9 @@ export const documentTypeParamsSchema = z.object({ campId: z.uuid(), documentTyp
 
 export type DocumentTypeParams = z.infer<typeof documentTypeParamsSchema>;
 
-// `document_type_turnus_unknown`: a Turnus named is not the Camp's.
-export const DOCUMENT_TYPE_ERROR_CODES = ['document_type_turnus_unknown'] as const;
+// `document_type_turnus_unknown`: a Turnus named is not the Camp's; `document_type_in_use`: documents were
+// handed in for it, so it stays.
+export const DOCUMENT_TYPE_ERROR_CODES = ['document_type_turnus_unknown', 'document_type_in_use'] as const;
 
 export type DocumentTypeErrorCode = (typeof DOCUMENT_TYPE_ERROR_CODES)[number];
 
@@ -107,32 +108,4 @@ export const removeDocumentTypeFileEndpoint = defineEndpoint({
   path: '/camps/:campId/document-types/:documentTypeId/file',
   params: documentTypeParamsSchema,
   response: documentTypeSchema,
-});
-
-export const guardianDocumentsParamsSchema = z.object({ registrationId: z.uuid() });
-
-export type GuardianDocumentsParams = z.infer<typeof guardianDocumentsParamsSchema>;
-
-// What a guardian's Registration has of the Camp's Document types: the downloads for its Turnus, with
-// files, and the requirements every child hands in. Empty while the Documents module is off.
-export const guardianDocumentsSchema = z.object({
-  downloads: z.array(z.object({ id: z.uuid(), name: z.string(), description: z.string(), file: fileLinkSchema })),
-  requirements: z.array(
-    z.object({
-      id: z.uuid(),
-      name: z.string(),
-      description: z.string(),
-      dueDate: calendarDateSchema.nullable(),
-      blankForm: fileLinkSchema.nullable(),
-    }),
-  ),
-});
-
-export type GuardianDocuments = z.infer<typeof guardianDocumentsSchema>;
-
-export const listGuardianDocumentsEndpoint = defineEndpoint({
-  method: 'GET',
-  path: '/portal/registrations/:registrationId/documents',
-  params: guardianDocumentsParamsSchema,
-  response: guardianDocumentsSchema,
 });

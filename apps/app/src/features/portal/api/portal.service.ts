@@ -6,7 +6,11 @@ import {
   type GuardianConsentParams,
   type SignConsentBody,
 } from '@repo/schema/consents';
-import { listGuardianDocumentsEndpoint } from '@repo/schema/documents';
+import {
+  listGuardianDocumentsEndpoint,
+  uploadDocumentEndpoint,
+  type UploadDocumentParams,
+} from '@repo/schema/documents';
 import {
   addGuardianEndpoint,
   answerNewFieldsEndpoint,
@@ -62,4 +66,6 @@ export const portalService = {
   withdrawConsent: (params: GuardianConsentParams) => apiClient.request(withdrawConsentEndpoint, { params }),
   documents: (registrationId: string, signal?: AbortSignal) =>
     apiClient.request(listGuardianDocumentsEndpoint, { params: { registrationId }, signal }),
+  uploadDocument: (params: UploadDocumentParams, file: File) =>
+    apiClient.request(uploadDocumentEndpoint, { params, file }),
 };

@@ -22,3 +22,7 @@ Admins with Registrations write review Parent-uploaded documents: approve them, 
 
 - Spec sections: Documents.
 - Port from Domino: `apps/api/src/admin-document/services/admin-document.service.ts`, `apps/api/src/internal-document/`, `apps/portal/src/pages/admin/ParticipantDocuments.vue`, `apps/portal/src/pages/admin/InternalDocuments.vue`.
+
+## Comments
+
+2026-11-07 - **From issue 57.** Uploads are `document_uploads` (`DocumentUploadRepository`, `modules/documents/upload/`) with `status`, `note`, `uploaded_by_email` and `uploaded_by_admin_id` (for an upload on behalf) and a nullable `file_id` (handed in on paper). The newest per child and requirement counts; a guardian may hand in again only after a return. `FileService.links(fileIds)` makes many links in one query.

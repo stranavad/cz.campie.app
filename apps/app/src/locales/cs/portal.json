@@ -143,6 +143,27 @@
     "requirements": "K odevzdání",
     "downloads": "Ke stažení",
     "dueBy": "Odevzdat do {{date}}",
-    "blankForm": "Stáhnout formulář"
+    "blankForm": "Stáhnout formulář",
+    "statuses": {
+      "missing": "Zatím neodevzdáno",
+      "pending": "Čeká na kontrolu",
+      "approved": "Schváleno",
+      "returned": "Vráceno k opravě"
+    },
+    "returnedNote": "Důvod vrácení: {{note}}",
+    "handedIn": "Odevzdáno {{date}}",
+    "onPaper": "v papírové podobě",
+    "open": "Otevřít",
+    "upload": "Nahrát dokument",
+    "uploadAgain": "Nahrát znovu",
+    "uploadHint": "PDF, JPG nebo PNG, nejvýše 10 MB. Můžete vyfotit telefonem.",
+    "uploading": "Nahráváme…",
+    "uploadFailed": "Dokument se nepodařilo nahrát. Zkuste to prosím znovu.",
+    "fileProblems": {
+      "file_missing": "Vyberte prosím soubor.",
+      "file_too_large": "Soubor je příliš velký, nejvýše 10 MB.",
+      "file_type_not_allowed": "Nahrát lze jen PDF, JPG nebo PNG."
+    },
+    "notNeeded": "Dokument už čeká na kontrolu. Načtěte prosím stránku znovu."
   }
 }

@@ -98,7 +98,7 @@ describe('Document types', () => {
     }
 
     await switchDocuments(false);
-    expect(await documentsOf(firstRegistration)).toEqual({ downloads: [], requirements: [] });
+    expect(await documentsOf(firstRegistration)).toEqual({ downloads: [], requirements: [], participants: [] });
     expect((await http().get(`/api/camps/${campId}/document-types`).set(owner)).body).toHaveLength(1);
   });
 

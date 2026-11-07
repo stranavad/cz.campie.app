@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { GuardianConsent, GuardianConsentParams, SignConsentBody } from '@repo/schema/consents';
+import type { UploadDocumentParams } from '@repo/schema/documents';
 import type {
   AddGuardianBody,
   AnswerNewFieldsBody,
@@ -134,3 +135,14 @@ export const useGuardianDocumentsQuery = (registrationId: string) =>
     queryFn: ({ signal }) => portalService.documents(registrationId, signal),
     retry: false,
   });
+
+// The upload answers the Registration's documents as they now are.
+export const useUploadDocumentMutation = (registrationId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ params, file }: { params: UploadDocumentParams; file: File }) =>
+      portalService.uploadDocument(params, file),
+    onSuccess: (documents) => queryClient.setQueryData(portalKeys.documents(registrationId), documents),
+  });
+};

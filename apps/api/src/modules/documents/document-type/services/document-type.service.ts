@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 
-import type { DocumentType, DocumentTypeBody, DocumentTypeErrorCode, GuardianDocuments } from '@repo/schema/documents';
+import type { DocumentType, DocumentTypeBody, DocumentTypeErrorCode } from '@repo/schema/documents';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
@@ -13,18 +13,17 @@ import {
   DocumentTypeRepository,
   type DocumentTypeRow,
 } from '../../../../repositories/documents/document-type/document-type.repository.ts';
-import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
+import { DocumentUploadRepository } from '../../../../repositories/documents/document-upload/document-upload.repository.ts';
 
 // A Camp's Document types: downloads it publishes, optionally for chosen Turnusy, and requirements each
-// child hands in. Admin permission (Camp settings) is the route's; guardians see them for their own
-// Registrations while the Documents module is on.
+// child hands in. Permission (Camp settings) is the route's.
 @Injectable()
 export class DocumentTypeService {
   constructor(
     private readonly types: DocumentTypeRepository,
     private readonly camps: CampRepository,
     private readonly turnusy: TurnusRepository,
-    private readonly registrations: RegistrationRepository,
+    private readonly uploads: DocumentUploadRepository,
     private readonly files: FileService,
     private readonly audit: AuditService,
     private readonly clock: Clock,
@@ -113,13 +112,20 @@ export class DocumentTypeService {
   }
 
   /**
-   * Remove a Document type and its file, audited.
+   * Remove a Document type and its file, audited, while nothing was handed in for it.
    * @param actor who does it
    * @param campId Camp id
    * @param documentTypeId Document type id
+   * @throws {ConflictException} document_type_in_use when documents were handed in for it
    */
   public async remove(actor: Actor, campId: string, documentTypeId: string): Promise<void> {
     const before = await this.types.lockOrThrow(campId, documentTypeId);
+
+    if (await this.uploads.existsFor(before.id)) {
+      const code: DocumentTypeErrorCode = 'document_type_in_use';
+
+      throw new ConflictException({ code, message: 'Documents were handed in for the Document type' });
+    }
 
     await this.types.remove(before.id);
 
@@ -132,57 +138,6 @@ export class DocumentTypeService {
       target: { type: 'document_type', id: before.id },
       change: { before, after: null },
     });
-  }
-
-  /**
-   * List what a guardian's Registration has of its Camp's Document types: the downloads for its Turnus and
-   * the requirements, while the Documents module is on.
-   * @param email the signed-in guardian's email
-   * @param registrationId Registration id
-   * @throws {NotFoundException} when the guardian has no access to the Registration
-   */
-  public async forGuardian(email: string, registrationId: string): Promise<GuardianDocuments> {
-    const registration = await this.registrations.getByGuardian(email, registrationId);
-
-    if (registration === null) {
-      throw new NotFoundException();
-    }
-
-    const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
-    const camp = await this.camps.getByIdOrThrow(turnus.campId);
-
-    if (!camp.modules.includes('documents')) {
-      return { downloads: [], requirements: [] };
-    }
-
-    const types = await this.types.listByCamp(camp.id);
-    const downloads = types.flatMap(({ id, kind, name, description, fileId, turnusIds }) =>
-      kind === 'download' && fileId !== null && (turnusIds.length === 0 || turnusIds.includes(turnus.id))
-        ? [{ id, name, description, fileId }]
-        : [],
-    );
-
-    return {
-      downloads: await Promise.all(
-        downloads.map(async ({ id, name, description, fileId }) => ({
-          id,
-          name,
-          description,
-          file: await this.files.link(fileId),
-        })),
-      ),
-      requirements: await Promise.all(
-        types
-          .filter(({ kind }) => kind === 'requirement')
-          .map(async ({ id, name, description, dueDate, fileId }) => ({
-            id,
-            name,
-            description,
-            dueDate,
-            blankForm: fileId === null ? null : await this.files.link(fileId),
-          })),
-      ),
-    };
   }
 
   /**

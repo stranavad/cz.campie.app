@@ -1,6 +1,6 @@
 # 57 - Guardian document upload
 
-Status: ready-for-agent
+Status: done
 Stage: 1b
 Episode: E8 Documents
 Blocked by: 39, 56
@@ -12,11 +12,11 @@ In the portal, either guardian uploads a PDF, JPG or PNG for each requirement pe
 
 ## Acceptance criteria
 
-- [ ] Uploading a PDF, JPG or PNG within the size limit creates a Pending upload; other types or oversize files are refused with a Czech message.
-- [ ] Storage holds only ciphertext for the upload.
-- [ ] A guardian can open their own upload; a guardian of another family or Organisation gets 404.
-- [ ] Re-upload after Returned creates a new Pending upload and keeps the previous one in history.
-- [ ] Uploading is audited with actor guardian.
+- [x] Uploading a PDF, JPG or PNG within the size limit creates a Pending upload; other types or oversize files are refused with a Czech message.
+- [x] Storage holds only ciphertext for the upload.
+- [x] A guardian can open their own upload; a guardian of another family or Organisation gets 404.
+- [x] Re-upload after Returned creates a new Pending upload and keeps the previous one in history.
+- [x] Uploading is audited with actor guardian.
 
 ## Notes
 
@@ -27,3 +27,5 @@ In the portal, either guardian uploads a PDF, JPG or PNG for each requirement pe
 ## Comments
 
 2026-11-07 - **From issue 56.** Requirements are `document_types` rows of kind `requirement` (`DocumentTypeRepository.listByCamp`, `modules/documents/document-type/`); the portal's `GET /portal/registrations/:id/documents` lists them per Registration, to be extended with each child's uploads and status. `DocumentTypeService.remove` deletes a type and its file outright: once uploads reference a type, refuse removing it (or keep it archived) so uploads never lose their requirement.
+
+2026-11-07 - **Done.** `document_uploads` (child, requirement, file or none for paper, status `pending`/`approved`/`returned`, note, who and when; a requirement with uploads cannot be removed: 409 `document_type_in_use`). `POST /portal/registrations/:id/participants/:participantId/documents/:documentTypeId` (multipart, guardians and access emails) stores a PDF, JPG or PNG within `MAX_FILE_BYTES` encrypted as Pending, audited `document_upload.create` (actor guardian); it takes one only while nothing was handed in or the newest was returned (409 `document_upload_not_needed`), under locks of the requirement and the child, for Registered children only. `GET /portal/registrations/:id/documents` adds per child each requirement's documents newest first, with short-lived links made in one query (`FileService.links`). Portal: the documents page shows per child and requirement the status, the return note, everything handed in to open, and the upload (refused types and sizes in Czech).

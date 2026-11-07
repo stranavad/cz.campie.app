@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { czechDate } from '@repo/schema/shared';
 
 import { useGuardianDocumentsQuery } from '@/features/portal/api/portal.queries';
+import { RequirementUploads } from '@/features/portal/components/requirement-uploads';
 import { HttpError } from '@/lib/api';
 
 // A Registration's documents: what the camp publishes to download, and what each child hands in.
@@ -23,7 +24,7 @@ export function DocumentsPage({ registrationId }: { registrationId: string }) {
     return <p className="py-12">{t('error')}</p>;
   }
 
-  const { downloads, requirements } = documents.data;
+  const { downloads, requirements, participants } = documents.data;
 
   return (
     <section className="flex flex-col gap-6 py-8">
@@ -50,6 +51,19 @@ export function DocumentsPage({ registrationId }: { registrationId: string }) {
                     {t('documents.blankForm')}
                   </a>
                 )}
+                {participants.map((participant) => (
+                  <div key={participant.id} className="mt-2 flex flex-col gap-1 border-t pt-2">
+                    <span className="font-medium">
+                      {t('participant', { first: participant.firstName, last: participant.lastName })}
+                    </span>
+                    <RequirementUploads
+                      registrationId={registrationId}
+                      participantId={participant.id}
+                      documentTypeId={requirement.id}
+                      uploads={participant.uploads[requirement.id] ?? []}
+                    />
+                  </div>
+                ))}
               </li>
             ))}
           </ul>

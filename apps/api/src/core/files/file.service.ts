@@ -127,6 +127,29 @@ export class FileService {
   }
 
   /**
+   * Create short-lived links to several files of the current Organisation at once, in one query. Call it
+   * only after checking the caller may see the files.
+   * @param fileIds the files' ids
+   * @returns a link by file id; a file that does not exist has none
+   */
+  public async links(fileIds: readonly string[]): Promise<Map<string, FileLink>> {
+    const existing = await this.files.listExisting(fileIds);
+    const expiresAt = new Date(this.clock.now().getTime() + LINK_LIFETIME_MS);
+
+    return new Map(
+      existing.map((fileId) => {
+        const token = signDownloadToken(this.linkKey(), {
+          organisationId: this.unitOfWork.organisationId,
+          fileId,
+          expiresAt,
+        });
+
+        return [fileId, { url: `/api/downloads/${token}`, expiresAt: expiresAt.toISOString() }];
+      }),
+    );
+  }
+
+  /**
    * Open the file a download link grants, in its Organisation's unit of work.
    * @param token the token from the link
    * @throws {NotFoundException} when the token is not one this platform signed, or it expired
