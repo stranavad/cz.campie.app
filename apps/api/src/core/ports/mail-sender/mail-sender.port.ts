@@ -2,6 +2,8 @@ export interface MailAttachment {
   filename: string;
   contentType: string;
   content: Buffer;
+  // Set for an image the HTML shows inline as `cid:<contentId>`; mail clients block images in data URLs.
+  contentId?: string;
 }
 
 export interface MailMessage {

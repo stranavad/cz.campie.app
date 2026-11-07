@@ -478,8 +478,9 @@ describe('registration submission', () => {
     expect(mail().sent).toEqual([]);
 
     await jobs().drain();
-    expect(mail().sent).toMatchObject([{ to: ['hlavni@tabor.example.com'], subject: 'Nová přihláška na Turnus 1' }]);
-    expect(mail().sent[0]?.text).toContain(`Ema Testovací, Jan Testovací, variabilní symbol ${body.variableSymbol}`);
+    const toTeam = mail().sent.filter(({ to }) => to.includes('hlavni@tabor.example.com'));
+    expect(toTeam).toMatchObject([{ subject: 'Nová přihláška na Turnus 1' }]);
+    expect(toTeam[0]?.text).toContain(`Ema Testovací, Jan Testovací, variabilní symbol ${body.variableSymbol}`);
   });
 
   it("answers 404 for another Camp's Turnus and offline for a suspended Organisation", async () => {

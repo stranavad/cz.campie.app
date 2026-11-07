@@ -43,6 +43,15 @@ export interface EmailOptions {
   readonly sender: EmailSender;
   // Files of the current Organisation, attached under their stored names.
   readonly attachments?: readonly string[];
+  // Images the HTML shows as `cid:<contentId>`, such as a QR platba, sent along with the message.
+  readonly inlineImages?: readonly InlineImage[];
+}
+
+export interface InlineImage {
+  readonly contentId: string;
+  readonly filename: string;
+  readonly contentType: 'image/png';
+  readonly content: Buffer;
 }
 
 // The one pipeline every email goes through: a React template, rendered with the brand, sent through
@@ -69,7 +78,7 @@ export class EmailService {
   public async send<Props extends object>(
     template: EmailTemplate<Props>,
     props: Props,
-    { to, sender, attachments = [] }: EmailOptions,
+    { to, sender, attachments = [], inlineImages = [] }: EmailOptions,
   ): Promise<void> {
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
 
@@ -82,7 +91,7 @@ export class EmailService {
     await this.deliver(template, props, brand, {
       to,
       replyTo: sender.replyTo,
-      attachments: await Promise.all(attachments.map((fileId) => this.attachment(fileId))),
+      attachments: [...(await Promise.all(attachments.map((fileId) => this.attachment(fileId)))), ...inlineImages],
     });
   }
 

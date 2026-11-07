@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import qrcode from 'qrcode';
 
 import type { Answers, AnswerValue, CustomField, FieldScope, FormDefinition } from '@repo/schema/form-engine';
-import { paymentInstructionsOf } from '@repo/schema/payments';
 import { czechDate, czechDateTime } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
@@ -17,6 +15,7 @@ import { OrganisationRepository } from '../../../../repositories/organisations/o
 import type { ParticipantEntity } from '../../../../repositories/registrations/participant/participant.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { effectiveBranding } from '../../../camps/camp-branding/services/camp-branding.service.ts';
+import { qrPlatbaSvg, registrationPaymentOf } from '../../payment/payment-instructions.helper.ts';
 import {
   PrihlaskaDocument,
   type PrihlaskaPayment,
@@ -55,16 +54,21 @@ export class PrihlaskaService {
   ) {}
 
   /**
-   * Generate the Přihláška of every Participant of a Registration, replacing any earlier one.
+   * Generate the Přihláška of every Participant of a new Registration that has none yet, so a job run
+   * again after it succeeded changes nothing.
    * @param actor who asks, the system after a submission
    * @param registrationId Registration id
+   * @returns whether any was generated
    */
-  public async generateAll(actor: Actor, registrationId: string): Promise<void> {
+  public async generateMissing(actor: Actor, registrationId: string): Promise<boolean> {
     const basis = await this.basisOf(registrationId);
+    const missing = basis.participants.filter(({ prihlaskaFileId }) => prihlaskaFileId === null);
 
-    for (const participant of basis.participants) {
+    for (const participant of missing) {
       await this.generateFor(actor, basis, participant.id);
     }
+
+    return missing.length > 0;
   }
 
   /**
@@ -137,17 +141,7 @@ export class PrihlaskaService {
 
     const total = lines.reduce((sum, { amount }) => sum + amount, 0);
     // A snapshot of the submission: nothing paid yet, whatever was paid since.
-    const instructions = paymentInstructionsOf({
-      total,
-      depositTotal: registration.depositTotal,
-      paid: 0,
-      submittedAt: registration.submittedAt,
-      depositDueDays: turnus.depositDueDays,
-      balanceDueDate: turnus.balanceDueDate,
-      account: organisation.bankAccount,
-      variableSymbol: registration.variableSymbol,
-      message: camp.name,
-    });
+    const instructions = registrationPaymentOf({ registration, turnus, camp, organisation, total, paid: 0 });
     const payment: PrihlaskaPayment = {
       ...instructions,
       dueDate: optionalDate(instructions.dueDate),
@@ -155,10 +149,7 @@ export class PrihlaskaService {
         instructions.balance === null
           ? null
           : { ...instructions.balance, dueDate: optionalDate(instructions.balance.dueDate) },
-      qrSvg:
-        instructions.qrPlatba === null
-          ? null
-          : await qrcode.toString(instructions.qrPlatba, { type: 'svg', margin: 0, errorCorrectionLevel: 'M' }),
+      qrSvg: instructions.qrPlatba === null ? null : await qrPlatbaSvg(instructions.qrPlatba),
     };
     const nameOf = (position: number | null) => {
       const named = participants.find((participant) => participant.position === position);

@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 
 import { CampsModule } from '../camps/camps.module.ts';
+import { SendConfirmationHandler } from './confirmation/send-confirmation.handler.ts';
+import { ConfirmationService } from './confirmation/services/confirmation.service.ts';
 import { GeneratePrihlaskyHandler } from './prihlaska/generate-prihlasky.handler.ts';
 import { PrihlaskaService } from './prihlaska/services/prihlaska.service.ts';
 import { NotifyTeamHandler } from './registration/notify-team.handler.ts';
@@ -11,7 +13,15 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
 @Module({
   imports: [CampsModule],
   controllers: [PublicRegistrationController],
-  providers: [RegistrationService, VariableSymbols, PrihlaskaService, NotifyTeamHandler, GeneratePrihlaskyHandler],
+  providers: [
+    RegistrationService,
+    VariableSymbols,
+    PrihlaskaService,
+    ConfirmationService,
+    NotifyTeamHandler,
+    GeneratePrihlaskyHandler,
+    SendConfirmationHandler,
+  ],
   exports: [RegistrationService, PrihlaskaService],
 })
 export class RegistrationsModule {}

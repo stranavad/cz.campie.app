@@ -55,13 +55,13 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 
 ### E3 Public registration - "guardian registers and gets a confirmation"
 
-| #   | Issue                                    | Status          | Blocked by |
-| --- | ---------------------------------------- | --------------- | ---------- |
-| 33  | Public landing, Camp and Turnus pages    | done            | 13, 23, 25 |
-| 34  | Public form with live price              | done            | 27, 30, 33 |
-| 35  | Submission and placement                 | done            | 10, 31, 34 |
-| 36  | Přihláška PDF with QR platba             | done            | 15, 35     |
-| 37  | Confirmation and new-Registration emails | ready-for-agent | 32, 36     |
+| #   | Issue                                    | Status | Blocked by |
+| --- | ---------------------------------------- | ------ | ---------- |
+| 33  | Public landing, Camp and Turnus pages    | done   | 13, 23, 25 |
+| 34  | Public form with live price              | done   | 27, 30, 33 |
+| 35  | Submission and placement                 | done   | 10, 31, 34 |
+| 36  | Přihláška PDF with QR platba             | done   | 15, 35     |
+| 37  | Confirmation and new-Registration emails | done   | 32, 36     |
 
 ### E4 Money - "payments are tracked"
 

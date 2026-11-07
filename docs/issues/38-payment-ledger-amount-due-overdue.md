@@ -29,3 +29,5 @@ Payments are a ledger on the Registration. An admin with Registrations write rec
 ## Comments
 
 2026-11-07 - **From issue 26.** `amountDueNow` takes the total (price lines plus Price adjustments), the Deposit owed, the ledger sum and the dates. Price adjustments are not price lines; consider a pure `registrationTotal(lines, adjustments)` in `@repo/schema/pricing` so both apps agree on the total. The due dates read the Turnus's deposit days and balance due date as they are now, so editing a Turnus moves the due dates of its existing Registrations; decide whether that is wanted.
+
+2026-11-07 - **From issue 37.** Payment instructions (amount due now, rest, QR platba) come from `registrationPaymentOf` in `apps/api/src/modules/registrations/payment/payment-instructions.helper.ts`, used by the Přihláška and the confirmation with `paid: 0`. Pass the ledger's sum (and the total with Price adjustments) there for the payment-received email and the portal; the Přihláška stays a snapshot with nothing paid. The payment block email component is `modules/registrations/confirmation/payment-block.email.tsx`.

@@ -17,7 +17,7 @@ import {
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
-import { EmailService, type EmailSender } from '../../../../core/emails/email.service.ts';
+import { EmailService, type EmailOptions, type EmailSender } from '../../../../core/emails/email.service.ts';
 import {
   CampEmailTextRepository,
   type CampEmailTextRow,
@@ -38,6 +38,7 @@ export interface CampEmailMessage {
   readonly actionHref?: CampEmailProps['actionHref'];
   readonly payment?: CampEmailProps['payment'];
   readonly attachments?: readonly string[];
+  readonly inlineImages?: EmailOptions['inlineImages'];
 }
 
 // The emails a Camp sends, worded by the Camp or by the platform's defaults, and switched on or off per
@@ -183,7 +184,7 @@ export class CampEmailService {
         actionHref: message.actionHref,
         payment: message.payment,
       },
-      { to, sender, attachments: message.attachments },
+      { to, sender, attachments: message.attachments, inlineImages: message.inlineImages },
     );
 
     return true;
