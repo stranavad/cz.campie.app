@@ -66,6 +66,22 @@ export class ConsentSignatureRepository {
   }
 
   /**
+   * List every signature of Participants, newest first.
+   * @param participantIds Participant ids
+   */
+  public async listOf(participantIds: readonly string[]): Promise<ConsentSignatureRow[]> {
+    if (participantIds.length === 0) {
+      return [];
+    }
+
+    return this.unitOfWork.db
+      .select()
+      .from(consentSignatures)
+      .where(inArray(consentSignatures.participantId, [...participantIds]))
+      .orderBy(desc(consentSignatures.signedAt), desc(consentSignatures.id));
+  }
+
+  /**
    * Get a Participant's newest signature of a Consent.
    * @param participantId Participant id
    * @param consentId Consent id

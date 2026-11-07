@@ -187,5 +187,24 @@
     "switchedOff": "Tábor má připomínku platby vypnutou, nic se neodešle. Zapnout ji můžete v nastavení e-mailů tábora.",
     "throttled": "Připomínek jste teď poslali hodně. Zkuste to prosím později.",
     "failed": "Připomínky se nepodařilo odeslat. Zkuste to prosím znovu."
+  },
+  "consents": {
+    "title": "Souhlasy",
+    "states": {
+      "unsigned": "Nepodepsáno",
+      "signed": "Podepsáno",
+      "withdrawn": "Odvoláno"
+    },
+    "declined": "Odmítnuté body: {{items}}",
+    "signature": "verze {{version}}, {{name}}, {{date}}",
+    "superseded": "nahrazeno novějším podpisem",
+    "withdrawnAt": "odvoláno {{date}}",
+    "pdf": "PDF",
+    "downloadFailed": "PDF se nepodařilo stáhnout.",
+    "matrix": "Přehled souhlasů",
+    "noConsents": "Tábor nemá žádné souhlasy.",
+    "child": "Dítě",
+    "loadFailed": "Souhlasy se nepodařilo načíst.",
+    "openPdf": "Otevřít PDF"
   }
 }

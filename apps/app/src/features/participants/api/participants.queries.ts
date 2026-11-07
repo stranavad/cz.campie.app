@@ -192,3 +192,21 @@ export const useSendRemindersMutation = (organisationId: string, turnusId: strin
   useMutation({
     mutationFn: (overdueOnly: boolean) => participantsService.sendReminders(organisationId, turnusId, overdueOnly),
   });
+
+export const useRegistrationConsentsQuery = (organisationId: string, registrationId: string) =>
+  useQuery({
+    queryKey: [...participantsKeys.detail(organisationId, registrationId), 'consents'],
+    queryFn: ({ signal }) => participantsService.registrationConsents(organisationId, registrationId, signal),
+  });
+
+export const useTurnusConsentsQuery = (organisationId: string, turnusId: string, enabled: boolean) =>
+  useQuery({
+    queryKey: [...participantsKeys.organisation(organisationId), 'consents', turnusId],
+    queryFn: enabled ? ({ signal }) => participantsService.turnusConsents(organisationId, turnusId, signal) : skipToken,
+  });
+
+// Each download is audited, so its link is asked for at the click.
+export const useDownloadSignedConsentMutation = (organisationId: string) =>
+  useMutation({
+    mutationFn: (signatureId: string) => participantsService.downloadSignedConsent(organisationId, signatureId),
+  });

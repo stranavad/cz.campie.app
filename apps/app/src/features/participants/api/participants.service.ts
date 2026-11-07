@@ -1,4 +1,9 @@
 import {
+  downloadSignedConsentEndpoint,
+  getRegistrationConsentsEndpoint,
+  getTurnusConsentsEndpoint,
+} from '@repo/schema/consents';
+import {
   addAccessEmailEndpoint,
   addParticipantEndpoint,
   addPriceAdjustmentEndpoint,
@@ -108,4 +113,10 @@ export const participantsService = {
     apiClient.request(previewPaymentRemindersEndpoint, { organisationId, params: { turnusId }, signal }),
   sendReminders: (organisationId: string, turnusId: string, overdueOnly: boolean) =>
     apiClient.request(sendPaymentRemindersEndpoint, { organisationId, params: { turnusId }, body: { overdueOnly } }),
+  registrationConsents: (organisationId: string, registrationId: string, signal?: AbortSignal) =>
+    apiClient.request(getRegistrationConsentsEndpoint, { organisationId, params: { registrationId }, signal }),
+  turnusConsents: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
+    apiClient.request(getTurnusConsentsEndpoint, { organisationId, params: { turnusId }, signal }),
+  downloadSignedConsent: (organisationId: string, signatureId: string) =>
+    apiClient.request(downloadSignedConsentEndpoint, { organisationId, params: { signatureId } }),
 };

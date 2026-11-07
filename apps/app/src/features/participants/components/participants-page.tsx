@@ -7,6 +7,7 @@ import { czechDate, czk } from '@repo/schema/shared';
 import { Input } from '@/components/ui/input';
 import { ParticipantExport } from '@/features/participants/components/participant-export';
 import { PaymentReminders } from '@/features/participants/components/payment-reminders';
+import { TurnusConsents } from '@/features/participants/components/turnus-consents';
 import { useParticipantsPage } from '@/features/participants/components/use-participants-page.hook';
 
 // The admin's working list: the Participants of the Selected Turnus, searched and filtered.
@@ -53,6 +54,13 @@ export function ParticipantsPage() {
         </label>
         {page.turnusId === null ? null : (
           <ParticipantExport key={page.turnusId} organisationId={page.organisationId} turnusId={page.turnusId} />
+        )}
+        {page.turnusId === null ? null : (
+          <TurnusConsents
+            key={`consents-${page.turnusId}`}
+            organisationId={page.organisationId}
+            turnusId={page.turnusId}
+          />
         )}
         {page.turnusId === null || !page.canWrite ? null : (
           <PaymentReminders key={page.turnusId} organisationId={page.organisationId} turnusId={page.turnusId} />
