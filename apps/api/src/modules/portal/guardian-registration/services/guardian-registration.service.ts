@@ -101,7 +101,13 @@ export class GuardianRegistrationService {
       id: registration.id,
       variableSymbol: registration.variableSymbol,
       submittedAt: registration.submittedAt.toISOString(),
-      camp: { id: camp.id, name: camp.name, ...campContactOf(camp, organisation) },
+      camp: {
+        id: camp.id,
+        name: camp.name,
+        ...campContactOf(camp, organisation),
+        consents: camp.modules.includes('consents'),
+        documents: camp.modules.includes('documents'),
+      },
       turnus: {
         id: turnus.id,
         name: turnus.name,

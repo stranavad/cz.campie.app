@@ -127,3 +127,10 @@ export const useSignConsentMutation = (params: GuardianConsentParams) =>
 
 export const useWithdrawConsentMutation = (params: GuardianConsentParams) =>
   useConsentChange<void>(params, () => portalService.withdrawConsent(params));
+
+export const useGuardianDocumentsQuery = (registrationId: string) =>
+  useQuery({
+    queryKey: portalKeys.documents(registrationId),
+    queryFn: ({ signal }) => portalService.documents(registrationId, signal),
+    retry: false,
+  });

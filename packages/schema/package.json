@@ -37,6 +37,10 @@
       "types": "./dist/consents/index.d.ts",
       "default": "./dist/consents/index.js"
     },
+    "./documents": {
+      "types": "./dist/documents/index.d.ts",
+      "default": "./dist/documents/index.js"
+    },
     "./payments": {
       "types": "./dist/payments/index.d.ts",
       "default": "./dist/payments/index.js"

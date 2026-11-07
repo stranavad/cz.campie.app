@@ -20,6 +20,9 @@ export const guardianRegistrationSchema = z.object({
     // The Camp's contact, else its Organisation's.
     contactEmail: z.string(),
     contactPhone: z.string().nullable(),
+    // The modules guardians use in the portal, while the Camp has them on.
+    consents: z.boolean(),
+    documents: z.boolean(),
   }),
   turnus: z.object({
     id: z.uuid(),

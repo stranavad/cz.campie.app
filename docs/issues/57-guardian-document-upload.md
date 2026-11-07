@@ -23,3 +23,7 @@ In the portal, either guardian uploads a PDF, JPG or PNG for each requirement pe
 - Spec sections: Documents; Files.
 - Port from Domino: `apps/api/src/parent/services/parent.service.ts` (document upload), `apps/portal/src/pages/parent/ParticipantDocuments.vue`.
 - Domino has no Returned state; it is new here.
+
+## Comments
+
+2026-11-07 - **From issue 56.** Requirements are `document_types` rows of kind `requirement` (`DocumentTypeRepository.listByCamp`, `modules/documents/document-type/`); the portal's `GET /portal/registrations/:id/documents` lists them per Registration, to be extended with each child's uploads and status. `DocumentTypeService.remove` deletes a type and its file outright: once uploads reference a type, refuse removing it (or keep it archived) so uploads never lose their requirement.

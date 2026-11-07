@@ -42,3 +42,4 @@ export { consentVersions } from './consents/consent-versions.ts';
 export { consentFiles } from './consents/consent-files.ts';
 export { consentSignatures } from './consents/consent-signatures.ts';
 export { consentWithdrawals } from './consents/consent-withdrawals.ts';
+export { documentTypeKind, documentTypes } from './documents/document-types.ts';

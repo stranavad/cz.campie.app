@@ -11,6 +11,7 @@ import type {
   UpdateDiscountCodeBody,
 } from '@repo/schema/camps';
 import type { ConsentContent } from '@repo/schema/consents';
+import type { DocumentTypeBody } from '@repo/schema/documents';
 import type { CampEmailTextBody, EmailType } from '@repo/schema/emails';
 
 import { campsKeys } from '@/features/camps/api/camps.keys';
@@ -237,3 +238,38 @@ export const useSaveConsentMutation = (organisationId: string, campId: string) =
 
 export const useUploadConsentFileMutation = (organisationId: string, campId: string) =>
   useMutation({ mutationFn: (file: File) => campsService.uploadConsentFile(organisationId, campId, file) });
+
+export const useDocumentTypesQuery = (organisationId: string, campId: string) =>
+  useQuery({
+    queryKey: campsKeys.documentTypes(organisationId, campId),
+    queryFn: ({ signal }) => campsService.documentTypes(organisationId, campId, signal),
+  });
+
+// Every change answers or removes one type; the list is read again.
+export const useDocumentTypeMutations = (organisationId: string, campId: string) => {
+  const queryClient = useQueryClient();
+  const refresh = () => queryClient.invalidateQueries({ queryKey: campsKeys.documentTypes(organisationId, campId) });
+
+  return {
+    save: useMutation({
+      mutationFn: ({ id, body }: { id: string | null; body: DocumentTypeBody }) =>
+        id === null
+          ? campsService.createDocumentType(organisationId, campId, body)
+          : campsService.updateDocumentType(organisationId, campId, id, body),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({
+      mutationFn: (id: string) => campsService.removeDocumentType(organisationId, campId, id),
+      onSuccess: refresh,
+    }),
+    setFile: useMutation({
+      mutationFn: ({ id, file }: { id: string; file: File }) =>
+        campsService.setDocumentTypeFile(organisationId, campId, id, file),
+      onSuccess: refresh,
+    }),
+    removeFile: useMutation({
+      mutationFn: (id: string) => campsService.removeDocumentTypeFile(organisationId, campId, id),
+      onSuccess: refresh,
+    }),
+  };
+};

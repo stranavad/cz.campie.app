@@ -7,6 +7,7 @@ import { CampSwitcher } from '@/features/camps/components/camp-switcher';
 import { ConsentsSection } from '@/features/camps/components/consents-section/consents-section';
 import { CreateCampForm } from '@/features/camps/components/create-camp-form/create-camp-form';
 import { DiscountCodeSection } from '@/features/camps/components/discount-code-section/discount-code-section';
+import { DocumentTypesSection } from '@/features/camps/components/document-types-section/document-types-section';
 import { EmailTextsSection } from '@/features/camps/components/email-texts-section/email-texts-section';
 import { RegistrationFormSection } from '@/features/camps/components/registration-form-section/registration-form-section';
 import { TurnusSection } from '@/features/camps/components/turnus-section/turnus-section';
@@ -81,6 +82,12 @@ export function CampsPage({ campId }: CampsPageProps) {
       />
       <ConsentsSection
         key={`consents-${page.selected.id}`}
+        organisationId={page.organisationId}
+        campId={page.selected.id}
+        canWrite={page.canWrite}
+      />
+      <DocumentTypesSection
+        key={`documents-${page.selected.id}`}
         organisationId={page.organisationId}
         campId={page.selected.id}
         canWrite={page.canWrite}

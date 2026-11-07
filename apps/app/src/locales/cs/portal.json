@@ -135,5 +135,14 @@
     "withdraw": "Odvolat souhlas",
     "withdrawConfirm": "Opravdu odvolat? Klikněte znovu.",
     "withdrawFailed": "Souhlas se nepodařilo odvolat."
+  },
+  "documents": {
+    "link": "Dokumenty",
+    "title": "Dokumenty",
+    "none": "Tábor zatím žádné dokumenty nezveřejnil.",
+    "requirements": "K odevzdání",
+    "downloads": "Ke stažení",
+    "dueBy": "Odevzdat do {{date}}",
+    "blankForm": "Stáhnout formulář"
   }
 }

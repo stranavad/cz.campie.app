@@ -272,5 +272,33 @@
     "no": "Ne",
     "withdrawableNote": "Souhlas můžete později odvolat.",
     "bindingNote": "Tento souhlas nelze odvolat."
+  },
+  "documentTypes": {
+    "title": "Dokumenty",
+    "intro": "Soubory ke stažení pro rodiče a dokumenty, které má každé dítě odevzdat. Rodičům se ukážou, když má tábor zapnutý modul Dokumenty.",
+    "loadFailed": "Dokumenty se nepodařilo načíst.",
+    "none": "Tábor zatím nemá žádné dokumenty.",
+    "new": "Nový dokument",
+    "kind": "Druh",
+    "kinds": {
+      "download": "Ke stažení",
+      "requirement": "K odevzdání"
+    },
+    "name": "Název",
+    "description": "Popis",
+    "dueDate": "Odevzdat do (nepovinné)",
+    "dueBy": "do {{date}}",
+    "turnusy": "Jen pro turnusy",
+    "allTurnusy": "Bez výběru platí pro všechny turnusy.",
+    "file": "Soubor ke stažení (PDF, JPG nebo PNG)",
+    "blankForm": "Prázdný formulář (nepovinné)",
+    "openFile": "Otevřít soubor",
+    "removeFile": "Odebrat soubor",
+    "uploadFailed": "Soubor se nepodařilo nahrát. Nahrát lze PDF, JPG nebo PNG.",
+    "fileAfterSave": "Soubor nahrajete po uložení.",
+    "noFile": "chybí soubor, rodiče ho nevidí",
+    "save": "Uložit",
+    "remove": "Smazat",
+    "saveFailed": "Změnu se nepodařilo uložit."
   }
 }

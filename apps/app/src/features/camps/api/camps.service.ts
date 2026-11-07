@@ -37,6 +37,15 @@ import {
   type ConsentContent,
 } from '@repo/schema/consents';
 import {
+  createDocumentTypeEndpoint,
+  listDocumentTypesEndpoint,
+  removeDocumentTypeEndpoint,
+  removeDocumentTypeFileEndpoint,
+  setDocumentTypeFileEndpoint,
+  updateDocumentTypeEndpoint,
+  type DocumentTypeBody,
+} from '@repo/schema/documents';
+import {
   listCampEmailTextsEndpoint,
   previewCampEmailTextEndpoint,
   resetCampEmailTextEndpoint,
@@ -112,4 +121,16 @@ export const campsService = {
     apiClient.request(publishConsentEndpoint, { organisationId, params: { campId, consentId }, body }),
   uploadConsentFile: (organisationId: string, campId: string, file: File) =>
     apiClient.request(uploadConsentFileEndpoint, { organisationId, params: { campId }, file }),
+  documentTypes: (organisationId: string, campId: string, signal?: AbortSignal) =>
+    apiClient.request(listDocumentTypesEndpoint, { organisationId, params: { campId }, signal }),
+  createDocumentType: (organisationId: string, campId: string, body: DocumentTypeBody) =>
+    apiClient.request(createDocumentTypeEndpoint, { organisationId, params: { campId }, body }),
+  updateDocumentType: (organisationId: string, campId: string, documentTypeId: string, body: DocumentTypeBody) =>
+    apiClient.request(updateDocumentTypeEndpoint, { organisationId, params: { campId, documentTypeId }, body }),
+  removeDocumentType: (organisationId: string, campId: string, documentTypeId: string) =>
+    apiClient.request(removeDocumentTypeEndpoint, { organisationId, params: { campId, documentTypeId } }),
+  setDocumentTypeFile: (organisationId: string, campId: string, documentTypeId: string, file: File) =>
+    apiClient.request(setDocumentTypeFileEndpoint, { organisationId, params: { campId, documentTypeId }, file }),
+  removeDocumentTypeFile: (organisationId: string, campId: string, documentTypeId: string) =>
+    apiClient.request(removeDocumentTypeFileEndpoint, { organisationId, params: { campId, documentTypeId } }),
 };
