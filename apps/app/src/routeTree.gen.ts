@@ -34,6 +34,7 @@ import { Route as OrganisationPortalPrihlaseniRouteImport } from './routes/organ
 import { Route as PlatformPrihlaskyRegistrationIdRouteImport } from './routes/platform/prihlasky_.$registrationId'
 import { Route as PlatformPrihlaskyNovaRouteImport } from './routes/platform/prihlasky_.nova'
 import { Route as PlatformTaboryNahledRouteImport } from './routes/platform/tabory_.nahled'
+import { Route as OrganisationPortalRegistrationIdSouhlasyRouteImport } from './routes/organisation/portal/$registrationId_.souhlasy'
 
 const OrganisationRouteRoute = OrganisationRouteRouteImport.update({
   id: '/organisation',
@@ -167,6 +168,12 @@ const PlatformTaboryNahledRoute = PlatformTaboryNahledRouteImport.update({
   path: '/tabory/nahled',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
+const OrganisationPortalRegistrationIdSouhlasyRoute =
+  OrganisationPortalRegistrationIdSouhlasyRouteImport.update({
+    id: '/portal/$registrationId_/souhlasy',
+    path: '/portal/$registrationId/souhlasy',
+    getParentRoute: () => OrganisationRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/organisation': typeof OrganisationRouteRouteWithChildren
@@ -194,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug/': typeof OrganisationCampSlugIndexRoute
   '/organisation/portal/': typeof OrganisationPortalIndexRoute
+  '/organisation/portal/$registrationId/souhlasy': typeof OrganisationPortalRegistrationIdSouhlasyRoute
 }
 export interface FileRoutesByTo {
   '/organisation/platba': typeof OrganisationPlatbaRoute
@@ -219,6 +227,7 @@ export interface FileRoutesByTo {
   '/platform/tabory/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug': typeof OrganisationCampSlugIndexRoute
   '/organisation/portal': typeof OrganisationPortalIndexRoute
+  '/organisation/portal/$registrationId/souhlasy': typeof OrganisationPortalRegistrationIdSouhlasyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -247,6 +256,7 @@ export interface FileRoutesById {
   '/platform/tabory_/nahled': typeof PlatformTaboryNahledRoute
   '/organisation/$campSlug/': typeof OrganisationCampSlugIndexRoute
   '/organisation/portal/': typeof OrganisationPortalIndexRoute
+  '/organisation/portal/$registrationId_/souhlasy': typeof OrganisationPortalRegistrationIdSouhlasyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/platform/tabory/nahled'
     | '/organisation/$campSlug/'
     | '/organisation/portal/'
+    | '/organisation/portal/$registrationId/souhlasy'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/organisation/platba'
@@ -301,6 +312,7 @@ export interface FileRouteTypes {
     | '/platform/tabory/nahled'
     | '/organisation/$campSlug'
     | '/organisation/portal'
+    | '/organisation/portal/$registrationId/souhlasy'
   id:
     | '__root__'
     | '/organisation'
@@ -328,6 +340,7 @@ export interface FileRouteTypes {
     | '/platform/tabory_/nahled'
     | '/organisation/$campSlug/'
     | '/organisation/portal/'
+    | '/organisation/portal/$registrationId_/souhlasy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -513,6 +526,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformTaboryNahledRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
+    '/organisation/portal/$registrationId_/souhlasy': {
+      id: '/organisation/portal/$registrationId_/souhlasy'
+      path: '/portal/$registrationId/souhlasy'
+      fullPath: '/organisation/portal/$registrationId/souhlasy'
+      preLoaderRoute: typeof OrganisationPortalRegistrationIdSouhlasyRouteImport
+      parentRoute: typeof OrganisationRouteRoute
+    }
   }
 }
 
@@ -525,6 +545,7 @@ interface OrganisationRouteRouteChildren {
   OrganisationPortalPrihlaseniRoute: typeof OrganisationPortalPrihlaseniRoute
   OrganisationCampSlugIndexRoute: typeof OrganisationCampSlugIndexRoute
   OrganisationPortalIndexRoute: typeof OrganisationPortalIndexRoute
+  OrganisationPortalRegistrationIdSouhlasyRoute: typeof OrganisationPortalRegistrationIdSouhlasyRoute
 }
 
 const OrganisationRouteRouteChildren: OrganisationRouteRouteChildren = {
@@ -537,6 +558,8 @@ const OrganisationRouteRouteChildren: OrganisationRouteRouteChildren = {
   OrganisationPortalPrihlaseniRoute: OrganisationPortalPrihlaseniRoute,
   OrganisationCampSlugIndexRoute: OrganisationCampSlugIndexRoute,
   OrganisationPortalIndexRoute: OrganisationPortalIndexRoute,
+  OrganisationPortalRegistrationIdSouhlasyRoute:
+    OrganisationPortalRegistrationIdSouhlasyRoute,
 }
 
 const OrganisationRouteRouteWithChildren =

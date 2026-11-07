@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import type { GuardianConsentParams, SignConsentBody } from '@repo/schema/consents';
 import type {
   AddGuardianBody,
   AnswerNewFieldsBody,
@@ -88,3 +89,32 @@ export const useStartPortalCardPaymentMutation = (registrationId: string) =>
       portalService.startCardPayment(registrationId, amount),
     onSuccess: ({ redirectUrl }) => window.location.assign(redirectUrl),
   });
+
+export const useGuardianConsentsQuery = (registrationId: string) =>
+  useQuery({
+    queryKey: portalKeys.consents(registrationId),
+    queryFn: ({ signal }) => portalService.consents(registrationId, signal),
+    retry: false,
+  });
+
+export const useGuardianConsentQuery = (params: GuardianConsentParams) =>
+  useQuery({
+    queryKey: portalKeys.consent(params.registrationId, params.participantId, params.consentId),
+    queryFn: ({ signal }) => portalService.consent(params, signal),
+  });
+
+// A signature changes the child's state in the list; its PDF follows from a job.
+export const useSignConsentMutation = (params: GuardianConsentParams) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: SignConsentBody) => portalService.signConsent(params, body),
+    onSuccess: async (consent) => {
+      queryClient.setQueryData(
+        portalKeys.consent(params.registrationId, params.participantId, params.consentId),
+        consent,
+      );
+      await queryClient.invalidateQueries({ queryKey: portalKeys.consents(params.registrationId), exact: true });
+    },
+  });
+};

@@ -99,5 +99,36 @@
     "payNow": "Zaplatit kartou {{amount}}",
     "payAll": "Zaplatit kartou vše ({{amount}})",
     "failed": "Platbu kartou se nepodařilo spustit. Zkuste to prosím znovu, nebo zaplaťte převodem."
+  },
+  "consents": {
+    "link": "Souhlasy",
+    "title": "Souhlasy",
+    "none": "Tábor od vás zatím žádné souhlasy nepotřebuje.",
+    "loadFailed": "Souhlas se nepodařilo načíst.",
+    "unsigned": "Nepodepsáno",
+    "signedOn": "Podepsáno {{date}}",
+    "signedPdf": "Podepsaný souhlas (PDF)",
+    "open": "Zobrazit",
+    "readAndSign": "Přečíst a podepsat",
+    "readPdf": "Přečíst přiložený dokument",
+    "agree": "Souhlasím",
+    "yes": "Ano",
+    "no": "Ne",
+    "withdrawable": "Tento souhlas můžete později odvolat.",
+    "binding": "Tento souhlas nelze odvolat.",
+    "signerName": "Vaše jméno a příjmení",
+    "signerPlace": "Místo podpisu",
+    "signNote": "Podepisujete napsáním jména a místa. Spolu s podpisem uložíme čas, váš e-mail, IP adresu a prohlížeč; podepsaný souhlas vám pošleme e-mailem.",
+    "sign": "Podepsat",
+    "signAgain": "Podepsat znovu",
+    "signedAt": "Podepsal(a) {{name}}, {{date}}.",
+    "outdated": "Tábor mezitím souhlas upravil. Načtěte prosím stránku znovu a přečtěte si nové znění.",
+    "answersInvalid": "Zkontrolujte prosím odpovědi u označených bodů.",
+    "signFailed": "Souhlas se nepodařilo podepsat. Zkuste to prosím znovu.",
+    "problems": {
+      "consent_answer_missing": "Vyberte prosím odpověď.",
+      "consent_agreement_required": "Bez souhlasu s tímto bodem nelze podepsat.",
+      "consent_answer_unexpected": "Tento bod odpověď nepotřebuje."
+    }
   }
 }

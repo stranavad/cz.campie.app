@@ -23,3 +23,7 @@ Removing a Registration offers Cancel all (issue 45) or Erase. Erase is Owner on
 
 - Spec sections: Removing a Registration; Files.
 - ADR-0002: erasure anonymises and keeps the ledger.
+
+## Comments
+
+2026-11-07 - **From issue 53.** The API role may neither delete nor update `consent_signatures` (only attach `file_id`), and the same holds for `consent_versions` and `consent_files`: erasure needs its own path for signatures and their PDFs (the signed PDFs are files to remove through `FileService`).

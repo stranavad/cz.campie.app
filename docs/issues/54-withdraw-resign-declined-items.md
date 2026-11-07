@@ -23,3 +23,7 @@ A guardian can withdraw a signature on a withdrawable Consent; the state becomes
 
 - Spec sections: Consents.
 - Port from Domino: `apps/api/src/consent/services/consent.service.ts`; Declined items logic near `apps/api/src/admin-registration/services/admin-registration.service.ts` and `apps/portal/src/pages/admin/DeclinedItems.vue`.
+
+## Comments
+
+2026-11-07 - **From issue 53.** Signatures are `consent_signatures` (`ConsentSignatureRepository`, `modules/consents/signature/`); the newest per Participant and Consent counts (`listNewestOf`), so signing again already supersedes. The API role may not update or delete signatures, so record a withdrawal in its own table rather than on the signature; the state then becomes withdrawn when the newest event is a withdrawal.

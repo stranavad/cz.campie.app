@@ -97,7 +97,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 50  | Payment reminders                              | E4           | done            | 38, 42     |
 | 51  | Consents: model, versions, editor              | E7 Consents  | done            | 12, 24     |
 | 52  | Starter Consents                               | E7           | ready-for-human | 51         |
-| 53  | Consent signing and signed PDF                 | E7           | ready-for-agent | 15, 39, 51 |
+| 53  | Consent signing and signed PDF                 | E7           | done            | 15, 39, 51 |
 | 54  | Withdraw, re-sign, Declined items              | E7           | ready-for-agent | 53         |
 | 55  | Admin Consent status and downloads             | E7           | ready-for-agent | 53         |
 | 56  | Document types                                 | E8 Documents | ready-for-agent | 12, 24     |

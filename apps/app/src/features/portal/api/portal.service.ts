@@ -1,4 +1,11 @@
 import {
+  getGuardianConsentEndpoint,
+  listGuardianConsentsEndpoint,
+  signConsentEndpoint,
+  type GuardianConsentParams,
+  type SignConsentBody,
+} from '@repo/schema/consents';
+import {
   addGuardianEndpoint,
   answerNewFieldsEndpoint,
   confirmGuardianEmailChangeEndpoint,
@@ -44,4 +51,10 @@ export const portalService = {
     apiClient.request(answerNewFieldsEndpoint, { params: { registrationId }, body }),
   startCardPayment: (registrationId: string, amount: StartPortalCardPaymentBody['amount']) =>
     apiClient.request(startPortalCardPaymentEndpoint, { params: { registrationId }, body: { amount } }),
+  consents: (registrationId: string, signal?: AbortSignal) =>
+    apiClient.request(listGuardianConsentsEndpoint, { params: { registrationId }, signal }),
+  consent: (params: GuardianConsentParams, signal?: AbortSignal) =>
+    apiClient.request(getGuardianConsentEndpoint, { params, signal }),
+  signConsent: (params: GuardianConsentParams, body: SignConsentBody) =>
+    apiClient.request(signConsentEndpoint, { params, body }),
 };

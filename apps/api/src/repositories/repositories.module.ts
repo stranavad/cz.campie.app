@@ -12,6 +12,7 @@ import { CampRepository } from './camps/camp/camp.repository.ts';
 import { DiscountCodeRepository } from './camps/discount-code/discount-code.repository.ts';
 import { RegistrationFormRepository } from './camps/registration-form/registration-form.repository.ts';
 import { TurnusRepository } from './camps/turnus/turnus.repository.ts';
+import { ConsentSignatureRepository } from './consents/consent-signature/consent-signature.repository.ts';
 import { ConsentRepository } from './consents/consent/consent.repository.ts';
 import { FileRepository } from './files/file/file.repository.ts';
 import { OperatorRepository } from './operators/operator/operator.repository.ts';
@@ -36,6 +37,7 @@ const REPOSITORIES = [
   PaymentGatewayAccountRepository,
   CardPaymentRepository,
   ConsentRepository,
+  ConsentSignatureRepository,
   LegalAcceptanceRepository,
   AdminRepository,
   MembershipRepository,

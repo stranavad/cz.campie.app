@@ -43,6 +43,13 @@ export function RegistrationCard({ registration }: { registration: GuardianRegis
         >
           {t('edit.open')}
         </Link>
+        <Link
+          to="/organisation/portal/$registrationId/souhlasy"
+          params={{ registrationId: registration.id }}
+          className="self-start text-sm underline"
+        >
+          {t('consents.link')}
+        </Link>
       </header>
       <ul className="flex flex-col gap-2">
         {registration.participants.map((participant) => (
