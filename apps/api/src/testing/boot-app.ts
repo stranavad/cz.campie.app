@@ -39,6 +39,11 @@ export const PRODUCTION_ENV = {
   LOGIN_MAX_FAILURES_PER_ACCOUNT: '5',
   LOGIN_MAX_FAILURES_PER_IP: '20',
   LOGIN_LOCKOUT_MINUTES: '15',
+  REQUEST_LIMIT_WINDOW_MINUTES: '60',
+  SIGNUP_LIMIT_PER_IP: '10',
+  SIGNUP_LIMIT_PER_EMAIL: '5',
+  PASSWORD_RESET_LIMIT_PER_IP: '20',
+  PASSWORD_RESET_LIMIT_PER_EMAIL: '3',
 } satisfies Record<string, string>;
 
 const initialEnv = new Set(Object.keys(process.env));

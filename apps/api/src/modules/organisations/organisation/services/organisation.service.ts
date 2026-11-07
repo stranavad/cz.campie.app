@@ -20,6 +20,7 @@ import { EncryptionService } from '../../../../core/encryption/encryption.servic
 import { JobQueue } from '../../../../core/jobs/job-queue.ts';
 import { hashPassword } from '../../../../core/passwords/password-hash.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
+import { RateLimiter, type RequestLimit } from '../../../../core/rate-limits/rate-limiter.ts';
 import type { IssuedSession } from '../../../../core/sessions/session-token.ts';
 import { SessionService } from '../../../../core/sessions/session.service.ts';
 import type { AdminEntity } from '../../../../repositories/admins/admin/admin.entity.ts';
@@ -43,6 +44,7 @@ const TAKEN_BY_CONSTRAINT: Readonly<Record<string, SignUpErrorCode | SubdomainEr
 @Injectable()
 export class OrganisationService {
   private readonly productName: string;
+  private readonly signupLimit: RequestLimit;
 
   constructor(
     private readonly organisations: OrganisationRepository,
@@ -54,11 +56,13 @@ export class OrganisationService {
     private readonly audit: AuditService,
     private readonly sessions: SessionService,
     private readonly jobs: JobQueue,
+    private readonly rateLimiter: RateLimiter,
     private readonly unitOfWork: UnitOfWork,
     private readonly clock: Clock,
     config: ConfigService<Env, true>,
   ) {
     this.productName = config.get('PRODUCT_NAME', { infer: true });
+    this.signupLimit = config.get('requestLimits', { infer: true }).signup;
   }
 
   /**
@@ -91,7 +95,8 @@ export class OrganisationService {
   /**
    * Sign an Organisation up, in a platform unit of work that then enters it: the Organisation pending
    * approval with its data key, its first Camp, the signer as its first Owner and the accepted legal
-   * versions, all audited and committed as one. The Platform operator is notified once it commits.
+   * versions, all audited and committed as one. The Platform operator is notified once it commits. Every
+   * attempt counts against the signup limit of the IP address and the signer's email, before anything else.
    * @param body what the signer entered
    * @param ipAddress where the signer acts from
    * @throws {ConflictException} when the legal versions are not the current ones, or the email has an
@@ -99,6 +104,8 @@ export class OrganisationService {
    * @throws {BadRequestException} when the password is too weak
    */
   public async signUp(body: SignUpOrganisationBody, ipAddress: string): Promise<IssuedSession> {
+    await this.rateLimiter.admit(this.signupLimit, { ipAddress, target: body.email });
+
     if (LEGAL_DOCUMENTS.some((document) => body.acceptedVersions[document] !== CURRENT_LEGAL_VERSIONS[document])) {
       throw signUpError(ConflictException, 'legal_versions_outdated');
     }

@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { CURRENT_LEGAL_VERSIONS, SUBDOMAIN_ERROR_CODES } from '@repo/schema/organisations';
-import { PASSWORD_ERROR_CODES } from '@repo/schema/shared';
+import { PASSWORD_ERROR_CODES, REQUEST_LIMIT_ERROR_CODES } from '@repo/schema/shared';
 
 import { useAppForm } from '@/core/form';
 import { useSignUpMutation } from '@/features/signup/api/signup.queries';
@@ -14,7 +14,14 @@ import {
 import { HttpError } from '@/lib/api';
 
 // What the form shows above its button when the API refuses for a reason no field holds.
-export type SignupFailure = 'legal_versions_outdated' | 'unexpected';
+export type SignupFailure = 'legal_versions_outdated' | 'requests_throttled' | 'unexpected';
+
+// The failure shown for a code no field holds.
+function failureOf(code: string | undefined): SignupFailure {
+  return code === 'legal_versions_outdated'
+    ? code
+    : (REQUEST_LIMIT_ERROR_CODES.find((known) => known === code) ?? 'unexpected');
+}
 
 // The field an API code belongs to, if any.
 function fieldOf(code: string | undefined): keyof SignupFormValues | null {
@@ -52,7 +59,7 @@ export function useSignupForm() {
         if (field !== null && code !== undefined) {
           formApi.setFieldMeta(field, (meta) => ({ ...meta, errorMap: { ...meta.errorMap, onSubmit: code } }));
         } else {
-          setFailure(code === 'legal_versions_outdated' ? 'legal_versions_outdated' : 'unexpected');
+          setFailure(failureOf(code));
         }
       }
     },

@@ -74,6 +74,7 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 - Sessions live in the database; the cookie carries a random token and only its SHA-256 is stored. `SessionService.startAdmin(adminId)` / `startGuardian(email)` (in the guardian's Organisation's unit of work) return the token, and `writeSessionCookie(response, kind, session)` sets it: `__Host-admin_session` / `__Host-guardian_session`, httpOnly, Secure, SameSite=Lax, Path=/, no Domain, so it stays on the exact host. Admin sessions last 12 hours, guardian sessions 7 days, not extended by use.
 - The Platform operator is an admin in the `operators` table, which the API's role may only read: `pnpm operator grant|revoke|reset-totp <email>` (`src/cli/`) writes it as the tables' owner (`MIGRATION_DATABASE_URL`), so no route can make anyone the operator. `grant` creates a missing account without a password, set through the forgotten password page.
 - TOTP (`core/totp/`, RFC 6238, 6 digits, 30 s, one step of drift either way): the secret is sealed with the master key for its admin (`EncryptionService.sealPlatformSecret`), a code's time step is used up so no code works twice, and wrong codes count against `LOGIN_MAX_FAILURES_PER_ACCOUNT` within `LOGIN_LOCKOUT_MINUTES`. Passing a code replaces the admin session by a new one with `second_factor`, under a new token and until the old one's expiry, so a cookie copied before the code gains nothing. Only the operator sets TOTP up so far.
+- **Anonymous requests that send mail or create data** (signup, password reset; later guardian login links and form submissions) call `RateLimiter.admit(limit, { ipAddress, target })` as the service's first step, with the kind's `RequestLimit` from `config.get('requestLimits')`: per IP address (an IPv6 /64 counts as one) and per target (the lowercase email, or the Organisation) within `REQUEST_LIMIT_WINDOW_MINUTES`. Past either it answers 429 `requests_throttled` (`REQUEST_LIMIT_ERROR_CODES`) before anything happens. Every attempt counts, failed ones too; `.env.test` relaxes the limits, a test of them sets its own.
 - Guardian sessions are an Organisation table, looked up in the host's Organisation, so another Organisation's session is invisible; the guard also compares the session's Organisation with the host's. Admins, memberships and admin sessions are platform tables: an admin identity is global, and the membership decides the Organisation before one is current.
 
 ## Encryption
@@ -138,7 +139,7 @@ apps/api/src/
     files/                           encrypted file storage, uploads, download links
     jobs/                            job queue, runner and worker; jobs and handlers live with their feature
     passwords/                       admin password hashes (Argon2id, PHC strings)
-    rate-limits/                     attempt limits counted in Redis by the Clock (login failures)
+    rate-limits/                     attempt limits counted in Redis by the Clock (login failures, request limits)
     sessions/                        admin and guardian sessions, their cookies
     totp/                            TOTP codes (RFC 6238), pure
     ports/<port>/                    <port>.port.ts, <technology>-<port>.adapter.ts, <port>.module.ts

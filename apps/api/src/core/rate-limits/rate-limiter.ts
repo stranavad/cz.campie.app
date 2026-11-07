@@ -1,16 +1,26 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { Injectable, type OnModuleDestroy } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, type OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 
+import type { RequestLimitErrorCode } from '@repo/schema/shared';
+
 import type { Env } from '../config/env.schema.ts';
 import { Clock } from '../ports/clock/clock.port.ts';
+import { addressSubject } from './address-subject.ts';
 
 // At most `max` attempts per subject within the last `windowMs`.
 export interface RateLimit {
   readonly name: string;
   readonly max: number;
   readonly windowMs: number;
+}
+
+// A kind of anonymous request's limits: one per IP address, one per target (the email a request is for,
+// an Organisation).
+export interface RequestLimit {
+  readonly ip: RateLimit;
+  readonly target: RateLimit;
 }
 
 // An attempt counted against a limit. Release it once the attempt turns out not to count, such as a
@@ -77,6 +87,28 @@ export class RateLimiter implements OnModuleDestroy {
   }
 
   /**
+   * Count an anonymous request against its limits by IP address and by target, before it does anything.
+   * A refused request counts against neither, so a flood from one address does not lock its target out
+   * for longer, nor the reverse.
+   * @param limit the kind of request's limits
+   * @param subjects the request's IP address and its target, normalised (a lowercase email)
+   * @throws {HttpException} 429 requests_throttled when either limit is reached
+   */
+  public async admit(limit: RequestLimit, subjects: { ipAddress: string; target: string }): Promise<void> {
+    const byIp = await this.take(limit.ip, addressSubject(subjects.ipAddress));
+
+    if (byIp === null) {
+      throw requestsThrottled();
+    }
+
+    if ((await this.take(limit.target, subjects.target)) === null) {
+      await byIp.release();
+
+      throw requestsThrottled();
+    }
+  }
+
+  /**
    * Forget every attempt a subject made under a limit.
    * @param limit the limit
    * @param subject whom the limit applies to
@@ -84,6 +116,12 @@ export class RateLimiter implements OnModuleDestroy {
   public async clear(limit: RateLimit, subject: string): Promise<void> {
     await this.redis.del(keyOf(limit, subject));
   }
+}
+
+function requestsThrottled(): HttpException {
+  const code: RequestLimitErrorCode = 'requests_throttled';
+
+  return new HttpException({ code, message: 'Too many requests, try later' }, HttpStatus.TOO_MANY_REQUESTS);
 }
 
 // Redis is outside the encryption and erasure, so the subject (an email, an IP address) is only stored

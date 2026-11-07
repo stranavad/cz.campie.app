@@ -29,3 +29,7 @@ Submitting the public form creates a Registration in one Turnus with its Partici
 - Spec sections: Registration, placement and declarations; Pricing; Payments (Variable symbol).
 - Port from Domino: `apps/api/src/registration/services/registration.service.ts` (generateVariableSymbol, clash retry) and `registration-process.service.ts`.
 - Serialisation: e.g. `SELECT ... FOR UPDATE` on the Turnus row and the code row inside the unit of work.
+
+## Comments
+
+2026-11-07 - **From issue 22.** Submissions must be rate limited: add `SUBMISSION_LIMIT_PER_IP` and a per-Organisation limit to `requestLimits` in `env.schema.ts` and call `RateLimiter.admit` first in the submission service (see `apps/api/AGENTS.md`, Access and sessions). The per-Organisation limit must stay well above a popular camp's opening rush.

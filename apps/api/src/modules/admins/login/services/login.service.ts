@@ -6,6 +6,7 @@ import type { LogInBody, LogInErrorCode } from '@repo/schema/admins';
 import type { Env } from '../../../../core/config/env.schema.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
 import { verifyPassword } from '../../../../core/passwords/password-hash.ts';
+import { addressSubject } from '../../../../core/rate-limits/address-subject.ts';
 import { RateLimiter, type RateLimit } from '../../../../core/rate-limits/rate-limiter.ts';
 import type { IssuedSession } from '../../../../core/sessions/session-token.ts';
 import { SessionService } from '../../../../core/sessions/session.service.ts';
@@ -46,7 +47,7 @@ export class LoginService {
       throw loginError('login_throttled');
     }
 
-    const ipAttempt = await this.rateLimiter.take(this.limits.ip, ipAddress);
+    const ipAttempt = await this.rateLimiter.take(this.limits.ip, addressSubject(ipAddress));
 
     if (ipAttempt === null) {
       await accountAttempt.release();

@@ -6,7 +6,7 @@ import { HttpErrorFilter } from './core/http/http-error.filter.ts';
 export function setupApp<T extends NestExpressApplication>(app: T): T {
   // The frontend's proxy appends the address it was called from to X-Forwarded-For, so the last entry is
   // the browser's; earlier ones came from the client and prove nothing. Without a proxy (in tests) the peer
-  // address is the browser's. Audit entries and login limits both rely on it.
+  // address is the browser's. Audit entries, login limits and request limits rely on it.
   app.set('trust proxy', 1);
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new HttpErrorFilter());

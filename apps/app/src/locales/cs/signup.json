@@ -44,6 +44,7 @@
   },
   "failure": {
     "legal_versions_outdated": "Podmínky se mezitím změnily. Načtěte prosím stránku znovu a zkontrolujte je.",
+    "requests_throttled": "Pokusů o založení organizace bylo v poslední době příliš mnoho. Zkuste to prosím později.",
     "unexpected": "Organizaci se nepodařilo založit. Zkuste to prosím znovu."
   },
   "submit": "Založit organizaci"

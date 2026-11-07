@@ -8,6 +8,7 @@ import type { Env } from '../../../../core/config/env.schema.ts';
 import { JobQueue } from '../../../../core/jobs/job-queue.ts';
 import { hashPassword } from '../../../../core/passwords/password-hash.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
+import { RateLimiter, type RequestLimit } from '../../../../core/rate-limits/rate-limiter.ts';
 import { generateSessionToken, hashSessionToken } from '../../../../core/sessions/session-token.ts';
 import { SessionService } from '../../../../core/sessions/session.service.ts';
 import type { AdminEntity } from '../../../../repositories/admins/admin/admin.entity.ts';
@@ -22,6 +23,7 @@ export const PASSWORD_RESET_VALID_MINUTES = 60;
 @Injectable()
 export class PasswordResetService {
   private readonly productName: string;
+  private readonly requestLimit: RequestLimit;
 
   constructor(
     private readonly passwordResets: PasswordResetRepository,
@@ -29,18 +31,24 @@ export class PasswordResetService {
     private readonly logins: LoginService,
     private readonly sessions: SessionService,
     private readonly jobs: JobQueue,
+    private readonly rateLimiter: RateLimiter,
     private readonly clock: Clock,
     config: ConfigService<Env, true>,
   ) {
     this.productName = config.get('PRODUCT_NAME', { infer: true });
+    this.requestLimit = config.get('requestLimits', { infer: true }).passwordReset;
   }
 
   /**
    * Send a reset link to the admin an email belongs to, once this commits; for an email without an
-   * account do nothing, so the caller cannot tell the difference.
+   * account do nothing, so the caller cannot tell the difference. Both count against the reset limit of
+   * the IP address and the email alike.
    * @param body the email
+   * @param ipAddress where the request comes from
    */
-  public async request({ email }: RequestPasswordResetBody): Promise<void> {
+  public async request({ email }: RequestPasswordResetBody, ipAddress: string): Promise<void> {
+    await this.rateLimiter.admit(this.requestLimit, { ipAddress, target: email });
+
     const admin = await this.admins.getByEmail(email);
 
     if (admin !== null) {

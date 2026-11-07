@@ -4,7 +4,7 @@ import { useForgottenPasswordForm } from '@/features/password-reset/components/f
 
 export function ForgottenPasswordForm() {
   const { t } = useTranslation('passwordReset');
-  const { form, isSent, hasFailed } = useForgottenPasswordForm();
+  const { form, isSent, failure } = useForgottenPasswordForm();
 
   // The same answer whether or not the email has an account.
   if (isSent) {
@@ -23,11 +23,11 @@ export function ForgottenPasswordForm() {
       <form.AppField name="email">
         {(field) => <field.TextField label={t('forgotten.email')} type="email" autoComplete="username" />}
       </form.AppField>
-      {hasFailed ? (
+      {failure === null ? null : (
         <p role="alert" className="text-sm text-destructive">
-          {t('forgotten.failure')}
+          {t(`forgotten.failure.${failure}`)}
         </p>
-      ) : null}
+      )}
       <form.AppForm>
         <form.SubmitButton className="self-start">{t('forgotten.submit')}</form.SubmitButton>
       </form.AppForm>

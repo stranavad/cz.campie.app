@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
 import { CURRENT_LEGAL_VERSIONS, type SignUpOrganisationBody } from '@repo/schema/organisations';
@@ -252,4 +253,68 @@ describe('organisation signup', () => {
     await jobs().drain();
     expect(mail().sent).toEqual([]);
   }
+});
+
+describe('organisation signup limits', () => {
+  const { app, http, clock, mail, jobs, database } = useTestApp({
+    env: { SIGNUP_LIMIT_PER_IP: '2', SIGNUP_LIMIT_PER_EMAIL: '1', REQUEST_LIMIT_WINDOW_MINUTES: '60' },
+  });
+
+  // From the given address, as the frontend's proxy reports it; each signup unique unless told otherwise.
+  const signUp = (ipAddress: string, body: Partial<typeof SIGNUP> = {}) => {
+    const suffix = randomUUID().slice(0, 8);
+
+    return http()
+      .post('/api/organisations')
+      .set({ Host: mainHost(app()), [ACCESS_HEADERS.csrf]: '1', 'X-Forwarded-For': ipAddress })
+      .send({ ...SIGNUP, subdomain: `pokusnik-${suffix}`, email: `jana-${suffix}@example.com`, ...body });
+  };
+
+  const organisationCount = async () =>
+    withClient(database().ownerUrl, async (client) => (await client.query('SELECT id FROM organisations')).rowCount);
+
+  it('refuses signups past the limit of an IP address with 429 and creates and sends nothing', async () => {
+    expect((await signUp('198.51.100.7')).status).toBe(204);
+    expect((await signUp('198.51.100.7')).status).toBe(204);
+    await jobs().drain();
+    const sentBefore = mail().sent.length;
+
+    const refused = await signUp('198.51.100.7');
+
+    expect(refused.status).toBe(429);
+    expect(refused.body).toMatchObject({ code: 'requests_throttled' });
+    expect(refused.headers['set-cookie']).toBeUndefined();
+    expect(await organisationCount()).toBe(2);
+    await jobs().drain();
+    expect(mail().sent).toHaveLength(sentBefore);
+    expect((await signUp('203.0.113.9')).status).toBe(204);
+  });
+
+  it('counts every address of one IPv6 network as one', async () => {
+    expect((await signUp('2001:db8:1:2::a')).status).toBe(204);
+    expect((await signUp('2001:db8:1:2::b')).status).toBe(204);
+
+    expect((await signUp('2001:db8:1:2:ffff::c')).status).toBe(429);
+  });
+
+  it('refuses signups past the limit of an email from any address, before checking anything else', async () => {
+    const email = 'jana.testovaci@example.com';
+    expect((await signUp('198.51.100.7', { email })).status).toBe(204);
+
+    const refused = await signUp('203.0.113.9', { email });
+
+    expect(refused.status).toBe(429);
+    expect(refused.body).toMatchObject({ code: 'requests_throttled' });
+  });
+
+  it('admits an address again once its oldest signup has left the window', async () => {
+    await signUp('198.51.100.7');
+    clock().advance(30 * 60 * 1000);
+    await signUp('198.51.100.7');
+    expect((await signUp('198.51.100.7')).status).toBe(429);
+
+    clock().advance(30 * 60 * 1000);
+
+    expect((await signUp('198.51.100.7')).status).toBe(204);
+  });
 });

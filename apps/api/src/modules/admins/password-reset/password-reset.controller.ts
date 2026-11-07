@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Ip } from '@nestjs/common';
 
 import {
   requestPasswordResetEndpoint,
@@ -17,8 +17,11 @@ export class PasswordResetController {
   constructor(private readonly passwordResets: PasswordResetService) {}
 
   @Endpoint(requestPasswordResetEndpoint)
-  public request(@EndpointBody(requestPasswordResetEndpoint) body: RequestPasswordResetBody): Promise<void> {
-    return this.passwordResets.request(body);
+  public request(
+    @EndpointBody(requestPasswordResetEndpoint) body: RequestPasswordResetBody,
+    @Ip() ipAddress: string,
+  ): Promise<void> {
+    return this.passwordResets.request(body, ipAddress);
   }
 
   @Endpoint(resetPasswordEndpoint)

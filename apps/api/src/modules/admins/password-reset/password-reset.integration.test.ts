@@ -123,3 +123,41 @@ describe('admin password reset', () => {
     expect((await logIn(admin.email, NEW_PASSWORD)).status).toBe(204);
   });
 });
+
+describe('admin password reset limits', () => {
+  const { app, http, mail, jobs } = useTestApp({
+    env: { PASSWORD_RESET_LIMIT_PER_IP: '3', PASSWORD_RESET_LIMIT_PER_EMAIL: '2' },
+  });
+
+  const requestReset = (email: string, ipAddress: string) =>
+    http()
+      .post('/api/password-resets')
+      .set({ Host: mainHost(app()), [ACCESS_HEADERS.csrf]: '1', 'X-Forwarded-For': ipAddress })
+      .send({ email });
+
+  it('sends no more links to one email than its limit, from any address', async () => {
+    const admin = await createAdmin(app(), { memberOf: [], password: OLD_PASSWORD });
+    expect((await requestReset(admin.email, '198.51.100.7')).status).toBe(204);
+    expect((await requestReset(admin.email, '203.0.113.9')).status).toBe(204);
+
+    const refused = await requestReset(admin.email.toUpperCase(), '192.0.2.44');
+
+    expect(refused.status).toBe(429);
+    expect(refused.body).toMatchObject({ code: 'requests_throttled' });
+    await jobs().drain();
+    expect(mail().sent).toHaveLength(2);
+  });
+
+  it('refuses an address past its limit across emails, with or without an account alike', async () => {
+    const admin = await createAdmin(app(), { memberOf: [], password: OLD_PASSWORD });
+    await requestReset('nikdo-1@example.com', '198.51.100.7');
+    await requestReset('nikdo-2@example.com', '198.51.100.7');
+    await requestReset('nikdo-3@example.com', '198.51.100.7');
+
+    expect((await requestReset('nikdo-4@example.com', '198.51.100.7')).status).toBe(429);
+    expect((await requestReset(admin.email, '198.51.100.7')).status).toBe(429);
+    await jobs().drain();
+    expect(mail().sent).toEqual([]);
+    expect((await requestReset(admin.email, '203.0.113.9')).status).toBe(204);
+  });
+});

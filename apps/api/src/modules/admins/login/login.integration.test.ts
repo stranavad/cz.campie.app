@@ -95,6 +95,17 @@ describe('admin login', () => {
     expect((await logIn(admin.email, PASSWORD, '198.51.100.8')).status).toBe(204);
   });
 
+  it('blocks a whole IPv6 /64 network as one address', async () => {
+    const admin = await createAdmin(app(), { memberOf: [], password: PASSWORD });
+
+    for (const index of [1, 2, 3, 4, 5]) {
+      expect((await logIn(`neznamy-${index}@example.com`, PASSWORD, `2001:db8:7:8::${index}`)).status).toBe(401);
+    }
+
+    expect((await logIn(admin.email, PASSWORD, '2001:db8:7:8:abcd::1')).status).toBe(429);
+    expect((await logIn(admin.email, PASSWORD, '2001:db8:7:9::1')).status).toBe(204);
+  });
+
   it('forgets an account’s failures once it signs in', async () => {
     const admin = await createAdmin(app(), { memberOf: [], password: PASSWORD });
     const fail = () => logIn(admin.email, 'jine dlouhe heslo nez to spravne');

@@ -24,3 +24,7 @@ Guardians log in to `/portal` on the Organisation's subdomain with a link sent b
 
 - Spec sections: Identity, permissions and audit; Emails.
 - Port from Domino: `apps/api/src/parent-auth/` and `apps/api/emails/magic-link.tsx` (Domino uses bearer tokens in localStorage; here cookies, ADR-0001).
+
+## Comments
+
+2026-11-07 - **From issue 22.** Login-link requests must be rate limited: add `LOGIN_LINK_LIMIT_PER_IP` and `LOGIN_LINK_LIMIT_PER_EMAIL` to `requestLimits` in `env.schema.ts` and call `RateLimiter.admit` first in the request service, counting unknown emails alike (see `apps/api/AGENTS.md`, Access and sessions).

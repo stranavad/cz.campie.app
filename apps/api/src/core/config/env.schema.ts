@@ -145,6 +145,33 @@ const loginLimits = z
     },
   }));
 
+// Anonymous requests that send mail or create data: each IP address and each target (the email a request
+// is for) may make this many of a kind within the window, counted apart per kind. An IP address is shared
+// by an office or a camp's wifi, so its limit is the higher one. Failed attempts count too, so a signer
+// correcting the form a few times needs room under the email's limit.
+const requestLimits = z
+  .object({
+    REQUEST_LIMIT_WINDOW_MINUTES: positiveInteger,
+    SIGNUP_LIMIT_PER_IP: positiveInteger,
+    SIGNUP_LIMIT_PER_EMAIL: positiveInteger,
+    PASSWORD_RESET_LIMIT_PER_IP: positiveInteger,
+    PASSWORD_RESET_LIMIT_PER_EMAIL: positiveInteger,
+  })
+  .transform((env) => {
+    const windowMs = env.REQUEST_LIMIT_WINDOW_MINUTES * 60 * 1000;
+    const limitOf = (name: string, perIp: number, perTarget: number) => ({
+      ip: { name: `${name}-ip`, max: perIp, windowMs },
+      target: { name: `${name}-target`, max: perTarget, windowMs },
+    });
+
+    return {
+      requestLimits: {
+        signup: limitOf('signup', env.SIGNUP_LIMIT_PER_IP, env.SIGNUP_LIMIT_PER_EMAIL),
+        passwordReset: limitOf('password-reset', env.PASSWORD_RESET_LIMIT_PER_IP, env.PASSWORD_RESET_LIMIT_PER_EMAIL),
+      },
+    };
+  });
+
 export const envSchema = z
   .object({
     APP_ENV: z.enum(['local', 'test', 'production']),
@@ -171,6 +198,7 @@ export const envSchema = z
   .and(paymentGateway)
   .and(keyProvider)
   .and(loginLimits)
+  .and(requestLimits)
   .superRefine((env, context) => {
     if (env.APP_ENV !== 'production') {
       return;
