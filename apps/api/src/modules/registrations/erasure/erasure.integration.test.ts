@@ -129,13 +129,45 @@ describe('erasing a Registration', () => {
   it('takes away the portal access of the guardians, and refuses to erase twice', async () => {
     await erase();
 
-    expect((await http().get('/api/portal/registrations').set(guardian)).body.registrations).toEqual([]);
+    expect((await http().get('/api/portal/registrations').set(guardian)).status).toBe(401);
     expect((await erase()).body.code).toBe('registration_erased');
     expect((await http().get(`/api/registrations/${registrationId}`).set(owner)).status).toBe(200);
     const [participant] = await query<{ id: string }>('SELECT id FROM participants');
     await http().post(`/api/registrations/${registrationId}/participants/${participant?.id}/prihlaska`).set(owner);
     await jobs().drain();
     expect(await query('SELECT FROM files')).toEqual([]);
+  });
+
+  it("erases what the guardian's email left beyond the Registration: sessions, marks and their audit trail", async () => {
+    await query(
+      `INSERT INTO undeliverable_emails (organisation_id, email, reason, marked_at) VALUES ($1, $2, 'bounce', now())`,
+      [organisationId, 'jana.testovaci@example.com'],
+    );
+    await query(
+      `INSERT INTO audit_entries (organisation_id, occurred_at, actor_kind, actor_identity, ip_address, action, target_type, target_id)
+       VALUES ($1, now(), 'guardian', $2, '203.0.113.7', 'guardian_login_link.use', 'guardian_login_link', $3)`,
+      [organisationId, 'jana.testovaci@example.com', organisationId],
+    );
+
+    await erase();
+
+    expect(await query('SELECT FROM guardian_sessions')).toEqual([]);
+    expect(await query('SELECT FROM undeliverable_emails')).toEqual([]);
+    expect(
+      await query(`SELECT actor_identity, ip_address FROM audit_entries WHERE action = 'guardian_login_link.use'`),
+    ).toEqual([{ actor_identity: null, ip_address: null }]);
+  });
+
+  it('takes no new Price adjustment note after the erasure', async () => {
+    await erase();
+
+    const refused = await http()
+      .post(`/api/registrations/${registrationId}/price-adjustments`)
+      .set(owner)
+      .send({ amount: -100, note: 'Sleva pro Janu Testovací' });
+
+    expect(refused.status).toBe(409);
+    expect(refused.body.code).toBe('registration_erased');
   });
 
   it('is for Owners only', async () => {

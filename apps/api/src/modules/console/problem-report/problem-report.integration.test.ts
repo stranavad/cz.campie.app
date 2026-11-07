@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createAdmin, createOrganisation, organisationHost, type RequestHeaders } from '../../../testing/fixtures.ts';
 import { createOperator } from '../../../testing/operator.ts';
+import { withClient } from '../../../testing/services/postgres.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
 
 describe('feedback and problem reports', () => {
@@ -53,10 +54,16 @@ describe('feedback and problem reports', () => {
       .post('/api/problem-reports')
       .set(host)
       .set('x-csrf-protection', '1')
-      .send({ pageUrl: '/portal', text: 'Nejde mi nahrát dokument.', email: '' });
+      // A login link's token never reaches the report.
+      .send({ pageUrl: '/portal/prihlaseni?token=tajny-token#konec', text: 'Nejde mi nahrát dokument.', email: '' });
 
     expect(await reports()).toEqual([
-      expect.objectContaining({ kind: 'guardian', from: null, pageUrl: '/portal', text: 'Nejde mi nahrát dokument.' }),
+      expect.objectContaining({
+        kind: 'guardian',
+        from: null,
+        pageUrl: '/portal/prihlaseni',
+        text: 'Nejde mi nahrát dokument.',
+      }),
     ]);
   });
 
@@ -87,5 +94,31 @@ describe('problem reports, limited', () => {
     expect((await send()).status).toBe(204);
     expect((await send()).status).toBe(204);
     expect((await send()).status).toBe(429);
+  });
+});
+
+describe("problem reports past the Organisation's limit", () => {
+  const { app, http, jobs, mail, database } = useTestApp({ env: { PROBLEM_REPORT_LIMIT_PER_TARGET: '1' } });
+
+  it('keeps every report but emails the operator only up to the limit, so a flood silences no guardian', async () => {
+    const organisationId = await createOrganisation(app());
+    const host = { Host: await organisationHost(app(), organisationId) };
+    const send = () =>
+      http()
+        .post('/api/problem-reports')
+        .set(host)
+        .set('x-csrf-protection', '1')
+        .send({ pageUrl: '/', text: 'Stránka nejde načíst.' });
+
+    expect((await send()).status).toBe(204);
+    expect((await send()).status).toBe(204);
+    await jobs().drain();
+
+    const stored = await withClient(
+      database().ownerUrl,
+      async (client) => (await client.query('SELECT FROM problem_reports')).rowCount,
+    );
+    expect(stored).toBe(2);
+    expect(mail().sent).toHaveLength(1);
   });
 });

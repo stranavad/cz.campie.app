@@ -13,6 +13,7 @@ import { operators } from './operators/operators.ts';
 import { legalAcceptances } from './organisations/legal-acceptances.ts';
 import { organisationKeys } from './organisations/organisation-keys.ts';
 import { organisations } from './organisations/organisations.ts';
+import { supportEntries } from './organisations/support-entries.ts';
 import { supportGrants } from './organisations/support-grants.ts';
 import { adminSessions } from './sessions/admin-sessions.ts';
 
@@ -33,5 +34,6 @@ export const PLATFORM_TABLES: readonly string[] = [
   adminSessions,
   platformAuditEntries,
   supportGrants,
+  supportEntries,
   problemReports,
 ].map((table) => getTableName(table));

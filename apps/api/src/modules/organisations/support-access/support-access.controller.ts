@@ -11,8 +11,8 @@ import {
 } from '@repo/schema/organisations';
 
 import { Access } from '../../../core/access/access.decorator.ts';
-import { Requires, SupportEntry } from '../../../core/access/permission.ts';
-import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
+import { Requires, SupportEntry, type MemberAccess } from '../../../core/access/permission.ts';
+import { RequestActor, RequestMember } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { SupportAccessService } from './services/support-access.service.ts';
@@ -49,7 +49,7 @@ export class SupportAccessController {
   @Endpoint(enterSupportAccessEndpoint)
   @Requires('member')
   @SupportEntry(true)
-  public enter(@RequestActor() actor: Actor): Promise<void> {
-    return this.support.enter(actor);
+  public enter(@RequestActor() actor: Actor, @RequestMember() member: MemberAccess): Promise<void> {
+    return this.support.enter(actor, member);
   }
 }

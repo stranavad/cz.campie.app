@@ -61,18 +61,25 @@ export class ProblemReportService {
   }
 
   /**
-   * Record a technical problem from an Organisation's pages, and tell the operator.
+   * Record a technical problem from an Organisation's pages, and tell the operator. Only the address's
+   * limit refuses a report: the Organisation's only stops the emails, so someone flooding one Organisation
+   * from many addresses fills the operator's inbox no further and silences no real guardian.
    * @param body the page, text and the address to answer, if any
    * @param ipAddress where the request came from
    */
   public async reportProblem(body: ReportProblemBody, ipAddress: string): Promise<void> {
-    await this.rateLimiter.admit(this.limit, { ipAddress, target: this.unitOfWork.organisationId });
-    await this.record({
-      kind: 'guardian',
-      organisationId: this.unitOfWork.organisationId,
-      adminId: null,
-      ...body,
-    });
+    await this.rateLimiter.admitAddress(this.limit, ipAddress);
+    const emailed = (await this.rateLimiter.take(this.limit.target, this.unitOfWork.organisationId)) !== null;
+
+    await this.record(
+      {
+        kind: 'guardian',
+        organisationId: this.unitOfWork.organisationId,
+        adminId: null,
+        ...body,
+      },
+      emailed,
+    );
   }
 
   /**
@@ -130,11 +137,14 @@ export class ProblemReportService {
   /**
    * Record a report and enqueue the operator's email.
    * @param input the report
+   * @param emailed whether to email the operator; the console lists it either way
    */
-  private async record(input: Omit<ProblemReportRow, 'id' | 'sentAt' | 'resolvedAt'>): Promise<void> {
+  private async record(input: Omit<ProblemReportRow, 'id' | 'sentAt' | 'resolvedAt'>, emailed = true): Promise<void> {
     const report = await this.reports.create({ ...input, sentAt: this.clock.now() });
 
-    this.jobs.enqueue(problemReportedJob, { reportId: report.id });
+    if (emailed) {
+      this.jobs.enqueue(problemReportedJob, { reportId: report.id });
+    }
   }
 
   /**

@@ -18,8 +18,14 @@ export interface MemberAccess {
   readonly membershipId: string | null;
   readonly owner: boolean;
   readonly permissions: Permissions;
-  // Set when the Platform operator acts under a support grant: whether it allows changes.
-  readonly support?: { readonly allowWrites: boolean };
+  // Set when the Platform operator acts under a support grant: whether it allows changes, the grant and the
+  // session, and whether the session entered under it (recorded in the Organisation's log).
+  readonly support?: {
+    readonly allowWrites: boolean;
+    readonly grantId: string;
+    readonly sessionId: string;
+    readonly entered: boolean;
+  };
 }
 
 // Declared on every route of an admin controller, or on the controller for all its routes, where a route's

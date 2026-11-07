@@ -10,7 +10,12 @@ export type ProblemReportKind = (typeof PROBLEM_REPORT_KINDS)[number];
 
 const reportFields = {
   // The page the report was sent from, as the browser has it.
-  pageUrl: z.string().trim().max(500),
+  // Only the address up to its path: a query or fragment may hold a login link's token.
+  pageUrl: z
+    .string()
+    .trim()
+    .max(2000)
+    .transform((url) => url.split(/[?#]/)[0]?.slice(0, 500) ?? ''),
   text: z.string().trim().min(5).max(5000),
 };
 

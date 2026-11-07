@@ -17,7 +17,9 @@ export function AdminFeedback() {
       <ProblemForm
         label={t('feedback.adminLink')}
         askEmail={false}
-        send={(text) => feedbackService.send(membership.organisation.id, text, window.location.href.slice(0, 500))}
+        send={(text) =>
+          feedbackService.send(membership.organisation.id, text, `${window.location.origin}${window.location.pathname}`)
+        }
       />
     </footer>
   );

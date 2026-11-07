@@ -73,6 +73,8 @@ export class ErasureRepository {
       await db.delete(internalDocuments).where(inArray(internalDocuments.participantId, ids));
     }
 
+    // Marked erased first: the protected function acts on nothing else.
+    await db.update(registrations).set({ answers: {}, erasedAt }).where(eq(registrations.id, registrationId));
     await db.execute(sql`select erase_registration_protected(${registrationId})`);
     await db.delete(declarationAnswers).where(eq(declarationAnswers.registrationId, registrationId));
     await db.delete(guardianEmailChanges).where(eq(guardianEmailChanges.registrationId, registrationId));
@@ -82,6 +84,5 @@ export class ErasureRepository {
       .update(participants)
       .set({ firstName: 'Smazáno', lastName: '', birthDate: null, answers: {}, prihlaskaFileId: null })
       .where(eq(participants.registrationId, registrationId));
-    await db.update(registrations).set({ answers: {}, erasedAt }).where(eq(registrations.id, registrationId));
   }
 }

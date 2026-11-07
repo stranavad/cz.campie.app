@@ -51,3 +51,4 @@ export { problemReportKind, problemReports } from './console/problem-reports.ts'
 export { totpRecoveryCodes } from './admins/totp-recovery-codes.ts';
 export { undeliverableEmails, undeliverableReason } from './emails/undeliverable-emails.ts';
 export { mailStatistics } from './emails/mail-statistics.ts';
+export { supportEntries } from './organisations/support-entries.ts';

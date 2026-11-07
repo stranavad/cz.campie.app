@@ -4,6 +4,7 @@ import { createElement } from 'react';
 import { balanceOf, type Balance } from '@repo/schema/pricing';
 import type {
   AddPriceAdjustmentBody,
+  ErasureErrorCode,
   Ledger,
   PriceAdjustmentErrorCode,
   RecordPaymentBody,
@@ -164,10 +165,15 @@ export class LedgerService {
    * @param actor who adds it
    * @param registrationId Registration id
    * @param body the amount, plus or minus, and the note
-   * @throws {ConflictException} price_adjustment_below_zero when it would take the total below zero
+   * @throws {ConflictException} price_adjustment_below_zero when it would take the total below zero;
+   * registration_erased when the Registration was erased, whose notes are gone for good
    */
   public async addPriceAdjustment(actor: Actor, registrationId: string, body: AddPriceAdjustmentBody): Promise<Ledger> {
-    await this.registrations.lockByIdOrThrow(registrationId);
+    if ((await this.registrations.lockByIdOrThrow(registrationId)).erasedAt !== null) {
+      const code: ErasureErrorCode = 'registration_erased';
+
+      throw new ConflictException({ code, message: 'The Registration was erased' });
+    }
 
     if ((await this.balanceOf(registrationId)).total + body.amount < 0) {
       const code: PriceAdjustmentErrorCode = 'price_adjustment_below_zero';

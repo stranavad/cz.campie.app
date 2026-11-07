@@ -77,20 +77,25 @@ export class AccessGuard implements CanActivate {
   }
 
   /**
-   * Refuse a change by the Platform operator under a read-only support grant, but for entering itself.
+   * Refuse the Platform operator under a support grant anything before entering, and any change under a
+   * read-only grant, but for entering itself.
    * @param context the route being called
    * @param request the request
    * @param member the membership the request acts through
-   * @throws {ForbiddenException} support_read_only
+   * @throws {ForbiddenException} support_entry_required, or support_read_only
    */
   private requireSupportWrites(context: ExecutionContext, request: Request, member: MemberAccess): void {
     const readOnly = member.support !== undefined && !member.support.allowWrites;
+    const entering = this.reflector.get(SupportEntry, context.getHandler()) === true;
 
-    if (
-      readOnly &&
-      !SAFE_METHODS.has(request.method) &&
-      this.reflector.get(SupportEntry, context.getHandler()) !== true
-    ) {
+    // Every stay under a grant starts with its entry, so the Organisation's log shows each one.
+    if (member.support !== undefined && !member.support.entered && !entering) {
+      const code: AccessErrorCode = 'support_entry_required';
+
+      throw new ForbiddenException({ code, message: 'Enter the Organisation from the console first' });
+    }
+
+    if (readOnly && !SAFE_METHODS.has(request.method) && !entering) {
       const code: AccessErrorCode = 'support_read_only';
 
       throw new ForbiddenException({ code, message: 'The support grant allows no changes' });

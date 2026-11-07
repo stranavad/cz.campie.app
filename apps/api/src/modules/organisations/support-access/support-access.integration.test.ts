@@ -21,6 +21,7 @@ describe('support access', () => {
   const grant = (body: object) => http().post('/api/support-access').set(owner).send(body);
   const asOperator = () => ({ ...operator, [ACCESS_HEADERS.organisation]: organisationId });
   const read = () => http().get(`/api/camps/${campId}`).set(asOperator());
+  const enter = () => http().post('/api/support-access/enter').set(asOperator());
   const write = () => http().patch(`/api/camps/${campId}`).set(asOperator()).send({ name: 'Upraveno podporou' });
 
   beforeEach(async () => {
@@ -36,8 +37,22 @@ describe('support access', () => {
     expect((await http().post('/api/support-access/enter').set(asOperator())).status).toBe(403);
   });
 
+  it('lets the operator in only after entering, recorded once per session and grant', async () => {
+    await grant({ hours: 2 });
+
+    const refused = await read();
+    expect(refused.status).toBe(403);
+    expect(refused.body.code).toBe('support_entry_required');
+
+    expect((await enter()).status).toBe(204);
+    expect((await enter()).status).toBe(204);
+    expect((await read()).status).toBe(200);
+    expect(await query(`SELECT action FROM audit_entries WHERE action = 'support_access.enter'`)).toHaveLength(1);
+  });
+
   it('lets the operator read but change nothing under a read-only grant', async () => {
     await grant({ hours: 2 });
+    await enter();
 
     expect((await read()).status).toBe(200);
     expect((await write()).status).toBe(403);
@@ -70,6 +85,7 @@ describe('support access', () => {
 
   it('ends access when the grant expires or is revoked, each audited', async () => {
     const granted = await grant({ hours: 1 });
+    await enter();
     expect((await read()).status).toBe(200);
 
     clock().set(new Date('2027-04-10T11:00:01Z'));
@@ -77,6 +93,8 @@ describe('support access', () => {
     expect((await read()).status).toBe(403);
 
     await grant({ hours: 3 });
+    expect((await read()).body.code).toBe('support_entry_required');
+    await enter();
     expect((await read()).status).toBe(200);
     const [active] = (await http().get('/api/support-access').set(owner)).body as { id: string }[];
     await http().delete(`/api/support-access/${active?.id}`).set(owner);
@@ -89,7 +107,13 @@ describe('support access', () => {
           `SELECT action FROM audit_entries WHERE action LIKE 'support_access.%' ORDER BY occurred_at, id`,
         )
       ).map(({ action }) => action),
-    ).toEqual(['support_access.grant', 'support_access.grant', 'support_access.revoke']);
+    ).toEqual([
+      'support_access.grant',
+      'support_access.enter',
+      'support_access.grant',
+      'support_access.enter',
+      'support_access.revoke',
+    ]);
   });
 
   it('lets only Owners grant', async () => {

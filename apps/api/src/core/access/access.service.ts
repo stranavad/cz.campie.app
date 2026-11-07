@@ -179,7 +179,7 @@ export class AccessService {
    */
   private async supportOf(
     organisationId: string,
-    session: { readonly adminId: string; readonly secondFactor: boolean },
+    session: { readonly id: string; readonly adminId: string; readonly secondFactor: boolean },
   ): Promise<RequestScope | null> {
     if (!session.secondFactor || !(await this.operators.isOperator(session.adminId))) {
       return null;
@@ -202,7 +202,12 @@ export class AccessService {
           membershipId: null,
           owner: false,
           permissions: Object.fromEntries(PERMISSION_AREAS.map((area) => [area, level])) as Permissions,
-          support: { allowWrites: grant.allowWrites },
+          support: {
+            allowWrites: grant.allowWrites,
+            grantId: grant.id,
+            sessionId: session.id,
+            entered: await this.supportGrants.hasEntered(grant.id, session.id),
+          },
         },
       },
     };

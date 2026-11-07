@@ -21,6 +21,8 @@ export const ACCESS_ERROR_CODES = [
   'support_read_only',
   // The Organisation requires two-step login and the admin has not set it up yet.
   'totp_setup_required',
+  // The Platform operator under a support grant has not entered the Organisation from the console yet.
+  'support_entry_required',
 ] as const;
 
 export type AccessErrorCode = (typeof ACCESS_ERROR_CODES)[number];

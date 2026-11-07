@@ -50,7 +50,9 @@ export function OrganisationShell() {
         <ProblemForm
           label={t('feedback.technicalLink')}
           askEmail
-          send={(text, email) => feedbackService.report({ text, email, pageUrl: window.location.href.slice(0, 500) })}
+          send={(text, email) =>
+            feedbackService.report({ text, email, pageUrl: `${window.location.origin}${window.location.pathname}` })
+          }
         />
         {t('organisationShell.poweredBy')}
       </footer>

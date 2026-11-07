@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 
 import type { GrantSupportAccessBody, SupportGrant } from '@repo/schema/organisations';
 
+import type { MemberAccess } from '../../../../core/access/permission.ts';
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
@@ -96,19 +97,23 @@ export class SupportAccessService {
   }
 
   /**
-   * Record that the Platform operator entered the Organisation under its grant.
+   * Record that the Platform operator's session entered the Organisation under its grant, in the
+   * Organisation's log once per session and grant; the access guard lets nothing else through before it.
    * @param actor the operator
+   * @param member their access under the grant
    * @throws {ForbiddenException} when a member, not the operator under a grant, calls it
    */
-  public async enter(actor: Actor): Promise<void> {
-    if (actor.kind !== 'operator') {
+  public async enter(actor: Actor, member: MemberAccess): Promise<void> {
+    if (actor.kind !== 'operator' || member.support === undefined) {
       throw new ForbiddenException();
     }
 
-    await this.audit.record(actor, {
-      action: 'support_access.enter',
-      target: { type: 'organisation', id: this.unitOfWork.organisationId },
-    });
+    if (await this.grants.recordEntry(member.support.grantId, member.support.sessionId, this.clock.now())) {
+      await this.audit.record(actor, {
+        action: 'support_access.enter',
+        target: { type: 'organisation', id: this.unitOfWork.organisationId },
+      });
+    }
   }
 
   /**
