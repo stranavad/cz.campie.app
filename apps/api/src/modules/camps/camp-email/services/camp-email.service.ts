@@ -191,6 +191,15 @@ export class CampEmailService {
   }
 
   /**
+   * Tell whether a Camp sends its email of a type, or switched it off.
+   * @param campId Camp id
+   * @param type the email type
+   */
+  public async isEnabled(campId: string, type: EmailType): Promise<boolean> {
+    return shown(type, await this.ownOf(campId, type)).enabled;
+  }
+
+  /**
    * Name whom a Camp's platform emails are from: the Camp, replying to its contact, else the Organisation's.
    * @param campId Camp id
    */

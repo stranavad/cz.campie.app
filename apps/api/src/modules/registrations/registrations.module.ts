@@ -21,6 +21,9 @@ import { ParticipantExportController } from './participant-export/participant-ex
 import { ParticipantExportService } from './participant-export/services/participant-export.service.ts';
 import { ParticipantListController } from './participant-list/participant-list.controller.ts';
 import { ParticipantListService } from './participant-list/services/participant-list.service.ts';
+import { PaymentReminderController } from './payment-reminder/payment-reminder.controller.ts';
+import { SendPaymentReminderHandler } from './payment-reminder/send-payment-reminder.handler.ts';
+import { PaymentReminderService } from './payment-reminder/services/payment-reminder.service.ts';
 import { GeneratePrihlaskyHandler } from './prihlaska/generate-prihlasky.handler.ts';
 import { RegeneratePrihlaskaHandler } from './prihlaska/regenerate-prihlaska.handler.ts';
 import { PrihlaskaService } from './prihlaska/services/prihlaska.service.ts';
@@ -42,6 +45,7 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     ParticipantExportController,
     ComgateNotificationController,
     PublicCardPaymentController,
+    PaymentReminderController,
   ],
   providers: [
     RegistrationService,
@@ -56,6 +60,8 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     CancellationService,
     ParticipantExportService,
     CardPaymentService,
+    PaymentReminderService,
+    SendPaymentReminderHandler,
     ExportParticipantsHandler,
     SendCancellationHandler,
     RegeneratePrihlaskaHandler,

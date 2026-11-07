@@ -15,6 +15,7 @@ export function useParticipantsPage() {
   const { membership, isLoading, isSignedOut, hasNoMembership } = useCurrentMembership();
   const organisationId = membership?.organisation.id ?? '';
   const canRead = membershipAllows(membership, 'registrations', 'read');
+  const canWrite = membershipAllows(membership, 'registrations', 'write');
   const selected = useSelectedTurnusQuery(organisationId, canRead);
   const select = useSelectTurnusMutation(organisationId);
   const [search, setSearch] = useState('');
@@ -34,6 +35,7 @@ export function useParticipantsPage() {
     isLoading: isLoading || (canRead && selected.isPending),
     hasNoAccess: hasNoMembership || !canRead,
     organisationId,
+    canWrite,
     turnusy: selected.data?.turnusy ?? [],
     turnusId,
     selectTurnus: (id: string) => select.mutate(id),

@@ -21,3 +21,7 @@ Consume bounce and complaint notifications from the mail provider (fake in tests
 ## Notes
 
 - Spec sections: Emails.
+
+## Comments
+
+2026-11-07 - **From issue 50.** Payment reminders are sent one job per guardian by `LedgerService.sendPaymentReminder` (`modules/registrations/ledger/services/ledger.service.ts`); skip undeliverable addresses there (or in `CampEmailService.send` for every guardian email).

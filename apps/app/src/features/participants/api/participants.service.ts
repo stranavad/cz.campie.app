@@ -16,10 +16,12 @@ import {
   moveRegistrationEndpoint,
   previewAddParticipantEndpoint,
   previewEditAnswersEndpoint,
+  previewPaymentRemindersEndpoint,
   recordPaymentEndpoint,
   regeneratePrihlaskaEndpoint,
   removeAccessEmailEndpoint,
   removeGuardianEndpoint,
+  sendPaymentRemindersEndpoint,
   setSelectedTurnusEndpoint,
   startParticipantExportEndpoint,
   verifyClaimedDiscountEndpoint,
@@ -102,4 +104,8 @@ export const participantsService = {
     apiClient.request(startParticipantExportEndpoint, { organisationId, params: { turnusId } }),
   export: (organisationId: string, exportId: string, signal?: AbortSignal) =>
     apiClient.request(getParticipantExportEndpoint, { organisationId, params: { exportId }, signal }),
+  reminderPreview: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
+    apiClient.request(previewPaymentRemindersEndpoint, { organisationId, params: { turnusId }, signal }),
+  sendReminders: (organisationId: string, turnusId: string, overdueOnly: boolean) =>
+    apiClient.request(sendPaymentRemindersEndpoint, { organisationId, params: { turnusId }, body: { overdueOnly } }),
 };

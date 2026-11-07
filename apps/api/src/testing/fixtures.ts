@@ -146,6 +146,8 @@ export async function submitRegistration(
     discountCode?: string;
     secondGuardian?: boolean;
     turnus?: Partial<TurnusBody>;
+    // An existing Turnus to register to instead of a new one.
+    turnusId?: string;
     paymentChoice?: PaymentChoice;
     // Each child's answers, the core ones included.
     children?: readonly Readonly<Record<string, string | boolean>>[];
@@ -162,7 +164,10 @@ export async function submitRegistration(
   return app.get(UnitOfWork).run(organisationId, async () => {
     const system = { kind: 'system' } as const;
     const camp = await app.get(CampRepository).getByIdOrThrow(campId);
-    const turnus = await app.get(TurnusService).create(system, campId, { ...OPEN_TURNUS, ...change });
+    const turnus =
+      options.turnusId === undefined
+        ? await app.get(TurnusService).create(system, campId, { ...OPEN_TURNUS, ...change })
+        : { id: options.turnusId };
     const forms = app.get(RegistrationFormRepository);
     const form =
       (await forms.getLatestVersion(campId)) ?? (await app.get(RegistrationFormService).publish(system, campId));

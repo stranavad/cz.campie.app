@@ -172,5 +172,20 @@
     "download": "Stáhnout export",
     "error": "Export se nepodařilo připravit. Zkuste to znovu.",
     "slow": "Export trvá déle než obvykle. Zkuste ho spustit znovu později."
+  },
+  "reminders": {
+    "open": "Připomenout platby",
+    "overdueOnly": "Jen po splatnosti",
+    "count_one": "Připomínka půjde k {{count}} přihlášce.",
+    "count_few": "Připomínka půjde ke {{count}} přihláškám.",
+    "count_other": "Připomínka půjde k {{count}} přihláškám.",
+    "send": "Odeslat připomínky",
+    "close": "Zavřít",
+    "sent_one": "Připomínky k {{count}} přihlášce se odesílají.",
+    "sent_few": "Připomínky ke {{count}} přihláškám se odesílají.",
+    "sent_other": "Připomínky k {{count}} přihláškám se odesílají.",
+    "switchedOff": "Tábor má připomínku platby vypnutou, nic se neodešle. Zapnout ji můžete v nastavení e-mailů tábora.",
+    "throttled": "Připomínek jste teď poslali hodně. Zkuste to prosím později.",
+    "failed": "Připomínky se nepodařilo odeslat. Zkuste to prosím znovu."
   }
 }

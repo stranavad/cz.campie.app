@@ -179,3 +179,16 @@ export const useParticipantExportQuery = (organisationId: string, exportId: stri
 
   return { ...query, gaveUp: query.data?.status === 'pending' && polls >= EXPORT_POLLS };
 };
+
+export const usePaymentReminderPreviewQuery = (organisationId: string, turnusId: string, enabled: boolean) =>
+  useQuery({
+    queryKey: [...participantsKeys.organisation(organisationId), 'reminders', turnusId],
+    queryFn: enabled
+      ? ({ signal }) => participantsService.reminderPreview(organisationId, turnusId, signal)
+      : skipToken,
+  });
+
+export const useSendRemindersMutation = (organisationId: string, turnusId: string) =>
+  useMutation({
+    mutationFn: (overdueOnly: boolean) => participantsService.sendReminders(organisationId, turnusId, overdueOnly),
+  });

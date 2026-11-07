@@ -1,19 +1,15 @@
 import { Injectable } from '@nestjs/common';
 
 import { ageOnStart } from '@repo/schema/camps';
-import { balanceOf } from '@repo/schema/pricing';
 import type { ParticipantListQuery, ParticipantRow, SelectedTurnus } from '@repo/schema/registrations';
-import { pragueDateOf } from '@repo/schema/shared';
 
-import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { MembershipRepository } from '../../../../repositories/admins/membership/membership.repository.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { ClaimedDiscountVerificationRepository } from '../../../../repositories/registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
-import { PaymentRepository } from '../../../../repositories/registrations/payment/payment.repository.ts';
-import { PriceAdjustmentRepository } from '../../../../repositories/registrations/price-adjustment/price-adjustment.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
+import { LedgerService } from '../../ledger/services/ledger.service.ts';
 import { answeredDefinition, claimedDiscountsOf } from '../../payment/claimed-discounts.helper.ts';
 
 /**
@@ -31,14 +27,12 @@ function searchable(text: string): string {
 export class ParticipantListService {
   constructor(
     private readonly registrations: RegistrationRepository,
-    private readonly payments: PaymentRepository,
-    private readonly adjustments: PriceAdjustmentRepository,
+    private readonly ledger: LedgerService,
     private readonly turnusy: TurnusRepository,
     private readonly camps: CampRepository,
     private readonly forms: RegistrationFormRepository,
     private readonly memberships: MembershipRepository,
     private readonly verifications: ClaimedDiscountVerificationRepository,
-    private readonly clock: Clock,
   ) {}
 
   /**
@@ -86,9 +80,7 @@ export class ParticipantListService {
     const ids = registrations.map(({ id }) => id);
     const participants = await this.registrations.listParticipantsOf(ids);
     const guardians = await this.registrations.listGuardiansOf(ids);
-    const lines = await this.registrations.sumPriceLinesOf(ids);
-    const paid = await this.payments.sumOf(ids);
-    const adjusted = await this.adjustments.sumOf(ids);
+    const balances = await this.ledger.balancesOf(turnus, registrations);
     const versions = new Map(
       (await this.forms.listVersionsByIds([...new Set(registrations.map((r) => r.formVersionId))])).map((version) => [
         version.id,
@@ -98,7 +90,6 @@ export class ParticipantListService {
     const byId = new Map(registrations.map((registration) => [registration.id, registration]));
     const verifications = await this.verifications.listOf(participants.map(({ id }) => id));
     const latestDefinition = (await this.forms.getLatestVersion(turnus.campId))?.definition;
-    const today = pragueDateOf(this.clock.now());
     const words = searchable(query.search ?? '')
       .split(/\s+/)
       .filter((word) => word !== '');
@@ -127,18 +118,12 @@ export class ParticipantListService {
         return [];
       }
 
-      const balance = balanceOf(
-        {
-          lines: [{ amount: lines.get(registration.id) ?? 0 }],
-          adjustments: [{ amount: adjusted.get(registration.id) ?? 0 }],
-          payments: [{ amount: paid.get(registration.id) ?? 0 }],
-          depositTotal: registration.depositTotal,
-          submittedAt: registration.submittedAt,
-          depositDueDays: turnus.depositDueDays,
-          balanceDueDate: turnus.balanceDueDate,
-        },
-        today,
-      );
+      const balance = balances.get(registration.id);
+
+      if (balance === undefined) {
+        return [];
+      }
+
       const claimed =
         version === undefined
           ? []

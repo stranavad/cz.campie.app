@@ -205,15 +205,81 @@ export class LedgerService {
    */
   public async sendPaymentReceived(paymentId: string, guardian: number): Promise<void> {
     const payment = await this.payments.getById(paymentId);
-    const recipient =
-      payment === null ? undefined : (await this.registrations.listGuardians(payment.registrationId))[guardian - 1];
 
-    if (payment === null || recipient === undefined) {
+    if (payment !== null) {
+      await this.sendPaymentEmail('payment_received', payment.registrationId, guardian, payment.amount);
+    }
+  }
+
+  /**
+   * Remind one guardian of what is due now, unless it was paid meanwhile or the Camp switched it off.
+   * @param registrationId Registration id
+   * @param guardian the guardian's position, 1 or 2
+   */
+  public async sendPaymentReminder(registrationId: string, guardian: number): Promise<void> {
+    await this.sendPaymentEmail('payment_reminder', registrationId, guardian, null);
+  }
+
+  /**
+   * Derive the balance now of each of a Turnus's Registrations, in a few queries.
+   * @param turnus the Turnus
+   * @param registrations its Registrations
+   * @returns the balance by Registration id
+   */
+  public async balancesOf(
+    turnus: TurnusEntity,
+    registrations: readonly RegistrationEntity[],
+  ): Promise<Map<string, Balance>> {
+    const ids = registrations.map(({ id }) => id);
+    const lines = await this.registrations.sumPriceLinesOf(ids);
+    const paid = await this.payments.sumOf(ids);
+    const adjusted = await this.adjustments.sumOf(ids);
+    const today = pragueDateOf(this.clock.now());
+
+    return new Map(
+      registrations.map((registration) => [
+        registration.id,
+        balanceOf(
+          {
+            lines: [{ amount: lines.get(registration.id) ?? 0 }],
+            adjustments: [{ amount: adjusted.get(registration.id) ?? 0 }],
+            payments: [{ amount: paid.get(registration.id) ?? 0 }],
+            depositTotal: registration.depositTotal,
+            submittedAt: registration.submittedAt,
+            depositDueDays: turnus.depositDueDays,
+            balanceDueDate: turnus.balanceDueDate,
+          },
+          today,
+        ),
+      ]),
+    );
+  }
+
+  /**
+   * Email one guardian of a Registration about its money, with the payment block of what is left to pay.
+   * @param type payment received or the reminder
+   * @param registrationId Registration id
+   * @param guardian the guardian's position, 1 or 2
+   * @param amount the amount the email names; null for what is due now, and then nothing is sent once
+   * nothing is
+   */
+  private async sendPaymentEmail(
+    type: 'payment_received' | 'payment_reminder',
+    registrationId: string,
+    guardian: number,
+    amount: number | null,
+  ): Promise<void> {
+    const recipient = (await this.registrations.listGuardians(registrationId))[guardian - 1];
+
+    if (recipient === undefined) {
       return;
     }
 
-    const books = await this.booksOf(payment.registrationId);
-    const participants = await this.registrations.listParticipants(payment.registrationId);
+    const books = await this.booksOf(registrationId);
+    // A reminder names only the children still going, and none goes once all are cancelled.
+    const participants = (await this.registrations.listParticipants(registrationId)).filter(
+      ({ status }) => type === 'payment_received' || status === 'registered',
+    );
     const camp = await this.camps.getByIdOrThrow(books.turnus.campId);
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
     const instructions = registrationPaymentOf({
@@ -224,6 +290,11 @@ export class LedgerService {
       total: books.balance.total,
       paid: books.balance.paid,
     });
+
+    if (amount === null && (instructions.amount === 0 || participants.length === 0)) {
+      return;
+    }
+
     const inlineImages: InlineImage[] =
       instructions.qrPlatba === null
         ? []
@@ -236,11 +307,11 @@ export class LedgerService {
             },
           ];
 
-    await this.campEmails.send(camp.id, 'payment_received', {
+    await this.campEmails.send(camp.id, type, {
       values: {
         deti: participants.map(({ firstName, lastName }) => `${firstName} ${lastName}`).join(', '),
         turnus: books.turnus.name,
-        castka: czk(payment.amount),
+        castka: czk(amount ?? instructions.amount),
         splatnost: instructions.dueDate === null || instructions.amount === 0 ? '' : czechDate(instructions.dueDate),
         variabilni_symbol: books.registration.variableSymbol,
       },

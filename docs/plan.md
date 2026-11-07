@@ -94,7 +94,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | --- | ---------------------------------------------- | ------------ | --------------- | ---------- |
 | 48  | Comgate adapter with per-Organisation keys     | E4           | done            | 23, 38     |
 | 49  | Card payment on submission and from the portal | E4           | done            | 40, 48     |
-| 50  | Payment reminders                              | E4           | ready-for-agent | 38, 42     |
+| 50  | Payment reminders                              | E4           | done            | 38, 42     |
 | 51  | Consents: model, versions, editor              | E7 Consents  | ready-for-agent | 12, 24     |
 | 52  | Starter Consents                               | E7           | ready-for-human | 51         |
 | 53  | Consent signing and signed PDF                 | E7           | ready-for-agent | 15, 39, 51 |

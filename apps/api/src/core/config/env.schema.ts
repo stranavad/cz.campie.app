@@ -175,6 +175,7 @@ const requestLimits = z
     GATEWAY_NOTIFICATION_LIMIT_PER_ORGANISATION: positiveInteger,
     CARD_PAYMENT_LIMIT_PER_IP: positiveInteger,
     CARD_PAYMENT_LIMIT_PER_ORGANISATION: positiveInteger,
+    PAYMENT_REMINDER_LIMIT_PER_ORGANISATION: positiveInteger,
   })
   .transform((env) => {
     const windowMs = env.REQUEST_LIMIT_WINDOW_MINUTES * 60 * 1000;
@@ -211,6 +212,12 @@ const requestLimits = z
           'card-payment-result',
           env.CARD_PAYMENT_LIMIT_PER_IP,
           env.CARD_PAYMENT_LIMIT_PER_ORGANISATION,
+        ),
+        // An admin's bulk reminder, counted per Organisation only: each may email hundreds of guardians.
+        paymentReminder: limitOf(
+          'payment-reminder',
+          env.PAYMENT_REMINDER_LIMIT_PER_ORGANISATION,
+          env.PAYMENT_REMINDER_LIMIT_PER_ORGANISATION,
         ),
       },
     };

@@ -10,9 +10,8 @@ import {
   type AnswerValue,
   type FormDefinition,
 } from '@repo/schema/form-engine';
-import { balanceOf } from '@repo/schema/pricing';
 import type { ParticipantExport } from '@repo/schema/registrations';
-import { czechDate, czechDateTime, pragueDateOf } from '@repo/schema/shared';
+import { czechDate, czechDateTime } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
@@ -22,9 +21,8 @@ import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { ParticipantExportRepository } from '../../../../repositories/registrations/participant-export/participant-export.repository.ts';
-import { PaymentRepository } from '../../../../repositories/registrations/payment/payment.repository.ts';
-import { PriceAdjustmentRepository } from '../../../../repositories/registrations/price-adjustment/price-adjustment.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
+import { LedgerService } from '../../ledger/services/ledger.service.ts';
 import { exportParticipantsJob } from '../export-participants.job.ts';
 
 type Cell = string | number | null;
@@ -65,8 +63,7 @@ export class ParticipantExportService {
   constructor(
     private readonly exports: ParticipantExportRepository,
     private readonly registrations: RegistrationRepository,
-    private readonly payments: PaymentRepository,
-    private readonly adjustments: PriceAdjustmentRepository,
+    private readonly ledger: LedgerService,
     private readonly turnusy: TurnusRepository,
     private readonly forms: RegistrationFormRepository,
     private readonly files: FileService,
@@ -143,10 +140,7 @@ export class ParticipantExportService {
     const ids = registrations.map(({ id }) => id);
     const participants = await this.registrations.listParticipantsOf(ids);
     const guardians = await this.registrations.listGuardiansOf(ids);
-    const lines = await this.registrations.sumPriceLinesOf(ids);
-    const paid = await this.payments.sumOf(ids);
-    const adjusted = await this.adjustments.sumOf(ids);
-    const today = pragueDateOf(this.clock.now());
+    const balances = await this.ledger.balancesOf(turnus, registrations);
     const answerCell = (key: string, answers: Answers) => {
       const value = answers[key];
       const field = fields.get(key);
@@ -188,18 +182,11 @@ export class ParticipantExportService {
         }
 
         const [first, second] = guardians.get(registration.id) ?? [];
-        const balance = balanceOf(
-          {
-            lines: [{ amount: lines.get(registration.id) ?? 0 }],
-            adjustments: [{ amount: adjusted.get(registration.id) ?? 0 }],
-            payments: [{ amount: paid.get(registration.id) ?? 0 }],
-            depositTotal: registration.depositTotal,
-            submittedAt: registration.submittedAt,
-            depositDueDays: turnus.depositDueDays,
-            balanceDueDate: turnus.balanceDueDate,
-          },
-          today,
-        );
+        const balance = balances.get(registration.id);
+
+        if (balance === undefined) {
+          return [];
+        }
 
         return [
           [
