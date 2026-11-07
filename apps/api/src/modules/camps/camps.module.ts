@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { MailNotificationsModule } from '../emails/emails.module.ts';
 import { CampBrandingController } from './camp-branding/camp-branding.controller.ts';
 import { CampBrandingService } from './camp-branding/services/camp-branding.service.ts';
 import { CampEmailController } from './camp-email/camp-email.controller.ts';
@@ -17,6 +18,7 @@ import { TurnusService } from './turnus/services/turnus.service.ts';
 import { TurnusController } from './turnus/turnus.controller.ts';
 
 @Module({
+  imports: [MailNotificationsModule],
   controllers: [
     CampController,
     PublicCampController,

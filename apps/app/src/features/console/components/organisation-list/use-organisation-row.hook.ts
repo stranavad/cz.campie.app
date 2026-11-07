@@ -43,7 +43,14 @@ export function useOrganisationRow(organisation: ConsoleOrganisation) {
     }
   };
 
+  const { sent, bounced, complained } = organisation.mail;
+  // Bounces and complaints per message sent; mail providers act at a few percent of bounces and a tenth of a
+  // percent of complaints.
+  const bounceRate = sent === 0 ? 0 : (bounced + complained) / sent;
+
   return {
+    bounceRate: new Intl.NumberFormat('cs-CZ', { style: 'percent', maximumFractionDigits: 1 }).format(bounceRate),
+    mailWarning: sent >= 50 && (bounced / sent > 0.02 || complained / sent > 0.001),
     failure: failureOf(mutations.find((mutation) => mutation.error !== null)?.error ?? null),
     isBusy: mutations.some((mutation) => mutation.isPending),
     confirming,

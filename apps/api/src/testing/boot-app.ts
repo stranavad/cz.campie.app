@@ -24,6 +24,7 @@ export const PRODUCTION_ENV = {
   CLOCK_ADAPTER: 'system',
   MAIL_ADAPTER: 'resend',
   RESEND_API_KEY: 're_dummy',
+  RESEND_WEBHOOK_SECRET: 'whsec_dGVzdC1vbmx5LXdlYmhvb2stc2lnbmluZy1zZWNyZXQ=',
   MAIL_AUTH_FROM: 'prihlaseni@auth.campie.cz',
   MAIL_NOTIFICATION_FROM: 'info@posta.campie.cz',
   FILE_STORAGE_ADAPTER: 'tigris',
@@ -90,7 +91,7 @@ export async function bootApp({
     controllers,
     providers,
   }).compile();
-  const app = setupApp(moduleRef.createNestApplication<NestExpressApplication<Server>>({ logger }));
+  const app = setupApp(moduleRef.createNestApplication<NestExpressApplication<Server>>({ logger, rawBody: true }));
   await app.init();
 
   return app;

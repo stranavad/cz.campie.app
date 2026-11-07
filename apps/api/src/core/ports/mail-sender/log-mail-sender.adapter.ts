@@ -1,6 +1,12 @@
 import { Logger } from '@nestjs/common';
 
-import { MailSender, type MailMessage } from './mail-sender.port.ts';
+import { readFakeMailNotification } from './fake-mail-notification.ts';
+import {
+  MailSender,
+  type MailMessage,
+  type MailNotification,
+  type MailNotificationRequest,
+} from './mail-sender.port.ts';
 
 // Local only: production requires Resend. The whole message is logged so it can be read during
 // local testing, which is why this adapter, unlike the rest of the app, logs addresses and content.
@@ -19,5 +25,9 @@ export class LogMailSender extends MailSender {
     ];
 
     this.logger.log([...headers, '', message.text, '', message.html].join('\n'));
+  }
+
+  public readNotification(request: MailNotificationRequest): MailNotification {
+    return readFakeMailNotification(request);
   }
 }

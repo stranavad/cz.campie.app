@@ -18,7 +18,7 @@ import { ResendMailSender } from './resend-mail-sender.adapter.ts';
 
         switch (mail.adapter) {
           case 'resend':
-            return new ResendMailSender(mail.apiKey);
+            return new ResendMailSender(mail.apiKey, mail.webhookSecret);
           case 'log':
             return new LogMailSender();
           case 'fake':

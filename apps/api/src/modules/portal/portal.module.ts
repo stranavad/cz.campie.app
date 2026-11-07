@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { CampsModule } from '../camps/camps.module.ts';
+import { MailNotificationsModule } from '../emails/emails.module.ts';
 import { RegistrationsModule } from '../registrations/registrations.module.ts';
 import { PortalCardPaymentController } from './card-payment/portal-card-payment.controller.ts';
 import { GuardianEditController } from './guardian-edit/guardian-edit.controller.ts';
@@ -15,7 +16,7 @@ import { LoginLinkRequestedHandler } from './guardian-session/login-link-request
 import { GuardianLoginService } from './guardian-session/services/guardian-login.service.ts';
 
 @Module({
-  imports: [CampsModule, RegistrationsModule],
+  imports: [CampsModule, RegistrationsModule, MailNotificationsModule],
   controllers: [
     GuardianSessionController,
     GuardianRegistrationController,

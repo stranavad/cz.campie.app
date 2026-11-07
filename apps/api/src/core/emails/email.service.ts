@@ -5,6 +5,8 @@ import { createElement, type ReactElement } from 'react';
 
 import { DEFAULT_ACCENT_COLOUR } from '@repo/schema/organisations';
 
+import { MailStatisticsRepository } from '../../repositories/emails/mail-statistics/mail-statistics.repository.ts';
+import { UndeliverableEmailRepository } from '../../repositories/emails/undeliverable-email/undeliverable-email.repository.ts';
 import type { OrganisationEntity } from '../../repositories/organisations/organisation/organisation.entity.ts';
 import { OrganisationRepository } from '../../repositories/organisations/organisation/organisation.repository.ts';
 import type { Env } from '../config/env.schema.ts';
@@ -63,6 +65,8 @@ export class EmailService {
 
   constructor(
     private readonly organisations: OrganisationRepository,
+    private readonly undeliverable: UndeliverableEmailRepository,
+    private readonly statistics: MailStatisticsRepository,
     private readonly unitOfWork: UnitOfWork,
     private readonly files: FileService,
     private readonly mailSender: MailSender,
@@ -70,7 +74,9 @@ export class EmailService {
   ) {}
 
   /**
-   * Render an email of the current Organisation and send it, unless the Organisation is suspended.
+   * Render an email of the current Organisation and send it, unless the Organisation is suspended. A
+   * notification skips the addresses the provider reported undeliverable, counted as skipped; a login link
+   * or an invitation is always attempted.
    * @param template the email's template
    * @param props what the template shows besides the brand
    * @param options recipients, sender and attachments
@@ -86,13 +92,43 @@ export class EmailService {
       return;
     }
 
+    const recipients = await this.deliverable(template.stream, to);
+    const skipped = to.length - recipients.length;
+
+    if (skipped > 0) {
+      this.logger.warn(`Email skipped for ${skipped} undeliverable address(es) of Organisation ${organisation.id}`);
+      await this.statistics.add(organisation.id, 'skipped', skipped);
+    }
+
+    if (recipients.length === 0) {
+      return;
+    }
+
     const brand: EmailBrand = { name: sender.name, contact: sender.replyTo, accentColour: organisation.accentColour };
 
     await this.deliver(template, props, brand, {
-      to,
+      to: recipients,
       replyTo: sender.replyTo,
       attachments: [...(await Promise.all(attachments.map((fileId) => this.attachment(fileId)))), ...inlineImages],
+      organisationId: organisation.id,
     });
+    // Counted after the send, so the Organisation's row of counts stays locked only until the job commits.
+    await this.statistics.add(organisation.id, 'sent', 1);
+  }
+
+  /**
+   * Leave out of a notification's recipients the current Organisation's undeliverable addresses.
+   * @param stream the email's stream: auth mail is always attempted
+   * @param to the recipients
+   */
+  private async deliverable(stream: EmailStream, to: readonly string[]): Promise<readonly string[]> {
+    if (stream === 'auth') {
+      return to;
+    }
+
+    const marked = await this.undeliverable.listMarked(to.map((email) => email.toLowerCase()));
+
+    return to.filter((email) => !marked.has(email.toLowerCase()));
   }
 
   /**
@@ -171,7 +207,12 @@ export class EmailService {
     template: EmailTemplate<Props>,
     props: Props,
     brand: EmailBrand,
-    { to, replyTo, attachments }: { to: readonly string[]; replyTo?: string; attachments: MailAttachment[] },
+    {
+      to,
+      replyTo,
+      attachments,
+      organisationId,
+    }: { to: readonly string[]; replyTo?: string; attachments: MailAttachment[]; organisationId?: string },
   ): Promise<void> {
     const html = await render(createElement(template.render, { ...props, brand }));
 
@@ -183,6 +224,7 @@ export class EmailService {
       html,
       text: toPlainText(html),
       attachments,
+      ...(organisationId === undefined ? {} : { organisationId }),
     });
   }
 

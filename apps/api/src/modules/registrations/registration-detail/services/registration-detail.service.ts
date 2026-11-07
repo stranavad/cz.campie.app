@@ -25,6 +25,7 @@ import { AuditEntryRepository } from '../../../../repositories/audit/audit-entry
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
+import { UndeliverableEmailRepository } from '../../../../repositories/emails/undeliverable-email/undeliverable-email.repository.ts';
 import { ClaimedDiscountVerificationRepository } from '../../../../repositories/registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
@@ -40,6 +41,7 @@ export class RegistrationDetailService {
     private readonly camps: CampRepository,
     private readonly forms: RegistrationFormRepository,
     private readonly verifications: ClaimedDiscountVerificationRepository,
+    private readonly undeliverable: UndeliverableEmailRepository,
     private readonly ledgers: LedgerService,
     private readonly files: FileService,
     private readonly auditEntries: AuditEntryRepository,
@@ -64,6 +66,12 @@ export class RegistrationDetailService {
     const verifications = await this.verifications.listOf(participants.map(({ id }) => id));
     const answered = await this.registrations.listDeclarationAnswers(registrationId);
     const merged = answeredDefinition(version.definition, latest.definition);
+    const guardians = await this.registrations.listGuardians(registrationId);
+    const accessEmails = await this.registrations.listAccessEmails(registrationId);
+    const undeliverable = await this.undeliverable.listMarked([
+      ...guardians.map(({ email }) => email),
+      ...accessEmails.map(({ email }) => email),
+    ]);
     const rowsOf = (scope: FieldScope, answers: Answers) =>
       answerRows(scope, version.definition, latest.definition, published, answers);
 
@@ -76,11 +84,12 @@ export class RegistrationDetailService {
       latestDefinition: latest.definition,
       camp: { id: camp.id, name: camp.name },
       turnus: { id: turnus.id, name: turnus.name, startDate: turnus.startDate, endDate: turnus.endDate },
-      guardians: (await this.registrations.listGuardians(registrationId)).map((guardian, index) => ({
+      guardians: guardians.map((guardian, index) => ({
         position: index + 1,
         ...guardian,
+        undeliverable: undeliverable.has(guardian.email),
       })),
-      accessEmails: await this.registrations.listAccessEmails(registrationId),
+      accessEmails: accessEmails.map((access) => ({ ...access, undeliverable: undeliverable.has(access.email) })),
       participants: await Promise.all(
         participants.map(async (participant) => ({
           id: participant.id,

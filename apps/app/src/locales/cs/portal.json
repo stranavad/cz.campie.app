@@ -191,5 +191,6 @@
       "cleared": "vymazáno po táboře"
     },
     "dueBy": "do {{date}}"
-  }
+  },
+  "undeliverable": "Na adresu {{emails}} se nám nedaří doručit e-maily, takže vám neposíláme oznámení ani připomínky. Opravte ji prosím v úpravách přihlášky."
 }

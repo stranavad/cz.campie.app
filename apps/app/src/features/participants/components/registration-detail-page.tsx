@@ -100,6 +100,11 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
               email: guardian.email,
               phone: guardian.phone ?? '',
             })}
+            {guardian.undeliverable ? (
+              <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-950">
+                {t('detail.emailUndeliverable')}
+              </span>
+            ) : null}
           </p>
         ))}
         {detail.registrationAnswers.map((row) => (

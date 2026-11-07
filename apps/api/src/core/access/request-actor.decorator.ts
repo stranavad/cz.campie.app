@@ -35,6 +35,7 @@ function actorOf(request: Request): Actor {
     case 'public':
     case 'gateway':
     case 'platform':
+    case 'webhook':
     case 'unscoped':
       throw new Error(`A ${scope.access} request has no actor`);
   }

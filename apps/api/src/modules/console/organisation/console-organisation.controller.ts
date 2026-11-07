@@ -18,7 +18,9 @@ import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { TotpService } from '../../admins/totp/services/totp.service.ts';
-import { ConsoleOrganisationService } from './services/console-organisation.service.ts';
+import { ConsoleOrganisationService, type ConsoleOrganisationView } from './services/console-organisation.service.ts';
+
+const toDto = ({ organisation, mail }: ConsoleOrganisationView): ConsoleOrganisation => organisation.toConsoleDto(mail);
 
 @Access('operator')
 @Controller()
@@ -30,7 +32,7 @@ export class ConsoleOrganisationController {
 
   @Endpoint(listConsoleOrganisationsEndpoint)
   public async list(): Promise<ConsoleOrganisation[]> {
-    return (await this.organisations.list()).map((organisation) => organisation.toConsoleDto());
+    return (await this.organisations.list()).map(toDto);
   }
 
   @Endpoint(approveOrganisationEndpoint)
@@ -38,7 +40,7 @@ export class ConsoleOrganisationController {
     @RequestActor() actor: Actor,
     @EndpointParams(approveOrganisationEndpoint) { organisationId }: ConsoleOrganisationParams,
   ): Promise<ConsoleOrganisation> {
-    return (await this.organisations.approve(actor, organisationId)).toConsoleDto();
+    return toDto(await this.organisations.approve(actor, organisationId));
   }
 
   @Endpoint(renameOrganisationSubdomainEndpoint)
@@ -47,7 +49,7 @@ export class ConsoleOrganisationController {
     @EndpointParams(renameOrganisationSubdomainEndpoint) { organisationId }: ConsoleOrganisationParams,
     @EndpointBody(renameOrganisationSubdomainEndpoint) { subdomain }: RenameOrganisationSubdomainBody,
   ): Promise<ConsoleOrganisation> {
-    return (await this.organisations.rename(actor, organisationId, subdomain)).toConsoleDto();
+    return toDto(await this.organisations.rename(actor, organisationId, subdomain));
   }
 
   @Endpoint(rejectOrganisationEndpoint)
@@ -63,7 +65,7 @@ export class ConsoleOrganisationController {
     @RequestActor() actor: Actor,
     @EndpointParams(suspendOrganisationEndpoint) { organisationId }: ConsoleOrganisationParams,
   ): Promise<ConsoleOrganisation> {
-    return (await this.organisations.suspend(actor, organisationId)).toConsoleDto();
+    return toDto(await this.organisations.suspend(actor, organisationId));
   }
 
   @Endpoint(resetOwnerTotpEndpoint)

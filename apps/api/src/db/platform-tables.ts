@@ -8,6 +8,7 @@ import { totpCredentials } from './admins/totp-credentials.ts';
 import { totpRecoveryCodes } from './admins/totp-recovery-codes.ts';
 import { platformAuditEntries } from './audit/platform-audit-entries.ts';
 import { problemReports } from './console/problem-reports.ts';
+import { mailStatistics } from './emails/mail-statistics.ts';
 import { operators } from './operators/operators.ts';
 import { legalAcceptances } from './organisations/legal-acceptances.ts';
 import { organisationKeys } from './organisations/organisation-keys.ts';
@@ -28,6 +29,7 @@ export const PLATFORM_TABLES: readonly string[] = [
   totpCredentials,
   totpRecoveryCodes,
   operators,
+  mailStatistics,
   adminSessions,
   platformAuditEntries,
   supportGrants,

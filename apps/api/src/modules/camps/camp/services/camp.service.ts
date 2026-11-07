@@ -25,6 +25,7 @@ import {
 } from '../../../../repositories/organisations/organisation/organisation.entity.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 import { PaymentGatewayAccountRepository } from '../../../../repositories/organisations/payment-gateway-account/payment-gateway-account.repository.ts';
+import { UndeliverableEmailService } from '../../../emails/undeliverable-email/services/undeliverable-email.service.ts';
 import { effectiveBranding } from '../../camp-branding/services/camp-branding.service.ts';
 import { TurnusService } from '../../turnus/services/turnus.service.ts';
 import { campContactOf } from '../camp-contact.ts';
@@ -35,6 +36,7 @@ const FALLBACK_SLUG = 'tabor';
 @Injectable()
 export class CampService {
   constructor(
+    private readonly undeliverable: UndeliverableEmailService,
     private readonly camps: CampRepository,
     private readonly organisations: OrganisationRepository,
     private readonly gatewayAccounts: PaymentGatewayAccountRepository,
@@ -193,6 +195,11 @@ export class CampService {
       target: { type: 'camp', id },
       change: { before, after },
     });
+
+    // A team address just given, such as one corrected after a bounce, starts without a mark.
+    for (const email of after.notificationEmails.filter((email) => !before.notificationEmails.includes(email))) {
+      await this.undeliverable.clear(actor, email.toLowerCase());
+    }
 
     return after;
   }

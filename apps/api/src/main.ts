@@ -8,5 +8,5 @@ import { setupApp } from './app.setup.ts';
 
 const PORT = 3000;
 
-const app = setupApp(await NestFactory.create<NestExpressApplication>(AppModule.forRoot()));
+const app = setupApp(await NestFactory.create<NestExpressApplication>(AppModule.forRoot(), { rawBody: true }));
 await app.listen(PORT);

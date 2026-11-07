@@ -32,8 +32,13 @@ export class AccessGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<Request>();
 
-    // A gateway calls server to server, without cookies, so there is nothing to forge.
-    if (kind !== 'gateway' && !SAFE_METHODS.has(request.method) && request.get(ACCESS_HEADERS.csrf) === undefined) {
+    // A gateway or a webhook calls server to server, without cookies, so there is nothing to forge.
+    if (
+      kind !== 'gateway' &&
+      kind !== 'webhook' &&
+      !SAFE_METHODS.has(request.method) &&
+      request.get(ACCESS_HEADERS.csrf) === undefined
+    ) {
       const code: AccessErrorCode = 'csrf_header_missing';
 
       throw new ForbiddenException({ code, message: 'A mutating request must carry the CSRF header' });
@@ -114,6 +119,8 @@ export class AccessGuard implements CanActivate {
         const organisationId = request.params[GATEWAY_ORGANISATION_PARAM];
 
         return this.access.resolveGateway(typeof organisationId === 'string' ? organisationId : undefined);
+      case 'webhook':
+        return { access: 'webhook' };
       case 'unscoped':
         return { access: 'unscoped' };
     }

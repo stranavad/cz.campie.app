@@ -108,7 +108,8 @@
       "unexpected": "Zápis se nepodařil. Zkontrolujte údaje.",
       "invalid_amount": "Zadejte celou částku v Kč."
     },
-    "encryptedChanged": "Změněná chráněná pole: {{fields}}"
+    "encryptedChanged": "Změněná chráněná pole: {{fields}}",
+    "emailUndeliverable": "E-mail nedoručitelný - posíláme sem jen odkazy pro přihlášení. Po opravě adresy se značka zruší."
   },
   "edit": {
     "title": "Úpravy přihlášky",
@@ -293,5 +294,6 @@
     "cancel": "Zrušit",
     "done": "Osobní údaje přihlášky jsou smazané.",
     "failed": "Smazání se nepodařilo."
-  }
+  },
+  "emailUndeliverable": "E-mail nedoručitelný"
 }

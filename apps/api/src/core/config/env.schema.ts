@@ -19,13 +19,18 @@ const clock = z
 
 const mail = z
   .discriminatedUnion('MAIL_ADAPTER', [
-    z.object({ MAIL_ADAPTER: z.literal('resend'), RESEND_API_KEY: nonEmpty }),
+    z.object({
+      MAIL_ADAPTER: z.literal('resend'),
+      RESEND_API_KEY: nonEmpty,
+      // The webhook's signing secret as Resend shows it: whsec_ and at least 24 bytes in base64.
+      RESEND_WEBHOOK_SECRET: z.string().regex(/^whsec_[A-Za-z0-9+/]{32,}={0,2}$/),
+    }),
     z.object({ MAIL_ADAPTER: z.enum(['log', 'fake']) }),
   ])
   .transform((env) => ({
     mail:
       env.MAIL_ADAPTER === 'resend'
-        ? { adapter: env.MAIL_ADAPTER, apiKey: env.RESEND_API_KEY }
+        ? { adapter: env.MAIL_ADAPTER, apiKey: env.RESEND_API_KEY, webhookSecret: env.RESEND_WEBHOOK_SECRET }
         : { adapter: env.MAIL_ADAPTER },
   }));
 

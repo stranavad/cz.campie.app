@@ -46,7 +46,7 @@ export class OrganisationEntity {
     this.totpRequired = row.totpRequired;
   }
 
-  toConsoleDto(): ConsoleOrganisation {
+  toConsoleDto(mail: ConsoleOrganisation['mail']): ConsoleOrganisation {
     return {
       id: this.id,
       subdomain: this.subdomain,
@@ -59,6 +59,7 @@ export class OrganisationEntity {
       statutoryRepresentative: this.statutoryRepresentative,
       contactEmail: this.contactEmail,
       contactPhone: this.contactPhone,
+      mail: { sent: mail.sent, bounced: mail.bounced, complained: mail.complained },
     };
   }
 

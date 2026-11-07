@@ -43,6 +43,8 @@ export const guardianRegistrationSchema = z.object({
       prihlaska: fileLinkSchema.nullable(),
     }),
   ),
+  // Guardians' addresses the mail provider reported undeliverable, for the guardian to correct.
+  undeliverableEmails: z.array(z.string()),
   // A Participant's line names its position among the Participants.
   priceLines: z.array(priceLineSchema),
   // Amounts only: an admin's note is the camp's own record and may name private reasons.

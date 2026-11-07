@@ -44,6 +44,11 @@ export function RegistrationCard({ registration }: { registration: GuardianRegis
         >
           {t('edit.open')}
         </Link>
+        {registration.undeliverableEmails.length === 0 ? null : (
+          <p role="alert" className="rounded bg-amber-100 px-3 py-2 text-sm text-amber-950">
+            {t('undeliverable', { emails: registration.undeliverableEmails.join(', ') })}
+          </p>
+        )}
         {registration.camp.consents ? (
           <Link
             to="/organisation/portal/$registrationId/souhlasy"

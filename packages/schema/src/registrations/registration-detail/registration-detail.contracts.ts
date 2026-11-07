@@ -44,10 +44,12 @@ export const registrationDetailSchema = z.object({
       lastName: z.string(),
       email: z.string(),
       phone: z.string().nullable(),
+      // The mail provider reported the address undeliverable, so only login links still go there.
+      undeliverable: z.boolean(),
     }),
   ),
   // Addresses an admin gave portal access, beyond the guardians.
-  accessEmails: z.array(z.object({ id: z.uuid(), email: z.string() })),
+  accessEmails: z.array(z.object({ id: z.uuid(), email: z.string(), undeliverable: z.boolean() })),
   participants: z.array(
     z.object({
       id: z.uuid(),

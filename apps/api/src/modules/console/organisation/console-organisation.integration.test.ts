@@ -143,6 +143,7 @@ describe('operator console', () => {
         statutoryRepresentative: 'Jana Testovací',
         contactEmail: expect.stringMatching(/^kontakt-.*@example\.com$/),
         contactPhone: '+420 123 456 789',
+        mail: { sent: 0, bounced: 0, complained: 0 },
       })),
     );
   });

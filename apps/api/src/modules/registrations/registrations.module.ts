@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { CampsModule } from '../camps/camps.module.ts';
+import { MailNotificationsModule } from '../emails/emails.module.ts';
 import { OrganisationsModule } from '../organisations/organisations.module.ts';
 import { AdminRegistrationController } from './admin-registration/admin-registration.controller.ts';
 import { AdminRegistrationService } from './admin-registration/services/admin-registration.service.ts';
@@ -42,7 +43,7 @@ import { RegistrationService } from './registration/services/registration.servic
 import { VariableSymbols } from './registration/services/variable-symbols.ts';
 
 @Module({
-  imports: [CampsModule, OrganisationsModule],
+  imports: [CampsModule, OrganisationsModule, MailNotificationsModule],
   controllers: [
     PublicRegistrationController,
     LedgerController,

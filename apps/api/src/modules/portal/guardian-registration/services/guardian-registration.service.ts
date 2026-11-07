@@ -8,6 +8,7 @@ import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
 import { FileService } from '../../../../core/files/file.service.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
+import { UndeliverableEmailRepository } from '../../../../repositories/emails/undeliverable-email/undeliverable-email.repository.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 import { PaymentGatewayAccountRepository } from '../../../../repositories/organisations/payment-gateway-account/payment-gateway-account.repository.ts';
 import type { RegistrationEntity } from '../../../../repositories/registrations/registration/registration.entity.ts';
@@ -23,6 +24,7 @@ export class GuardianRegistrationService {
   private readonly technicalContact: string;
 
   constructor(
+    private readonly undeliverable: UndeliverableEmailRepository,
     private readonly registrations: RegistrationRepository,
     private readonly turnusy: TurnusRepository,
     private readonly camps: CampRepository,
@@ -88,6 +90,9 @@ export class GuardianRegistrationService {
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
     const participants = await this.registrations.listParticipants(registration.id);
     const ledger = await this.ledgers.get(registration.id);
+    const undeliverable = await this.undeliverable.listMarked(
+      (await this.registrations.listGuardians(registration.id)).map(({ email }) => email),
+    );
     const payment = registrationPaymentOf({
       registration,
       turnus,
@@ -125,6 +130,7 @@ export class GuardianRegistrationService {
           prihlaska: participant.prihlaskaFileId === null ? null : await this.files.link(participant.prihlaskaFileId),
         })),
       ),
+      undeliverableEmails: [...undeliverable],
       priceLines: await this.registrations.listPriceLines(registration.id),
       adjustments: ledger.adjustments.map(({ amount }) => ({ amount })),
       // A payment's note is the camp's own record, not the guardian's.

@@ -23,6 +23,7 @@ import { CampsModule } from './modules/camps/camps.module.ts';
 import { ConsentsModule } from './modules/consents/consents.module.ts';
 import { ConsoleModule } from './modules/console/console.module.ts';
 import { CampDocumentsModule } from './modules/documents/documents.module.ts';
+import { MailNotificationsModule } from './modules/emails/emails.module.ts';
 import { OrganisationsModule } from './modules/organisations/organisations.module.ts';
 import { PortalModule } from './modules/portal/portal.module.ts';
 import { RegistrationsModule } from './modules/registrations/registrations.module.ts';
@@ -63,6 +64,7 @@ export class AppModule {
         ConsentsModule,
         CampDocumentsModule,
         ConsoleModule,
+        MailNotificationsModule,
       ],
     };
   }

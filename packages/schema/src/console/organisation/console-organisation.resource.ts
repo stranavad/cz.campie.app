@@ -15,6 +15,8 @@ export const consoleOrganisationSchema = z.object({
   statutoryRepresentative: z.string(),
   contactEmail: z.string(),
   contactPhone: z.string(),
+  // Its mail so far, without a single address: messages sent, and bounce and complaint notifications.
+  mail: z.object({ sent: z.number().int(), bounced: z.number().int(), complained: z.number().int() }),
 });
 
 export type ConsoleOrganisation = z.infer<typeof consoleOrganisationSchema>;

@@ -67,6 +67,8 @@ export const participantRowSchema = z.object({
   ageOnStart: z.number().int(),
   guardianName: z.string(),
   guardianEmail: z.string(),
+  // The mail provider reported an address of a guardian of the Registration undeliverable.
+  emailUndeliverable: z.boolean(),
   variableSymbol: z.string(),
   paymentStatus: z.enum(PAYMENT_STATUSES),
   amountDue: z.object({ amount: z.number().int(), dueDate: calendarDateSchema.nullable() }),

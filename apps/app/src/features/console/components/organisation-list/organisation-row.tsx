@@ -39,6 +39,15 @@ export function OrganisationRow({ organisation }: OrganisationRowProps) {
         <dd>{organisation.statutoryRepresentative}</dd>
         <dt className="text-muted-foreground">{t('fields.contact')}</dt>
         <dd>{t('fields.contactValue', { email: organisation.contactEmail, phone: organisation.contactPhone })}</dd>
+        <dt className="text-muted-foreground">{t('fields.mail')}</dt>
+        <dd className={row.mailWarning ? 'text-destructive' : undefined}>
+          {t('fields.mailValue', {
+            sent: organisation.mail.sent,
+            bounced: organisation.mail.bounced,
+            complained: organisation.mail.complained,
+            rate: row.bounceRate,
+          })}
+        </dd>
       </dl>
       {isPending ? (
         <form

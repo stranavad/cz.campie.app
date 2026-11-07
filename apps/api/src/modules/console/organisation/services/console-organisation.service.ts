@@ -10,6 +10,10 @@ import type { Env } from '../../../../core/config/env.schema.ts';
 import { violatedConstraint } from '../../../../core/database/constraint-violation.ts';
 import { AdminRepository } from '../../../../repositories/admins/admin/admin.repository.ts';
 import { MembershipRepository } from '../../../../repositories/admins/membership/membership.repository.ts';
+import {
+  MailStatisticsRepository,
+  type MailCounts,
+} from '../../../../repositories/emails/mail-statistics/mail-statistics.repository.ts';
 import type { OrganisationEntity } from '../../../../repositories/organisations/organisation/organisation.entity.ts';
 import {
   OrganisationRepository,
@@ -25,6 +29,14 @@ const NOT_IN_STATUS: Readonly<Record<OrganisationStatus, ConsoleErrorCode | null
 
 // The Platform operator's work on Organisations, in the console's unit of work: platform tables only,
 // audited in the platform's log, since a rejected Organisation's own log goes with it.
+// An Organisation as the console lists it, with its mail counts.
+export interface ConsoleOrganisationView {
+  readonly organisation: OrganisationEntity;
+  readonly mail: MailCounts;
+}
+
+const NO_MAIL: MailCounts = { sent: 0, skipped: 0, bounced: 0, complained: 0 };
+
 @Injectable()
 export class ConsoleOrganisationService {
   private readonly productName: string;
@@ -32,6 +44,7 @@ export class ConsoleOrganisationService {
   constructor(
     private readonly organisations: OrganisationRepository,
     private readonly memberships: MembershipRepository,
+    private readonly statistics: MailStatisticsRepository,
     private readonly admins: AdminRepository,
     private readonly audit: AuditService,
     config: ConfigService<Env, true>,
@@ -42,8 +55,11 @@ export class ConsoleOrganisationService {
   /**
    * List every Organisation, the newest first.
    */
-  public list(): Promise<OrganisationEntity[]> {
-    return this.organisations.list();
+  public async list(): Promise<ConsoleOrganisationView[]> {
+    const organisations = await this.organisations.list();
+    const counts = await this.statistics.listAll();
+
+    return organisations.map((organisation) => ({ organisation, mail: counts.get(organisation.id) ?? NO_MAIL }));
   }
 
   /**
@@ -51,8 +67,8 @@ export class ConsoleOrganisationService {
    * @param actor the Platform operator
    * @param id Organisation id
    */
-  public async approve(actor: Actor, id: string): Promise<OrganisationEntity> {
-    return this.change(actor, id, 'pending', { status: 'approved' }, 'organisation.approve');
+  public async approve(actor: Actor, id: string): Promise<ConsoleOrganisationView> {
+    return this.withMail(await this.change(actor, id, 'pending', { status: 'approved' }, 'organisation.approve'));
   }
 
   /**
@@ -60,8 +76,8 @@ export class ConsoleOrganisationService {
    * @param actor the Platform operator
    * @param id Organisation id
    */
-  public async suspend(actor: Actor, id: string): Promise<OrganisationEntity> {
-    return this.change(actor, id, 'approved', { status: 'suspended' }, 'organisation.suspend');
+  public async suspend(actor: Actor, id: string): Promise<ConsoleOrganisationView> {
+    return this.withMail(await this.change(actor, id, 'approved', { status: 'suspended' }, 'organisation.suspend'));
   }
 
   /**
@@ -72,7 +88,7 @@ export class ConsoleOrganisationService {
    * @throws {BadRequestException} when it is malformed or reserved
    * @throws {ConflictException} when another Organisation has it
    */
-  public async rename(actor: Actor, id: string, subdomain: string): Promise<OrganisationEntity> {
+  public async rename(actor: Actor, id: string, subdomain: string): Promise<ConsoleOrganisationView> {
     const problem = subdomainProblem(subdomain, this.productName);
 
     if (problem !== null) {
@@ -80,7 +96,7 @@ export class ConsoleOrganisationService {
     }
 
     try {
-      return await this.change(actor, id, 'pending', { subdomain }, 'organisation.update');
+      return await this.withMail(await this.change(actor, id, 'pending', { subdomain }, 'organisation.update'));
     } catch (error) {
       if (violatedConstraint(error, 'unique') === 'organisations_subdomain_key') {
         const code: SubdomainErrorCode = 'subdomain_taken';
@@ -115,6 +131,14 @@ export class ConsoleOrganisationService {
     for (const adminId of await this.admins.removeWithoutMembership(memberIds)) {
       await this.audit.recordForPlatform(actor, { action: 'admin.remove', target: { type: 'admin', id: adminId } });
     }
+  }
+
+  /**
+   * Show an Organisation with its mail counts.
+   * @param organisation the Organisation
+   */
+  private async withMail(organisation: OrganisationEntity): Promise<ConsoleOrganisationView> {
+    return { organisation, mail: await this.statistics.getOf(organisation.id) };
   }
 
   /**

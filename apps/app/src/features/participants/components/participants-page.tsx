@@ -141,6 +141,11 @@ export function ParticipantsPage() {
             <span className="text-sm text-muted-foreground sm:w-16">{t('age', { count: row.ageOnStart })}</span>
             <span className="text-sm sm:flex-1">
               {t('guardian', { name: row.guardianName, email: row.guardianEmail })}
+              {row.emailUndeliverable ? (
+                <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-950">
+                  {t('emailUndeliverable')}
+                </span>
+              ) : null}
             </span>
             <span className="text-sm tabular-nums sm:w-24">{row.variableSymbol}</span>
             <span className={`text-sm sm:w-40 ${row.overdue ? 'text-destructive' : ''}`}>

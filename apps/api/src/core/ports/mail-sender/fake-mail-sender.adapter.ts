@@ -1,4 +1,10 @@
-import { MailSender, type MailMessage } from './mail-sender.port.ts';
+import { readFakeMailNotification } from './fake-mail-notification.ts';
+import {
+  MailSender,
+  type MailMessage,
+  type MailNotification,
+  type MailNotificationRequest,
+} from './mail-sender.port.ts';
 
 // Test only: keeps every message so a test can read what the app sent. Production refuses it.
 export class FakeMailSender extends MailSender {
@@ -15,5 +21,9 @@ export class FakeMailSender extends MailSender {
     });
 
     return Promise.resolve();
+  }
+
+  public readNotification(request: MailNotificationRequest): MailNotification {
+    return readFakeMailNotification(request);
   }
 }

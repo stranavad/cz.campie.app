@@ -104,7 +104,9 @@ describe('cancel, access emails and guardians', () => {
     const asGrandma = (await createGuardianSession(app(), organisationId, 'babicka@example.com')).headers;
     const portal = () => http().get(`/api/portal/registrations/${registrationId}`).set(asGrandma);
 
-    expect(added.body.accessEmails).toEqual([{ id: expect.any(String), email: 'babicka@example.com' }]);
+    expect(added.body.accessEmails).toEqual([
+      { id: expect.any(String), email: 'babicka@example.com', undeliverable: false },
+    ]);
     expect((await portal()).status).toBe(200);
     await jobs().drain();
     expect(mail().sent).toEqual([]);

@@ -1,6 +1,6 @@
 # 68 - Bounce and complaint handling
 
-Status: ready-for-agent
+Status: done
 Stage: 1b
 Episode: E3 Public registration
 Blocked by: 16, 42
@@ -25,3 +25,5 @@ Consume bounce and complaint notifications from the mail provider (fake in tests
 ## Comments
 
 2026-11-07 - **From issue 50.** Payment reminders are sent one job per guardian by `LedgerService.sendPaymentReminder` (`modules/registrations/ledger/services/ledger.service.ts`); skip undeliverable addresses there (or in `CampEmailService.send` for every guardian email).
+
+2026-11-07 - **Done.** Every message `EmailService.send` sends for an Organisation carries the Organisation's id as a Resend tag. Resend's webhook posts to `POST /api/webhooks/mail` (a new `webhook` access kind: no CSRF header, raw body); `MailSender.readNotification` verifies the Svix signature (`RESEND_WEBHOOK_SECRET`, 5-minute replay window) before anything is read, and answers a forged or stale one with 401. A hard bounce (`email.bounced` with bounce type `Permanent`), a suppression (`email.suppressed`) or a complaint (`email.complained`) of a message to a single recipient marks it in that Organisation's `undeliverable_emails`, audited as the system; soft bounces, other events and messages to several recipients (a Camp team's mail, where the bounced one cannot be told apart) are accepted and ignored. `EmailService.send` leaves marked addresses out of `notification` mail and counts them as skipped; `auth` mail (login links, email change links, invitations) always goes. An admin changing a guardian's email or adding a Camp team address, or a guardian confirming a new email by its link, clears that address's mark (audited). Admins see "E-mail nedoručitelný" in the participant list and on the Registration detail (guardians and access emails); the portal shows a banner on the Registration. The console shows each Organisation's sent, bounced and complained counts with the rate (`mail_statistics`, counts only), highlighted past 2 % bounces or 0.1 % complaints once 50 messages went out. Locally and in tests, notifications are signed with `signFakeMailNotification`.

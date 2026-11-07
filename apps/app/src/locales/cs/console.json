@@ -20,7 +20,9 @@
     "ico": "IČO",
     "seat": "Sídlo",
     "statutoryRepresentative": "Statutární zástupce",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "mail": "E-maily",
+    "mailValue": "odesláno {{sent}}, nedoručeno {{bounced}}, stížnosti {{complained}} ({{rate}})"
   },
   "rename": {
     "label": "Subdoména",

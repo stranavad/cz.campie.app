@@ -115,6 +115,7 @@ describe('guardian portal Registrations', () => {
         'submittedAt',
         'total',
         'turnus',
+        'undeliverableEmails',
         'variableSymbol',
       ].sort(),
     );

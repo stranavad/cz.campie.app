@@ -17,6 +17,8 @@ import { ConsentRepository } from './consents/consent/consent.repository.ts';
 import { ProblemReportRepository } from './console/problem-report/problem-report.repository.ts';
 import { DocumentTypeRepository } from './documents/document-type/document-type.repository.ts';
 import { DocumentUploadRepository } from './documents/document-upload/document-upload.repository.ts';
+import { MailStatisticsRepository } from './emails/mail-statistics/mail-statistics.repository.ts';
+import { UndeliverableEmailRepository } from './emails/undeliverable-email/undeliverable-email.repository.ts';
 import { FileRepository } from './files/file/file.repository.ts';
 import { OperatorRepository } from './operators/operator/operator.repository.ts';
 import { LegalAcceptanceRepository } from './organisations/legal-acceptance/legal-acceptance.repository.ts';
@@ -61,6 +63,8 @@ const REPOSITORIES = [
   AuditEntryRepository,
   PlatformAuditEntryRepository,
   FileRepository,
+  MailStatisticsRepository,
+  UndeliverableEmailRepository,
   CampRepository,
   CampEmailTextRepository,
   TurnusRepository,

@@ -13,6 +13,9 @@ import { Reflector } from '@nestjs/core';
 // - platform: anyone on the main host, outside any Organisation (signup, login).
 // - gateway: a payment gateway's notification; the Organisation is in the path, and the gateway's
 //   signature, checked by the route, is the permission.
+// - webhook: an outside service's notification without an Organisation in the path (the mail provider's);
+//   no CSRF header, since it calls server to server; the route checks the service's signature, the
+//   permission, and opens its own unit of work.
 // - unscoped: anyone anywhere; the route opens its own unit of work if it needs one (health, download
 //   links whose signed token is the permission).
 export const ACCESS_KINDS = [
@@ -23,6 +26,7 @@ export const ACCESS_KINDS = [
   'operator',
   'platform',
   'gateway',
+  'webhook',
   'unscoped',
 ] as const;
 

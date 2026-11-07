@@ -99,7 +99,14 @@ export function RegistrationControls({
         <p className="text-sm font-medium">{t('controls.accessEmails')}</p>
         {detail.accessEmails.map((access) => (
           <div key={access.id} className="flex items-center gap-2 text-sm">
-            <span className="flex-1">{access.email}</span>
+            <span className="flex-1">
+              {access.email}
+              {access.undeliverable ? (
+                <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-950">
+                  {t('detail.emailUndeliverable')}
+                </span>
+              ) : null}
+            </span>
             <Button type="button" size="sm" variant="outline" onClick={() => removeAccess.mutate(access.id)}>
               {t('controls.remove')}
             </Button>

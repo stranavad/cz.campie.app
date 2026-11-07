@@ -22,6 +22,7 @@ import { OrganisationRepository } from '../../../../repositories/organisations/o
 import { GuardianEmailChangeRepository } from '../../../../repositories/registrations/guardian-email-change/guardian-email-change.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { CampEmailService } from '../../../camps/camp-email/services/camp-email.service.ts';
+import { UndeliverableEmailService } from '../../../emails/undeliverable-email/services/undeliverable-email.service.ts';
 import { emailChangeConfirmedJob } from '../../../registrations/guardian-email/guardian-email-notice.job.ts';
 import { emailChangeRequestedJob } from '../guardian-edit.jobs.ts';
 import { EmailChangeConfirmationEmail } from '../guardian-email-change.email.tsx';
@@ -39,6 +40,7 @@ export class GuardianEmailChangeService {
   private readonly limit: RequestLimit;
 
   constructor(
+    private readonly undeliverable: UndeliverableEmailService,
     private readonly edits: GuardianEditService,
     private readonly changes: GuardianEmailChangeRepository,
     private readonly registrations: RegistrationRepository,
@@ -189,6 +191,8 @@ export class GuardianEmailChangeService {
         after: { position: change.position, email: change.email },
       },
     });
+    // Following the link proved the address receives mail.
+    await this.undeliverable.clear(actor, change.email);
     this.jobs.enqueue(emailChangeConfirmedJob, { changeId: change.id });
   }
 

@@ -44,6 +44,7 @@ import {
   type ParticipantFields,
   type PriceLineFields,
 } from '../../../../repositories/registrations/registration/registration.repository.ts';
+import { UndeliverableEmailService } from '../../../emails/undeliverable-email/services/undeliverable-email.service.ts';
 import { emailChangeConfirmedJob } from '../../guardian-email/guardian-email-notice.job.ts';
 import { answeredDefinition } from '../../payment/claimed-discounts.helper.ts';
 import { regeneratePrihlaskaJob } from '../../prihlaska/regenerate-prihlaska.job.ts';
@@ -185,6 +186,7 @@ function shown(lines: readonly PriceLineFields[]): PriceChange {
 @Injectable()
 export class AdminRegistrationService {
   constructor(
+    private readonly undeliverable: UndeliverableEmailService,
     private readonly registrations: RegistrationRepository,
     private readonly turnusy: TurnusRepository,
     private readonly camps: CampRepository,
@@ -386,6 +388,10 @@ export class AdminRegistrationService {
       target: { type: 'registration', id: registrationId },
       change: { before: { position, ...before }, after: { position, ...body } },
     });
+    // A changed address, such as one corrected after a bounce, starts without a mark.
+    if (body.email !== before.email) {
+      await this.undeliverable.clear(actor, body.email);
+    }
 
     if (body.email !== before.email) {
       const changeId = await this.emailChanges.recordConfirmed(

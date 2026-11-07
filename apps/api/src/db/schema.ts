@@ -49,3 +49,5 @@ export { exportPresets, exportSelections } from './registrations/export-presets.
 export { supportGrants } from './organisations/support-grants.ts';
 export { problemReportKind, problemReports } from './console/problem-reports.ts';
 export { totpRecoveryCodes } from './admins/totp-recovery-codes.ts';
+export { undeliverableEmails, undeliverableReason } from './emails/undeliverable-emails.ts';
+export { mailStatistics } from './emails/mail-statistics.ts';

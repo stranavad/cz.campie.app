@@ -8,6 +8,7 @@ import { MembershipRepository } from '../../../../repositories/admins/membership
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
+import { UndeliverableEmailRepository } from '../../../../repositories/emails/undeliverable-email/undeliverable-email.repository.ts';
 import { ClaimedDiscountVerificationRepository } from '../../../../repositories/registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { ChecklistService } from '../../checklist/services/checklist.service.ts';
@@ -44,6 +45,7 @@ function openItemsOf(
 @Injectable()
 export class ParticipantListService {
   constructor(
+    private readonly undeliverable: UndeliverableEmailRepository,
     private readonly registrations: RegistrationRepository,
     private readonly ledger: LedgerService,
     private readonly turnusy: TurnusRepository,
@@ -99,6 +101,9 @@ export class ParticipantListService {
     const ids = registrations.map(({ id }) => id);
     const participants = await this.registrations.listParticipantsOf(ids);
     const guardians = await this.registrations.listGuardiansOf(ids);
+    const undeliverable = await this.undeliverable.listMarked(
+      [...guardians.values()].flatMap((named) => named.map(({ email }) => email)),
+    );
     const balances = await this.ledger.balancesOf(turnus, registrations);
     const versions = new Map(
       (await this.forms.listVersionsByIds([...new Set(registrations.map((r) => r.formVersionId))])).map((version) => [
@@ -166,6 +171,7 @@ export class ParticipantListService {
           ageOnStart: participant.birthDate === null ? 0 : ageOnStart(participant.birthDate, turnus.startDate),
           guardianName: `${guardian.firstName} ${guardian.lastName}`,
           guardianEmail: guardian.email,
+          emailUndeliverable: named.some(({ email }) => undeliverable.has(email)),
           variableSymbol: registration.variableSymbol,
           paymentStatus: balance.status,
           amountDue: { amount: balance.amountDue.amount, dueDate: balance.amountDue.dueDate },

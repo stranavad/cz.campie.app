@@ -246,7 +246,14 @@ describe('admin registrations', () => {
       .send({ firstName: 'Jana', lastName: 'Jiná', email: 'jana.jina@example.com', phone: '' });
 
     expect(changed.body.guardians).toEqual([
-      { position: 1, firstName: 'Jana', lastName: 'Jiná', email: 'jana.jina@example.com', phone: null },
+      {
+        position: 1,
+        firstName: 'Jana',
+        lastName: 'Jiná',
+        email: 'jana.jina@example.com',
+        phone: null,
+        undeliverable: false,
+      },
     ]);
   });
 
