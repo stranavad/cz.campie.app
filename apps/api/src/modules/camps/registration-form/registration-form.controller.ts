@@ -1,21 +1,24 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseInterceptors } from '@nestjs/common';
 
 import {
   getRegistrationFormEndpoint,
   getRegistrationFormVersionEndpoint,
   publishRegistrationFormEndpoint,
   saveRegistrationFormDraftEndpoint,
+  uploadDeclarationFileEndpoint,
   type CampParams,
   type RegistrationForm,
   type RegistrationFormVersion,
   type RegistrationFormVersionParams,
   type SaveRegistrationFormDraftBody,
+  type UploadedDeclarationFile,
 } from '@repo/schema/camps';
 
 import { Access } from '../../../core/access/access.decorator.ts';
 import { Requires } from '../../../core/access/permission.ts';
 import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
+import { FileUploadInterceptor, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { RegistrationFormService } from './services/registration-form.service.ts';
 
@@ -55,5 +58,16 @@ export class RegistrationFormController {
     @EndpointParams(getRegistrationFormVersionEndpoint) { campId, version }: RegistrationFormVersionParams,
   ): Promise<RegistrationFormVersion> {
     return this.forms.getVersion(campId, version);
+  }
+
+  @Endpoint(uploadDeclarationFileEndpoint)
+  @Requires('campSettings', 'write')
+  @UseInterceptors(FileUploadInterceptor)
+  public uploadFile(
+    @RequestActor() actor: Actor,
+    @EndpointParams(uploadDeclarationFileEndpoint) { campId }: CampParams,
+    @UploadedFile() upload: FileUpload,
+  ): Promise<UploadedDeclarationFile> {
+    return this.forms.uploadFile(actor, campId, upload);
   }
 }

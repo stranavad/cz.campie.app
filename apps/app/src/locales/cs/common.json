@@ -83,6 +83,7 @@
     "yes": "Ano",
     "no": "Ne",
     "surchargeExtra": "+{{amount}} Kč",
-    "surchargeDiscount": "sleva {{amount}} Kč"
+    "surchargeDiscount": "sleva {{amount}} Kč",
+    "openDocument": "Přečíst"
   }
 }

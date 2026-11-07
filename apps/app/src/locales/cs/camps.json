@@ -179,11 +179,24 @@
     "status": {
       "saved": "Koncept je uložený.",
       "published": "Přihláška je zveřejněná.",
-      "invalid": "Přihlášku nejde uložit: každá otázka potřebuje text, výběr aspoň jednu možnost s textem, příplatky celé koruny a ověření jen u slevy.",
+      "invalid": "Přihlášku nejde uložit: každá otázka a prohlášení potřebuje text, výběr aspoň jednu možnost s textem, příplatky celé koruny, ověření jen u slevy a odkazy začínající http:// nebo https://.",
       "form_field_changed": "Otázka, která už byla zveřejněná, nemůže změnit druh ani to, za koho se vyplňuje. Přidejte místo ní novou. Koncept je uložený.",
       "failed": "Přihlášku se nepodařilo uložit. Zkuste to prosím znovu.",
       "invalid_max": "Nejvíce dětí na přihlášce musí být 1 až 10.",
-      "form_definition_invalid": "Koncept už neodpovídá nabídce standardních polí. Zkontrolujte je a uložte znovu."
+      "form_definition_invalid": "Koncept už neodpovídá nabídce standardních polí. Zkontrolujte je a uložte znovu.",
+      "declaration_file_unknown": "Některé prohlášení odkazuje na PDF, které už není k dispozici. Nahrajte ho znovu."
     }
+  },
+  "declarations": {
+    "title": "Prohlášení",
+    "text": "Text prohlášení",
+    "mandatory": "Povinné",
+    "url": "Odkaz na stránku (nepovinné)",
+    "uploadFile": "Nahrát PDF",
+    "openFile": "Otevřít PDF",
+    "removeFile": "Odebrat PDF",
+    "remove": "Odebrat prohlášení",
+    "add": "Přidat prohlášení",
+    "uploadFailed": "PDF se nepodařilo nahrát. Nahrát jde jen soubor PDF."
   }
 }

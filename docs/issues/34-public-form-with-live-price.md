@@ -28,3 +28,5 @@ The public registration form at `/{camp-slug}/prihlaska?turnus={id}`, rendered f
 ## Comments
 
 2026-11-07 - **From issue 30.** `GET /public-camps/:slug/registration-form` serves the latest version; render its fields with `formFields` (`@repo/schema/form-engine`) and `RegistrationField` (`apps/app/src/core/registration-form`), as the builder's preview does (`form-preview.tsx`); move the child and guardian layout into `core/registration-form` when the form needs it. Standard fields render as plain text until issue 29 gives the catalogue input kinds and options. Core labels come from translations, not from the stored version.
+
+2026-11-07 - **From issue 31.** The public form's declarations carry five-minute PDF links; refetch the form before they expire (as the builder does, every four minutes) or when a guardian opens one. Render them with `DeclarationCheckbox`.

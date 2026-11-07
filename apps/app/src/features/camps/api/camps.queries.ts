@@ -145,10 +145,14 @@ export const useRemoveDiscountCodeMutation = (organisationId: string, campId: st
   });
 };
 
+// Its PDF links last five minutes, so it is fetched again before they run out.
+const LINK_REFRESH_MS = 4 * 60 * 1000;
+
 export const useRegistrationFormQuery = (organisationId: string, campId: string) =>
   useQuery({
     queryKey: campsKeys.registrationForm(organisationId, campId),
     queryFn: ({ signal }) => campsService.getRegistrationForm(organisationId, campId, signal),
+    refetchInterval: LINK_REFRESH_MS,
   });
 
 // Saves the draft, and publishes it when asked, so what is published is what the builder shows. A
@@ -165,3 +169,6 @@ export const useSaveRegistrationFormMutation = (organisationId: string, campId: 
     onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.registrationForm(organisationId, campId) }),
   });
 };
+
+export const useUploadDeclarationFileMutation = (organisationId: string, campId: string) =>
+  useMutation({ mutationFn: (file: File) => campsService.uploadDeclarationFile(organisationId, campId, file) });

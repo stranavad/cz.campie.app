@@ -1,6 +1,6 @@
 import type { InferSelectModel } from 'drizzle-orm';
 
-import type { RegistrationForm, RegistrationFormVersion } from '@repo/schema/camps';
+import type { Declaration, RegistrationForm, RegistrationFormVersion, ShownDeclaration } from '@repo/schema/camps';
 import type { FormDefinition } from '@repo/schema/form-engine';
 
 import type { registrationFormVersions } from '../../../db/schema.ts';
@@ -12,18 +12,21 @@ export class RegistrationFormDraftEntity {
   public readonly campId: string;
   public readonly draft: FormDefinition;
   public readonly maxParticipants: number;
+  public readonly declarations: readonly Declaration[];
 
-  constructor(row: { campId: string; draft: FormDefinition; maxParticipants: number }) {
+  constructor(row: { campId: string; draft: FormDefinition; maxParticipants: number; declarations: Declaration[] }) {
     this.campId = row.campId;
     this.draft = row.draft;
     this.maxParticipants = row.maxParticipants;
+    this.declarations = row.declarations;
   }
 
-  toDto(latest: RegistrationFormVersionEntity | null): RegistrationForm {
+  toDto(declarations: ShownDeclaration[], latest: RegistrationFormVersionEntity | null): RegistrationForm {
     return {
       campId: this.campId,
       draft: this.draft,
       maxParticipants: this.maxParticipants,
+      declarations,
       latest: latest === null ? null : latest.toSummaryDto(),
     };
   }
@@ -35,6 +38,7 @@ export class RegistrationFormVersionEntity {
   public readonly version: number;
   public readonly definition: FormDefinition;
   public readonly maxParticipants: number;
+  public readonly declarations: readonly Declaration[];
   public readonly publishedAt: Date;
 
   constructor(row: RegistrationFormVersionSelectModel) {
@@ -43,14 +47,15 @@ export class RegistrationFormVersionEntity {
     this.version = row.version;
     this.definition = row.definition;
     this.maxParticipants = row.maxParticipants;
+    this.declarations = row.declarations;
     this.publishedAt = row.publishedAt;
   }
 
-  toDto(): RegistrationFormVersion {
-    return { ...this.toSummaryDto(), definition: this.definition };
+  toDto(declarations: ShownDeclaration[]): RegistrationFormVersion {
+    return { ...this.toSummaryDto(), definition: this.definition, declarations };
   }
 
-  toSummaryDto(): Omit<RegistrationFormVersion, 'definition'> {
+  toSummaryDto(): Pick<RegistrationFormVersion, 'version' | 'maxParticipants' | 'publishedAt'> {
     return {
       version: this.version,
       maxParticipants: this.maxParticipants,

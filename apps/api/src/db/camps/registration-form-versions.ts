@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import * as p from 'drizzle-orm/pg-core';
 
+import type { Declaration } from '@repo/schema/camps';
 import type { FormDefinition } from '@repo/schema/form-engine';
 
 import { id } from '../helpers/ids.ts';
@@ -16,6 +17,7 @@ export const registrationFormVersions = p.snakeCase.table.withRLS(
     version: p.integer().notNull(),
     definition: p.jsonb().$type<FormDefinition>().notNull(),
     maxParticipants: p.integer().notNull(),
+    declarations: p.jsonb().$type<Declaration[]>().notNull().default([]),
     publishedAt: p.timestamp({ withTimezone: true }).notNull(),
   },
   (table) => [

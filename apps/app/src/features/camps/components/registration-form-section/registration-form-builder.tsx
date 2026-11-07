@@ -7,6 +7,7 @@ import { CUSTOM_FIELD_TYPES, type CustomFieldType } from '@repo/schema/form-engi
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CustomFieldEditor } from '@/features/camps/components/registration-form-section/custom-field-editor';
+import { DeclarationsEditor } from '@/features/camps/components/registration-form-section/declarations-editor';
 import { FormPreview } from '@/features/camps/components/registration-form-section/form-preview';
 import { StandardFieldsFieldset } from '@/features/camps/components/registration-form-section/standard-fields-fieldset';
 import { useRegistrationFormBuilder } from '@/features/camps/components/registration-form-section/use-registration-form-builder.hook';
@@ -79,6 +80,14 @@ export function RegistrationFormBuilder({ organisationId, campId, form, canWrite
           </div>
         ) : null}
       </div>
+      <DeclarationsEditor
+        organisationId={organisationId}
+        campId={campId}
+        declarations={builder.declarations}
+        canWrite={canWrite}
+        onChange={builder.setDeclarations}
+        linkOf={builder.linkOf}
+      />
       {builder.status === null ? null : (
         <p role={builder.status === 'saved' || builder.status === 'published' ? 'status' : 'alert'} className="text-sm">
           {t(`registrationForm.status.${builder.status}`)}
@@ -99,7 +108,18 @@ export function RegistrationFormBuilder({ organisationId, campId, form, canWrite
           {isPreviewing ? t('registrationForm.hidePreview') : t('registrationForm.showPreview')}
         </Button>
       </div>
-      {isPreviewing ? <FormPreview definition={builder.definition} /> : null}
+      {isPreviewing ? (
+        <FormPreview
+          definition={builder.definition}
+          declarations={builder.declarations.map((declaration) => ({
+            ...declaration,
+            file:
+              declaration.file === null
+                ? null
+                : { ...declaration.file, link: { ...declaration.file.link, url: builder.linkOf(declaration) ?? '' } },
+          }))}
+        />
+      ) : null}
     </div>
   );
 }

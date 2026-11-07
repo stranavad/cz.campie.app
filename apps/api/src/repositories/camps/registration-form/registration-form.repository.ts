@@ -1,15 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq } from 'drizzle-orm';
 
+import type { Declaration } from '@repo/schema/camps';
 import type { FormDefinition } from '@repo/schema/form-engine';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
-import { registrationForms, registrationFormVersions } from '../../../db/schema.ts';
+import { registrationFormFiles, registrationForms, registrationFormVersions } from '../../../db/schema.ts';
 import { RegistrationFormDraftEntity, RegistrationFormVersionEntity } from './registration-form.entity.ts';
 
 export interface DraftFields {
   readonly draft: FormDefinition;
   readonly maxParticipants: number;
+  readonly declarations: Declaration[];
 }
 
 @Injectable()
@@ -86,17 +88,46 @@ export class RegistrationFormRepository {
   }
 
   /**
-   * List the definitions of every published version of a Camp's form, oldest first.
+   * List the definitions and declarations of every published version of a Camp's form, oldest first.
    * @param campId Camp id
    */
-  public async listDefinitions(campId: string): Promise<FormDefinition[]> {
-    const rows = await this.unitOfWork.db
-      .select({ definition: registrationFormVersions.definition })
+  public async listPublished(campId: string): Promise<{ definition: FormDefinition; declarations: Declaration[] }[]> {
+    return this.unitOfWork.db
+      .select({ definition: registrationFormVersions.definition, declarations: registrationFormVersions.declarations })
       .from(registrationFormVersions)
       .where(eq(registrationFormVersions.campId, campId))
       .orderBy(asc(registrationFormVersions.version));
+  }
 
-    return rows.map(({ definition }) => definition);
+  /**
+   * Record a PDF uploaded for a Camp's form declarations.
+   * @param campId Camp id
+   * @param fileId the file's id
+   * @param uploadedAt when
+   */
+  public async addFile(campId: string, fileId: string, uploadedAt: Date): Promise<void> {
+    await this.unitOfWork.db
+      .insert(registrationFormFiles)
+      .values({ organisationId: this.unitOfWork.organisationId, campId, fileId, uploadedAt });
+  }
+
+  /**
+   * List the PDFs uploaded for a Camp's form declarations.
+   * @param campId Camp id
+   */
+  public async listFiles(campId: string): Promise<{ fileId: string; uploadedAt: Date }[]> {
+    return this.unitOfWork.db
+      .select({ fileId: registrationFormFiles.fileId, uploadedAt: registrationFormFiles.uploadedAt })
+      .from(registrationFormFiles)
+      .where(eq(registrationFormFiles.campId, campId));
+  }
+
+  /**
+   * Forget a PDF uploaded for a Camp's form declarations; its file is removed by the caller.
+   * @param fileId the file's id
+   */
+  public async removeFile(fileId: string): Promise<void> {
+    await this.unitOfWork.db.delete(registrationFormFiles).where(eq(registrationFormFiles.fileId, fileId));
   }
 
   /**
@@ -126,11 +157,22 @@ export class RegistrationFormRepository {
    */
   public async createVersion(
     campId: string,
-    input: { version: number; definition: FormDefinition; maxParticipants: number; publishedAt: Date },
+    input: {
+      version: number;
+      definition: FormDefinition;
+      maxParticipants: number;
+      declarations: readonly Declaration[];
+      publishedAt: Date;
+    },
   ): Promise<RegistrationFormVersionEntity> {
     const [row] = await this.unitOfWork.db
       .insert(registrationFormVersions)
-      .values({ ...input, campId, organisationId: this.unitOfWork.organisationId })
+      .values({
+        ...input,
+        declarations: [...input.declarations],
+        campId,
+        organisationId: this.unitOfWork.organisationId,
+      })
       .returning();
 
     if (row === undefined) {

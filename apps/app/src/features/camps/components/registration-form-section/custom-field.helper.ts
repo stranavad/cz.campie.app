@@ -1,12 +1,14 @@
 import type { CustomField, CustomFieldType } from '@repo/schema/form-engine';
 
+import { uuidv7 } from '@/lib/utils';
+
 /**
  * Make a new custom field of a type, with what that type needs and a fresh id.
  * @param type the field's type
  * @param label its label
  */
 export function newCustomField(type: CustomFieldType, label: string): CustomField {
-  const base = { id: crypto.randomUUID(), label, hint: null, required: false, scope: 'participant' as const };
+  const base = { id: uuidv7(), label, hint: null, required: false, scope: 'participant' as const };
 
   switch (type) {
     case 'single_choice':

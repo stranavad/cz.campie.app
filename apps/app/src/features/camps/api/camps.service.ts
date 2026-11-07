@@ -18,6 +18,7 @@ import {
   updateCampEndpoint,
   updateDiscountCodeEndpoint,
   updateTurnusEndpoint,
+  uploadDeclarationFileEndpoint,
   type CreateCampBody,
   type CreateDiscountCodeBody,
   type SaveRegistrationFormDraftBody,
@@ -58,6 +59,8 @@ export const campsService = {
     apiClient.request(getRegistrationFormEndpoint, { organisationId, params: { campId }, signal }),
   saveRegistrationFormDraft: (organisationId: string, campId: string, body: SaveRegistrationFormDraftBody) =>
     apiClient.request(saveRegistrationFormDraftEndpoint, { organisationId, params: { campId }, body }),
+  uploadDeclarationFile: (organisationId: string, campId: string, file: File) =>
+    apiClient.request(uploadDeclarationFileEndpoint, { organisationId, params: { campId }, file }),
   publishRegistrationForm: (organisationId: string, campId: string) =>
     apiClient.request(publishRegistrationFormEndpoint, { organisationId, params: { campId } }),
   listTurnusy: (organisationId: string, campId: string, signal?: AbortSignal) =>

@@ -1,5 +1,6 @@
 import * as p from 'drizzle-orm/pg-core';
 
+import type { Declaration } from '@repo/schema/camps';
 import type { FormDefinition } from '@repo/schema/form-engine';
 
 import { organisationId, organisationPolicy } from '../helpers/organisation.ts';
@@ -13,6 +14,7 @@ export const registrationForms = p.snakeCase.table.withRLS(
     campId: p.uuid().notNull(),
     draft: p.jsonb().$type<FormDefinition>().notNull(),
     maxParticipants: p.integer().notNull(),
+    declarations: p.jsonb().$type<Declaration[]>().notNull().default([]),
   },
   (table) => [
     p.primaryKey({ name: 'registration_forms_pkey', columns: [table.organisationId, table.campId] }),

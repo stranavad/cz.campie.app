@@ -9,6 +9,7 @@ export { campSlugs } from './camps/camp-slugs.ts';
 export { campModule, camps, siblingDiscountMode } from './camps/camps.ts';
 export { discountCodeUses } from './camps/discount-code-uses.ts';
 export { discountCodeKind, discountCodes } from './camps/discount-codes.ts';
+export { registrationFormFiles } from './camps/registration-form-files.ts';
 export { registrationFormVersions } from './camps/registration-form-versions.ts';
 export { registrationForms } from './camps/registration-forms.ts';
 export { turnusy } from './camps/turnusy.ts';
