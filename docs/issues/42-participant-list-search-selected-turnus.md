@@ -1,6 +1,6 @@
 # 42 - Participant list with search and Selected Turnus
 
-Status: ready-for-agent
+Status: done
 Stage: 1a
 Episode: E6 Admin Registrations
 Blocked by: 19, 35
@@ -12,15 +12,17 @@ The admin's main working list: one row per Participant of the Selected Turnus. T
 
 ## Acceptance criteria
 
-- [ ] Requires Registrations read; none gets 403.
-- [ ] Only Participants of the selected Turnus and current Organisation; cross-tenant ids return nothing.
-- [ ] Search by each field, case- and diacritics-insensitive.
-- [ ] Payment status and unverified Claimed discount filters.
-- [ ] Encrypted fields are never filtered or sorted in the database.
-- [ ] Selected Turnus persisted per user.
-- [ ] Health data never appears in the list.
+- [x] Requires Registrations read; none gets 403.
+- [x] Only Participants of the selected Turnus and current Organisation; cross-tenant ids return nothing.
+- [x] Search by each field, case- and diacritics-insensitive.
+- [x] Payment status and unverified Claimed discount filters.
+- [x] Encrypted fields are never filtered or sorted in the database.
+- [x] Selected Turnus persisted per user.
+- [x] Health data never appears in the list.
 
 ## Notes
 
 - Spec sections: Admin Registrations stories; Further Notes divergence "No Current Turnus".
 - Port from Domino: `apps/portal/src/pages/admin/Registrations.vue`, `apps/portal/src/lib/selectedTurnus.ts`.
+
+2026-11-07 - **Done.** `GET /turnusy/:turnusId/participants` (Registrations read) returns one row per Participant of the Turnus: name, Age on start, the first guardian's name and email, Variable symbol, payment status, amount due now with its date, Overdue, state, and whether a Claimed discount needing verification was answered (from the answers and the Registration's form version). Rows are built in the API from bulk queries (a Turnus holds at most a few hundred children), so nothing is filtered or sorted in the database: every word of `search` must appear among the child's and both guardians' names, the emails and the Variable symbol, in any case and without diacritics; `paymentStatus` and `unverifiedClaimedDiscount=true` filter; rows sort by surname in Czech order. The Selected Turnus is `memberships.selected_turnus_id` (`GET`/`PUT /selected-turnus`, Registrations read), per admin and Organisation; a removed Turnus reads as none. Admin page `/platform/prihlasky` with the Turnus switcher at its top, search and filters. Rows do not open anything yet: the Registration detail comes with issue 43, and its confirmation of Claimed discounts must take confirmed ones out of the unverified filter.

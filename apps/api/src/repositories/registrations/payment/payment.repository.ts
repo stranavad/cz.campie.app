@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { asc, eq } from 'drizzle-orm';
+import { asc, eq, inArray, sum } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { payments } from '../../../db/schema.ts';
@@ -52,5 +52,24 @@ export class PaymentRepository {
     }
 
     return new PaymentEntity(row);
+  }
+
+  /**
+   * Sum the entries of each of Registrations, in one query.
+   * @param registrationIds Registration ids
+   * @returns the sum by Registration id; one without entries is missing
+   */
+  public async sumOf(registrationIds: readonly string[]): Promise<Map<string, number>> {
+    if (registrationIds.length === 0) {
+      return new Map();
+    }
+
+    const rows = await this.unitOfWork.db
+      .select({ registrationId: payments.registrationId, total: sum(payments.amount).mapWith(Number) })
+      .from(payments)
+      .where(inArray(payments.registrationId, [...registrationIds]))
+      .groupBy(payments.registrationId);
+
+    return new Map(rows.map(({ registrationId, total }) => [registrationId, total ?? 0]));
   }
 }

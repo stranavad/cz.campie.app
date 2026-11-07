@@ -36,6 +36,8 @@ export const memberships = p.snakeCase.table(
       .references(() => admins.id, { onDelete: 'cascade' }),
     owner: p.boolean().notNull().default(false),
     ...permissionColumns(),
+    // The Turnus the admin last chose to look at; no foreign key, as a removed Turnus just reads as none.
+    selectedTurnusId: p.uuid(),
   },
   (table) => [p.unique().on(table.organisationId, table.adminId)],
 );

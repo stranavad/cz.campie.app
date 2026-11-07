@@ -18,6 +18,7 @@ import { Route as PlatformNastaveniRouteImport } from './routes/platform/nastave
 import { Route as PlatformNoveHesloRouteImport } from './routes/platform/nove-heslo'
 import { Route as PlatformPozvankaRouteImport } from './routes/platform/pozvanka'
 import { Route as PlatformPrihlaseniRouteImport } from './routes/platform/prihlaseni'
+import { Route as PlatformPrihlaskyRouteImport } from './routes/platform/prihlasky'
 import { Route as PlatformRegistraceOrganizaceRouteImport } from './routes/platform/registrace-organizace'
 import { Route as PlatformTaboryRouteImport } from './routes/platform/tabory'
 import { Route as PlatformUzivateleRouteImport } from './routes/platform/uzivatele'
@@ -74,6 +75,11 @@ const PlatformPozvankaRoute = PlatformPozvankaRouteImport.update({
 const PlatformPrihlaseniRoute = PlatformPrihlaseniRouteImport.update({
   id: '/prihlaseni',
   path: '/prihlaseni',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformPrihlaskyRoute = PlatformPrihlaskyRouteImport.update({
+  id: '/prihlasky',
+  path: '/prihlasky',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
 const PlatformRegistraceOrganizaceRoute =
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
+  '/platform/prihlasky': typeof PlatformPrihlaskyRoute
   '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
   '/platform/tabory': typeof PlatformTaboryRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
@@ -172,6 +179,7 @@ export interface FileRoutesByTo {
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
+  '/platform/prihlasky': typeof PlatformPrihlaskyRoute
   '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
   '/platform/tabory': typeof PlatformTaboryRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
@@ -196,6 +204,7 @@ export interface FileRoutesById {
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
+  '/platform/prihlasky': typeof PlatformPrihlaskyRoute
   '/platform/registrace-organizace': typeof PlatformRegistraceOrganizaceRoute
   '/platform/tabory': typeof PlatformTaboryRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
@@ -221,6 +230,7 @@ export interface FileRouteTypes {
     | '/platform/nove-heslo'
     | '/platform/pozvanka'
     | '/platform/prihlaseni'
+    | '/platform/prihlasky'
     | '/platform/registrace-organizace'
     | '/platform/tabory'
     | '/platform/uzivatele'
@@ -242,6 +252,7 @@ export interface FileRouteTypes {
     | '/platform/nove-heslo'
     | '/platform/pozvanka'
     | '/platform/prihlaseni'
+    | '/platform/prihlasky'
     | '/platform/registrace-organizace'
     | '/platform/tabory'
     | '/platform/uzivatele'
@@ -265,6 +276,7 @@ export interface FileRouteTypes {
     | '/platform/nove-heslo'
     | '/platform/pozvanka'
     | '/platform/prihlaseni'
+    | '/platform/prihlasky'
     | '/platform/registrace-organizace'
     | '/platform/tabory'
     | '/platform/uzivatele'
@@ -350,6 +362,13 @@ declare module '@tanstack/react-router' {
       path: '/prihlaseni'
       fullPath: '/platform/prihlaseni'
       preLoaderRoute: typeof PlatformPrihlaseniRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/prihlasky': {
+      id: '/platform/prihlasky'
+      path: '/prihlasky'
+      fullPath: '/platform/prihlasky'
+      preLoaderRoute: typeof PlatformPrihlaskyRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
     '/platform/registrace-organizace': {
@@ -469,6 +488,7 @@ interface PlatformRouteRouteChildren {
   PlatformNoveHesloRoute: typeof PlatformNoveHesloRoute
   PlatformPozvankaRoute: typeof PlatformPozvankaRoute
   PlatformPrihlaseniRoute: typeof PlatformPrihlaseniRoute
+  PlatformPrihlaskyRoute: typeof PlatformPrihlaskyRoute
   PlatformRegistraceOrganizaceRoute: typeof PlatformRegistraceOrganizaceRoute
   PlatformTaboryRoute: typeof PlatformTaboryRoute
   PlatformUzivateleRoute: typeof PlatformUzivateleRoute
@@ -483,6 +503,7 @@ const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformNoveHesloRoute: PlatformNoveHesloRoute,
   PlatformPozvankaRoute: PlatformPozvankaRoute,
   PlatformPrihlaseniRoute: PlatformPrihlaseniRoute,
+  PlatformPrihlaskyRoute: PlatformPrihlaskyRoute,
   PlatformRegistraceOrganizaceRoute: PlatformRegistraceOrganizaceRoute,
   PlatformTaboryRoute: PlatformTaboryRoute,
   PlatformUzivateleRoute: PlatformUzivateleRoute,

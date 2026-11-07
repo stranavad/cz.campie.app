@@ -147,7 +147,8 @@ export async function submitRegistration(
     secondGuardian?: boolean;
     turnus?: Partial<TurnusBody>;
     paymentChoice?: PaymentChoice;
-    children?: readonly { firstName: string; lastName: string; birthDate: string }[];
+    // Each child's answers, the core ones included.
+    children?: readonly Readonly<Record<string, string | boolean>>[];
   } = {},
 ): Promise<{ id: string; variableSymbol: string }> {
   const {

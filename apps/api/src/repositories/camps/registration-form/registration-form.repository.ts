@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 
 import type { Declaration } from '@repo/schema/camps';
 import type { FormDefinition } from '@repo/schema/form-engine';
@@ -165,6 +165,23 @@ export class RegistrationFormRepository {
     }
 
     return new RegistrationFormVersionEntity(row);
+  }
+
+  /**
+   * List published versions by id, in one query.
+   * @param ids version ids
+   */
+  public async listVersionsByIds(ids: readonly string[]): Promise<RegistrationFormVersionEntity[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const rows = await this.unitOfWork.db
+      .select()
+      .from(registrationFormVersions)
+      .where(inArray(registrationFormVersions.id, [...ids]));
+
+    return rows.map((row) => new RegistrationFormVersionEntity(row));
   }
 
   /**

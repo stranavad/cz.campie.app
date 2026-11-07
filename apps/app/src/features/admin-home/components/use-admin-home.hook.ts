@@ -9,6 +9,7 @@ export function useAdminHome() {
     organisation: membership?.organisation,
     isOwner: membership?.owner === true,
     canSeeCamps: membershipAllows(membership, 'campSettings', 'read'),
+    canSeeRegistrations: membershipAllows(membership, 'registrations', 'read'),
     isOperator: account.data?.operator === true,
   };
 }

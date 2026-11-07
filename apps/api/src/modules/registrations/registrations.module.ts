@@ -6,6 +6,8 @@ import { ConfirmationService } from './confirmation/services/confirmation.servic
 import { LedgerController } from './ledger/ledger.controller.ts';
 import { SendPaymentReceivedHandler } from './ledger/send-payment-received.handler.ts';
 import { LedgerService } from './ledger/services/ledger.service.ts';
+import { ParticipantListController } from './participant-list/participant-list.controller.ts';
+import { ParticipantListService } from './participant-list/services/participant-list.service.ts';
 import { GeneratePrihlaskyHandler } from './prihlaska/generate-prihlasky.handler.ts';
 import { PrihlaskaService } from './prihlaska/services/prihlaska.service.ts';
 import { NotifyTeamHandler } from './registration/notify-team.handler.ts';
@@ -15,13 +17,14 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
 
 @Module({
   imports: [CampsModule],
-  controllers: [PublicRegistrationController, LedgerController],
+  controllers: [PublicRegistrationController, LedgerController, ParticipantListController],
   providers: [
     RegistrationService,
     VariableSymbols,
     PrihlaskaService,
     ConfirmationService,
     LedgerService,
+    ParticipantListService,
     NotifyTeamHandler,
     GeneratePrihlaskyHandler,
     SendConfirmationHandler,

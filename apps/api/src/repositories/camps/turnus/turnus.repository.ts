@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { asc, eq, sql } from 'drizzle-orm';
+import { asc, desc, eq, sql } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { turnusy } from '../../../db/schema.ts';
@@ -21,6 +21,15 @@ export class TurnusRepository {
       .from(turnusy)
       .where(eq(turnusy.campId, campId))
       .orderBy(asc(turnusy.startDate), asc(turnusy.id));
+
+    return rows.map((row) => new TurnusEntity(row));
+  }
+
+  /**
+   * List the current Organisation's Turnusy, the latest start first.
+   */
+  public async list(): Promise<TurnusEntity[]> {
+    const rows = await this.unitOfWork.db.select().from(turnusy).orderBy(desc(turnusy.startDate), asc(turnusy.id));
 
     return rows.map((row) => new TurnusEntity(row));
   }

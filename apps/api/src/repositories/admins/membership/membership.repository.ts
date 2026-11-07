@@ -185,4 +185,29 @@ export class MembershipRepository {
   private inOrganisation(id: string) {
     return and(eq(memberships.id, id), eq(memberships.organisationId, this.unitOfWork.organisationId));
   }
+
+  /**
+   * Get the Turnus an admin last chose to look at in the current Organisation.
+   * @param adminId admin id
+   */
+  public async getSelectedTurnusId(adminId: string): Promise<string | null> {
+    const [row] = await this.unitOfWork.db
+      .select({ turnusId: memberships.selectedTurnusId })
+      .from(memberships)
+      .where(and(eq(memberships.organisationId, this.unitOfWork.organisationId), eq(memberships.adminId, adminId)));
+
+    return row?.turnusId ?? null;
+  }
+
+  /**
+   * Remember the Turnus an admin chose to look at in the current Organisation.
+   * @param adminId admin id
+   * @param turnusId Turnus id
+   */
+  public async setSelectedTurnusId(adminId: string, turnusId: string): Promise<void> {
+    await this.unitOfWork.db
+      .update(memberships)
+      .set({ selectedTurnusId: turnusId })
+      .where(and(eq(memberships.organisationId, this.unitOfWork.organisationId), eq(memberships.adminId, adminId)));
+  }
 }

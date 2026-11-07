@@ -135,6 +135,77 @@ export class RegistrationRepository {
   }
 
   /**
+   * List the Registrations of a Turnus.
+   * @param turnusId Turnus id
+   */
+  public async listByTurnus(turnusId: string): Promise<RegistrationEntity[]> {
+    const rows = await this.unitOfWork.db.select().from(registrations).where(eq(registrations.turnusId, turnusId));
+
+    return rows.map((row) => new RegistrationEntity(row));
+  }
+
+  /**
+   * List the Participants of Registrations, in one query.
+   * @param registrationIds Registration ids
+   */
+  public async listParticipantsOf(registrationIds: readonly string[]): Promise<ParticipantEntity[]> {
+    if (registrationIds.length === 0) {
+      return [];
+    }
+
+    const rows = await this.unitOfWork.db
+      .select()
+      .from(participants)
+      .where(inArray(participants.registrationId, [...registrationIds]));
+
+    return rows.map((row) => new ParticipantEntity(row));
+  }
+
+  /**
+   * List the guardians of each of Registrations, the first one first, in one query.
+   * @param registrationIds Registration ids
+   * @returns the guardians by Registration id
+   */
+  public async listGuardiansOf(registrationIds: readonly string[]): Promise<Map<string, GuardianFields[]>> {
+    const guardians = new Map<string, GuardianFields[]>();
+
+    if (registrationIds.length === 0) {
+      return guardians;
+    }
+
+    const rows = await this.unitOfWork.db
+      .select()
+      .from(registrationGuardians)
+      .where(inArray(registrationGuardians.registrationId, [...registrationIds]))
+      .orderBy(asc(registrationGuardians.position));
+
+    for (const { registrationId, firstName, lastName, email, phone } of rows) {
+      guardians.set(registrationId, [...(guardians.get(registrationId) ?? []), { firstName, lastName, email, phone }]);
+    }
+
+    return guardians;
+  }
+
+  /**
+   * Sum the price lines of each of Registrations, in one query.
+   * @param registrationIds Registration ids
+   * @returns the sum by Registration id; one without lines is missing
+   */
+  public async sumPriceLinesOf(registrationIds: readonly string[]): Promise<Map<string, number>> {
+    if (registrationIds.length === 0) {
+      return new Map();
+    }
+
+    const rows = await this.unitOfWork.db
+      .select({ registrationId: priceLines.registrationId, total: sum(priceLines.amount).mapWith(Number) })
+      .from(priceLines)
+      .where(inArray(priceLines.registrationId, [...registrationIds]))
+      .groupBy(priceLines.registrationId);
+
+    return new Map(rows.map(({ registrationId, total }) => [registrationId, total ?? 0]));
+  }
+
+  /**
    * Count the Registered Participants of Turnusy, in one query.
    * @param turnusIds Turnus ids
    * @returns Registered Participants by Turnus id; a Turnus without any is missing

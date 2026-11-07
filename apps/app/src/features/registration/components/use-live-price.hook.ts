@@ -5,7 +5,7 @@ import { pricedFieldIds, type Answers, type FormDefinition } from '@repo/schema/
 import type { PaymentChoice } from '@repo/schema/pricing';
 
 import { usePricePreviewQuery } from '@/features/registration/api/registration.queries';
-import { useDebouncedValue } from '@/features/registration/hooks/use-debounced-value.hook';
+import { useDebouncedValue } from '@/lib/hooks/use-debounced-value.hook';
 
 /**
  * Keep only the answers that can change the price.

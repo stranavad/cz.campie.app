@@ -1,0 +1,29 @@
+{
+  "loading": "Načítáme…",
+  "noAccess": "K přihláškám nemáte přístup.",
+  "error": "Seznam se nepodařilo načíst. Zkuste stránku načíst znovu.",
+  "backHome": "Zpět na přehled",
+  "title": "Přihlášky",
+  "noTurnusy": "Organizace zatím nemá žádný turnus.",
+  "turnus": "Turnus",
+  "turnusOption": "{{camp}} - {{turnus}} ({{date}})",
+  "search": "Hledat jméno, e-mail nebo variabilní symbol",
+  "paymentStatus": "Platba",
+  "anyStatus": "Všechny",
+  "status": {
+    "unpaid": "Nezaplaceno",
+    "deposit_paid": "Záloha zaplacena",
+    "paid": "Zaplaceno",
+    "overpaid": "Přeplaceno"
+  },
+  "unverified": "Jen s neověřenou slevou",
+  "empty": "Žádné dítě neodpovídá.",
+  "name": "{{last}} {{first}}",
+  "guardian": "{{name}}, {{email}}",
+  "due": "{{status}}, k úhradě {{amount}}",
+  "cancelled": "Zrušeno",
+  "age_one": "{{count}} rok",
+  "age_few": "{{count}} roky",
+  "age_many": "{{count}} roku",
+  "age_other": "{{count}} let"
+}
