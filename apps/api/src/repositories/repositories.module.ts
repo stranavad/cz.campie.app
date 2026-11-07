@@ -26,6 +26,7 @@ import { PaymentGatewayAccountRepository } from './organisations/payment-gateway
 import { SupportGrantRepository } from './organisations/support-grant/support-grant.repository.ts';
 import { CardPaymentRepository } from './registrations/card-payment/card-payment.repository.ts';
 import { ClaimedDiscountVerificationRepository } from './registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
+import { ErasureRepository } from './registrations/erasure/erasure.repository.ts';
 import { GuardianEmailChangeRepository } from './registrations/guardian-email-change/guardian-email-change.repository.ts';
 import { ParticipantExportRepository } from './registrations/participant-export/participant-export.repository.ts';
 import { PaymentRepository } from './registrations/payment/payment.repository.ts';
@@ -42,6 +43,7 @@ const REPOSITORIES = [
   SupportGrantRepository,
   ProblemReportRepository,
   CardPaymentRepository,
+  ErasureRepository,
   ConsentRepository,
   ConsentSignatureRepository,
   DocumentTypeRepository,

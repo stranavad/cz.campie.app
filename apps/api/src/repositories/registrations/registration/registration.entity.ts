@@ -17,6 +17,7 @@ export class RegistrationEntity {
   public readonly depositTotal: number | null;
   public readonly answers: Answers;
   public readonly submittedAt: Date;
+  public readonly erasedAt: Date | null;
 
   constructor(row: RegistrationSelectModel) {
     this.id = row.id;
@@ -27,5 +28,6 @@ export class RegistrationEntity {
     this.depositTotal = row.depositTotal;
     this.answers = row.answers;
     this.submittedAt = row.submittedAt;
+    this.erasedAt = row.erasedAt;
   }
 }

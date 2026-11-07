@@ -282,5 +282,16 @@
     "unsignedConsent": "Nepodepsaný souhlas",
     "missingDocument": "Chybí dokument",
     "missingAnswers": "Chybí údaje"
+  },
+  "erase": {
+    "title": "Smazat osobní údaje",
+    "intro": "Nevratně smaže jména, kontakty, odpovědi, souhlasy, dokumenty a všechny soubory této přihlášky. Děti se zruší a uvolní místa. Zůstane jen účetní záznam: turnus, variabilní symbol, ceny a platby.",
+    "open": "Smazat osobní údaje…",
+    "word": "SMAZAT",
+    "confirm": "Pro potvrzení napište {{word}}",
+    "do": "Nevratně smazat",
+    "cancel": "Zrušit",
+    "done": "Osobní údaje přihlášky jsou smazané.",
+    "failed": "Smazání se nepodařilo."
   }
 }

@@ -344,6 +344,11 @@ export class DocumentReviewService {
    * @throws {NotFoundException} when the Registration has no such child
    */
   private async childOf(registrationId: string, participantId: string): Promise<ParticipantEntity> {
+    // Locked so an erasure waits for what is handed in now; an erased Registration takes nothing.
+    if ((await this.registrations.lockByIdOrThrow(registrationId)).erasedAt !== null) {
+      throw new NotFoundException();
+    }
+
     const participant = (await this.registrations.listParticipants(registrationId)).find(
       ({ id }) => id === participantId,
     );

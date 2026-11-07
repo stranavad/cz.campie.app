@@ -8,6 +8,7 @@ import { czechDate, czechDateTime, czk } from '@repo/schema/shared';
 
 import { Button } from '@/components/ui/button';
 import { AdminActions } from '@/features/participants/components/admin-actions';
+import { EraseRegistration } from '@/features/participants/components/erase-registration';
 import { LedgerForms } from '@/features/participants/components/ledger-forms';
 import { RegistrationConsents } from '@/features/participants/components/registration-consents';
 import { RegistrationControls } from '@/features/participants/components/registration-controls';
@@ -113,8 +114,12 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
             last: participant.lastName,
           })}
         >
-          <Row label={t('detail.birthDate')} value={czechDate(participant.birthDate)} />
-          <Row label={t('detail.ageOnStart')} value={String(participant.ageOnStart)} />
+          {participant.birthDate === null ? null : (
+            <Row label={t('detail.birthDate')} value={czechDate(participant.birthDate)} />
+          )}
+          {participant.ageOnStart === null ? null : (
+            <Row label={t('detail.ageOnStart')} value={String(participant.ageOnStart)} />
+          )}
           {participant.answers.map((row) => (
             <Row key={row.key} label={answerLabel(row)} value={shown(row.value)} />
           ))}
@@ -201,6 +206,9 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
       />
       {page.canWrite ? <AdminActions organisationId={page.organisationId} detail={detail} /> : null}
       {page.canWrite ? <RegistrationControls organisationId={page.organisationId} detail={detail} /> : null}
+      {page.isOwner && detail.guardians.length > 0 ? (
+        <EraseRegistration organisationId={page.organisationId} registrationId={registrationId} />
+      ) : null}
       <Section title={t('detail.declarations')}>
         {detail.declarations.map((declaration, index) => (
           <p key={index} className="text-sm">

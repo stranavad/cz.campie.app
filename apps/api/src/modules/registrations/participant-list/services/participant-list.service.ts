@@ -163,7 +163,7 @@ export class ParticipantListService {
           registrationId: registration.id,
           firstName: participant.firstName,
           lastName: participant.lastName,
-          ageOnStart: ageOnStart(participant.birthDate, turnus.startDate),
+          ageOnStart: participant.birthDate === null ? 0 : ageOnStart(participant.birthDate, turnus.startDate),
           guardianName: `${guardian.firstName} ${guardian.lastName}`,
           guardianEmail: guardian.email,
           variableSymbol: registration.variableSymbol,

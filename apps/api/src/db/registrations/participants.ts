@@ -19,7 +19,8 @@ export const participants = p.snakeCase.table.withRLS(
     position: p.integer().notNull(),
     firstName: p.text().notNull(),
     lastName: p.text().notNull(),
-    birthDate: p.date({ mode: 'string' }).notNull(),
+    // Null only once the Registration is erased.
+    birthDate: p.date({ mode: 'string' }),
     status: participantStatus().notNull().default('registered'),
     answers: p.jsonb().$type<Answers>().notNull().default({}),
     // No foreign key to files, as for logos: the Přihláška is replaced or removed through the Participant.

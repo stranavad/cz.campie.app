@@ -54,8 +54,9 @@ export const registrationDetailSchema = z.object({
       position: z.number().int(),
       firstName: z.string(),
       lastName: z.string(),
-      birthDate: calendarDateSchema,
-      ageOnStart: z.number().int(),
+      // Null once the Registration is erased.
+      birthDate: calendarDateSchema.nullable(),
+      ageOnStart: z.number().int().nullable(),
       status: z.enum(PARTICIPANT_STATUSES),
       prihlaska: fileLinkSchema.nullable(),
       answers: z.array(answerRowSchema),

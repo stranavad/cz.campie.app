@@ -88,7 +88,7 @@ export class RegistrationDetailService {
           firstName: participant.firstName,
           lastName: participant.lastName,
           birthDate: participant.birthDate,
-          ageOnStart: ageOnStart(participant.birthDate, turnus.startDate),
+          ageOnStart: participant.birthDate === null ? null : ageOnStart(participant.birthDate, turnus.startDate),
           status: participant.status,
           prihlaska: participant.prihlaskaFileId === null ? null : await this.files.link(participant.prihlaskaFileId),
           answers: rowsOf('participant', participant.answers),

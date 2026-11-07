@@ -13,7 +13,7 @@ export class ParticipantEntity {
   public readonly position: number;
   public readonly firstName: string;
   public readonly lastName: string;
-  public readonly birthDate: string;
+  public readonly birthDate: string | null;
   public readonly status: ParticipantStatus;
   public readonly answers: Answers;
   public readonly prihlaskaFileId: string | null;

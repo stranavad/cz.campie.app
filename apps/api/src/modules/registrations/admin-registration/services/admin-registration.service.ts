@@ -17,6 +17,7 @@ import type {
   AdminRegistrationErrorCode,
   EditAnswersBody,
   EditGuardianBody,
+  ErasureErrorCode,
   PriceChange,
   RegistrationDetail,
   SaveAddParticipantBody,
@@ -511,6 +512,12 @@ export class AdminRegistrationService {
     const registration = lock
       ? await this.registrations.lockByIdOrThrow(registrationId)
       : await this.registrations.getByIdOrThrow(registrationId);
+
+    if (registration.erasedAt !== null) {
+      const code: ErasureErrorCode = 'registration_erased';
+
+      throw new ConflictException({ code, message: 'The Registration was erased' });
+    }
     const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
     const camp = await this.camps.getByIdOrThrow(turnus.campId);
     const version = await this.forms.getVersionByIdOrThrow(registration.formVersionId);
@@ -580,7 +587,7 @@ export class AdminRegistrationService {
       children.set(participantId, {
         firstName: typeof firstName === 'string' ? firstName : participant.firstName,
         lastName: typeof lastName === 'string' ? lastName : participant.lastName,
-        birthDate: typeof birthDate === 'string' ? birthDate : participant.birthDate,
+        birthDate: typeof birthDate === 'string' ? birthDate : (participant.birthDate ?? ''),
         answers: merged(participant.answers, rest),
       });
     });

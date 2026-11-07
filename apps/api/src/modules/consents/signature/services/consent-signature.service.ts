@@ -194,6 +194,8 @@ export class ConsentSignatureService {
     }
 
     await this.rateLimiter.admit(this.limit, { ipAddress: actor.ipAddress, target: actor.identity });
+    // The Registration's lock keeps an erasure out until the signature commits; after one, the family is gone.
+    await this.registrations.lockById(params.registrationId);
     const { participant, version } = await this.signable(actor.identity, params, true);
 
     if (version.id !== body.consentVersionId) {
@@ -347,7 +349,7 @@ export class ConsentSignatureService {
         campName: camp.name,
         participant: {
           name: `${participant.firstName} ${participant.lastName}`,
-          birthDate: czechDate(participant.birthDate),
+          birthDate: participant.birthDate === null ? '-' : czechDate(participant.birthDate),
         },
         consent: {
           title: version.title,
@@ -400,7 +402,13 @@ export class ConsentSignatureService {
     }
 
     const participant = await this.registrations.getParticipantOrThrow(signature.participantId);
-    const registration = await this.registrations.getByIdOrThrow(participant.registrationId);
+    const registration = await this.registrations.lockByIdOrThrow(participant.registrationId);
+
+    // An erasure that came first removed the signature's family; nothing is left to print.
+    if (registration.erasedAt !== null) {
+      return;
+    }
+
     const recipient = (await this.registrations.listGuardians(registration.id))[guardian - 1];
     const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
 

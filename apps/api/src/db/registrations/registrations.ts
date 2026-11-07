@@ -24,6 +24,8 @@ export const registrations = p.snakeCase.table.withRLS(
     depositTotal: p.integer(),
     answers: p.jsonb().$type<Answers>().notNull().default({}),
     submittedAt: p.timestamp({ withTimezone: true }).notNull(),
+    // When the Owner erased it to an accounting tombstone; null for a Registration with its data.
+    erasedAt: p.timestamp({ withTimezone: true }),
   },
   (table) => [
     p.unique('registrations_organisation_id_id_key').on(table.organisationId, table.id),

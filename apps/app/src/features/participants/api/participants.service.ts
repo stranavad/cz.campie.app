@@ -23,6 +23,7 @@ import {
   createRegistrationEndpoint,
   editAnswersEndpoint,
   editGuardianEndpoint,
+  eraseRegistrationEndpoint,
   getExportOptionsEndpoint,
   getParticipantExportEndpoint,
   getRegistrationDetailEndpoint,
@@ -170,4 +171,6 @@ export const participantsService = {
     apiClient.request(sendOpenItemsReminderEndpoint, { organisationId, params: { turnusId } }),
   overview: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
     apiClient.request(getTurnusOverviewEndpoint, { organisationId, params: { turnusId }, signal }),
+  erase: (organisationId: string, registrationId: string) =>
+    apiClient.request(eraseRegistrationEndpoint, { organisationId, params: { registrationId } }),
 };

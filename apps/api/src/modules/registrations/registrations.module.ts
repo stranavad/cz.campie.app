@@ -13,6 +13,8 @@ import { GuardianChecklistController } from './checklist/guardian-checklist.cont
 import { ChecklistService } from './checklist/services/checklist.service.ts';
 import { SendConfirmationHandler } from './confirmation/send-confirmation.handler.ts';
 import { ConfirmationService } from './confirmation/services/confirmation.service.ts';
+import { ErasureController } from './erasure/erasure.controller.ts';
+import { ErasureService } from './erasure/services/erasure.service.ts';
 import { EmailChangeConfirmedHandler } from './guardian-email/guardian-email-notice.handler.ts';
 import { GuardianEmailNoticeService } from './guardian-email/services/guardian-email-notice.service.ts';
 import { LedgerController } from './ledger/ledger.controller.ts';
@@ -53,6 +55,7 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     PaymentReminderController,
     GuardianChecklistController,
     OpenItemsReminderController,
+    ErasureController,
   ],
   providers: [
     RegistrationService,
@@ -69,6 +72,7 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     CardPaymentService,
     PaymentReminderService,
     ChecklistService,
+    ErasureService,
     OpenItemsReminderService,
     SendOpenItemsReminderHandler,
     SendPaymentReminderHandler,

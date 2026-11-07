@@ -110,7 +110,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 63  | Support access                                 | E9 Trust     | done            | 10, 21     |
 | 64  | Feedback and problem reports                   | E9           | done            | 21         |
 | 65  | Audit log browser                              | E9           | done            | 10, 19     |
-| 66  | Erase a Registration                           | E9           | ready-for-agent | 12, 45     |
+| 66  | Erase a Registration                           | E9           | done            | 12, 45     |
 | 67  | TOTP for admins and enforcement                | E1           | ready-for-agent | 18, 21     |
 | 68  | Bounce and complaint handling                  | E3           | ready-for-agent | 16, 42     |
 

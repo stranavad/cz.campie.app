@@ -80,10 +80,14 @@ const nameOf = (guardian: GuardianFields | undefined) =>
 const FIXED: Readonly<Record<FixedExportColumn, { readonly header: string; readonly cell: (row: Row) => Cell }>> = {
   lastName: { header: 'Příjmení', cell: ({ participant }) => participant.lastName },
   firstName: { header: 'Jméno', cell: ({ participant }) => participant.firstName },
-  birthDate: { header: 'Datum narození', cell: ({ participant }) => czechDate(participant.birthDate) },
+  birthDate: {
+    header: 'Datum narození',
+    cell: ({ participant }) => (participant.birthDate === null ? null : czechDate(participant.birthDate)),
+  },
   ageOnStart: {
     header: 'Věk v den začátku',
-    cell: ({ participant, turnus }) => ageOnStart(participant.birthDate, turnus.startDate),
+    cell: ({ participant, turnus }) =>
+      participant.birthDate === null ? null : ageOnStart(participant.birthDate, turnus.startDate),
   },
   status: { header: 'Stav', cell: ({ participant }) => STATUS_HEADERS[participant.status] },
   variableSymbol: { header: 'Variabilní symbol', cell: ({ registration }) => registration.variableSymbol },

@@ -1,6 +1,6 @@
 # 66 - Erase a Registration
 
-Status: ready-for-agent
+Status: done
 Stage: 1b
 Episode: E9 Trust
 Blocked by: 12, 45
@@ -12,12 +12,12 @@ Removing a Registration offers Cancel all (issue 45) or Erase. Erase is Owner on
 
 ## Acceptance criteria
 
-- [ ] After erasure no object of the Registration exists in storage (fake storage checked).
-- [ ] No personal data remains in any table for that Registration; the tombstone and ledger remain and appear in the payments export.
-- [ ] Places are freed for Registered Participants.
-- [ ] Audit entries remain with diffs and IPs scrubbed; a new erasure entry exists.
-- [ ] Guardians lose portal access to the Registration.
-- [ ] Non-Owners get 403; the Variable symbol is never reused.
+- [x] After erasure no object of the Registration exists in storage (fake storage checked).
+- [x] No personal data remains in any table for that Registration; the tombstone and ledger remain and appear in the payments export.
+- [x] Places are freed for Registered Participants.
+- [x] Audit entries remain with diffs and IPs scrubbed; a new erasure entry exists.
+- [x] Guardians lose portal access to the Registration.
+- [x] Non-Owners get 403; the Variable symbol is never reused.
 
 ## Notes
 
@@ -31,3 +31,5 @@ Removing a Registration offers Cancel all (issue 45) or Erase. Erase is Owner on
 2026-11-07 - **From issues 57 and 58.** `document_uploads` and `internal_documents` cascade from `participants`, which would leave their stored files behind: erasure must remove their files through `FileService` (and the consent signature PDFs, see above) before any Participant row goes.
 
 2026-11-07 - **From the security review after issue 62.** Export files (`participant_exports`) hold children's personal data; each is removed with its file a day after it was made (`registrations.remove-export`, a delayed job), so erasure need not list them beyond that day.
+
+2026-11-07 - **Done.** `POST /registrations/:id/erase` (Owners only, `ErasureService`): under the Registration's lock it cancels the Registered Participants (freeing their places), gathers every stored file (Přihlášky, handed-in documents, Internal documents, signed Consent PDFs) and removes each through `FileService`, deletes handed-in and Internal document records, Claimed discount verifications, declaration answers, email changes, access emails and guardians, and turns the Participants into "Smazáno" with no birth date (`participants.birth_date` is now nullable for this) and no answers; the Registration keeps its Turnus, Variable symbol, price lines and ledger, gains `erased_at`, and is never reused. What the API role may otherwise never change is erased by one `SECURITY DEFINER` function, `erase_registration_protected(registration)`, limited to a Registration of the current Organisation (`app.organisation_id`): it deletes the Consent signatures and withdrawals, blanks Price adjustment notes, and scrubs the audit entries of the Registration and its Participants (values, encrypted field names, IP addresses, guardian identities). The erasure is audited `registration.erase`. Every other writer of a Registration's personal data (Přihláška and signed Consent PDF jobs, signing, handing in documents, admin edits) takes the Registration's lock first and stops on an erased one, so nothing lands after an erasure. Payment notes stay with the ledger. Export files with the child are removed a day after they were made anyway. UI: "Smazat osobní údaje" on the Registration detail for Owners, confirmed by typing SMAZAT.

@@ -91,12 +91,20 @@ export class PrihlaskaService {
    * @param participantId Participant id
    */
   private async generateFor(actor: Actor, basis: PrihlaskaBasis, participantId: string): Promise<void> {
+    // The Registration's lock keeps an erasure out until this commits; one that came first leaves nothing
+    // to print.
+    const { registrationId } = await this.registrations.getParticipantOrThrow(participantId);
+
+    if ((await this.registrations.lockById(registrationId))?.erasedAt !== null) {
+      return;
+    }
+
     const participant = await this.registrations.lockParticipantOrThrow(participantId);
     const props: PrihlaskaProps = {
       ...basis.shared,
       participant: {
         name: `${participant.firstName} ${participant.lastName}`,
-        birthDate: czechDate(participant.birthDate),
+        birthDate: participant.birthDate === null ? '-' : czechDate(participant.birthDate),
         answers: rowsOf(basis.definition, 'participant', participant.answers),
       },
       otherParticipants: basis.participants

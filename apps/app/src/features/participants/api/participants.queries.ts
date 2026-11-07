@@ -286,3 +286,6 @@ export const useTurnusOverviewQuery = (organisationId: string, turnusId: string 
     queryFn:
       turnusId === null ? skipToken : ({ signal }) => participantsService.overview(organisationId, turnusId, signal),
   });
+
+export const useEraseRegistrationMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, () => participantsService.erase(organisationId, registrationId));

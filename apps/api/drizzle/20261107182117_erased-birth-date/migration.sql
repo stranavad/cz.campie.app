@@ -1,0 +1,1 @@
+ALTER TABLE "participants" ALTER COLUMN "birth_date" DROP NOT NULL;

@@ -128,6 +128,8 @@ export class GuardianDocumentService {
     }
 
     await this.rateLimiter.admit(this.limit, { ipAddress: actor.ipAddress, target: actor.identity });
+    // The Registration's lock keeps an erasure out until the document commits; after one, the family is gone.
+    await this.registrations.lockById(params.registrationId);
     const { camp, participants } = await this.familyOf(actor.identity, params.registrationId);
     const participant = participants.find(({ id }) => id === params.participantId);
 
