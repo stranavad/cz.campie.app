@@ -1,6 +1,9 @@
 import {
+  addAccessEmailEndpoint,
   addParticipantEndpoint,
   addPriceAdjustmentEndpoint,
+  cancelParticipantEndpoint,
+  cancelRegistrationEndpoint,
   createRegistrationEndpoint,
   editAnswersEndpoint,
   editGuardianEndpoint,
@@ -13,6 +16,9 @@ import {
   previewAddParticipantEndpoint,
   previewEditAnswersEndpoint,
   recordPaymentEndpoint,
+  regeneratePrihlaskaEndpoint,
+  removeAccessEmailEndpoint,
+  removeGuardianEndpoint,
   setSelectedTurnusEndpoint,
   verifyClaimedDiscountEndpoint,
   type AddParticipantBody,
@@ -75,4 +81,19 @@ export const participantsService = {
     apiClient.request(getTurnusFormEndpoint, { organisationId, params: { turnusId }, signal }),
   create: (organisationId: string, campId: string, body: SubmitRegistrationBody) =>
     apiClient.request(createRegistrationEndpoint, { organisationId, params: { campId }, body }),
+  cancelParticipant: (organisationId: string, registrationId: string, participantId: string) =>
+    apiClient.request(cancelParticipantEndpoint, { organisationId, params: { registrationId, participantId } }),
+  cancelAll: (organisationId: string, registrationId: string) =>
+    apiClient.request(cancelRegistrationEndpoint, { organisationId, params: { registrationId } }),
+  addAccessEmail: (organisationId: string, registrationId: string, email: string) =>
+    apiClient.request(addAccessEmailEndpoint, { organisationId, params: { registrationId }, body: { email } }),
+  removeAccessEmail: (organisationId: string, registrationId: string, accessEmailId: string) =>
+    apiClient.request(removeAccessEmailEndpoint, { organisationId, params: { registrationId, accessEmailId } }),
+  removeGuardian: (organisationId: string, registrationId: string, position: number) =>
+    apiClient.request(removeGuardianEndpoint, {
+      organisationId,
+      params: { registrationId, position: position === 1 ? '1' : '2' },
+    }),
+  regeneratePrihlaska: (organisationId: string, registrationId: string, participantId: string) =>
+    apiClient.request(regeneratePrihlaskaEndpoint, { organisationId, params: { registrationId, participantId } }),
 };

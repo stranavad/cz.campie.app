@@ -82,7 +82,16 @@
       "registration_guardian.update": "změnil údaje zástupce",
       "registration_guardian.create": "přidal zástupce",
       "registration_guardian.request_email_change": "požádal o změnu e-mailu",
-      "registration.answer": "doplnil odpovědi"
+      "registration.answer": "doplnil odpovědi",
+      "participant.cancel": "zrušil dítě",
+      "participant.request_prihlaska": "požádal o nové PDF",
+      "registration_guardian.remove": "odebral zástupce",
+      "registration_access_email.create": "přidal e-mail s přístupem",
+      "registration_access_email.remove": "odebral e-mail s přístupem",
+      "registration.create": "založil přihlášku",
+      "registration.edit": "upravil odpovědi",
+      "registration.move": "přesunul přihlášku",
+      "participant.create": "přidal dítě"
     },
     "addPayment": "Zapsat platbu",
     "payment": "Platba",
@@ -140,5 +149,21 @@
     "failed": "Přihlášku se nepodařilo založit. Zkontrolujte údaje.",
     "submit": "Založit přihlášku",
     "open": "Nová přihláška"
+  },
+  "controls": {
+    "title": "Zrušení a přístupy",
+    "regenerate": "Vytvořit PDF znovu",
+    "regenerating": "PDF se vytváří, za chvíli bude v detailu.",
+    "cancel": "Zrušit",
+    "cancelAll": "Zrušit všechny děti",
+    "cancelNote": "Zrušení uvolní místo a nemění peníze. Storno poplatky a vratky zapište ručně.",
+    "guardian": "Zástupce: {{email}}",
+    "removeGuardian": "Odebrat zástupce",
+    "accessEmails": "Další e-maily s přístupem do portálu",
+    "newAccessEmail": "E-mail",
+    "add": "Přidat",
+    "remove": "Odebrat",
+    "addFailed": "E-mail se nepodařilo přidat; možná ho přihláška už má.",
+    "confirm": "Opravdu? Potvrdit"
   }
 }

@@ -2,7 +2,10 @@ import { Controller } from '@nestjs/common';
 
 import type { CampParams } from '@repo/schema/camps';
 import {
+  addAccessEmailEndpoint,
   addParticipantEndpoint,
+  cancelParticipantEndpoint,
+  cancelRegistrationEndpoint,
   createRegistrationEndpoint,
   editAnswersEndpoint,
   editGuardianEndpoint,
@@ -10,11 +13,17 @@ import {
   moveRegistrationEndpoint,
   previewAddParticipantEndpoint,
   previewEditAnswersEndpoint,
+  regeneratePrihlaskaEndpoint,
+  removeAccessEmailEndpoint,
+  removeGuardianEndpoint,
+  type AccessEmailBody,
+  type AccessEmailParams,
   type AddParticipantBody,
   type AdminGuardianParams,
   type EditAnswersBody,
   type EditGuardianBody,
   type MoveRegistrationBody,
+  type ParticipantParams,
   type PriceChange,
   type RegistrationDetail,
   type RegistrationParams,
@@ -31,6 +40,7 @@ import { Requires } from '../../../core/access/permission.ts';
 import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
+import { CancellationService } from '../cancellation/services/cancellation.service.ts';
 import { RegistrationService } from '../registration/services/registration.service.ts';
 import { AdminRegistrationService } from './services/admin-registration.service.ts';
 
@@ -41,7 +51,57 @@ export class AdminRegistrationController {
   constructor(
     private readonly registrations: RegistrationService,
     private readonly admin: AdminRegistrationService,
+    private readonly cancellations: CancellationService,
   ) {}
+
+  @Endpoint(cancelParticipantEndpoint)
+  public cancelParticipant(
+    @RequestActor() actor: Actor,
+    @EndpointParams(cancelParticipantEndpoint) { registrationId, participantId }: ParticipantParams,
+  ): Promise<RegistrationDetail> {
+    return this.cancellations.cancelParticipant(actor, registrationId, participantId);
+  }
+
+  @Endpoint(cancelRegistrationEndpoint)
+  public cancelAll(
+    @RequestActor() actor: Actor,
+    @EndpointParams(cancelRegistrationEndpoint) { registrationId }: RegistrationParams,
+  ): Promise<RegistrationDetail> {
+    return this.cancellations.cancelAll(actor, registrationId);
+  }
+
+  @Endpoint(addAccessEmailEndpoint)
+  public addAccessEmail(
+    @RequestActor() actor: Actor,
+    @EndpointParams(addAccessEmailEndpoint) { registrationId }: RegistrationParams,
+    @EndpointBody(addAccessEmailEndpoint) { email }: AccessEmailBody,
+  ): Promise<RegistrationDetail> {
+    return this.admin.addAccessEmail(actor, registrationId, email);
+  }
+
+  @Endpoint(removeAccessEmailEndpoint)
+  public removeAccessEmail(
+    @RequestActor() actor: Actor,
+    @EndpointParams(removeAccessEmailEndpoint) { registrationId, accessEmailId }: AccessEmailParams,
+  ): Promise<RegistrationDetail> {
+    return this.admin.removeAccessEmail(actor, registrationId, accessEmailId);
+  }
+
+  @Endpoint(removeGuardianEndpoint)
+  public removeGuardian(
+    @RequestActor() actor: Actor,
+    @EndpointParams(removeGuardianEndpoint) { registrationId, position }: AdminGuardianParams,
+  ): Promise<RegistrationDetail> {
+    return this.admin.removeGuardian(actor, registrationId, position);
+  }
+
+  @Endpoint(regeneratePrihlaskaEndpoint)
+  public regeneratePrihlaska(
+    @RequestActor() actor: Actor,
+    @EndpointParams(regeneratePrihlaskaEndpoint) { registrationId, participantId }: ParticipantParams,
+  ): Promise<void> {
+    return this.admin.regeneratePrihlaska(actor, registrationId, participantId);
+  }
 
   @Endpoint(createRegistrationEndpoint)
   public create(

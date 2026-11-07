@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, count, desc, eq, inArray, sql, sum } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull, or, sql, sum } from 'drizzle-orm';
 
 import type { Answers } from '@repo/schema/form-engine';
 import type { PriceLineKind, SurchargeSource } from '@repo/schema/pricing';
@@ -7,8 +7,10 @@ import type { PriceLineKind, SurchargeSource } from '@repo/schema/pricing';
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import {
   declarationAnswers,
+  guardianEmailChanges,
   participants,
   priceLines,
+  registrationAccessEmails,
   registrationGuardians,
   registrations,
 } from '../../../db/schema.ts';
@@ -110,29 +112,149 @@ export class RegistrationRepository {
    */
   public async listByGuardian(email: string): Promise<RegistrationEntity[]> {
     const rows = await this.unitOfWork.db
-      .selectDistinct({ registration: registrations })
+      .select()
       .from(registrations)
-      .innerJoin(registrationGuardians, eq(registrationGuardians.registrationId, registrations.id))
-      .where(eq(registrationGuardians.email, email))
+      .where(this.namesEmail(email))
       .orderBy(desc(registrations.submittedAt), desc(registrations.id));
 
-    return rows.map(({ registration }) => new RegistrationEntity(registration));
+    return rows.map((row) => new RegistrationEntity(row));
   }
 
   /**
    * Get a Registration of the current Organisation that names a guardian by email.
    * @param email the guardian's email, lowercase
    * @param id Registration id
+   * @param access whether an access email counts too, as it does for seeing the Registration but not for
+   * changing it
    */
-  public async getByGuardian(email: string, id: string): Promise<RegistrationEntity | null> {
+  public async getByGuardian(email: string, id: string, access = true): Promise<RegistrationEntity | null> {
     const [row] = await this.unitOfWork.db
-      .select({ registration: registrations })
+      .select()
       .from(registrations)
-      .innerJoin(registrationGuardians, eq(registrationGuardians.registrationId, registrations.id))
-      .where(and(eq(registrations.id, id), eq(registrationGuardians.email, email)))
-      .limit(1);
+      .where(and(eq(registrations.id, id), this.namesEmail(email, access)));
 
-    return row === undefined ? null : new RegistrationEntity(row.registration);
+    return row === undefined ? null : new RegistrationEntity(row);
+  }
+
+  /**
+   * List a Registration's access emails.
+   * @param registrationId Registration id
+   */
+  public async listAccessEmails(registrationId: string): Promise<{ id: string; email: string }[]> {
+    return this.unitOfWork.db
+      .select({ id: registrationAccessEmails.id, email: registrationAccessEmails.email })
+      .from(registrationAccessEmails)
+      .where(eq(registrationAccessEmails.registrationId, registrationId))
+      .orderBy(asc(registrationAccessEmails.email));
+  }
+
+  /**
+   * Give an address access to a Registration of the current Organisation.
+   * @param registrationId Registration id
+   * @param email the address, lowercase
+   * @returns false when the Registration has the address already
+   */
+  public async addAccessEmail(registrationId: string, email: string): Promise<boolean> {
+    const rows = await this.unitOfWork.db
+      .insert(registrationAccessEmails)
+      .values({ registrationId, email, organisationId: this.unitOfWork.organisationId })
+      .onConflictDoNothing()
+      .returning({ id: registrationAccessEmails.id });
+
+    return rows.length > 0;
+  }
+
+  /**
+   * Take an access email of a Registration away.
+   * @param registrationId Registration id
+   * @param id the access email's id
+   * @returns its address
+   * @throws {NotFoundException} when the Registration has no such access email
+   */
+  public async removeAccessEmail(registrationId: string, id: string): Promise<string> {
+    const [row] = await this.unitOfWork.db
+      .delete(registrationAccessEmails)
+      .where(and(eq(registrationAccessEmails.id, id), eq(registrationAccessEmails.registrationId, registrationId)))
+      .returning({ email: registrationAccessEmails.email });
+
+    if (row === undefined) {
+      throw new NotFoundException();
+    }
+
+    return row.email;
+  }
+
+  /**
+   * Remove one of a Registration's two guardians, and every change of email still waiting; the other becomes
+   * the first.
+   * @param registrationId Registration id
+   * @param position the guardian's position, 1 or 2
+   */
+  public async removeGuardian(registrationId: string, position: number): Promise<void> {
+    // A change of email still waiting names a position, which the other guardian is about to take.
+    await this.unitOfWork.db
+      .delete(guardianEmailChanges)
+      .where(and(eq(guardianEmailChanges.registrationId, registrationId), isNull(guardianEmailChanges.confirmedAt)));
+    await this.unitOfWork.db
+      .delete(registrationGuardians)
+      .where(
+        and(eq(registrationGuardians.registrationId, registrationId), eq(registrationGuardians.position, position)),
+      );
+    await this.unitOfWork.db
+      .update(registrationGuardians)
+      .set({ position: 1 })
+      .where(eq(registrationGuardians.registrationId, registrationId));
+  }
+
+  /**
+   * Mark Participants Cancelled.
+   * @param participantIds Participant ids
+   */
+  public async cancelParticipants(participantIds: readonly string[]): Promise<void> {
+    if (participantIds.length === 0) {
+      return;
+    }
+
+    await this.unitOfWork.db
+      .update(participants)
+      .set({ status: 'cancelled' })
+      .where(inArray(participants.id, [...participantIds]));
+  }
+
+  /**
+   * Match the Registrations that name an email as a guardian or, unless left out, an access email.
+   * @param email the email, lowercase
+   * @param access whether an access email counts
+   */
+  private namesEmail(email: string, access = true) {
+    const guardian = inArray(
+      registrations.id,
+      this.unitOfWork.db
+        .select({ id: registrationGuardians.registrationId })
+        .from(registrationGuardians)
+        .where(eq(registrationGuardians.email, email)),
+    );
+
+    if (!access) {
+      return guardian;
+    }
+
+    return or(
+      inArray(
+        registrations.id,
+        this.unitOfWork.db
+          .select({ id: registrationGuardians.registrationId })
+          .from(registrationGuardians)
+          .where(eq(registrationGuardians.email, email)),
+      ),
+      inArray(
+        registrations.id,
+        this.unitOfWork.db
+          .select({ id: registrationAccessEmails.registrationId })
+          .from(registrationAccessEmails)
+          .where(eq(registrationAccessEmails.email, email)),
+      ),
+    );
   }
 
   /**

@@ -45,6 +45,7 @@ import {
 } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { emailChangeConfirmedJob } from '../../guardian-email/guardian-email-notice.job.ts';
 import { answeredDefinition } from '../../payment/claimed-discounts.helper.ts';
+import { regeneratePrihlaskaJob } from '../../prihlaska/regenerate-prihlaska.job.ts';
 import { RegistrationDetailService } from '../../registration-detail/services/registration-detail.service.ts';
 
 // A Registration with everything a change of it needs.
@@ -397,6 +398,108 @@ export class AdminRegistrationService {
     }
 
     return this.details.get(registrationId);
+  }
+
+  /**
+   * Give another address portal access to a Registration, audited; it receives no automatic email.
+   * @param actor the admin
+   * @param registrationId Registration id
+   * @param email the address
+   * @throws {ConflictException} access_email_taken when the Registration has the address as a guardian or
+   * an access email already
+   */
+  public async addAccessEmail(actor: Actor, registrationId: string, email: string): Promise<RegistrationDetail> {
+    await this.load(registrationId, true);
+    const guardians = await this.registrations.listGuardians(registrationId);
+
+    if (
+      guardians.some((guardian) => guardian.email === email) ||
+      !(await this.registrations.addAccessEmail(registrationId, email))
+    ) {
+      throw refused('access_email_taken');
+    }
+
+    await this.audit.record(actor, {
+      action: 'registration_access_email.create',
+      target: { type: 'registration', id: registrationId },
+      change: { before: null, after: { email } },
+    });
+
+    return this.details.get(registrationId);
+  }
+
+  /**
+   * Take an access email's portal access away, audited.
+   * @param actor the admin
+   * @param registrationId Registration id
+   * @param accessEmailId the access email
+   */
+  public async removeAccessEmail(
+    actor: Actor,
+    registrationId: string,
+    accessEmailId: string,
+  ): Promise<RegistrationDetail> {
+    await this.load(registrationId, true);
+    const email = await this.registrations.removeAccessEmail(registrationId, accessEmailId);
+
+    await this.audit.record(actor, {
+      action: 'registration_access_email.remove',
+      target: { type: 'registration', id: registrationId },
+      change: { before: { email }, after: null },
+    });
+
+    return this.details.get(registrationId);
+  }
+
+  /**
+   * Remove one of two guardians, who loses access at once, audited; the other becomes the first.
+   * @param actor the admin
+   * @param registrationId Registration id
+   * @param position the guardian's position, 1 or 2
+   * @throws {ConflictException} guardian_last when the Registration would have no guardian
+   */
+  public async removeGuardian(actor: Actor, registrationId: string, position: number): Promise<RegistrationDetail> {
+    await this.load(registrationId, true);
+    const guardians = await this.registrations.listGuardians(registrationId);
+    const removed = guardians[position - 1];
+
+    if (removed === undefined) {
+      throw new NotFoundException();
+    }
+
+    if (guardians.length < 2) {
+      throw refused('guardian_last');
+    }
+
+    await this.registrations.removeGuardian(registrationId, position);
+    await this.audit.record(actor, {
+      action: 'registration_guardian.remove',
+      target: { type: 'registration', id: registrationId },
+      change: { before: { position, ...removed }, after: null },
+    });
+
+    return this.details.get(registrationId);
+  }
+
+  /**
+   * Ask for a Participant's Přihláška to be generated again, from a job, audited.
+   * @param actor the admin
+   * @param registrationId Registration id
+   * @param participantId Participant id
+   * @throws {NotFoundException} when the Registration has no such Participant
+   */
+  public async regeneratePrihlaska(actor: Actor, registrationId: string, participantId: string): Promise<void> {
+    const { participants } = await this.load(registrationId, false);
+
+    if (!participants.some(({ id }) => id === participantId)) {
+      throw new NotFoundException();
+    }
+
+    await this.audit.record(actor, {
+      action: 'participant.request_prihlaska',
+      target: { type: 'participant', id: participantId },
+    });
+    this.jobs.enqueue(regeneratePrihlaskaJob, { participantId });
   }
 
   /**

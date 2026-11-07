@@ -269,7 +269,8 @@ export class GuardianEditService {
    * @throws {NotFoundException} when no Registration of the Organisation with this id names the guardian
    */
   public async load(email: string, registrationId: string): Promise<EditableRegistration> {
-    const registration = await this.registrations.getByGuardian(email, registrationId);
+    // Only a guardian changes a Registration; an access email may only see it.
+    const registration = await this.registrations.getByGuardian(email, registrationId, false);
 
     if (registration === null) {
       throw new NotFoundException();

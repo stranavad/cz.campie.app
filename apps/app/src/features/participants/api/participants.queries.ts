@@ -125,3 +125,31 @@ export const useCreateRegistrationMutation = (organisationId: string) =>
   useRegistrationChange(organisationId, ({ campId, body }: { campId: string; body: SubmitRegistrationBody }) =>
     participantsService.create(organisationId, campId, body),
   );
+
+export const useCancelParticipantMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, (participantId: string) =>
+    participantsService.cancelParticipant(organisationId, registrationId, participantId),
+  );
+
+export const useCancelAllMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, () => participantsService.cancelAll(organisationId, registrationId));
+
+export const useAddAccessEmailMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, (email: string) =>
+    participantsService.addAccessEmail(organisationId, registrationId, email),
+  );
+
+export const useRemoveAccessEmailMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, (accessEmailId: string) =>
+    participantsService.removeAccessEmail(organisationId, registrationId, accessEmailId),
+  );
+
+export const useRemoveGuardianMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, (position: number) =>
+    participantsService.removeGuardian(organisationId, registrationId, position),
+  );
+
+export const useRegeneratePrihlaskaMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, (participantId: string) =>
+    participantsService.regeneratePrihlaska(organisationId, registrationId, participantId),
+  );

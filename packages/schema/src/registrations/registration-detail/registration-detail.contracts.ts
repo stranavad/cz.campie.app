@@ -46,6 +46,8 @@ export const registrationDetailSchema = z.object({
       phone: z.string().nullable(),
     }),
   ),
+  // Addresses an admin gave portal access, beyond the guardians.
+  accessEmails: z.array(z.object({ id: z.uuid(), email: z.string() })),
   participants: z.array(
     z.object({
       id: z.uuid(),

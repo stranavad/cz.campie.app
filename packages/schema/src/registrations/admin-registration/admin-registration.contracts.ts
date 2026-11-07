@@ -156,6 +156,73 @@ export const getTurnusFormEndpoint = defineEndpoint({
   response: turnusFormSchema,
 });
 
+export const participantParamsSchema = z.object({ registrationId: z.uuid(), participantId: z.uuid() });
+
+export type ParticipantParams = z.infer<typeof participantParamsSchema>;
+
+// Cancels a Participant: its place is free at once, its record and every amount stay; storno fees and refunds
+// are settled by hand. The guardians are told with the balance. Audited; Registrations write.
+export const cancelParticipantEndpoint = defineEndpoint({
+  method: 'POST',
+  path: '/registrations/:registrationId/participants/:participantId/cancel',
+  params: participantParamsSchema,
+  response: registrationDetailSchema,
+  status: 200,
+});
+
+// Cancels every Participant of a Registration, which has no state of its own. Audited; Registrations write.
+export const cancelRegistrationEndpoint = defineEndpoint({
+  method: 'POST',
+  path: '/registrations/:registrationId/cancel',
+  params: registrationParamsSchema,
+  response: registrationDetailSchema,
+  status: 200,
+});
+
+export const accessEmailBodySchema = z.object({ email: emailSchema });
+
+export type AccessEmailBody = z.infer<typeof accessEmailBodySchema>;
+
+// Gives another address, such as a grandparent's, access to the Registration in the portal; it receives no
+// automatic email. Audited; Registrations write.
+export const addAccessEmailEndpoint = defineEndpoint({
+  method: 'POST',
+  path: '/registrations/:registrationId/access-emails',
+  params: registrationParamsSchema,
+  body: accessEmailBodySchema,
+  response: registrationDetailSchema,
+});
+
+export const accessEmailParamsSchema = z.object({ registrationId: z.uuid(), accessEmailId: z.uuid() });
+
+export type AccessEmailParams = z.infer<typeof accessEmailParamsSchema>;
+
+// Takes an access email's access away. Audited; Registrations write.
+export const removeAccessEmailEndpoint = defineEndpoint({
+  method: 'DELETE',
+  path: '/registrations/:registrationId/access-emails/:accessEmailId',
+  params: accessEmailParamsSchema,
+  response: registrationDetailSchema,
+});
+
+// Removes one of two guardians, who loses access at once; the other becomes the first. Audited; Registrations
+// write.
+export const removeGuardianEndpoint = defineEndpoint({
+  method: 'DELETE',
+  path: '/registrations/:registrationId/guardians/:position',
+  params: adminGuardianParamsSchema,
+  response: registrationDetailSchema,
+});
+
+// Generates a Participant's Přihláška again from a job, replacing the stored one once the new one is stored.
+// Audited; Registrations write.
+export const regeneratePrihlaskaEndpoint = defineEndpoint({
+  method: 'POST',
+  path: '/registrations/:registrationId/participants/:participantId/prihlaska',
+  params: participantParamsSchema,
+  status: 202,
+});
+
 // Codes of a refused admin change, which the app translates.
 export const ADMIN_REGISTRATION_ERROR_CODES = [
   'submission_invalid',
@@ -163,6 +230,9 @@ export const ADMIN_REGISTRATION_ERROR_CODES = [
   'guardian_email_taken',
   // The price lines a save would add differ from its preview's, which the admin should see again.
   'price_changed',
+  // A Registration keeps at least one guardian.
+  'guardian_last',
+  'access_email_taken',
 ] as const;
 
 export type AdminRegistrationErrorCode = (typeof ADMIN_REGISTRATION_ERROR_CODES)[number];

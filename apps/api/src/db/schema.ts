@@ -27,6 +27,7 @@ export { participants, participantStatus } from './registrations/participants.ts
 export { paymentSource, payments } from './registrations/payments.ts';
 export { priceAdjustments } from './registrations/price-adjustments.ts';
 export { priceLineKind, priceLines } from './registrations/price-lines.ts';
+export { registrationAccessEmails } from './registrations/registration-access-emails.ts';
 export { registrationGuardians } from './registrations/registration-guardians.ts';
 export { paymentChoice, registrations } from './registrations/registrations.ts';
 export { adminSessions } from './sessions/admin-sessions.ts';

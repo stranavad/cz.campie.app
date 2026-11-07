@@ -80,6 +80,7 @@ export class RegistrationDetailService {
         position: index + 1,
         ...guardian,
       })),
+      accessEmails: await this.registrations.listAccessEmails(registrationId),
       participants: await Promise.all(
         participants.map(async (participant) => ({
           id: participant.id,
