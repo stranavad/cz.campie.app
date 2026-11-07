@@ -50,3 +50,7 @@ const useTotpCodeMutation = (mutationFn: (body: { code: string }) => Promise<voi
 export const useConfirmTotpEnrolmentMutation = () => useTotpCodeMutation(consoleService.confirmTotpEnrolment);
 
 export const useVerifyTotpMutation = () => useTotpCodeMutation(consoleService.verifyTotp);
+
+// Records the entry in the Organisation's log; the admin pages then act in it under the grant.
+export const useEnterSupportMutation = () =>
+  useMutation({ mutationFn: (organisationId: string) => consoleService.enterSupport(organisationId) });

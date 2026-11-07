@@ -103,6 +103,7 @@ describe('organisation signup', () => {
             subdomain: 'pokusnik',
             status: 'pending',
           },
+          support: null,
         },
       ],
     });

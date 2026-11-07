@@ -32,6 +32,7 @@ describe('account', () => {
           owner: false,
           permissions: { registrations: 'none', campSettings: 'none', health: 'none', oddily: 'none', vedouci: 'none' },
           organisation: { id: organisationA, displayName: 'Tábor A', subdomain: 'tabor-a', status: 'pending' },
+          support: null,
         },
       ],
     });

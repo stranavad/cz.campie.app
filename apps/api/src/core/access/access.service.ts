@@ -2,13 +2,16 @@ import { ForbiddenException, Injectable, NotFoundException, UnauthorizedExceptio
 import { ConfigService } from '@nestjs/config';
 import { z } from 'zod';
 
+import { PERMISSION_AREAS, type Permissions } from '@repo/schema/admins';
 import type { AccessErrorCode } from '@repo/schema/shared';
 
 import { MembershipRepository } from '../../repositories/admins/membership/membership.repository.ts';
 import { OperatorRepository } from '../../repositories/operators/operator/operator.repository.ts';
 import { OrganisationRepository } from '../../repositories/organisations/organisation/organisation.repository.ts';
+import { SupportGrantRepository } from '../../repositories/organisations/support-grant/support-grant.repository.ts';
 import type { Env } from '../config/env.schema.ts';
 import { UnitOfWork } from '../database/unit-of-work.ts';
+import { Clock } from '../ports/clock/clock.port.ts';
 import { SessionService } from '../sessions/session.service.ts';
 import { parseHost } from './host.ts';
 import type { RequestScope } from './request-scope.ts';
@@ -53,6 +56,8 @@ export class AccessService {
     private readonly memberships: MembershipRepository,
     private readonly operators: OperatorRepository,
     private readonly sessions: SessionService,
+    private readonly supportGrants: SupportGrantRepository,
+    private readonly clock: Clock,
     config: ConfigService<Env, true>,
   ) {
     this.platformDomain = config.get('PLATFORM_DOMAIN', { infer: true });
@@ -115,7 +120,13 @@ export class AccessService {
         named === null ? null : await this.memberships.getByOrganisationAndAdmin(named, session.adminId);
 
       if (membership === null) {
-        throw new ForbiddenException();
+        const support = named === null ? null : await this.supportOf(named, session);
+
+        if (support === null) {
+          throw new ForbiddenException();
+        }
+
+        return support;
       }
 
       return {
@@ -127,6 +138,45 @@ export class AccessService {
         },
       };
     });
+  }
+
+  /**
+   * Let the Platform operator into an Organisation under its support grant in force: every area at read,
+   * or at write when the grant allows changes, never as an Owner. The session must have passed a TOTP code,
+   * as for the console.
+   * @param organisationId the Organisation the request names
+   * @param session the admin session
+   * @returns the scope, or null when the admin is not the operator or no grant is in force
+   */
+  private async supportOf(
+    organisationId: string,
+    session: { readonly adminId: string; readonly secondFactor: boolean },
+  ): Promise<RequestScope | null> {
+    if (!session.secondFactor || !(await this.operators.isOperator(session.adminId))) {
+      return null;
+    }
+
+    const grant = await this.supportGrants.getActive(organisationId, this.clock.now());
+
+    if (grant === null) {
+      return null;
+    }
+
+    const level = grant.allowWrites ? 'write' : 'read';
+
+    return {
+      access: 'admin',
+      organisationId,
+      admin: {
+        id: session.adminId,
+        member: {
+          membershipId: null,
+          owner: false,
+          permissions: Object.fromEntries(PERMISSION_AREAS.map((area) => [area, level])) as Permissions,
+          support: { allowWrites: grant.allowWrites },
+        },
+      },
+    };
   }
 
   /**

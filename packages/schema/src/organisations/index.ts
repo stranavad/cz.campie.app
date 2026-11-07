@@ -14,3 +14,4 @@ export * from './organisation-settings/update-organisation-settings.contract.ts'
 export * from './organisation-settings/set-organisation-logo.contract.ts';
 export * from './organisation-settings/remove-organisation-logo.contract.ts';
 export * from './payment-gateway/payment-gateway.contracts.ts';
+export * from './support-access/support-access.contracts.ts';

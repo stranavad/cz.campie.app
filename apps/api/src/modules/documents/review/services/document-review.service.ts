@@ -170,7 +170,8 @@ export class DocumentReviewService {
    * @param upload the file
    */
   public async addInternal(actor: Actor, params: ChildParams, upload: FileUpload): Promise<InternalDocument> {
-    if (actor.kind !== 'admin') {
+    // The Platform operator under a support grant acts under their own admin identity.
+    if (actor.kind !== 'admin' && actor.kind !== 'operator') {
       throw new Error('Only an admin attaches an Internal document');
     }
 
@@ -298,7 +299,7 @@ export class DocumentReviewService {
    * @throws {ConflictException} document_review_stale when the requirement is already approved
    */
   private async handIn(actor: Actor, params: ChildRequirementParams, fileId: string | null): Promise<AdminUpload> {
-    if (actor.kind !== 'admin') {
+    if (actor.kind !== 'admin' && actor.kind !== 'operator') {
       throw new Error('Only an admin hands in on behalf of the guardians');
     }
 

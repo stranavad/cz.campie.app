@@ -46,3 +46,4 @@ export { documentTypeKind, documentTypes } from './documents/document-types.ts';
 export { documentUploads, uploadStatus } from './documents/document-uploads.ts';
 export { internalDocuments } from './documents/internal-documents.ts';
 export { exportPresets, exportSelections } from './registrations/export-presets.ts';
+export { supportGrants } from './organisations/support-grants.ts';

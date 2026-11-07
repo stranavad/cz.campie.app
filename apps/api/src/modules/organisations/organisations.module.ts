@@ -12,6 +12,8 @@ import { PublicOrganisationController } from './organisation/public-organisation
 import { OrganisationService } from './organisation/services/organisation.service.ts';
 import { PaymentGatewayController } from './payment-gateway/payment-gateway.controller.ts';
 import { PaymentGatewayService } from './payment-gateway/services/payment-gateway.service.ts';
+import { SupportAccessService } from './support-access/services/support-access.service.ts';
+import { SupportAccessController } from './support-access/support-access.controller.ts';
 
 @Module({
   imports: [AdminsModule, CampsModule],
@@ -21,11 +23,13 @@ import { PaymentGatewayService } from './payment-gateway/services/payment-gatewa
     OrganisationSettingsController,
     PublicLogoController,
     PaymentGatewayController,
+    SupportAccessController,
   ],
   providers: [
     OrganisationService,
     OrganisationSettingsService,
     PaymentGatewayService,
+    SupportAccessService,
     LogoService,
     OrganisationSignedUpHandler,
   ],

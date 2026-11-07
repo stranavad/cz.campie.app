@@ -10,6 +10,7 @@ import { operators } from './operators/operators.ts';
 import { legalAcceptances } from './organisations/legal-acceptances.ts';
 import { organisationKeys } from './organisations/organisation-keys.ts';
 import { organisations } from './organisations/organisations.ts';
+import { supportGrants } from './organisations/support-grants.ts';
 import { adminSessions } from './sessions/admin-sessions.ts';
 
 // The only tables without the organisation policy: they hold records above any one Organisation. Every
@@ -26,4 +27,5 @@ export const PLATFORM_TABLES: readonly string[] = [
   operators,
   adminSessions,
   platformAuditEntries,
+  supportGrants,
 ].map((table) => getTableName(table));

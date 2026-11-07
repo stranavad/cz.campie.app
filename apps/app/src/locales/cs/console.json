@@ -70,5 +70,13 @@
     "subdomain_reserved": "Tuto subdoménu nelze použít.",
     "subdomain_taken": "Tuto subdoménu už používá jiná organizace.",
     "unexpected": "Změnu se nepodařilo uložit. Zkuste to prosím znovu."
+  },
+  "support": {
+    "title": "Přístup podpory",
+    "none": "Žádná organizace teď přístup podpory nepovolila.",
+    "readOnly": "jen čtení, do {{until}}",
+    "writes": "změny povoleny, do {{until}}",
+    "enter": "Vstoupit",
+    "failed": "Vstup se nepodařil. Přístup mohl mezitím skončit."
   }
 }

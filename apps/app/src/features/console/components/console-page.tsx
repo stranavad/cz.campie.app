@@ -2,6 +2,7 @@ import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { OrganisationList } from '@/features/console/components/organisation-list/organisation-list';
+import { SupportList } from '@/features/console/components/support-list/support-list';
 import { TotpCodeForm } from '@/features/console/components/totp-code-form/totp-code-form';
 import { TotpEnrolment } from '@/features/console/components/totp-enrolment/totp-enrolment';
 import { useConsolePage } from '@/features/console/components/use-console-page.hook';
@@ -37,7 +38,12 @@ export function ConsolePage() {
           <TotpCodeForm purpose="verify" />
         </section>
       ) : null}
-      {page.step === 'organisations' ? <OrganisationList organisations={page.organisations} /> : null}
+      {page.step === 'organisations' ? (
+        <div className="flex flex-col gap-10">
+          <SupportList />
+          <OrganisationList organisations={page.organisations} />
+        </div>
+      ) : null}
     </div>
   );
 }

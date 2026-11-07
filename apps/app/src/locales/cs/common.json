@@ -12,7 +12,9 @@
   },
   "platformShell": {
     "tagline": "Přihlášky na tábory",
-    "logOut": "Odhlásit se"
+    "logOut": "Odhlásit se",
+    "supportReadOnly": "Režim podpory: jste v organizaci {{organisation}} jen pro čtení, do {{until}}.",
+    "supportWrites": "Režim podpory: jste v organizaci {{organisation}} se svolením ke změnám, do {{until}}. Každá změna se zapisuje do historie."
   },
   "notFound": {
     "title": "Stránka nenalezena",

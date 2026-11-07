@@ -13,6 +13,7 @@ import {
   suspendOrganisationEndpoint,
   type RenameOrganisationSubdomainBody,
 } from '@repo/schema/console';
+import { enterSupportAccessEndpoint } from '@repo/schema/organisations';
 
 import { apiClient } from '@/lib/api';
 
@@ -26,4 +27,5 @@ export const consoleService = {
   startTotpEnrolment: () => apiClient.request(startTotpEnrolmentEndpoint),
   confirmTotpEnrolment: (body: ConfirmTotpEnrolmentBody) => apiClient.request(confirmTotpEnrolmentEndpoint, { body }),
   verifyTotp: (body: VerifyTotpBody) => apiClient.request(verifyTotpEndpoint, { body }),
+  enterSupport: (organisationId: string) => apiClient.request(enterSupportAccessEndpoint, { organisationId }),
 };

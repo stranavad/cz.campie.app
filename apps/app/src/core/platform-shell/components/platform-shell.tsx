@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { config } from '@/config';
 import { LogOutButton } from '@/core/platform-shell/components/log-out-button';
+import { SupportBanner } from '@/core/platform-shell/components/support-banner';
 
 // Signup, the admin interface and the operator console on the main host.
 export function PlatformShell() {
@@ -17,6 +18,7 @@ export function PlatformShell() {
           <LogOutButton />
         </div>
       </header>
+      <SupportBanner />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4">
         <Outlet />
       </main>

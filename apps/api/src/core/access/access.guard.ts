@@ -8,7 +8,7 @@ import { readSessionCookie } from '../sessions/session-cookie.ts';
 import { Access, GATEWAY_ORGANISATION_PARAM, type AccessKind } from './access.decorator.ts';
 import { AccessService } from './access.service.ts';
 import { originalHost } from './host.ts';
-import { allows, RequirePermission, type MemberAccess } from './permission.ts';
+import { allows, RequirePermission, SupportEntry, type MemberAccess } from './permission.ts';
 import { setRequestScope, type RequestScope } from './request-scope.ts';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -43,6 +43,7 @@ export class AccessGuard implements CanActivate {
 
     if (scope.access === 'admin') {
       this.requirePermission(context, scope.admin.member);
+      this.requireSupportWrites(context, request, scope.admin.member);
     }
 
     setRequestScope(request, scope);
@@ -67,6 +68,27 @@ export class AccessGuard implements CanActivate {
       const code: AccessErrorCode = 'permission_denied';
 
       throw new ForbiddenException({ code, message: 'The membership lacks the permission this route requires' });
+    }
+  }
+
+  /**
+   * Refuse a change by the Platform operator under a read-only support grant, but for entering itself.
+   * @param context the route being called
+   * @param request the request
+   * @param member the membership the request acts through
+   * @throws {ForbiddenException} support_read_only
+   */
+  private requireSupportWrites(context: ExecutionContext, request: Request, member: MemberAccess): void {
+    const readOnly = member.support !== undefined && !member.support.allowWrites;
+
+    if (
+      readOnly &&
+      !SAFE_METHODS.has(request.method) &&
+      this.reflector.get(SupportEntry, context.getHandler()) !== true
+    ) {
+      const code: AccessErrorCode = 'support_read_only';
+
+      throw new ForbiddenException({ code, message: 'The support grant allows no changes' });
     }
   }
 

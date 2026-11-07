@@ -47,5 +47,21 @@
     "replace": "Nahradit klíče",
     "saved": "Klíče jsou uložené.",
     "removed": "Platby kartou jsou vypnuté."
+  },
+  "supportAccess": {
+    "title": "Přístup podpory",
+    "intro": "Když potřebujete pomoc, můžete na omezenou dobu pustit podporu platformy do své organizace. Bez vašeho svolení podpora k datům účastníků přístup nemá. Vše, co podpora udělá, se zapisuje do historie.",
+    "duration": "Na jak dlouho",
+    "hours_one": "{{count}} hodinu",
+    "hours_few": "{{count}} hodiny",
+    "hours_other": "{{count}} hodin",
+    "allowWrites": "Povolit i změny (jinak jen čtení)",
+    "grant": "Povolit přístup",
+    "activeReadOnly": "Podpora má přístup jen pro čtení do {{until}}.",
+    "activeWrites": "Podpora má přístup se změnami do {{until}}.",
+    "revoke": "Ukončit přístup",
+    "history": "{{from}} až {{until}}, {{kind}}",
+    "kindReadOnly": "jen čtení",
+    "kindWrites": "se změnami"
   }
 }

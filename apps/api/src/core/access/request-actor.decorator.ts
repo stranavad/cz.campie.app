@@ -20,6 +20,12 @@ function actorOf(request: Request): Actor {
 
   switch (scope.access) {
     case 'admin':
+      // The Platform operator under a support grant acts as the operator, in the Organisation's own log.
+      return {
+        kind: scope.admin.member.support === undefined ? 'admin' : 'operator',
+        identity: scope.admin.id,
+        ipAddress,
+      };
     case 'account':
       return { kind: 'admin', identity: scope.admin.id, ipAddress };
     case 'operator':

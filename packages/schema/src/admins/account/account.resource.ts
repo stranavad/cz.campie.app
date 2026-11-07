@@ -23,6 +23,8 @@ export const accountSchema = z.object({
         subdomain: z.string(),
         status: z.enum(ORGANISATION_STATUSES),
       }),
+      // For the Platform operator only: an Organisation entered under its support grant, not a membership.
+      support: z.object({ allowWrites: z.boolean(), expiresAt: z.iso.datetime() }).nullable(),
     }),
   ),
 });

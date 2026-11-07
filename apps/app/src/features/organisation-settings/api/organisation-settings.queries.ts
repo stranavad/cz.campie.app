@@ -1,6 +1,7 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
+  GrantSupportAccessBody,
   OrganisationSettings,
   PaymentGatewaySettings,
   SetPaymentGatewayKeysBody,
@@ -76,3 +77,26 @@ export const useRemovePaymentGatewayKeysMutation = (organisationId: string) =>
   usePaymentGatewayMutation<void>(organisationId, () =>
     organisationSettingsService.removePaymentGatewayKeys(organisationId),
   );
+
+export const useSupportGrantsQuery = (organisationId: string) =>
+  useQuery({
+    queryKey: organisationSettingsKeys.supportAccess(organisationId),
+    queryFn: ({ signal }) => organisationSettingsService.supportGrants(organisationId, signal),
+  });
+
+export const useSupportAccessMutations = (organisationId: string) => {
+  const queryClient = useQueryClient();
+  const refresh = () =>
+    queryClient.invalidateQueries({ queryKey: organisationSettingsKeys.supportAccess(organisationId) });
+
+  return {
+    grant: useMutation({
+      mutationFn: (body: GrantSupportAccessBody) => organisationSettingsService.grantSupport(organisationId, body),
+      onSuccess: refresh,
+    }),
+    revoke: useMutation({
+      mutationFn: (grantId: string) => organisationSettingsService.revokeSupport(organisationId, grantId),
+      onSuccess: refresh,
+    }),
+  };
+};

@@ -17,6 +17,8 @@ export const ACCESS_ERROR_CODES = [
   'permission_denied',
   'not_operator',
   'second_factor_required',
+  // The Platform operator under a read-only support grant tried a change.
+  'support_read_only',
 ] as const;
 
 export type AccessErrorCode = (typeof ACCESS_ERROR_CODES)[number];
