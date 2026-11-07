@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { instantFromPragueLocal, pragueDateOf, pragueLocalOf, pragueLocalSchema } from './prague-time.ts';
+import { addDays, instantFromPragueLocal, pragueDateOf, pragueLocalOf, pragueLocalSchema } from './prague-time.ts';
 
 describe('pragueDateOf', () => {
   it('reads the calendar date in Prague, not in UTC, near midnight', () => {
@@ -51,5 +51,13 @@ describe('pragueLocalSchema', () => {
     '2027-02-01T10:00:00',
   ])('refuses %s', (value) => {
     expect(pragueLocalSchema.safeParse(value).success).toBe(false);
+  });
+});
+
+describe('addDays', () => {
+  it('moves a date across month and year ends, leap days included', () => {
+    expect(addDays('2027-12-25', 14)).toBe('2028-01-08');
+    expect(addDays('2028-02-20', 10)).toBe('2028-03-01');
+    expect(addDays('2027-03-01', -1)).toBe('2027-02-28');
   });
 });

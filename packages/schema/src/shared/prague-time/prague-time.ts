@@ -108,3 +108,15 @@ export function instantFromPragueLocal(local: string): Date {
 
   return new Date(matching.length === 0 ? wall - before : Math.min(...matching));
 }
+
+/**
+ * Move a calendar date by whole days.
+ * @param date YYYY-MM-DD
+ * @param days how many days, negative for earlier
+ * @returns YYYY-MM-DD
+ */
+export function addDays(date: string, days: number): string {
+  const [year, month, day] = date.split('-').map(Number) as [number, number, number];
+
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}

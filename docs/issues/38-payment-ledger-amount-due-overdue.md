@@ -25,3 +25,7 @@ Payments are a ledger on the Registration. An admin with Registrations write rec
 - Spec sections: Payments; Registration (cancel changes no money).
 - Port from Domino: `apps/api/src/payment/`, `apps/api/emails/payment-confirmation.tsx`.
 - Gateway entries come in issue 48; keep an entry source field (manual, gateway, correction).
+
+## Comments
+
+2026-11-07 - **From issue 26.** `amountDueNow` takes the total (price lines plus Price adjustments), the Deposit owed, the ledger sum and the dates. Price adjustments are not price lines; consider a pure `registrationTotal(lines, adjustments)` in `@repo/schema/pricing` so both apps agree on the total. The due dates read the Turnus's deposit days and balance due date as they are now, so editing a Turnus moves the due dates of its existing Registrations; decide whether that is wanted.

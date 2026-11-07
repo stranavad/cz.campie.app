@@ -25,6 +25,10 @@
       "types": "./dist/admins/index.d.ts",
       "default": "./dist/admins/index.js"
     },
+    "./pricing": {
+      "types": "./dist/pricing/index.d.ts",
+      "default": "./dist/pricing/index.js"
+    },
     "./camps": {
       "types": "./dist/camps/index.d.ts",
       "default": "./dist/camps/index.js"
