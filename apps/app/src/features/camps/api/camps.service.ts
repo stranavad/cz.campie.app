@@ -1,13 +1,18 @@
 import {
   createCampEndpoint,
+  createTurnusEndpoint,
   getCampBrandingEndpoint,
   getCampEndpoint,
   listCampsEndpoint,
+  listTurnusyEndpoint,
   removeCampLogoEndpoint,
+  removeTurnusEndpoint,
   setCampLogoEndpoint,
   updateCampBrandingEndpoint,
   updateCampEndpoint,
+  updateTurnusEndpoint,
   type CreateCampBody,
+  type TurnusBody,
   type UpdateCampBody,
   type UpdateCampBrandingBody,
 } from '@repo/schema/camps';
@@ -31,4 +36,12 @@ export const campsService = {
     apiClient.request(setCampLogoEndpoint, { organisationId, params: { campId }, file }),
   removeLogo: (organisationId: string, campId: string) =>
     apiClient.request(removeCampLogoEndpoint, { organisationId, params: { campId } }),
+  listTurnusy: (organisationId: string, campId: string, signal?: AbortSignal) =>
+    apiClient.request(listTurnusyEndpoint, { organisationId, params: { campId }, signal }),
+  createTurnus: (organisationId: string, campId: string, body: TurnusBody) =>
+    apiClient.request(createTurnusEndpoint, { organisationId, params: { campId }, body }),
+  updateTurnus: (organisationId: string, turnusId: string, body: TurnusBody) =>
+    apiClient.request(updateTurnusEndpoint, { organisationId, params: { turnusId }, body }),
+  removeTurnus: (organisationId: string, turnusId: string) =>
+    apiClient.request(removeTurnusEndpoint, { organisationId, params: { turnusId } }),
 };

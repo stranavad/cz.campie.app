@@ -1,6 +1,6 @@
 # 25 - Turnusy with price list, Deposit and dates
 
-Status: ready-for-agent
+Status: in-progress
 Stage: 1a
 Episode: E2 Camp setup
 Blocked by: 24
@@ -12,16 +12,27 @@ An admin with Camp settings write creates and edits Turnusy of a Camp. A Turnus 
 
 ## Acceptance criteria
 
-- [ ] CRUD with Camp settings write; read-only with read; 403 with none.
-- [ ] Validation: end not before start, capacity at least 1, min age not above max age, window close after open, Early bird price requires its last day, amounts are non-negative integers.
-- [ ] Deposit 0 is stored as "no Deposit" and reported so by the API.
-- [ ] Availability is correct for each state using the controllable Clock, including the exact Prague open time (open is inclusive, close is exclusive) across a DST change.
+- [x] CRUD with Camp settings write; read-only with read; 403 with none.
+- [x] Validation: end not before start, capacity at least 1, min age not above max age, window close after open, Early bird price requires its last day, amounts are non-negative integers.
+- [x] Deposit 0 is stored as "no Deposit" and reported so by the API.
+- [x] Availability is correct for each state using the controllable Clock, including the exact Prague open time (open is inclusive, close is exclusive) across a DST change.
 - [ ] Changing a price list never alters stored price lines of existing Registrations (asserted once issue 35 exists; leave a pending test marked with the issue number).
-- [ ] Tenant isolation and audit entries as for every Organisation table.
-- [ ] Admin UI for the Turnus list and form; Czech strings through i18n.
+- [x] Tenant isolation and audit entries as for every Organisation table.
+- [x] Admin UI for the Turnus list and form; Czech strings through i18n.
 
 ## Notes
 
 - Spec sections: Registration, placement and declarations; Payments (Deposit, due dates); Pricing.
 - Port from Domino: `apps/api/src/turnus/services/turnus.service.ts`, `apps/portal/src/pages/admin/Turnusy.vue` (price fields, early bird). Domino stores but never enforces the window; here it is enforced.
 - Age limits are compared with Age on start (completed years on the start date), see CONTEXT.md.
+
+## Comments
+
+2026-11-07 - **Implemented**, except the pending price-line test (below). Turnusy are managed in a section of the Camp settings page (`/platform/tabory`), one edited at a time.
+
+- API: `GET`/`POST /camps/:campId/turnusy`, `GET`/`PATCH`/`DELETE /turnusy/:turnusId`; read with Camp settings read, changes with write, each audited (`turnus.create`, `.update`, `.remove`) with old and new values. `PATCH` takes the whole Turnus, so its cross-field rules always hold on the result.
+- `turnusy` belongs to its Camp by a composite foreign key `(organisation_id, camp_id)`, under the organisation policy, with checks mirroring the contract (dates, capacity, prices, Deposit never 0, the Early bird pair, ages, window order, Deposit days).
+- Registration window: entered and answered as Prague wall-clock text (`pragueLocalSchema`, documented in the schema guide's wire rules), stored as instants. `@repo/schema/shared` gained `instantFromPragueLocal`, `pragueLocalOf`, `pragueDateOf` (a skipped spring time reads an hour later, a repeated autumn time as the first), `calendarDateSchema` (real dates, 2000-2099) and `czkSchema`.
+- Availability (`turnusAvailability`, pure, in `@repo/schema/camps`): closed by hand, then not yet open or closed by window (open inclusive, close exclusive), then full, else open; tested at the exact opening time on the day the clocks go forward.
+- Deposit 0 is stored and answered as `null`. `depositDueDays` is required on the wire; the form suggests 14 (`DEFAULT_DEPOSIT_DUE_DAYS`).
+- Not done here: the test that a price-list change never alters stored price lines of existing Registrations. The lint forbids `it.todo`, so issue 35 carries it in its comments, with counting Registered Participants (today 0 for every Turnus) and refusing to remove a Turnus that has Registrations.

@@ -77,7 +77,7 @@ One `defineEndpoint({ method, path, params?, query?, body?, response?, status? }
 
 ## Wire rules
 
-- Instants are ISO strings, `z.iso.datetime()`. Calendar dates are `z.iso.date()` in the Prague calendar. Money is whole CZK, `z.number().int()`. Ids are UUIDv7.
+- Instants are ISO strings, `z.iso.datetime()`; a time admins enter on the Prague clock (the Registration window) travels as that wall-clock text, `pragueLocalSchema`. Calendar dates are `z.iso.date()` in the Prague calendar. Money is whole CZK, `z.number().int()`. Ids are UUIDv7.
 - Fixed value sets are const tuples, one source for `z.enum(...)` here and `pgEnum(...)` in the API.
 - Error texts are i18n keys plus params, never Czech literals (the form engine's field errors included); the app translates them.
 - A response schema lists only what the client may see: anything left out is stripped by the API before it leaves the server.

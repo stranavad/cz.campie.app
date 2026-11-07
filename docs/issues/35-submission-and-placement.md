@@ -33,3 +33,5 @@ Submitting the public form creates a Registration in one Turnus with its Partici
 ## Comments
 
 2026-11-07 - **From issue 22.** Submissions must be rate limited: add `SUBMISSION_LIMIT_PER_IP` and a per-Organisation limit to `requestLimits` in `env.schema.ts` and call `RateLimiter.admit` first in the submission service (see `apps/api/AGENTS.md`, Access and sessions). The per-Organisation limit must stay well above a popular camp's opening rush.
+
+2026-11-07 - **From issue 25.** `TurnusService.withAvailability` counts no Registered Participants yet (`registered = 0`); count them per Turnus here, ideally in one query for a Camp's list. Add the test issue 25 left pending (the lint forbids `it.todo`): changing a Turnus's price list never alters the stored price lines of existing Registrations. Removing a Turnus that has Registrations must be refused (today `DELETE /turnusy/:id` removes it outright).

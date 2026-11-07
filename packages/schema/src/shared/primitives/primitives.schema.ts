@@ -18,3 +18,35 @@ export const phoneSchema = z
 export function requiredText(max: number) {
   return z.string().trim().min(1).max(max);
 }
+
+// Whole CZK, never negative, well inside a 32-bit integer.
+export const czkSchema = z.number().int().min(0).max(10_000_000);
+
+// The years the platform deals in; anything else is a typo, and the database's dates end somewhere too.
+const MIN_YEAR = 2000;
+const MAX_YEAR = 2099;
+
+/**
+ * Tell whether a year, month and day make a real date in the years the platform deals in.
+ * @param year the year
+ * @param month 1 to 12
+ * @param day 1 to 31
+ */
+export function isPlausibleDate(year: number, month: number, day: number): boolean {
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    year >= MIN_YEAR &&
+    year <= MAX_YEAR &&
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
+}
+
+// A calendar date, YYYY-MM-DD, that exists and lies between 2000 and 2099.
+export const calendarDateSchema = z.iso.date().refine((value) => {
+  const [year, month, day] = value.split('-').map(Number) as [number, number, number];
+
+  return isPlausibleDate(year, month, day);
+}, 'date_invalid');

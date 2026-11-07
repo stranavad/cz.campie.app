@@ -37,7 +37,14 @@
     "totp_code_malformed": "Zadejte šest číslic z ověřovací aplikace.",
     "camp_slug_malformed": "Adresa může obsahovat jen malá písmena bez diakritiky, číslice a pomlčky mezi nimi.",
     "camp_slug_reserved": "Tuto adresu nelze použít, vyberte jinou.",
-    "camp_slug_taken": "Tuto adresu má nebo měl jiný tábor organizace."
+    "camp_slug_taken": "Tuto adresu má nebo měl jiný tábor organizace.",
+    "turnus_ends_before_start": "Konec nemůže být před začátkem.",
+    "turnus_min_age_above_max": "Nejnižší věk nemůže být vyšší než nejvyšší.",
+    "turnus_window_closes_before_open": "Přihlašování musí skončit až po svém začátku.",
+    "turnus_early_bird_day_required": "Zadejte poslední den včasného přihlášení.",
+    "turnus_early_bird_price_required": "Zadejte cenu při včasném přihlášení, nebo poslední den smažte.",
+    "prague_local_invalid": "Zadejte datum a čas.",
+    "date_invalid": "Zadejte platné datum."
   },
   "logoField": {
     "title": "Logo",

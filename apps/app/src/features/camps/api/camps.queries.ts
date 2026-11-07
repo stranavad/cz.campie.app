@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CampBranding, CreateCampBody, UpdateCampBody, UpdateCampBrandingBody } from '@repo/schema/camps';
+import type {
+  CampBranding,
+  CreateCampBody,
+  TurnusBody,
+  UpdateCampBody,
+  UpdateCampBrandingBody,
+} from '@repo/schema/camps';
 
 import { campsKeys } from '@/features/camps/api/camps.keys';
 import { campsService } from '@/features/camps/api/camps.service';
@@ -73,3 +79,31 @@ export const useSetCampLogoMutation = (organisationId: string, campId: string) =
 
 export const useRemoveCampLogoMutation = (organisationId: string, campId: string) =>
   useBrandingMutation<void>(organisationId, campId, () => campsService.removeLogo(organisationId, campId));
+
+export const useTurnusyQuery = (organisationId: string, campId: string) =>
+  useQuery({
+    queryKey: campsKeys.turnusy(organisationId, campId),
+    queryFn: ({ signal }) => campsService.listTurnusy(organisationId, campId, signal),
+  });
+
+// A Turnus is saved whole, new (no id) or existing; the Camp's list is refetched either way.
+export const useSaveTurnusMutation = (organisationId: string, campId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ turnusId, body }: { turnusId: string | null; body: TurnusBody }) =>
+      turnusId === null
+        ? campsService.createTurnus(organisationId, campId, body)
+        : campsService.updateTurnus(organisationId, turnusId, body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.turnusy(organisationId, campId) }),
+  });
+};
+
+export const useRemoveTurnusMutation = (organisationId: string, campId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (turnusId: string) => campsService.removeTurnus(organisationId, turnusId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.turnusy(organisationId, campId) }),
+  });
+};

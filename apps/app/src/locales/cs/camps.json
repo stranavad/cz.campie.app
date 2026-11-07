@@ -44,5 +44,47 @@
     "title": "Nový tábor",
     "submit": "Přidat tábor",
     "failure": "Tábor se nepodařilo přidat. Zkuste to prosím znovu."
+  },
+  "turnus": {
+    "title": "Turnusy",
+    "empty": "Tábor zatím nemá žádný turnus.",
+    "add": "Přidat turnus",
+    "edit": "Upravit",
+    "remove": "Odebrat",
+    "confirmRemove": "Opravdu odebrat",
+    "cancel": "Zrušit",
+    "dates": "{{start}} - {{end}}",
+    "places": "Obsazeno {{registered}} z {{capacity}}",
+    "availability": {
+      "not_yet_open": "Přihlašování ještě nezačalo",
+      "open": "Přihlašování otevřené",
+      "closed_manually": "Přihlašování ručně uzavřené",
+      "closed_by_window": "Přihlašování skončilo",
+      "full": "Obsazeno"
+    },
+    "groups": {
+      "run": "Turnus",
+      "window": "Přihlašování (pražský čas)",
+      "prices": "Ceník (Kč)"
+    },
+    "fields": {
+      "name": "Název turnusu",
+      "startDate": "Začátek",
+      "endDate": "Konec",
+      "place": "Místo",
+      "capacity": "Kapacita",
+      "minAge": "Nejnižší věk",
+      "maxAge": "Nejvyšší věk",
+      "websiteUrl": "Web turnusu",
+      "opensAt": "Přihlašování od",
+      "closesAt": "Přihlašování do",
+      "basePrice": "Základní cena",
+      "earlyBirdPrice": "Cena při včasném přihlášení",
+      "earlyBirdLastDay": "Poslední den včasného přihlášení",
+      "deposit": "Záloha za dítě (0 = bez zálohy)",
+      "depositDueDays": "Zálohu zaplatit do (dnů od přihlášení)",
+      "balanceDueDate": "Doplatek zaplatit do",
+      "closedManually": "Přihlašování ručně uzavřít"
+    }
   }
 }

@@ -7,6 +7,7 @@ export { auditActorKind, auditEntries } from './audit/audit-entries.ts';
 export { platformAuditEntries } from './audit/platform-audit-entries.ts';
 export { campSlugs } from './camps/camp-slugs.ts';
 export { campModule, camps } from './camps/camps.ts';
+export { turnusy } from './camps/turnusy.ts';
 export { fileContentType, files } from './files/files.ts';
 export { appRole } from './helpers/organisation.ts';
 export { legalAcceptances, legalDocument } from './organisations/legal-acceptances.ts';
