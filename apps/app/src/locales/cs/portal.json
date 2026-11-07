@@ -165,5 +165,31 @@
       "file_type_not_allowed": "Nahrát lze jen PDF, JPG nebo PNG."
     },
     "notNeeded": "Dokument už čeká na kontrolu. Načtěte prosím stránku znovu."
+  },
+  "checklist": {
+    "title": "Co ještě zbývá",
+    "kinds": {
+      "payment": "Platba",
+      "missing_answers": "Doplnit údaje",
+      "consent": "Souhlas",
+      "health_record": "Zdravotní záznam",
+      "document": "Dokument"
+    },
+    "missingAnswers_one": "Doplnit údaje (chybí {{count}} odpověď)",
+    "missingAnswers_few": "Doplnit údaje (chybí {{count}} odpovědi)",
+    "missingAnswers_other": "Doplnit údaje (chybí {{count}} odpovědí)",
+    "states": {
+      "open": "",
+      "done": "hotovo",
+      "unsigned": "nepodepsáno",
+      "signed": "podepsáno",
+      "withdrawn": "odvoláno",
+      "missing": "neodevzdáno",
+      "pending": "čeká na kontrolu",
+      "approved": "schváleno",
+      "returned": "vráceno k opravě",
+      "cleared": "vymazáno po táboře"
+    },
+    "dueBy": "do {{date}}"
   }
 }

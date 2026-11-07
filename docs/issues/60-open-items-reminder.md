@@ -21,3 +21,7 @@ An admin with Registrations write sends a reminder to the guardians of every Reg
 
 - Spec sections: Emails; Documents (checklist).
 - Payment items are reminded by issue 50, not here.
+
+## Comments
+
+2026-11-07 - **From issue 59.** `ChecklistService.ofTurnus(turnusId)` (`modules/checklist/checklist/services/checklist.service.ts`, exported by `ChecklistModule`) gives every Registered child's checklist items (`kind`, `key`, `label`, `state`, `done`, `dueDate`) in a few queries.

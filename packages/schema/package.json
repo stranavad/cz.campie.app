@@ -41,6 +41,10 @@
       "types": "./dist/documents/index.d.ts",
       "default": "./dist/documents/index.js"
     },
+    "./checklist": {
+      "types": "./dist/checklist/index.d.ts",
+      "default": "./dist/checklist/index.js"
+    },
     "./payments": {
       "types": "./dist/payments/index.d.ts",
       "default": "./dist/payments/index.js"

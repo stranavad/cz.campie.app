@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { CustomField, FormDefinition } from '../definition/form-definition.ts';
 import { TEST_CATALOGUE } from '../testing-catalogue.ts';
-import { columnCatalogue, diffVersions } from './versions.ts';
+import { columnCatalogue, diffVersions, missingNewAnswers } from './versions.ts';
 
 const field = (id: string, label: string): CustomField => ({
   id,
@@ -89,5 +89,24 @@ describe('columnCatalogue', () => {
       },
       { key: B, tier: 'custom', scope: 'participant', label: 'Plavec', labelKey: null, removed: true },
     ]);
+  });
+});
+
+describe('missingNewAnswers', () => {
+  const ADDED = '0190a2b4-0000-7000-8000-0000000000aa';
+  const earlier: FormDefinition = { standard: [], custom: [] };
+  const later: FormDefinition = {
+    standard: [],
+    custom: [
+      { id: ADDED, type: 'short_text', label: 'Číslo pojištěnce', hint: null, required: true, scope: 'participant' },
+    ],
+  };
+
+  it('counts a required field added later and unanswered, and none once answered or optional', () => {
+    expect(missingNewAnswers(earlier, later, {}, { registration: {}, participant: {} })).toBe(1);
+    expect(missingNewAnswers(earlier, later, {}, { registration: {}, participant: { [ADDED]: '123' } })).toBe(0);
+    expect(missingNewAnswers(later, later, {}, { registration: {}, participant: {} })).toBe(0);
+    const optional: FormDefinition = { ...later, custom: later.custom.map((field) => ({ ...field, required: false })) };
+    expect(missingNewAnswers(earlier, optional, {}, { registration: {}, participant: {} })).toBe(0);
   });
 });

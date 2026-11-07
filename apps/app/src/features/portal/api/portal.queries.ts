@@ -56,6 +56,7 @@ const useEditMutation = <Variables>(
     onSuccess: (edit) => {
       queryClient.setQueryData(portalKeys.edit(registrationId), edit);
       void queryClient.invalidateQueries({ queryKey: portalKeys.registrations() });
+      void queryClient.invalidateQueries({ queryKey: portalKeys.checklist(registrationId) });
     },
   });
 };
@@ -119,6 +120,7 @@ function useConsentChange<Variables>(
         consent,
       );
       await queryClient.invalidateQueries({ queryKey: portalKeys.consents(params.registrationId), exact: true });
+      await queryClient.invalidateQueries({ queryKey: portalKeys.checklist(params.registrationId) });
     },
   });
 }
@@ -143,6 +145,15 @@ export const useUploadDocumentMutation = (registrationId: string) => {
   return useMutation({
     mutationFn: ({ params, file }: { params: UploadDocumentParams; file: File }) =>
       portalService.uploadDocument(params, file),
-    onSuccess: (documents) => queryClient.setQueryData(portalKeys.documents(registrationId), documents),
+    onSuccess: async (documents) => {
+      queryClient.setQueryData(portalKeys.documents(registrationId), documents);
+      await queryClient.invalidateQueries({ queryKey: portalKeys.checklist(registrationId) });
+    },
   });
 };
+
+export const useGuardianChecklistQuery = (registrationId: string) =>
+  useQuery({
+    queryKey: portalKeys.checklist(registrationId),
+    queryFn: ({ signal }) => portalService.checklist(registrationId, signal),
+  });

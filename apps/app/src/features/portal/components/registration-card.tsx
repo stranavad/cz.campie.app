@@ -5,6 +5,7 @@ import type { GuardianRegistration } from '@repo/schema/portal';
 import { czechDate, czk } from '@repo/schema/shared';
 
 import { CardPaymentButtons } from '@/features/portal/components/card-payment-buttons';
+import { ChecklistCard } from '@/features/portal/components/checklist-card';
 import { QrPlatba } from '@/features/portal/components/qr-platba';
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -62,6 +63,7 @@ export function RegistrationCard({ registration }: { registration: GuardianRegis
           </Link>
         ) : null}
       </header>
+      <ChecklistCard registrationId={registration.id} />
       <ul className="flex flex-col gap-2">
         {registration.participants.map((participant) => (
           <li key={participant.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">

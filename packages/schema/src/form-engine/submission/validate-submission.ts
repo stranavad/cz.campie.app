@@ -157,7 +157,7 @@ function customCheck(field: CustomField, value: AnswerValue): Check {
  * Tell whether an answer says nothing: missing, null, blank text or no option chosen.
  * @param value the answer
  */
-function isEmpty(value: AnswerValue | undefined): boolean {
+export function isEmpty(value: AnswerValue | undefined): boolean {
   return (
     value === undefined ||
     value === null ||

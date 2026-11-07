@@ -20,6 +20,7 @@ import { RateLimitsModule } from './core/rate-limits/rate-limits.module.ts';
 import { SessionsModule } from './core/sessions/sessions.module.ts';
 import { AdminsModule } from './modules/admins/admins.module.ts';
 import { CampsModule } from './modules/camps/camps.module.ts';
+import { ChecklistModule } from './modules/checklist/checklist.module.ts';
 import { ConsentsModule } from './modules/consents/consents.module.ts';
 import { ConsoleModule } from './modules/console/console.module.ts';
 import { CampDocumentsModule } from './modules/documents/documents.module.ts';
@@ -62,6 +63,7 @@ export class AppModule {
         PortalModule,
         ConsentsModule,
         CampDocumentsModule,
+        ChecklistModule,
         ConsoleModule,
       ],
     };

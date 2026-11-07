@@ -1,3 +1,4 @@
+import { getGuardianChecklistEndpoint } from '@repo/schema/checklist';
 import {
   getGuardianConsentEndpoint,
   listGuardianConsentsEndpoint,
@@ -68,4 +69,6 @@ export const portalService = {
     apiClient.request(listGuardianDocumentsEndpoint, { params: { registrationId }, signal }),
   uploadDocument: (params: UploadDocumentParams, file: File) =>
     apiClient.request(uploadDocumentEndpoint, { params, file }),
+  checklist: (registrationId: string, signal?: AbortSignal) =>
+    apiClient.request(getGuardianChecklistEndpoint, { params: { registrationId }, signal }),
 };

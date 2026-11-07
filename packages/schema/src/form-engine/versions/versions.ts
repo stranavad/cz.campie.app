@@ -5,6 +5,7 @@ import {
   type FormDefinition,
   type StandardFieldCatalogue,
 } from '../definition/form-definition.ts';
+import { formFields, isEmpty, type Answers } from '../submission/validate-submission.ts';
 
 /**
  * List the keys of the fields a version asks beyond the core, in order: standard fields switched on, then
@@ -114,4 +115,29 @@ export function columnCatalogue(versions: readonly FormDefinition[], catalogue: 
   }
 
   return [...core, ...columns.filter(({ removed }) => !removed), ...columns.filter(({ removed }) => removed)];
+}
+
+/**
+ * Count the required answers a child still owes to fields a later version of the form added: the child's
+ * own fields and the Registration's, which every child of it shares.
+ * @param version the version the Registration was submitted under
+ * @param latest the Camp's latest version
+ * @param catalogue the standard fields the platform knows
+ * @param answers the Registration's and the child's answers
+ */
+export function missingNewAnswers(
+  version: FormDefinition,
+  latest: FormDefinition,
+  catalogue: StandardFieldCatalogue,
+  answers: { readonly registration: Answers; readonly participant: Answers },
+): number {
+  const added = new Set(diffVersions(version, latest).added);
+
+  return (['registration', 'participant'] as const)
+    .flatMap((scope) =>
+      formFields(latest, catalogue, scope)
+        .filter(({ key, required }) => required && added.has(key))
+        .map(({ key }) => answers[scope][key]),
+    )
+    .filter((answer) => isEmpty(answer)).length;
 }
