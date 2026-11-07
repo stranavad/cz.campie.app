@@ -63,5 +63,26 @@
     "history": "{{from}} až {{until}}, {{kind}}",
     "kindReadOnly": "jen čtení",
     "kindWrites": "se změnami"
+  },
+  "auditLog": {
+    "title": "Historie změn",
+    "actorKind": "Kdo",
+    "anyone": "Kdokoli",
+    "kinds": {
+      "admin": "Správce",
+      "guardian": "Rodič",
+      "operator": "Podpora platformy",
+      "system": "Systém"
+    },
+    "actor": "E-mail",
+    "action": "Akce (nebo její začátek)",
+    "from": "Od",
+    "to": "Do",
+    "loadFailed": "Historii se nepodařilo načíst.",
+    "none": "Nic neodpovídá.",
+    "more": "Načíst další",
+    "change": "{{field}}: {{old}} → {{new}}",
+    "encrypted": "Změněné šifrované údaje: {{fields}}",
+    "actionHint": "např. consent."
   }
 }

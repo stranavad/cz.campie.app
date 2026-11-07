@@ -14,6 +14,7 @@ import { Route as PlatformRouteRouteImport } from './routes/platform/route'
 import { Route as OrganisationIndexRouteImport } from './routes/organisation/index'
 import { Route as OrganisationPlatbaRouteImport } from './routes/organisation/platba'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
+import { Route as PlatformHistorieRouteImport } from './routes/platform/historie'
 import { Route as PlatformKonzoleRouteImport } from './routes/platform/konzole'
 import { Route as PlatformNastaveniRouteImport } from './routes/platform/nastaveni'
 import { Route as PlatformNoveHesloRouteImport } from './routes/platform/nove-heslo'
@@ -60,6 +61,11 @@ const OrganisationPlatbaRoute = OrganisationPlatbaRouteImport.update({
 const PlatformIndexRoute = PlatformIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformHistorieRoute = PlatformHistorieRouteImport.update({
+  id: '/historie',
+  path: '/historie',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
 const PlatformKonzoleRoute = PlatformKonzoleRouteImport.update({
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/organisation/platba': typeof OrganisationPlatbaRoute
+  '/platform/historie': typeof PlatformHistorieRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/organisation/platba': typeof OrganisationPlatbaRoute
+  '/platform/historie': typeof PlatformHistorieRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -243,6 +251,7 @@ export interface FileRoutesById {
   '/organisation': typeof OrganisationRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/organisation/platba': typeof OrganisationPlatbaRoute
+  '/platform/historie': typeof PlatformHistorieRoute
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/organisation'
     | '/platform'
     | '/organisation/platba'
+    | '/platform/historie'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/organisation/platba'
+    | '/platform/historie'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/organisation'
     | '/platform'
     | '/organisation/platba'
+    | '/platform/historie'
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
@@ -397,6 +409,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/platform/'
       preLoaderRoute: typeof PlatformIndexRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/historie': {
+      id: '/platform/historie'
+      path: '/historie'
+      fullPath: '/platform/historie'
+      preLoaderRoute: typeof PlatformHistorieRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
     '/platform/konzole': {
@@ -589,6 +608,7 @@ const OrganisationRouteRouteWithChildren =
   OrganisationRouteRoute._addFileChildren(OrganisationRouteRouteChildren)
 
 interface PlatformRouteRouteChildren {
+  PlatformHistorieRoute: typeof PlatformHistorieRoute
   PlatformKonzoleRoute: typeof PlatformKonzoleRoute
   PlatformNastaveniRoute: typeof PlatformNastaveniRoute
   PlatformNoveHesloRoute: typeof PlatformNoveHesloRoute
@@ -606,6 +626,7 @@ interface PlatformRouteRouteChildren {
 }
 
 const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
+  PlatformHistorieRoute: PlatformHistorieRoute,
   PlatformKonzoleRoute: PlatformKonzoleRoute,
   PlatformNastaveniRoute: PlatformNastaveniRoute,
   PlatformNoveHesloRoute: PlatformNoveHesloRoute,

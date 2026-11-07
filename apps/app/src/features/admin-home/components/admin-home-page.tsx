@@ -67,6 +67,9 @@ export function AdminHomePage() {
           <Link to="/platform/nastaveni" className={buttonVariants({ variant: 'outline' })}>
             {t('organisationSettings')}
           </Link>
+          <Link to="/platform/historie" className={buttonVariants({ variant: 'outline' })}>
+            {t('auditLog')}
+          </Link>
         </div>
       ) : null}
       {consoleLink}

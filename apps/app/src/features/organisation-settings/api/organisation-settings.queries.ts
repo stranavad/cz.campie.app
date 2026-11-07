@@ -1,6 +1,7 @@
-import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
+  AuditLogQuery,
   GrantSupportAccessBody,
   OrganisationSettings,
   PaymentGatewaySettings,
@@ -100,3 +101,18 @@ export const useSupportAccessMutations = (organisationId: string) => {
     }),
   };
 };
+
+// The log a page at a time, each page asking for the one after its last entry.
+export const useAuditLogQuery = (organisationId: string, filters: Omit<AuditLogQuery, 'after'>, enabled: boolean) =>
+  useInfiniteQuery({
+    queryKey: [...organisationSettingsKeys.detail(organisationId), 'audit-log', filters],
+    queryFn: ({ signal, pageParam }) =>
+      organisationSettingsService.auditLog(
+        organisationId,
+        { ...filters, ...(pageParam === null ? {} : { after: pageParam }) },
+        signal,
+      ),
+    initialPageParam: null as string | null,
+    getNextPageParam: (page) => page.next,
+    enabled,
+  });

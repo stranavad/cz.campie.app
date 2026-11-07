@@ -120,11 +120,15 @@ export class RegistrationDetailService {
   /**
    * List the audit entries of a Registration and its Participants, newest first, admins named by email.
    * @param registrationId Registration id
+   * @param healthRead whether the admin may read health data, and so its entries
    */
-  public async history(registrationId: string): Promise<HistoryEntry[]> {
+  public async history(registrationId: string, healthRead: boolean): Promise<HistoryEntry[]> {
     await this.registrations.getByIdOrThrow(registrationId);
     const participants = await this.registrations.listParticipants(registrationId);
-    const entries = await this.auditEntries.listByTargets([registrationId, ...participants.map(({ id }) => id)]);
+    // Who viewed or changed health data is itself health data: shown only with Health read.
+    const entries = (
+      await this.auditEntries.listByTargets([registrationId, ...participants.map(({ id }) => id)])
+    ).filter(({ action }) => healthRead || !action.startsWith('health'));
     const adminIds = entries.flatMap(({ actorKind, actorIdentity }) =>
       (actorKind === 'admin' || actorKind === 'operator') && actorIdentity !== null ? [actorIdentity] : [],
     );

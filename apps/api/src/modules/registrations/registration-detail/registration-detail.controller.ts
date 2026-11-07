@@ -11,8 +11,8 @@ import {
 } from '@repo/schema/registrations';
 
 import { Access } from '../../../core/access/access.decorator.ts';
-import { Requires } from '../../../core/access/permission.ts';
-import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
+import { allows, Requires, type MemberAccess } from '../../../core/access/permission.ts';
+import { RequestActor, RequestMember } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { RegistrationDetailService } from './services/registration-detail.service.ts';
@@ -34,8 +34,9 @@ export class RegistrationDetailController {
   @Requires('registrations', 'read')
   public history(
     @EndpointParams(getRegistrationHistoryEndpoint) { registrationId }: RegistrationParams,
+    @RequestMember() member: MemberAccess,
   ): Promise<HistoryEntry[]> {
-    return this.details.history(registrationId);
+    return this.details.history(registrationId, allows(member, { area: 'health', level: 'read' }));
   }
 
   @Endpoint(verifyClaimedDiscountEndpoint)

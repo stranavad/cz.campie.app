@@ -2,6 +2,7 @@ import {
   getOrganisationSettingsEndpoint,
   getPaymentGatewaySettingsEndpoint,
   grantSupportAccessEndpoint,
+  listAuditLogEndpoint,
   listSupportGrantsEndpoint,
   removeOrganisationLogoEndpoint,
   removePaymentGatewayKeysEndpoint,
@@ -9,6 +10,7 @@ import {
   setOrganisationLogoEndpoint,
   setPaymentGatewayKeysEndpoint,
   updateOrganisationSettingsEndpoint,
+  type AuditLogQuery,
   type GrantSupportAccessBody,
   type SetPaymentGatewayKeysBody,
   type UpdateOrganisationSettingsBody,
@@ -36,4 +38,6 @@ export const organisationSettingsService = {
     apiClient.request(grantSupportAccessEndpoint, { organisationId, body }),
   revokeSupport: (organisationId: string, grantId: string) =>
     apiClient.request(revokeSupportAccessEndpoint, { organisationId, params: { grantId } }),
+  auditLog: (organisationId: string, query: AuditLogQuery, signal?: AbortSignal) =>
+    apiClient.request(listAuditLogEndpoint, { organisationId, query, signal }),
 };

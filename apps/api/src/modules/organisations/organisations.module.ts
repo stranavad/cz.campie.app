@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 
 import { AdminsModule } from '../admins/admins.module.ts';
 import { CampsModule } from '../camps/camps.module.ts';
+import { AuditLogController } from './audit-log/audit-log.controller.ts';
+import { AuditLogService } from './audit-log/services/audit-log.service.ts';
 import { PublicLogoController } from './logo/public-logo.controller.ts';
 import { LogoService } from './logo/services/logo.service.ts';
 import { OrganisationSettingsController } from './organisation-settings/organisation-settings.controller.ts';
@@ -24,12 +26,14 @@ import { SupportAccessController } from './support-access/support-access.control
     PublicLogoController,
     PaymentGatewayController,
     SupportAccessController,
+    AuditLogController,
   ],
   providers: [
     OrganisationService,
     OrganisationSettingsService,
     PaymentGatewayService,
     SupportAccessService,
+    AuditLogService,
     LogoService,
     OrganisationSignedUpHandler,
   ],
