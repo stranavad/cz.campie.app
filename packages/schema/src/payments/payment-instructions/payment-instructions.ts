@@ -19,8 +19,13 @@ export interface PaymentInstructions {
   // Prague calendar date, or null.
   readonly dueDate: string | null;
   // While the Deposits are owed: the rest after them and its date, and all that is outstanding, which a
-  // guardian may pay at once instead.
-  readonly balance: { readonly amount: number; readonly dueDate: string | null; readonly outstanding: number } | null;
+  // guardian may pay at once instead, with its own QR platba.
+  readonly balance: {
+    readonly amount: number;
+    readonly dueDate: string | null;
+    readonly outstanding: number;
+    readonly qrPlatba: string | null;
+  } | null;
   // The QR platba of the amount owed now; null without an account or anything to pay.
   readonly qrPlatba: string | null;
 }
@@ -34,6 +39,16 @@ export function paymentInstructionsOf(input: PaymentInstructionsInput): PaymentI
   const due = amountDueNow(input);
   const outstanding = Math.max(input.total - input.paid, 0);
   const rest = outstanding - due.amount;
+  const qrOf = (amount: number, dueDate: string | null) =>
+    input.account === null || amount === 0
+      ? null
+      : qrPlatbaOf({
+          account: input.account,
+          amount,
+          variableSymbol: input.variableSymbol,
+          message: input.message,
+          dueDate,
+        });
 
   return {
     account: input.account,
@@ -41,16 +56,10 @@ export function paymentInstructionsOf(input: PaymentInstructionsInput): PaymentI
     kind: due.phase === 'deposit' ? 'deposit' : 'full',
     amount: due.amount,
     dueDate: due.dueDate,
-    balance: due.phase === 'deposit' && rest > 0 ? { amount: rest, dueDate: input.balanceDueDate, outstanding } : null,
-    qrPlatba:
-      input.account === null || due.amount === 0
-        ? null
-        : qrPlatbaOf({
-            account: input.account,
-            amount: due.amount,
-            variableSymbol: input.variableSymbol,
-            message: input.message,
-            dueDate: due.dueDate,
-          }),
+    balance:
+      due.phase === 'deposit' && rest > 0
+        ? { amount: rest, dueDate: input.balanceDueDate, outstanding, qrPlatba: qrOf(outstanding, due.dueDate) }
+        : null,
+    qrPlatba: qrOf(due.amount, due.dueDate),
   };
 }

@@ -74,7 +74,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | #   | Issue                                                   | Status          | Blocked by |
 | --- | ------------------------------------------------------- | --------------- | ---------- |
 | 39  | Guardian login link and sessions                        | done            | 14, 16, 35 |
-| 40  | Portal: Registrations, balance, QR, Přihláška           | ready-for-agent | 36, 38, 39 |
+| 40  | Portal: Registrations, balance, QR, Přihláška           | done            | 36, 38, 39 |
 | 41  | Portal: contact edits, guardian emails, new form fields | ready-for-agent | 30, 39     |
 
 ### E6 Admin Registrations - "admin runs the season"

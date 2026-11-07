@@ -16,9 +16,13 @@ export const useGuardianSignOutMutation = () => {
   });
 };
 
+// The Přihláška links last five minutes, so the Registrations are fetched again before they run out.
+const LINK_REFRESH_MS = 4 * 60 * 1000;
+
 export const useGuardianRegistrationsQuery = () =>
   useQuery({
     queryKey: portalKeys.registrations(),
     queryFn: ({ signal }) => portalService.registrations(signal),
+    refetchInterval: LINK_REFRESH_MS,
     retry: false,
   });

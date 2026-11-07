@@ -26,6 +26,7 @@ import {
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 import { effectiveBranding } from '../../camp-branding/services/camp-branding.service.ts';
 import { TurnusService } from '../../turnus/services/turnus.service.ts';
+import { campContactOf } from '../camp-contact.ts';
 
 // The slug of a name with nothing a slug can hold, or with a reserved one.
 const FALLBACK_SLUG = 'tabor';
@@ -199,11 +200,7 @@ function publicOf(camp: CampEntity, organisation: OrganisationEntity): PublicCam
 
   return camp.toPublicDto(
     { accentColour, logoUrl: logoFileId === null ? null : publicLogoUrl(logoFileId) },
-    // A Camp without its own contact is reached through its Organisation's.
-    {
-      contactEmail: camp.contactEmail ?? organisation.contactEmail,
-      contactPhone: camp.contactPhone ?? (camp.contactEmail === null ? organisation.contactPhone : null),
-    },
+    campContactOf(camp, organisation),
   );
 }
 

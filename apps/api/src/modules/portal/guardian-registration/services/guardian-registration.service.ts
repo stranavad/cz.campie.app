@@ -1,30 +1,53 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
-import type { GuardianRegistration } from '@repo/schema/portal';
+import type { GuardianPortal, GuardianRegistration } from '@repo/schema/portal';
 
+import type { Env } from '../../../../core/config/env.schema.ts';
+import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
+import { FileService } from '../../../../core/files/file.service.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
+import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 import type { RegistrationEntity } from '../../../../repositories/registrations/registration/registration.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
+import { campContactOf } from '../../../camps/camp/camp-contact.ts';
+import { LedgerService } from '../../../registrations/ledger/services/ledger.service.ts';
+import { registrationPaymentOf } from '../../../registrations/payment/payment-instructions.helper.ts';
 
 // A guardian's Registrations in the portal. Access follows the guardian emails on each Registration at the
 // time of the request, so removing an email takes access away at once.
 @Injectable()
 export class GuardianRegistrationService {
+  private readonly technicalContact: string;
+
   constructor(
     private readonly registrations: RegistrationRepository,
     private readonly turnusy: TurnusRepository,
     private readonly camps: CampRepository,
-  ) {}
+    private readonly organisations: OrganisationRepository,
+    private readonly ledgers: LedgerService,
+    private readonly files: FileService,
+    private readonly unitOfWork: UnitOfWork,
+    config: ConfigService<Env, true>,
+  ) {
+    this.technicalContact = config.get('PLATFORM_OPERATOR_EMAIL', { infer: true });
+  }
 
   /**
-   * List the Registrations of the current Organisation that name a guardian, newest first.
+   * List the Registrations of the current Organisation that name a guardian, newest first, with whom to
+   * write about a technical problem.
    * @param email the signed-in guardian's email
    */
-  public async list(email: string): Promise<GuardianRegistration[]> {
+  public async list(email: string): Promise<GuardianPortal> {
     const registrations = await this.registrations.listByGuardian(email);
+    const shown: GuardianRegistration[] = [];
 
-    return Promise.all(registrations.map((registration) => this.show(registration)));
+    for (const registration of registrations) {
+      shown.push(await this.show(registration));
+    }
+
+    return { registrations: shown, technicalContact: this.technicalContact };
   }
 
   /**
@@ -44,20 +67,64 @@ export class GuardianRegistrationService {
   }
 
   /**
-   * Show a Registration as the portal lists it.
+   * Show a Registration as the portal does: its Participants with their Přihláška links, its price, its
+   * ledger and how to pay the rest.
    * @param registration the Registration
    */
   private async show(registration: RegistrationEntity): Promise<GuardianRegistration> {
     const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
     const camp = await this.camps.getByIdOrThrow(turnus.campId);
+    const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
     const participants = await this.registrations.listParticipants(registration.id);
+    const ledger = await this.ledgers.get(registration.id);
+    const payment = registrationPaymentOf({
+      registration,
+      turnus,
+      camp,
+      organisation,
+      total: ledger.total,
+      paid: ledger.paid,
+    });
 
     return {
       id: registration.id,
       variableSymbol: registration.variableSymbol,
-      campName: camp.name,
-      turnusName: turnus.name,
-      participants: participants.map(({ firstName, lastName }) => ({ firstName, lastName })),
+      submittedAt: registration.submittedAt.toISOString(),
+      camp: { id: camp.id, name: camp.name, ...campContactOf(camp, organisation) },
+      turnus: {
+        id: turnus.id,
+        name: turnus.name,
+        startDate: turnus.startDate,
+        endDate: turnus.endDate,
+        place: turnus.place,
+      },
+      participants: await Promise.all(
+        participants.map(async (participant) => ({
+          id: participant.id,
+          position: participant.position,
+          firstName: participant.firstName,
+          lastName: participant.lastName,
+          status: participant.status,
+          prihlaska: participant.prihlaskaFileId === null ? null : await this.files.link(participant.prihlaskaFileId),
+        })),
+      ),
+      priceLines: await this.registrations.listPriceLines(registration.id),
+      adjustments: ledger.adjustments.map(({ amount }) => ({ amount })),
+      // A payment's note is the camp's own record, not the guardian's.
+      payments: ledger.payments.map(({ amount, paidOn }) => ({ amount, paidOn })),
+      total: ledger.total,
+      paid: ledger.paid,
+      balance: ledger.balance,
+      status: ledger.status,
+      overdue: ledger.overdue,
+      payment: {
+        account: payment.account,
+        phase: ledger.amountDue.phase,
+        amount: payment.amount,
+        dueDate: payment.dueDate,
+        qrPlatba: payment.qrPlatba,
+        balance: payment.balance,
+      },
     };
   }
 }

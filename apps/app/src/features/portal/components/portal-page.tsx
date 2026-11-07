@@ -1,22 +1,48 @@
 import { Navigate, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import type { GuardianRegistration } from '@repo/schema/portal';
+
 import { Button } from '@/components/ui/button';
 import { useGuardianRegistrationsQuery, useGuardianSignOutMutation } from '@/features/portal/api/portal.queries';
+import { RegistrationCard } from '@/features/portal/components/registration-card';
 import { HttpError } from '@/lib/api';
 
-// The signed-in guardian's Registrations in the subdomain's Organisation.
+/**
+ * Group Registrations by Camp and Turnus, in the order they come.
+ * @param registrations the guardian's Registrations, newest first
+ */
+function groupsOf(registrations: readonly GuardianRegistration[]) {
+  // A Turnus belongs to one Camp, so its id names the group; names repeat from year to year.
+  const groups = new Map<string, { camp: string; turnus: string; registrations: GuardianRegistration[] }>();
+
+  for (const registration of registrations) {
+    const key = registration.turnus.id;
+    const group = groups.get(key) ?? {
+      camp: registration.camp.name,
+      turnus: registration.turnus.name,
+      registrations: [],
+    };
+
+    group.registrations.push(registration);
+    groups.set(key, group);
+  }
+
+  return [...groups.values()];
+}
+
+// The signed-in guardian's Registrations in the subdomain's Organisation, past ones included.
 export function PortalPage() {
   const { t } = useTranslation('portal');
   const navigate = useNavigate();
-  const registrations = useGuardianRegistrationsQuery();
+  const portal = useGuardianRegistrationsQuery();
   const signOut = useGuardianSignOutMutation();
 
-  if (registrations.error instanceof HttpError && registrations.error.status === 401) {
+  if (portal.error instanceof HttpError && portal.error.status === 401) {
     return <Navigate to="/organisation/portal/prihlaseni" replace />;
   }
 
-  if (registrations.isPending) {
+  if (portal.isPending) {
     return null;
   }
 
@@ -36,23 +62,26 @@ export function PortalPage() {
           {t('signOut')}
         </Button>
       </header>
-      {registrations.isError ? <p role="alert">{t('error')}</p> : null}
-      {registrations.data?.length === 0 ? <p>{t('none')}</p> : null}
-      <ul className="flex flex-col gap-4">
-        {registrations.data?.map((registration) => (
-          <li key={registration.id} className="rounded-lg border p-4">
-            <p className="font-medium">
-              {t('registrationTitle', { camp: registration.campName, turnus: registration.turnusName })}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t('variableSymbol', { symbol: registration.variableSymbol })}
-            </p>
-            <p className="text-sm">
-              {registration.participants.map(({ firstName, lastName }) => `${firstName} ${lastName}`).join(', ')}
-            </p>
-          </li>
-        ))}
-      </ul>
+      {portal.isError ? <p role="alert">{t('error')}</p> : null}
+      {portal.data?.registrations.length === 0 ? <p>{t('none')}</p> : null}
+      {groupsOf(portal.data?.registrations ?? []).map((group) => (
+        <section key={group.registrations[0]?.turnus.id} className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold">
+            {t('registrationTitle', { camp: group.camp, turnus: group.turnus })}
+          </h2>
+          {group.registrations.map((registration) => (
+            <RegistrationCard key={registration.id} registration={registration} />
+          ))}
+        </section>
+      ))}
+      {portal.data === undefined ? null : (
+        <p className="flex flex-wrap gap-1 text-sm text-muted-foreground">
+          <span>{t('technicalContact')}</span>
+          <a href={`mailto:${portal.data.technicalContact}`} className="underline">
+            {portal.data.technicalContact}
+          </a>
+        </p>
+      )}
     </section>
   );
 }

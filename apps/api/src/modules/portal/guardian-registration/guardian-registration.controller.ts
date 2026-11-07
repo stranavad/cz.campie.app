@@ -3,6 +3,7 @@ import { Controller } from '@nestjs/common';
 import {
   getGuardianRegistrationEndpoint,
   listGuardianRegistrationsEndpoint,
+  type GuardianPortal,
   type GuardianRegistration,
   type GuardianRegistrationParams,
 } from '@repo/schema/portal';
@@ -18,7 +19,7 @@ export class GuardianRegistrationController {
   constructor(private readonly registrations: GuardianRegistrationService) {}
 
   @Endpoint(listGuardianRegistrationsEndpoint)
-  public list(@RequestGuardianEmail() email: string): Promise<GuardianRegistration[]> {
+  public list(@RequestGuardianEmail() email: string): Promise<GuardianPortal> {
     return this.registrations.list(email);
   }
 

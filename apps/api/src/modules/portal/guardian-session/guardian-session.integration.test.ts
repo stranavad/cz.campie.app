@@ -160,10 +160,10 @@ describe('guardian login', () => {
     const asPetr = await signInAs(host, PETR);
     const asJana = await signInAs(host, JANA);
 
-    const petrs = await http().get('/api/portal/registrations').set(asPetr);
-    expect(petrs.body.map(({ id }: { id: string }) => id)).toEqual([registrationId]);
-    expect(petrs.body[0]).toMatchObject({ campName: 'Letní tábor', participants: [{ firstName: 'Ema' }] });
-    expect((await http().get('/api/portal/registrations').set(asJana)).body).toHaveLength(2);
+    const petrs = (await http().get('/api/portal/registrations').set(asPetr)).body.registrations;
+    expect(petrs.map(({ id }: { id: string }) => id)).toEqual([registrationId]);
+    expect(petrs[0]).toMatchObject({ camp: { name: 'Letní tábor' }, participants: [{ firstName: 'Ema' }] });
+    expect((await http().get('/api/portal/registrations').set(asJana)).body.registrations).toHaveLength(2);
 
     expect((await http().get(`/api/portal/registrations/${janaOnly.id}`).set(asPetr)).status).toBe(404);
     expect((await http().get(`/api/portal/registrations/${janaOnly.id}`).set(asJana)).status).toBe(200);
@@ -177,7 +177,7 @@ describe('guardian login', () => {
     await query("UPDATE registration_guardians SET email = 'petr.jinak@example.com' WHERE email = $1", [PETR]);
 
     expect((await http().get(`/api/portal/registrations/${registrationId}`).set(asPetr)).status).toBe(404);
-    expect((await http().get('/api/portal/registrations').set(asPetr)).body).toEqual([]);
+    expect((await http().get('/api/portal/registrations').set(asPetr)).body.registrations).toEqual([]);
   });
 
   it("refuses a guardian session on another Organisation's subdomain", async () => {
