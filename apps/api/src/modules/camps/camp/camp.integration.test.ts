@@ -83,6 +83,8 @@ describe('camps', () => {
       },
       siblingDiscountAmount: 0,
       siblingDiscountAppliesTo: 'every_child',
+      notificationEmails: [],
+      contactEditLockDate: null,
     });
     expect(
       await query('SELECT actor_identity, action, target_id FROM audit_entries WHERE target_id = $1', [

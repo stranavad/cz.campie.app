@@ -28,6 +28,12 @@ export const camps = p.snakeCase.table.withRLS(
       .default(sql`'{}'`),
     siblingDiscountAmount: p.integer().notNull().default(0),
     siblingDiscountAppliesTo: siblingDiscountMode().notNull().default('every_child'),
+    notificationEmails: p
+      .text()
+      .array()
+      .notNull()
+      .default(sql`'{}'`),
+    contactEditLockDate: p.date({ mode: 'string' }),
     accentColour: p.text(),
     // No foreign key to files, as on organisations: the logo is replaced or removed through the Camp.
     logoFileId: p.uuid(),

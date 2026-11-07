@@ -18,7 +18,11 @@
     "contactName": "Kontaktní osoba",
     "contactHint": "Rodiče uvidí tento kontakt a odpovědi na e-maily tábora půjdou na tento e-mail.",
     "contactEmail": "Kontaktní e-mail",
-    "contactPhone": "Kontaktní telefon"
+    "contactPhone": "Kontaktní telefon",
+    "notificationEmails": "Komu poslat zprávu o nové přihlášce",
+    "notificationEmailsHint": "Jeden e-mail na řádek, nejvýše 10.",
+    "contactEditLockDate": "Rodiče mohou upravovat kontakty do",
+    "contactEditLockDateHint": "Včetně tohoto dne. Do té doby mohou také doplnit nové otázky přihlášky."
   },
   "modules": {
     "title": "Moduly",
@@ -198,5 +202,30 @@
     "remove": "Odebrat prohlášení",
     "add": "Přidat prohlášení",
     "uploadFailed": "PDF se nepodařilo nahrát. Nahrát jde jen soubor PDF."
+  },
+  "emails": {
+    "title": "E-maily",
+    "subject": "Předmět",
+    "text": "Text",
+    "placeholders": "Do předmětu i textu můžete vložit: {{names}}",
+    "enabled": "Posílat tento e-mail",
+    "alwaysSent": "Tento e-mail se posílá vždy, bez něj se rodiče nepřihlásí do portálu.",
+    "reset": "Vrátit výchozí znění",
+    "preview": "Náhled",
+    "own": "vlastní znění",
+    "default": "výchozí znění",
+    "off": "neposílá se",
+    "types": {
+      "registration_confirmation": "Potvrzení přihlášky",
+      "login_link": "Odkaz pro přihlášení do portálu",
+      "payment_received": "Přijatá platba",
+      "payment_reminder": "Připomínka platby",
+      "consent_copy": "Kopie podepsaného souhlasu",
+      "open_items_reminder": "Připomínka chybějících věcí",
+      "document_returned": "Vrácený dokument",
+      "cancellation": "Zrušení přihlášky",
+      "new_registration_notification": "Zpráva táboru o nové přihlášce"
+    },
+    "previewSubject": "Předmět: {{subject}}"
   }
 }

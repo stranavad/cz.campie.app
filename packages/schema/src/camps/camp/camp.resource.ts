@@ -34,6 +34,10 @@ export const campSchema = z.object({
   // Per child in whole CZK, 0 for none.
   siblingDiscountAmount: z.number().int(),
   siblingDiscountAppliesTo: z.enum(SIBLING_DISCOUNT_MODES),
+  // Who in the Camp's team hears of each new Registration.
+  notificationEmails: z.array(z.string()),
+  // Until this Prague date, inclusive, guardians may edit contact details and fill new form fields.
+  contactEditLockDate: z.iso.date().nullable(),
 });
 
 export type Camp = z.infer<typeof campSchema>;

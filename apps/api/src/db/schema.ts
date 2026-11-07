@@ -5,6 +5,7 @@ export { passwordResets } from './admins/password-resets.ts';
 export { totpCredentials } from './admins/totp-credentials.ts';
 export { auditActorKind, auditEntries } from './audit/audit-entries.ts';
 export { platformAuditEntries } from './audit/platform-audit-entries.ts';
+export { campEmailTexts, emailType } from './camps/camp-email-texts.ts';
 export { campSlugs } from './camps/camp-slugs.ts';
 export { campModule, camps, siblingDiscountMode } from './camps/camps.ts';
 export { discountCodeUses } from './camps/discount-code-uses.ts';

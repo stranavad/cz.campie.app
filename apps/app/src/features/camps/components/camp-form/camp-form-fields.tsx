@@ -42,6 +42,20 @@ export function CampFormFields({ organisationId, camp, canWrite }: CampFormField
         <form.AppField name="contactPhone">
           {(field) => <field.TextField label={t('camp.contactPhone')} type="tel" />}
         </form.AppField>
+        <form.AppField name="notificationEmails">
+          {(field) => (
+            <field.TextAreaField label={t('camp.notificationEmails')} description={t('camp.notificationEmailsHint')} />
+          )}
+        </form.AppField>
+        <form.AppField name="contactEditLockDate">
+          {(field) => (
+            <field.TextField
+              label={t('camp.contactEditLockDate')}
+              description={t('camp.contactEditLockDateHint')}
+              type="date"
+            />
+          )}
+        </form.AppField>
       </fieldset>
       <fieldset disabled={!canWrite} className="flex flex-col gap-5">
         <legend className="mb-3 text-lg font-semibold">{t('siblingDiscount.title')}</legend>

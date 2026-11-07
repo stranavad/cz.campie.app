@@ -1,7 +1,14 @@
 import { z } from 'zod';
 
 import { SIBLING_DISCOUNT_MODES } from '@repo/schema/pricing';
-import { czkSchema, defineEndpoint, emailSchema, phoneSchema, requiredText } from '@repo/schema/shared';
+import {
+  calendarDateSchema,
+  czkSchema,
+  defineEndpoint,
+  emailSchema,
+  phoneSchema,
+  requiredText,
+} from '@repo/schema/shared';
 
 import { campSlugSchema } from './camp-slug.ts';
 import { campModulesSchema, campSchema } from './camp.resource.ts';
@@ -22,12 +29,19 @@ export const campFieldsSchema = z.object({
   modules: campModulesSchema,
   siblingDiscountAmount: czkSchema,
   siblingDiscountAppliesTo: z.enum(SIBLING_DISCOUNT_MODES),
+  notificationEmails: z
+    .array(emailSchema)
+    .max(10)
+    .refine((emails) => new Set(emails).size === emails.length, 'notification_email_duplicate'),
+  contactEditLockDate: calendarDateSchema.nullable(),
 });
 
 export const createCampBodySchema = campFieldsSchema.omit({
   modules: true,
   siblingDiscountAmount: true,
   siblingDiscountAppliesTo: true,
+  notificationEmails: true,
+  contactEditLockDate: true,
 });
 
 export type CreateCampBody = z.infer<typeof createCampBodySchema>;

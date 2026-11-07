@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 
 import { CampBrandingController } from './camp-branding/camp-branding.controller.ts';
 import { CampBrandingService } from './camp-branding/services/camp-branding.service.ts';
+import { CampEmailController } from './camp-email/camp-email.controller.ts';
+import { CampEmailService } from './camp-email/services/camp-email.service.ts';
 import { CampController } from './camp/camp.controller.ts';
 import { PublicCampController } from './camp/public-camp.controller.ts';
 import { CampService } from './camp/services/camp.service.ts';
@@ -22,8 +24,23 @@ import { TurnusController } from './turnus/turnus.controller.ts';
     DiscountCodeController,
     RegistrationFormController,
     PublicRegistrationFormController,
+    CampEmailController,
   ],
-  providers: [CampService, CampBrandingService, TurnusService, DiscountCodeService, RegistrationFormService],
-  exports: [CampService, CampBrandingService, TurnusService, DiscountCodeService, RegistrationFormService],
+  providers: [
+    CampService,
+    CampBrandingService,
+    TurnusService,
+    DiscountCodeService,
+    RegistrationFormService,
+    CampEmailService,
+  ],
+  exports: [
+    CampService,
+    CampBrandingService,
+    TurnusService,
+    DiscountCodeService,
+    RegistrationFormService,
+    CampEmailService,
+  ],
 })
 export class CampsModule {}

@@ -27,6 +27,14 @@ import {
   type UpdateCampBrandingBody,
   type UpdateDiscountCodeBody,
 } from '@repo/schema/camps';
+import {
+  listCampEmailTextsEndpoint,
+  previewCampEmailTextEndpoint,
+  resetCampEmailTextEndpoint,
+  saveCampEmailTextEndpoint,
+  type CampEmailTextBody,
+  type EmailType,
+} from '@repo/schema/emails';
 
 import { apiClient } from '@/lib/api';
 
@@ -55,6 +63,18 @@ export const campsService = {
     apiClient.request(updateDiscountCodeEndpoint, { organisationId, params: { discountCodeId }, body }),
   removeDiscountCode: (organisationId: string, discountCodeId: string) =>
     apiClient.request(removeDiscountCodeEndpoint, { organisationId, params: { discountCodeId } }),
+  listEmailTexts: (organisationId: string, campId: string, signal?: AbortSignal) =>
+    apiClient.request(listCampEmailTextsEndpoint, { organisationId, params: { campId }, signal }),
+  saveEmailText: (organisationId: string, campId: string, type: EmailType, body: CampEmailTextBody) =>
+    apiClient.request(saveCampEmailTextEndpoint, { organisationId, params: { campId, type }, body }),
+  resetEmailText: (organisationId: string, campId: string, type: EmailType) =>
+    apiClient.request(resetCampEmailTextEndpoint, { organisationId, params: { campId, type } }),
+  previewEmailText: (
+    organisationId: string,
+    campId: string,
+    type: EmailType,
+    body: Pick<CampEmailTextBody, 'subject' | 'text'>,
+  ) => apiClient.request(previewCampEmailTextEndpoint, { organisationId, params: { campId, type }, body }),
   getRegistrationForm: (organisationId: string, campId: string, signal?: AbortSignal) =>
     apiClient.request(getRegistrationFormEndpoint, { organisationId, params: { campId }, signal }),
   saveRegistrationFormDraft: (organisationId: string, campId: string, body: SaveRegistrationFormDraftBody) =>

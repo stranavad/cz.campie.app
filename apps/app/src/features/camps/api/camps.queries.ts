@@ -10,6 +10,7 @@ import type {
   UpdateCampBrandingBody,
   UpdateDiscountCodeBody,
 } from '@repo/schema/camps';
+import type { CampEmailTextBody, EmailType } from '@repo/schema/emails';
 
 import { campsKeys } from '@/features/camps/api/camps.keys';
 import { campsService } from '@/features/camps/api/camps.service';
@@ -172,3 +173,27 @@ export const useSaveRegistrationFormMutation = (organisationId: string, campId: 
 
 export const useUploadDeclarationFileMutation = (organisationId: string, campId: string) =>
   useMutation({ mutationFn: (file: File) => campsService.uploadDeclarationFile(organisationId, campId, file) });
+
+export const useEmailTextsQuery = (organisationId: string, campId: string) =>
+  useQuery({
+    queryKey: campsKeys.emailTexts(organisationId, campId),
+    queryFn: ({ signal }) => campsService.listEmailTexts(organisationId, campId, signal),
+  });
+
+export const useSaveEmailTextMutation = (organisationId: string, campId: string, type: EmailType) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: CampEmailTextBody | null) =>
+      body === null
+        ? campsService.resetEmailText(organisationId, campId, type)
+        : campsService.saveEmailText(organisationId, campId, type, body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.emailTexts(organisationId, campId) }),
+  });
+};
+
+export const usePreviewEmailTextMutation = (organisationId: string, campId: string, type: EmailType) =>
+  useMutation({
+    mutationFn: (body: Pick<CampEmailTextBody, 'subject' | 'text'>) =>
+      campsService.previewEmailText(organisationId, campId, type, body),
+  });

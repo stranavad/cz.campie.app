@@ -49,7 +49,10 @@
     "discount_code_malformed": "Kód musí mít 3 až 40 znaků: písmena bez diakritiky, číslice a pomlčky.",
     "discount_code_taken": "Tento kód už tábor má.",
     "discount_percentage_invalid": "Procenta musí být mezi 1 a 100.",
-    "discount_amount_invalid": "Zadejte kladnou celou částku v Kč."
+    "discount_amount_invalid": "Zadejte kladnou celou částku v Kč.",
+    "email_placeholders_unknown": "Text obsahuje neznámou značku ve dvojitých složených závorkách, nebo jí chybí závorka.",
+    "notification_emails_invalid": "Zadejte nejvýše 10 různých e-mailů, každý na vlastní řádek.",
+    "email_subject_one_line": "Předmět musí být na jednom řádku."
   },
   "logoField": {
     "title": "Logo",

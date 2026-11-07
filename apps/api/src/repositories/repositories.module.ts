@@ -7,6 +7,7 @@ import { PasswordResetRepository } from './admins/password-reset/password-reset.
 import { TotpCredentialRepository } from './admins/totp-credential/totp-credential.repository.ts';
 import { AuditEntryRepository } from './audit/audit-entry/audit-entry.repository.ts';
 import { PlatformAuditEntryRepository } from './audit/platform-audit-entry/platform-audit-entry.repository.ts';
+import { CampEmailTextRepository } from './camps/camp-email-text/camp-email-text.repository.ts';
 import { CampRepository } from './camps/camp/camp.repository.ts';
 import { DiscountCodeRepository } from './camps/discount-code/discount-code.repository.ts';
 import { RegistrationFormRepository } from './camps/registration-form/registration-form.repository.ts';
@@ -35,6 +36,7 @@ const REPOSITORIES = [
   PlatformAuditEntryRepository,
   FileRepository,
   CampRepository,
+  CampEmailTextRepository,
   TurnusRepository,
   DiscountCodeRepository,
   RegistrationFormRepository,

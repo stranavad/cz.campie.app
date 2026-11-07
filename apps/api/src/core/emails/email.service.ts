@@ -117,6 +117,26 @@ export class EmailService {
   }
 
   /**
+   * Render an email of the current Organisation as it would be sent, without sending it, for a preview.
+   * @param template the email's template
+   * @param props what the template shows besides the brand
+   * @param sender the Camp's name and contact
+   */
+  public async preview<Props extends object>(
+    template: EmailTemplate<Props>,
+    props: Props,
+    sender: EmailSender,
+  ): Promise<{ subject: string; html: string }> {
+    const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
+    const brand: EmailBrand = { name: sender.name, contact: sender.replyTo, accentColour: organisation.accentColour };
+
+    return {
+      subject: oneLine(template.subject(props)),
+      html: await render(createElement(template.render, { ...props, brand })),
+    };
+  }
+
+  /**
    * Tell whether an Organisation's mail is skipped because it is suspended: not sent at all rather than
    * failed, since a retry would not change the outcome.
    * @param organisation the Organisation the mail is about
@@ -150,7 +170,7 @@ export class EmailService {
       from: formatAddress(brand.name, this.config.get('mailStreams', { infer: true })[template.stream]),
       to: [...to],
       ...(replyTo === undefined ? {} : { replyTo }),
-      subject: template.subject(props),
+      subject: oneLine(template.subject(props)),
       html,
       text: toPlainText(html),
       attachments,
@@ -166,6 +186,21 @@ export class EmailService {
 
     return { filename: file.name, contentType: file.contentType, content: file.bytes };
   }
+}
+
+/**
+ * Keep a subject on one line. It carries admins' wording and guardians' answers (a child's name), and a
+ * line break in a header could add another header.
+ * @param subject the subject
+ */
+function oneLine(subject: string): string {
+  return (
+    subject
+      // oxlint-disable-next-line no-control-regex
+      .replaceAll(/[\u0000-\u001f\u007f]+/g, ' ')
+      .replaceAll(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 /**

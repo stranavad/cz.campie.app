@@ -29,6 +29,8 @@ export class CampEntity {
   public readonly modules: readonly CampModule[];
   public readonly siblingDiscountAmount: number;
   public readonly siblingDiscountAppliesTo: SiblingDiscountMode;
+  public readonly notificationEmails: readonly string[];
+  public readonly contactEditLockDate: string | null;
   public readonly accentColour: string | null;
   public readonly logoFileId: string | null;
 
@@ -45,6 +47,8 @@ export class CampEntity {
     this.modules = CAMP_MODULES.filter((module) => row.modules.includes(module));
     this.siblingDiscountAmount = row.siblingDiscountAmount;
     this.siblingDiscountAppliesTo = row.siblingDiscountAppliesTo;
+    this.notificationEmails = row.notificationEmails;
+    this.contactEditLockDate = row.contactEditLockDate;
     this.accentColour = row.accentColour;
     this.logoFileId = row.logoFileId;
   }
@@ -61,6 +65,8 @@ export class CampEntity {
       modules: modulesRecord(this.modules),
       siblingDiscountAmount: this.siblingDiscountAmount,
       siblingDiscountAppliesTo: this.siblingDiscountAppliesTo,
+      notificationEmails: [...this.notificationEmails],
+      contactEditLockDate: this.contactEditLockDate,
     };
   }
 
