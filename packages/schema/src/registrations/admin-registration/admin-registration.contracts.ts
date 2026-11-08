@@ -212,6 +212,11 @@ export const removeAccessEmailEndpoint = defineEndpoint({
   response: registrationDetailSchema,
 });
 
+// A guardian's or an access email's address of the Registration.
+export const clearUndeliverableBodySchema = z.object({ email: emailSchema });
+
+export type ClearUndeliverableBody = z.infer<typeof clearUndeliverableBodySchema>;
+
 // Clears the undeliverable mark of a guardian's or access email's address of the Registration, such as one the
 // family says works again, so notification mail goes there again. Audited when there was a mark;
 // Registrations write.
@@ -219,7 +224,7 @@ export const clearUndeliverableEndpoint = defineEndpoint({
   method: 'POST',
   path: '/registrations/:registrationId/clear-undeliverable',
   params: registrationParamsSchema,
-  body: accessEmailBodySchema,
+  body: clearUndeliverableBodySchema,
   response: registrationDetailSchema,
   status: 200,
 });

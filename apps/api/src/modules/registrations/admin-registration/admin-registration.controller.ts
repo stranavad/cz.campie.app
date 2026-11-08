@@ -21,6 +21,7 @@ import {
   type AccessEmailParams,
   type AddParticipantBody,
   type AdminGuardianParams,
+  type ClearUndeliverableBody,
   type CreateRegistrationBody,
   type EditAnswersBody,
   type EditGuardianBody,
@@ -84,7 +85,7 @@ export class AdminRegistrationController {
   public clearUndeliverable(
     @RequestActor() actor: Actor,
     @EndpointParams(clearUndeliverableEndpoint) { registrationId }: RegistrationParams,
-    @EndpointBody(clearUndeliverableEndpoint) { email }: AccessEmailBody,
+    @EndpointBody(clearUndeliverableEndpoint) { email }: ClearUndeliverableBody,
   ): Promise<RegistrationDetail> {
     return this.admin.clearUndeliverable(actor, registrationId, email);
   }

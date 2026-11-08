@@ -517,7 +517,8 @@ export class RegistrationService {
             declarationId,
             accepted: ticked,
           })),
-          sendConfirmation,
+          // Only an admin chooses; a guardian's submission is always confirmed.
+          ...(action === 'registration.create' ? { sendConfirmation } : {}),
         },
       },
     });
