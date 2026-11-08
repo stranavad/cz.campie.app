@@ -24,6 +24,6 @@ The dev server proxies `/api` to the API (`vite.config.ts`), forwarding the orig
 
 New variable: add it to the schema with its production default, expose it through `config`.
 
-## Vercel
+## Deployment
 
-`vercel.json` rewrites `/api/*` to the API host (`api.campie.cz`, a reserved subdomain) and every other path to `index.html`. The dev proxy keeps `Host` and adds `X-Forwarded-Host`, as Vercel's external rewrites are expected to. The API reads `X-Forwarded-Host` first and falls back to `Host`; that Vercel sends `X-Forwarded-Host` on an external rewrite is still to be checked on the first deployment.
+The `app` image (root `Dockerfile`) builds the app with `VITE_PLATFORM_DOMAIN` and `VITE_PRODUCT_NAME` as build arguments, so staging builds with its own domain, and serves it with Caddy (`docker/caddy/Caddyfile`): every path that is not a built file gets `index.html`, on the main host and every Organisation subdomain alike, and `/api/*` goes to the API with `Host`, `X-Forwarded-Host` and `X-Forwarded-For` kept, plus the proxy secret the API requires. The dev proxy forwards the host the same way, without the secret.

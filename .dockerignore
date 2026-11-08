@@ -1,3 +1,17 @@
-# The image needs only package.json; the source is mounted at runtime.
-*
-!package.json
+# The production images build from the source; the dev image needs only package.json. Never send
+# dependencies, build output, env files (they may hold secrets) or other worktrees.
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+**/.env
+**/.env.*
+.git
+.github
+.husky
+.claude
+.agents
+docs
+compose.yaml
+deploy
+Dockerfile

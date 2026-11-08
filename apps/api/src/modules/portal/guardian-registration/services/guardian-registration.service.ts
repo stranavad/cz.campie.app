@@ -35,7 +35,7 @@ export class GuardianRegistrationService {
     private readonly unitOfWork: UnitOfWork,
     config: ConfigService<Env, true>,
   ) {
-    this.technicalContact = config.get('PLATFORM_OPERATOR_EMAIL', { infer: true });
+    this.technicalContact = config.get('PLATFORM_SUPPORT_EMAIL', { infer: true });
   }
 
   /**

@@ -29,6 +29,16 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
 
+  # The deployed images build (deploy/compose.yaml); nothing is pushed.
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - run: docker build --target api .
+      - run: docker build --target migrate .
+      - run: docker build --target app .
+
   secrets:
     runs-on: ubuntu-latest
     steps:

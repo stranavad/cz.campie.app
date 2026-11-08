@@ -4,7 +4,7 @@ Server data flows through three layers: `apiClient` (`src/lib/api/`, a thin `fet
 
 ## Design
 
-- **Same origin only.** Every call goes to `/api/...` on the current host: proxied by Vite locally, rewritten by Vercel in production (ADR-0001). Session cookies are httpOnly; the app never sees or stores a token.
+- **Same origin only.** Every call goes to `/api/...` on the current host: proxied by Vite locally and by Caddy when deployed (ADR-0001). Session cookies are httpOnly; the app never sees or stores a token.
 - **Components only see query hooks**, never the client (lint: only `*.service.ts` imports `apiClient`), so caching, loading and invalidation are handled in one place.
 - **Every response is validated** against its contract schema, and the client only ever throws `ApiError` subclasses. A backend drift shows up as a clear error at the boundary, not as `undefined` deep in the UI.
 - **The contract is the source of truth**: a new or changed endpoint starts in `@repo/schema/<module>`. Frontend-only rules extend it inside the feature rather than redefining it.

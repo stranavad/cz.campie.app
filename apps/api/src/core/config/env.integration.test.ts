@@ -31,4 +31,33 @@ describe('configuration', () => {
       /JOB_WORKER: manual never runs a job/,
     );
   });
+
+  it('refuses to boot production with Comgate test payments, which would record no live payment', async () => {
+    await expect(bootApp({ env: { ...PRODUCTION_ENV, COMGATE_TEST_PAYMENTS: 'true' } })).rejects.toThrow(
+      /COMGATE_TEST_PAYMENTS: production takes only live payments/,
+    );
+  });
+
+  it('refuses to boot staging with live payments, and boots it with test payments or the fake gateway', async () => {
+    const staging = { ...PRODUCTION_ENV, APP_ENV: 'staging' };
+
+    await expect(bootApp({ env: staging })).rejects.toThrow(/COMGATE_TEST_PAYMENTS: staging takes no live payments/);
+    await (await bootApp({ env: { ...staging, COMGATE_TEST_PAYMENTS: 'true' } })).close();
+    await (await bootApp({ env: { ...staging, PAYMENT_GATEWAY_ADAPTER: 'fake' } })).close();
+  });
+
+  it('refuses to boot staging with a local adapter, as production does', async () => {
+    await expect(
+      bootApp({ env: { ...PRODUCTION_ENV, APP_ENV: 'staging', COMGATE_TEST_PAYMENTS: 'true', MAIL_ADAPTER: 'log' } }),
+    ).rejects.toThrow(/MAIL_ADAPTER: log is a local adapter; staging requires resend/);
+  });
+
+  it('refuses to boot a deployment without the proxy secret, or with a short one', async () => {
+    await expect(bootApp({ env: { ...PRODUCTION_ENV, PROXY_SECRET: undefined } })).rejects.toThrow(
+      /PROXY_SECRET: production requires the secret/,
+    );
+    await expect(bootApp({ env: { ...PRODUCTION_ENV, PROXY_SECRET: 'too-short' } })).rejects.toThrow(
+      /PROXY_SECRET: must be at least 32 printable ASCII characters/,
+    );
+  });
 });

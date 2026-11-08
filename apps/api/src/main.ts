@@ -9,4 +9,7 @@ import { setupApp } from './app.setup.ts';
 const PORT = 3000;
 
 const app = setupApp(await NestFactory.create<NestExpressApplication>(AppModule.forRoot(), { rawBody: true }));
+// A deployment stops the container with SIGTERM: close the job worker and connections instead of dying
+// mid-job, so a running job finishes rather than waiting for its lock to expire.
+app.enableShutdownHooks();
 await app.listen(PORT);

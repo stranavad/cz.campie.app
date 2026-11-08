@@ -11,7 +11,7 @@ export function appConfigModule(): Promise<DynamicModule> {
   return ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: appEnv === 'test' ? '.env.test' : '.env',
-    ignoreEnvFile: appEnv === 'production',
+    ignoreEnvFile: appEnv === 'production' || appEnv === 'staging',
     validationSchema: envSchema,
   });
 }

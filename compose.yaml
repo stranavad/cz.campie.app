@@ -125,6 +125,9 @@ services:
       PLATFORM_SCHEME: http
       PRODUCT_NAME: Campie
       PLATFORM_OPERATOR_EMAIL: operator@example.com
+      PLATFORM_SUPPORT_EMAIL: info@campie.cz
+      # The dev server's proxy; no proxy secret locally.
+      TRUST_PROXY_HOPS: 1
       DATABASE_ADAPTER: pg
       DATABASE_URL: postgres://campie_app:campie_app@postgres:5432/campie
       REDIS_URL: redis://redis:6379

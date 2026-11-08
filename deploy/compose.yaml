@@ -1,0 +1,167 @@
+# Production and staging on Dokploy: the same file, deployed twice with a different environment
+# (`.env.example` next to it lists every variable). Dokploy's Traefik terminates TLS and routes the main host
+# and every Organisation subdomain to `app`, which serves the frontend and proxies /api to `api`; nothing
+# else is reachable from outside. PostgreSQL (Neon) and file storage (Tigris) are managed services.
+#
+# Traefik needs a certificate resolver with a DNS challenge for the wildcard certificate
+# (*.<PLATFORM_DOMAIN>): a plain HTTP challenge cannot issue one. Its name is TRAEFIK_CERT_RESOLVER.
+
+x-healthcheck: &healthcheck
+  interval: 15s
+  timeout: 5s
+  retries: 3
+  start_period: 60s
+  start_interval: 2s
+
+services:
+  app:
+    build:
+      context: ..
+      target: app
+      args:
+        VITE_PLATFORM_DOMAIN: ${PLATFORM_DOMAIN:?}
+        VITE_PRODUCT_NAME: ${PRODUCT_NAME:?}
+    restart: unless-stopped
+    environment:
+      PROXY_SECRET: ${PROXY_SECRET:?}
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - default
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.services.${DEPLOYMENT_NAME:?}.loadbalancer.server.port=80
+      # The main host and every single label below the platform domain; the API answers an unknown
+      # subdomain with 404. A label holds no dot, so production never routes a staging host.
+      - traefik.http.routers.${DEPLOYMENT_NAME}.rule=Host(`app.${PLATFORM_DOMAIN}`) || HostRegexp(`^[a-z0-9-]+\.${PLATFORM_DOMAIN}$$`)
+      - traefik.http.routers.${DEPLOYMENT_NAME}.entrypoints=websecure
+      - traefik.http.routers.${DEPLOYMENT_NAME}.service=${DEPLOYMENT_NAME}
+      - traefik.http.routers.${DEPLOYMENT_NAME}.tls.certresolver=${TRAEFIK_CERT_RESOLVER:?}
+      - traefik.http.routers.${DEPLOYMENT_NAME}.tls.domains[0].main=${PLATFORM_DOMAIN}
+      - traefik.http.routers.${DEPLOYMENT_NAME}.tls.domains[0].sans=*.${PLATFORM_DOMAIN}
+      # Plain HTTP only redirects.
+      - traefik.http.routers.${DEPLOYMENT_NAME}-http.rule=Host(`app.${PLATFORM_DOMAIN}`) || HostRegexp(`^[a-z0-9-]+\.${PLATFORM_DOMAIN}$$`)
+      - traefik.http.routers.${DEPLOYMENT_NAME}-http.entrypoints=web
+      - traefik.http.routers.${DEPLOYMENT_NAME}-http.middlewares=${DEPLOYMENT_NAME}-https
+      - traefik.http.middlewares.${DEPLOYMENT_NAME}-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.${DEPLOYMENT_NAME}-https.redirectscheme.permanent=true
+    healthcheck:
+      <<: *healthcheck
+      test: [CMD, wget, -q, --spider, http://127.0.0.1/]
+
+  # Applies the migrations as the role that owns the tables, before the API starts. Only this service holds
+  # the owner's credentials. The operator command line runs here too:
+  # `docker compose -f deploy/compose.yaml run --rm migrate pnpm operator grant <email>`.
+  migrate:
+    build:
+      context: ..
+      target: migrate
+    restart: 'no'
+    environment:
+      MIGRATION_DATABASE_URL: ${MIGRATION_DATABASE_URL:?}
+
+  # Jobs (mail, PDFs, exports) run in this process from the Redis queue (JOB_WORKER=auto).
+  api:
+    build:
+      context: ..
+      target: api
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:?}
+      PLATFORM_DOMAIN: ${PLATFORM_DOMAIN}
+      PLATFORM_SCHEME: https
+      PRODUCT_NAME: ${PRODUCT_NAME}
+      PLATFORM_OPERATOR_EMAIL: ${PLATFORM_OPERATOR_EMAIL:?}
+      PLATFORM_SUPPORT_EMAIL: ${PLATFORM_SUPPORT_EMAIL:?}
+      PROXY_SECRET: ${PROXY_SECRET}
+      # Traefik, then Caddy in `app`.
+      TRUST_PROXY_HOPS: 2
+      REDIS_URL: redis://redis:6379
+      JOB_WORKER: auto
+      DATABASE_ADAPTER: neon
+      DATABASE_URL: ${DATABASE_URL:?}
+      CLOCK_ADAPTER: system
+      MAIL_ADAPTER: resend
+      RESEND_API_KEY: ${RESEND_API_KEY:?}
+      RESEND_WEBHOOK_SECRET: ${RESEND_WEBHOOK_SECRET:?}
+      MAIL_AUTH_FROM: ${MAIL_AUTH_FROM:?}
+      MAIL_NOTIFICATION_FROM: ${MAIL_NOTIFICATION_FROM:?}
+      FILE_STORAGE_ADAPTER: tigris
+      TIGRIS_STORAGE_ENDPOINT: ${TIGRIS_STORAGE_ENDPOINT:?}
+      TIGRIS_STORAGE_BUCKET: ${TIGRIS_STORAGE_BUCKET:?}
+      TIGRIS_STORAGE_ACCESS_KEY_ID: ${TIGRIS_STORAGE_ACCESS_KEY_ID:?}
+      TIGRIS_STORAGE_SECRET_ACCESS_KEY: ${TIGRIS_STORAGE_SECRET_ACCESS_KEY:?}
+      PDF_RENDERER_ADAPTER: gotenberg
+      GOTENBERG_URL: http://gotenberg:3000
+      PAYMENT_GATEWAY_ADAPTER: ${PAYMENT_GATEWAY_ADAPTER:?}
+      COMGATE_TEST_PAYMENTS: ${COMGATE_TEST_PAYMENTS:-false}
+      KEY_PROVIDER_ADAPTER: secret
+      MASTER_KEY: ${MASTER_KEY:?}
+      LOGIN_MAX_FAILURES_PER_ACCOUNT: ${LOGIN_MAX_FAILURES_PER_ACCOUNT:?}
+      LOGIN_MAX_FAILURES_PER_IP: ${LOGIN_MAX_FAILURES_PER_IP:?}
+      LOGIN_LOCKOUT_MINUTES: ${LOGIN_LOCKOUT_MINUTES:?}
+      REQUEST_LIMIT_WINDOW_MINUTES: ${REQUEST_LIMIT_WINDOW_MINUTES:?}
+      SIGNUP_LIMIT_PER_IP: ${SIGNUP_LIMIT_PER_IP:?}
+      SIGNUP_LIMIT_PER_EMAIL: ${SIGNUP_LIMIT_PER_EMAIL:?}
+      PASSWORD_RESET_LIMIT_PER_IP: ${PASSWORD_RESET_LIMIT_PER_IP:?}
+      PASSWORD_RESET_LIMIT_PER_EMAIL: ${PASSWORD_RESET_LIMIT_PER_EMAIL:?}
+      PRICE_PREVIEW_LIMIT_PER_IP: ${PRICE_PREVIEW_LIMIT_PER_IP:?}
+      PRICE_PREVIEW_LIMIT_PER_ORGANISATION: ${PRICE_PREVIEW_LIMIT_PER_ORGANISATION:?}
+      SUBMISSION_LIMIT_PER_IP: ${SUBMISSION_LIMIT_PER_IP:?}
+      SUBMISSION_LIMIT_PER_ORGANISATION: ${SUBMISSION_LIMIT_PER_ORGANISATION:?}
+      LOGIN_LINK_LIMIT_PER_IP: ${LOGIN_LINK_LIMIT_PER_IP:?}
+      LOGIN_LINK_LIMIT_PER_EMAIL: ${LOGIN_LINK_LIMIT_PER_EMAIL:?}
+      GATEWAY_NOTIFICATION_LIMIT_PER_IP: ${GATEWAY_NOTIFICATION_LIMIT_PER_IP:?}
+      GATEWAY_NOTIFICATION_LIMIT_PER_ORGANISATION: ${GATEWAY_NOTIFICATION_LIMIT_PER_ORGANISATION:?}
+      CARD_PAYMENT_LIMIT_PER_IP: ${CARD_PAYMENT_LIMIT_PER_IP:?}
+      CARD_PAYMENT_LIMIT_PER_ORGANISATION: ${CARD_PAYMENT_LIMIT_PER_ORGANISATION:?}
+      PAYMENT_REMINDER_LIMIT_PER_ORGANISATION: ${PAYMENT_REMINDER_LIMIT_PER_ORGANISATION:?}
+      GUARDIAN_ACTION_LIMIT_PER_IP: ${GUARDIAN_ACTION_LIMIT_PER_IP:?}
+      GUARDIAN_ACTION_LIMIT_PER_EMAIL: ${GUARDIAN_ACTION_LIMIT_PER_EMAIL:?}
+      PROBLEM_REPORT_LIMIT_PER_IP: ${PROBLEM_REPORT_LIMIT_PER_IP:?}
+      PROBLEM_REPORT_LIMIT_PER_TARGET: ${PROBLEM_REPORT_LIMIT_PER_TARGET:?}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      gotenberg:
+        condition: service_healthy
+    # Healthy once the API reaches the database, Redis, storage and Gotenberg. It calls the API as the
+    # proxy does, with the secret this container holds anyway, so no route is exempt from it.
+    healthcheck:
+      <<: *healthcheck
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:3000/api/health', { headers: { 'x-proxy-secret': process.env.PROXY_SECRET } }).then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+
+  # The job queue. BullMQ needs every key kept, so nothing is evicted; the append-only file keeps queued
+  # jobs across a restart.
+  redis:
+    image: redis:8.8.3-alpine
+    restart: unless-stopped
+    command: [redis-server, --appendonly, 'yes', --maxmemory-policy, noeviction]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      <<: *healthcheck
+      test: [CMD, redis-cli, ping]
+
+  gotenberg:
+    image: gotenberg/gotenberg:8.38.1
+    restart: unless-stopped
+    healthcheck:
+      <<: *healthcheck
+      test: [CMD, curl, -fsS, -o, /dev/null, http://localhost:3000/health]
+
+networks:
+  dokploy-network:
+    external: true
+
+volumes:
+  redis-data:

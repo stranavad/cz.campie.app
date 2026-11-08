@@ -248,7 +248,8 @@ const requestLimits = z
 
 export const envSchema = z
   .object({
-    APP_ENV: z.enum(['local', 'test', 'production']),
+    // staging is a deployed copy of production that takes no live payments.
+    APP_ENV: z.enum(['local', 'test', 'staging', 'production']),
     // The registrable domain the platform runs on: app.<domain> is the main host, every other single
     // label below it an Organisation's subdomain.
     PLATFORM_DOMAIN: z.string().regex(/^[a-z0-9-]+(\.[a-z0-9-]+)*$/, 'must be a bare lowercase hostname'),
@@ -256,8 +257,20 @@ export const envSchema = z
     PLATFORM_SCHEME: z.enum(['https', 'http']),
     // The platform's name: the sender of its own mail, and a subdomain no Organisation may take.
     PRODUCT_NAME: nonEmpty,
-    // Where the Platform operator is told of new signups.
+    // Where the Platform operator is told of new signups and problem reports.
     PLATFORM_OPERATOR_EMAIL: z.email(),
+    // Where guardians write about a technical problem with the platform.
+    PLATFORM_SUPPORT_EMAIL: z.email(),
+
+    // The frontend's proxy sends this secret with every request; when set, a request without it is refused
+    // before anything else runs, so nobody can call the API past the proxy with a forged X-Forwarded-For.
+    PROXY_SECRET: z
+      .string()
+      .regex(/^[\x21-\x7e]{32,}$/, 'must be at least 32 printable ASCII characters without spaces')
+      .optional(),
+    // How many proxies in front of the API append to X-Forwarded-For: the client's address is the entry
+    // this many places from the end. 0 trusts no proxy and takes the connection's peer.
+    TRUST_PROXY_HOPS: z.coerce.number().int().nonnegative(),
 
     REDIS_URL: z.url(),
     // auto runs queued jobs in this process; manual leaves them queued until a test drains them.
@@ -274,30 +287,39 @@ export const envSchema = z
   .and(loginLimits)
   .and(requestLimits)
   .superRefine((env, context) => {
-    if (env.APP_ENV !== 'production') {
+    if (env.APP_ENV !== 'production' && env.APP_ENV !== 'staging') {
       return;
     }
+
+    const deployment = env.APP_ENV;
 
     if (env.JOB_WORKER !== 'auto') {
       context.addIssue({
         code: 'custom',
         path: ['JOB_WORKER'],
-        message: `${env.JOB_WORKER} never runs a job; production requires auto`,
+        message: `${env.JOB_WORKER} never runs a job; ${deployment} requires auto`,
       });
     }
 
     if (env.PLATFORM_SCHEME !== 'https') {
-      context.addIssue({ code: 'custom', path: ['PLATFORM_SCHEME'], message: 'production requires https' });
+      context.addIssue({ code: 'custom', path: ['PLATFORM_SCHEME'], message: `${deployment} requires https` });
     }
 
-    // The adapter each port must use in production; every other adapter is local or test only.
+    if (env.PROXY_SECRET === undefined) {
+      context.addIssue({
+        code: 'custom',
+        path: ['PROXY_SECRET'],
+        message: `${deployment} requires the secret the frontend's proxy sends`,
+      });
+    }
+
+    // The adapter each port must use when deployed; every other adapter is local or test only.
     const ports = [
       { variable: 'DATABASE_ADAPTER', chosen: env.database.adapter, required: 'neon' },
       { variable: 'CLOCK_ADAPTER', chosen: env.clock.adapter, required: 'system' },
       { variable: 'MAIL_ADAPTER', chosen: env.mail.adapter, required: 'resend' },
       { variable: 'FILE_STORAGE_ADAPTER', chosen: env.fileStorage.adapter, required: 'tigris' },
       { variable: 'PDF_RENDERER_ADAPTER', chosen: env.pdfRenderer.adapter, required: 'gotenberg' },
-      { variable: 'PAYMENT_GATEWAY_ADAPTER', chosen: env.paymentGateway.adapter, required: 'comgate' },
       { variable: 'KEY_PROVIDER_ADAPTER', chosen: env.keyProvider.adapter, required: 'secret' },
     ];
 
@@ -306,9 +328,37 @@ export const envSchema = z
         context.addIssue({
           code: 'custom',
           path: [variable],
-          message: `${chosen} is a local adapter; production requires ${required}`,
+          message: `${chosen} is a local adapter; ${deployment} requires ${required}`,
         });
       }
+    }
+
+    // Production takes only live card payments and staging never does: a staging copy tests with the fake
+    // gateway or Comgate's test payments, so nobody pays real money there.
+    const payments = env.paymentGateway;
+
+    if (deployment === 'production' && payments.adapter !== 'comgate') {
+      context.addIssue({
+        code: 'custom',
+        path: ['PAYMENT_GATEWAY_ADAPTER'],
+        message: `${payments.adapter} is a local adapter; production requires comgate`,
+      });
+    }
+
+    if (deployment === 'production' && payments.adapter === 'comgate' && payments.testPayments) {
+      context.addIssue({
+        code: 'custom',
+        path: ['COMGATE_TEST_PAYMENTS'],
+        message: 'production takes only live payments; test payments are for staging',
+      });
+    }
+
+    if (deployment === 'staging' && payments.adapter === 'comgate' && !payments.testPayments) {
+      context.addIssue({
+        code: 'custom',
+        path: ['COMGATE_TEST_PAYMENTS'],
+        message: 'staging takes no live payments; set it to true or use the fake adapter',
+      });
     }
   });
 

@@ -1,0 +1,49 @@
+# The deployed frontend: the built app for the main host and every Organisation subdomain alike, and the
+# same-origin /api proxy to the API. Traefik terminates TLS in front of it, so Caddy speaks plain HTTP.
+{
+	auto_https off
+	admin off
+	servers {
+		# Only Traefik reaches this server, over the Docker network. Trusting it keeps the X-Forwarded-For
+		# it set (the browser's address) and appends Traefik's own, so the API, behind two proxies, finds the
+		# browser's address second from the end (TRUST_PROXY_HOPS=2). It also keeps Traefik's
+		# X-Forwarded-Host and X-Forwarded-Proto.
+		trusted_proxies static private_ranges
+	}
+}
+
+:80 {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		X-Frame-Options SAMEORIGIN
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	handle /api/* {
+		reverse_proxy api:3000 {
+			# Replaces whatever the client sent under this name; the API refuses any request without it.
+			header_up X-Proxy-Secret {env.PROXY_SECRET}
+		}
+	}
+
+	# Built files carry a content hash in their name, so they never change; a missing one is a 404, never
+	# the app's page cached for good.
+	handle /assets/* {
+		root * /srv
+		header Cache-Control "public, max-age=31536000, immutable"
+		encode zstd gzip
+		file_server
+	}
+
+	# Every other path is the app's: the router decides by host and path. Asked for again on every load,
+	# so a deployment reaches the browser at once.
+	handle {
+		root * /srv
+		header Cache-Control "no-cache"
+		encode zstd gzip
+		try_files {path} /index.html
+		file_server
+	}
+}

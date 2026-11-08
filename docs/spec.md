@@ -294,7 +294,7 @@ The data model is designed for all three stages from the start, so later modules
 - Frontend: a single React app built with the latest Vite and React Compiler, Tailwind, TanStack Router and TanStack Query. No Vue.
 - The one frontend decides by hostname what it is: on an Organisation's subdomain it is the public registration pages and the guardian portal; on the main address it is signup, the admin interface and the platform console.
 - Public addresses on an Organisation's subdomain: `/` is the Organisation landing (straight to the Camp when there is only one, Camp cards otherwise); `/{camp-slug}` lists the Camp's Turnusy; `/{camp-slug}/prihlaska?turnus={id}` opens the form with the Turnus preselected, as the deep link for the camp's website; `/portal` is the guardian portal across all the Organisation's Camps. The Camp slug is unique within the Organisation and editable, and old slugs keep redirecting. Admin pages live only on the main host.
-- Frontend deploys to Vercel with a wildcard domain. Backend hosting is undecided and must not be assumed.
+- Production and staging run on one server under Dokploy (`deploy/compose.yaml`): Traefik terminates TLS for the main host and the wildcard subdomains, a Caddy container serves the frontend and proxies `/api` to the API with a shared secret the API requires, and Redis and Gotenberg run beside them. PostgreSQL (Neon) and file storage (Tigris) are managed services. Staging is a copy that takes no live payments.
 - Docker Compose runs the full stack locally: PostgreSQL, RustFS as the S3 server, Redis, Gotenberg, the API and the frontend.
 - Identifiers are UUIDv7. Money is whole CZK as integers. Calendar-date rules (Early bird price, Age on start, Registration window) use the Europe/Prague calendar.
 

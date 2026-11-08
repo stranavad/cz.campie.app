@@ -81,7 +81,7 @@ describe('guardian portal Registrations', () => {
 
   it('shows the camp contact and a contact for technical problems', async () => {
     expect((await portal()).body).toMatchObject({
-      technicalContact: 'operator@example.com',
+      technicalContact: 'podpora@example.com',
       registrations: [{ camp: { name: 'Letní tábor', contactEmail: expect.stringMatching(/^kontakt-/) } }],
     });
   });
