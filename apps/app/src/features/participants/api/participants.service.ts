@@ -28,7 +28,6 @@ import {
   getParticipantExportEndpoint,
   getRegistrationDetailEndpoint,
   getRegistrationHistoryEndpoint,
-  getSelectedTurnusEndpoint,
   getTurnusFormEndpoint,
   getTurnusOverviewEndpoint,
   listParticipantsEndpoint,
@@ -43,7 +42,6 @@ import {
   removeGuardianEndpoint,
   saveExportPresetEndpoint,
   sendPaymentRemindersEndpoint,
-  setSelectedTurnusEndpoint,
   startParticipantExportEndpoint,
   startPaymentsExportEndpoint,
   verifyClaimedDiscountEndpoint,
@@ -62,10 +60,6 @@ import {
 import { apiClient } from '@/lib/api';
 
 export const participantsService = {
-  selectedTurnus: (organisationId: string, signal?: AbortSignal) =>
-    apiClient.request(getSelectedTurnusEndpoint, { organisationId, signal }),
-  selectTurnus: (organisationId: string, turnusId: string) =>
-    apiClient.request(setSelectedTurnusEndpoint, { organisationId, body: { turnusId } }),
   list: (organisationId: string, turnusId: string, filters: ParticipantListQuery, signal?: AbortSignal) =>
     apiClient.request(listParticipantsEndpoint, {
       organisationId,

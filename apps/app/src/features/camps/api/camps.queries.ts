@@ -1,4 +1,4 @@
-import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { skipToken, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 
 import type {
   CampBranding,
@@ -14,6 +14,7 @@ import type { ConsentContent } from '@repo/schema/consents';
 import type { DocumentTypeBody } from '@repo/schema/documents';
 import type { CampEmailTextBody, EmailType } from '@repo/schema/emails';
 
+import { selectedTurnusKeys } from '@/core/selected-turnus';
 import { campsKeys } from '@/features/camps/api/camps.keys';
 import { campsService } from '@/features/camps/api/camps.service';
 
@@ -56,7 +57,11 @@ export const useUpdateCampMutation = (organisationId: string, campId: string) =>
     mutationFn: (body: UpdateCampBody) => campsService.update(organisationId, campId, body),
     onSuccess: async (camp) => {
       queryClient.setQueryData(campsKeys.detail(organisationId, campId), camp);
-      await queryClient.invalidateQueries({ queryKey: campsKeys.list(organisationId) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: campsKeys.list(organisationId) }),
+        // The header's Turnus switcher names each Turnus with its Camp.
+        queryClient.invalidateQueries({ queryKey: selectedTurnusKeys.organisation(organisationId) }),
+      ]);
     },
   });
 };
@@ -86,6 +91,13 @@ export const useSetCampLogoMutation = (organisationId: string, campId: string) =
 export const useRemoveCampLogoMutation = (organisationId: string, campId: string) =>
   useBrandingMutation<void>(organisationId, campId, () => campsService.removeLogo(organisationId, campId));
 
+// The Camp's Turnusy and the header's Turnus switcher, which lists every Turnus of the Organisation.
+const invalidateTurnusy = (queryClient: QueryClient, organisationId: string, campId: string) =>
+  Promise.all([
+    queryClient.invalidateQueries({ queryKey: campsKeys.turnusy(organisationId, campId) }),
+    queryClient.invalidateQueries({ queryKey: selectedTurnusKeys.organisation(organisationId) }),
+  ]);
+
 export const useTurnusyQuery = (organisationId: string, campId: string) =>
   useQuery({
     queryKey: campsKeys.turnusy(organisationId, campId),
@@ -101,7 +113,7 @@ export const useSaveTurnusMutation = (organisationId: string, campId: string) =>
       turnusId === null
         ? campsService.createTurnus(organisationId, campId, body)
         : campsService.updateTurnus(organisationId, turnusId, body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.turnusy(organisationId, campId) }),
+    onSuccess: () => invalidateTurnusy(queryClient, organisationId, campId),
   });
 };
 
@@ -110,7 +122,7 @@ export const useRemoveTurnusMutation = (organisationId: string, campId: string) 
 
   return useMutation({
     mutationFn: (turnusId: string) => campsService.removeTurnus(organisationId, turnusId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.turnusy(organisationId, campId) }),
+    onSuccess: () => invalidateTurnusy(queryClient, organisationId, campId),
   });
 };
 

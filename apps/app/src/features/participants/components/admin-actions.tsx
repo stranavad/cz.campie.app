@@ -6,6 +6,7 @@ import { czechDate } from '@repo/schema/shared';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useSelectedTurnusQuery } from '@/core/selected-turnus';
 import {
   useAddParticipantMutation,
   useEditAnswersMutation,
@@ -13,7 +14,6 @@ import {
   useMoveRegistrationMutation,
   usePreviewAnswersMutation,
   usePreviewParticipantMutation,
-  useSelectedTurnusQuery,
 } from '@/features/participants/api/participants.queries';
 import { AnswersEditor } from '@/features/participants/components/answers-editor';
 

@@ -9,11 +9,8 @@ import { czechDate } from '@repo/schema/shared';
 import { Button } from '@/components/ui/button';
 import { membershipAllows, useCurrentMembership } from '@/core/account';
 import { RegistrationField } from '@/core/registration-form';
-import {
-  useCreateRegistrationMutation,
-  useSelectedTurnusQuery,
-  useTurnusFormQuery,
-} from '@/features/participants/api/participants.queries';
+import { useSelectedTurnusQuery } from '@/core/selected-turnus';
+import { useCreateRegistrationMutation, useTurnusFormQuery } from '@/features/participants/api/participants.queries';
 
 // A Registration taken by phone or on paper: the Camp's form, outside window, capacity and age limits.
 export function CreateRegistrationPage() {

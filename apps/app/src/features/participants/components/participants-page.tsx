@@ -2,7 +2,7 @@ import { Link, Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { PAYMENT_STATUSES } from '@repo/schema/pricing';
-import { czechDate, czk } from '@repo/schema/shared';
+import { czk } from '@repo/schema/shared';
 
 import { Input } from '@/components/ui/input';
 import { OpenItemsReminder } from '@/features/participants/components/open-items-reminder';
@@ -40,20 +40,6 @@ export function ParticipantsPage() {
           {t('create.open')}
         </Link>
         {page.turnusy.length === 0 ? <p>{t('noTurnusy')}</p> : null}
-        <label className="flex flex-col gap-1 text-sm font-medium sm:max-w-md">
-          {t('turnus')}
-          <select
-            className="h-9 rounded-lg border border-input bg-transparent px-2"
-            value={page.turnusId ?? ''}
-            onChange={(event) => page.selectTurnus(event.target.value)}
-          >
-            {page.turnusy.map((turnus) => (
-              <option key={turnus.id} value={turnus.id}>
-                {t('turnusOption', { camp: turnus.campName, turnus: turnus.name, date: czechDate(turnus.startDate) })}
-              </option>
-            ))}
-          </select>
-        </label>
         {page.turnusId === null ? null : (
           <ParticipantExport
             key={page.turnusId}

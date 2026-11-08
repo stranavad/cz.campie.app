@@ -17,6 +17,10 @@
     "supportWrites": "Režim podpory: jste v organizaci {{organisation}} se svolením ke změnám, do {{until}}. Každá změna se zapisuje do historie.",
     "account": "Můj účet"
   },
+  "selectedTurnus": {
+    "label": "Turnus",
+    "option": "{{camp}} - {{turnus}} ({{date}})"
+  },
   "notFound": {
     "title": "Stránka nenalezena",
     "description": "Zkontrolujte adresu, kterou jste zadali."
