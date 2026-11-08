@@ -90,29 +90,29 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 
 ## Stage 1b - before payments and paperwork are due (April 2027)
 
-| #   | Issue                                          | Episode      | Status          | Blocked by |
-| --- | ---------------------------------------------- | ------------ | --------------- | ---------- |
-| 48  | Comgate adapter with per-Organisation keys     | E4           | done            | 23, 38     |
-| 49  | Card payment on submission and from the portal | E4           | done            | 40, 48     |
-| 50  | Payment reminders                              | E4           | done            | 38, 42     |
-| 51  | Consents: model, versions, editor              | E7 Consents  | done            | 12, 24     |
-| 52  | Starter Consents                               | E7           | ready-for-human | 51         |
-| 53  | Consent signing and signed PDF                 | E7           | done            | 15, 39, 51 |
-| 54  | Withdraw, re-sign, Declined items              | E7           | done            | 53         |
-| 55  | Admin Consent status and downloads             | E7           | done            | 53         |
-| 56  | Document types                                 | E8 Documents | done            | 12, 24     |
-| 57  | Guardian document upload                       | E8           | done            | 39, 56     |
-| 58  | Admin document review and Internal documents   | E8           | done            | 57         |
-| 59  | Participant checklist                          | E5           | done            | 41, 53, 57 |
-| 60  | Open-items reminder                            | E5           | done            | 59         |
-| 61  | Turnus overview and list filters               | E6           | done            | 38, 42, 59 |
-| 62  | Export presets and payments export             | E6           | done            | 46         |
-| 63  | Support access                                 | E9 Trust     | done            | 10, 21     |
-| 64  | Feedback and problem reports                   | E9           | done            | 21         |
-| 65  | Audit log browser                              | E9           | done            | 10, 19     |
-| 66  | Erase a Registration                           | E9           | done            | 12, 45     |
-| 67  | TOTP for admins and enforcement                | E1           | done            | 18, 21     |
-| 68  | Bounce and complaint handling                  | E3           | done            | 16, 42     |
+| #   | Issue                                          | Episode      | Status | Blocked by |
+| --- | ---------------------------------------------- | ------------ | ------ | ---------- |
+| 48  | Comgate adapter with per-Organisation keys     | E4           | done   | 23, 38     |
+| 49  | Card payment on submission and from the portal | E4           | done   | 40, 48     |
+| 50  | Payment reminders                              | E4           | done   | 38, 42     |
+| 51  | Consents: model, versions, editor              | E7 Consents  | done   | 12, 24     |
+| 52  | Starter Consents                               | E7           | done   | 51         |
+| 53  | Consent signing and signed PDF                 | E7           | done   | 15, 39, 51 |
+| 54  | Withdraw, re-sign, Declined items              | E7           | done   | 53         |
+| 55  | Admin Consent status and downloads             | E7           | done   | 53         |
+| 56  | Document types                                 | E8 Documents | done   | 12, 24     |
+| 57  | Guardian document upload                       | E8           | done   | 39, 56     |
+| 58  | Admin document review and Internal documents   | E8           | done   | 57         |
+| 59  | Participant checklist                          | E5           | done   | 41, 53, 57 |
+| 60  | Open-items reminder                            | E5           | done   | 59         |
+| 61  | Turnus overview and list filters               | E6           | done   | 38, 42, 59 |
+| 62  | Export presets and payments export             | E6           | done   | 46         |
+| 63  | Support access                                 | E9 Trust     | done   | 10, 21     |
+| 64  | Feedback and problem reports                   | E9           | done   | 21         |
+| 65  | Audit log browser                              | E9           | done   | 10, 19     |
+| 66  | Erase a Registration                           | E9           | done   | 12, 45     |
+| 67  | TOTP for admins and enforcement                | E1           | done   | 18, 21     |
+| 68  | Bounce and complaint handling                  | E3           | done   | 16, 42     |
 
 ## Stage 2 - around May 2027 (to be broken down)
 
@@ -131,7 +131,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 
 - Pilot camps paper exercise - blocks freezing 26 and 29.
 - Legal texts (terms, data processing agreement) - block approving the first Organisation (21).
-- Starter Consent licence - blocks 52.
+- Starter Consent licence: confirmed 2026-11-08, recorded in issue 52.
 - Product name and domain: decided - Campie, `campie.cz`, repository `cz.campie.app`. Mail domain warm-up and DKIM before the first pilot approval.
 - Contribution policy.
 - Backend hosting decision - must allow the same-origin proxy (ADR-0001); blocks production, not development.
