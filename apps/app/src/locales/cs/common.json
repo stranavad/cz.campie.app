@@ -15,7 +15,13 @@
     "logOut": "Odhlásit se",
     "supportReadOnly": "Režim podpory: jste v organizaci {{organisation}} jen pro čtení, do {{until}}.",
     "supportWrites": "Režim podpory: jste v organizaci {{organisation}} se svolením ke změnám, do {{until}}. Každá změna se zapisuje do historie.",
-    "account": "Můj účet"
+    "account": "Můj účet",
+    "legal": {
+      "label": "Právní dokumenty",
+      "terms": "Obchodní podmínky",
+      "dataProcessingAgreement": "Zpracovatelská smlouva",
+      "dataPage": "Kde jsou data a kdo je zpracovává"
+    }
   },
   "selectedTurnus": {
     "label": "Turnus",

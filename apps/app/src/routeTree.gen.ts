@@ -18,6 +18,7 @@ import { Route as PlatformHistorieRouteImport } from './routes/platform/historie
 import { Route as PlatformKonzoleRouteImport } from './routes/platform/konzole'
 import { Route as PlatformNastaveniRouteImport } from './routes/platform/nastaveni'
 import { Route as PlatformNoveHesloRouteImport } from './routes/platform/nove-heslo'
+import { Route as PlatformPodminkyRouteImport } from './routes/platform/podminky'
 import { Route as PlatformPozvankaRouteImport } from './routes/platform/pozvanka'
 import { Route as PlatformPrihlaseniRouteImport } from './routes/platform/prihlaseni'
 import { Route as PlatformPrihlaskyRouteImport } from './routes/platform/prihlasky'
@@ -26,6 +27,8 @@ import { Route as PlatformTaboryRouteImport } from './routes/platform/tabory'
 import { Route as PlatformUcetRouteImport } from './routes/platform/ucet'
 import { Route as PlatformUzivateleRouteImport } from './routes/platform/uzivatele'
 import { Route as PlatformZapomenuteHesloRouteImport } from './routes/platform/zapomenute-heslo'
+import { Route as PlatformZpracovaniDatRouteImport } from './routes/platform/zpracovani-dat'
+import { Route as PlatformZpracovatelskaSmlouvaRouteImport } from './routes/platform/zpracovatelska-smlouva'
 import { Route as UnknownSplatRouteImport } from './routes/unknown/$'
 import { Route as OrganisationCampSlugIndexRouteImport } from './routes/organisation/$campSlug/index'
 import { Route as OrganisationCampSlugPrihlaskaRouteImport } from './routes/organisation/$campSlug/prihlaska'
@@ -84,6 +87,11 @@ const PlatformNoveHesloRoute = PlatformNoveHesloRouteImport.update({
   path: '/nove-heslo',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
+const PlatformPodminkyRoute = PlatformPodminkyRouteImport.update({
+  id: '/podminky',
+  path: '/podminky',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
 const PlatformPozvankaRoute = PlatformPozvankaRouteImport.update({
   id: '/pozvanka',
   path: '/pozvanka',
@@ -125,6 +133,17 @@ const PlatformZapomenuteHesloRoute = PlatformZapomenuteHesloRouteImport.update({
   path: '/zapomenute-heslo',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
+const PlatformZpracovaniDatRoute = PlatformZpracovaniDatRouteImport.update({
+  id: '/zpracovani-dat',
+  path: '/zpracovani-dat',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformZpracovatelskaSmlouvaRoute =
+  PlatformZpracovatelskaSmlouvaRouteImport.update({
+    id: '/zpracovatelska-smlouva',
+    path: '/zpracovatelska-smlouva',
+    getParentRoute: () => PlatformRouteRoute,
+  } as any)
 const UnknownSplatRoute = UnknownSplatRouteImport.update({
   id: '/unknown/$',
   path: '/unknown/$',
@@ -202,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
+  '/platform/podminky': typeof PlatformPodminkyRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
   '/platform/prihlasky': typeof PlatformPrihlaskyRoute
@@ -210,6 +230,8 @@ export interface FileRoutesByFullPath {
   '/platform/ucet': typeof PlatformUcetRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
+  '/platform/zpracovani-dat': typeof PlatformZpracovaniDatRoute
+  '/platform/zpracovatelska-smlouva': typeof PlatformZpracovatelskaSmlouvaRoute
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
@@ -231,6 +253,7 @@ export interface FileRoutesByTo {
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
+  '/platform/podminky': typeof PlatformPodminkyRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
   '/platform/prihlasky': typeof PlatformPrihlaskyRoute
@@ -239,6 +262,8 @@ export interface FileRoutesByTo {
   '/platform/ucet': typeof PlatformUcetRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
+  '/platform/zpracovani-dat': typeof PlatformZpracovaniDatRoute
+  '/platform/zpracovatelska-smlouva': typeof PlatformZpracovatelskaSmlouvaRoute
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation': typeof OrganisationIndexRoute
   '/platform': typeof PlatformIndexRoute
@@ -263,6 +288,7 @@ export interface FileRoutesById {
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
+  '/platform/podminky': typeof PlatformPodminkyRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
   '/platform/prihlaseni': typeof PlatformPrihlaseniRoute
   '/platform/prihlasky': typeof PlatformPrihlaskyRoute
@@ -271,6 +297,8 @@ export interface FileRoutesById {
   '/platform/ucet': typeof PlatformUcetRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
+  '/platform/zpracovani-dat': typeof PlatformZpracovaniDatRoute
+  '/platform/zpracovatelska-smlouva': typeof PlatformZpracovatelskaSmlouvaRoute
   '/unknown/$': typeof UnknownSplatRoute
   '/organisation/': typeof OrganisationIndexRoute
   '/platform/': typeof PlatformIndexRoute
@@ -296,6 +324,7 @@ export interface FileRouteTypes {
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
+    | '/platform/podminky'
     | '/platform/pozvanka'
     | '/platform/prihlaseni'
     | '/platform/prihlasky'
@@ -304,6 +333,8 @@ export interface FileRouteTypes {
     | '/platform/ucet'
     | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
+    | '/platform/zpracovani-dat'
+    | '/platform/zpracovatelska-smlouva'
     | '/unknown/$'
     | '/organisation/'
     | '/platform/'
@@ -325,6 +356,7 @@ export interface FileRouteTypes {
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
+    | '/platform/podminky'
     | '/platform/pozvanka'
     | '/platform/prihlaseni'
     | '/platform/prihlasky'
@@ -333,6 +365,8 @@ export interface FileRouteTypes {
     | '/platform/ucet'
     | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
+    | '/platform/zpracovani-dat'
+    | '/platform/zpracovatelska-smlouva'
     | '/unknown/$'
     | '/organisation'
     | '/platform'
@@ -356,6 +390,7 @@ export interface FileRouteTypes {
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
+    | '/platform/podminky'
     | '/platform/pozvanka'
     | '/platform/prihlaseni'
     | '/platform/prihlasky'
@@ -364,6 +399,8 @@ export interface FileRouteTypes {
     | '/platform/ucet'
     | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
+    | '/platform/zpracovani-dat'
+    | '/platform/zpracovatelska-smlouva'
     | '/unknown/$'
     | '/organisation/'
     | '/platform/'
@@ -451,6 +488,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformNoveHesloRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
+    '/platform/podminky': {
+      id: '/platform/podminky'
+      path: '/podminky'
+      fullPath: '/platform/podminky'
+      preLoaderRoute: typeof PlatformPodminkyRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
     '/platform/pozvanka': {
       id: '/platform/pozvanka'
       path: '/pozvanka'
@@ -505,6 +549,20 @@ declare module '@tanstack/react-router' {
       path: '/zapomenute-heslo'
       fullPath: '/platform/zapomenute-heslo'
       preLoaderRoute: typeof PlatformZapomenuteHesloRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/zpracovani-dat': {
+      id: '/platform/zpracovani-dat'
+      path: '/zpracovani-dat'
+      fullPath: '/platform/zpracovani-dat'
+      preLoaderRoute: typeof PlatformZpracovaniDatRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/zpracovatelska-smlouva': {
+      id: '/platform/zpracovatelska-smlouva'
+      path: '/zpracovatelska-smlouva'
+      fullPath: '/platform/zpracovatelska-smlouva'
+      preLoaderRoute: typeof PlatformZpracovatelskaSmlouvaRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
     '/unknown/$': {
@@ -631,6 +689,7 @@ interface PlatformRouteRouteChildren {
   PlatformKonzoleRoute: typeof PlatformKonzoleRoute
   PlatformNastaveniRoute: typeof PlatformNastaveniRoute
   PlatformNoveHesloRoute: typeof PlatformNoveHesloRoute
+  PlatformPodminkyRoute: typeof PlatformPodminkyRoute
   PlatformPozvankaRoute: typeof PlatformPozvankaRoute
   PlatformPrihlaseniRoute: typeof PlatformPrihlaseniRoute
   PlatformPrihlaskyRoute: typeof PlatformPrihlaskyRoute
@@ -639,6 +698,8 @@ interface PlatformRouteRouteChildren {
   PlatformUcetRoute: typeof PlatformUcetRoute
   PlatformUzivateleRoute: typeof PlatformUzivateleRoute
   PlatformZapomenuteHesloRoute: typeof PlatformZapomenuteHesloRoute
+  PlatformZpracovaniDatRoute: typeof PlatformZpracovaniDatRoute
+  PlatformZpracovatelskaSmlouvaRoute: typeof PlatformZpracovatelskaSmlouvaRoute
   PlatformIndexRoute: typeof PlatformIndexRoute
   PlatformPrihlaskyRegistrationIdRoute: typeof PlatformPrihlaskyRegistrationIdRoute
   PlatformPrihlaskyNovaRoute: typeof PlatformPrihlaskyNovaRoute
@@ -650,6 +711,7 @@ const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformKonzoleRoute: PlatformKonzoleRoute,
   PlatformNastaveniRoute: PlatformNastaveniRoute,
   PlatformNoveHesloRoute: PlatformNoveHesloRoute,
+  PlatformPodminkyRoute: PlatformPodminkyRoute,
   PlatformPozvankaRoute: PlatformPozvankaRoute,
   PlatformPrihlaseniRoute: PlatformPrihlaseniRoute,
   PlatformPrihlaskyRoute: PlatformPrihlaskyRoute,
@@ -658,6 +720,8 @@ const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformUcetRoute: PlatformUcetRoute,
   PlatformUzivateleRoute: PlatformUzivateleRoute,
   PlatformZapomenuteHesloRoute: PlatformZapomenuteHesloRoute,
+  PlatformZpracovaniDatRoute: PlatformZpracovaniDatRoute,
+  PlatformZpracovatelskaSmlouvaRoute: PlatformZpracovatelskaSmlouvaRoute,
   PlatformIndexRoute: PlatformIndexRoute,
   PlatformPrihlaskyRegistrationIdRoute: PlatformPrihlaskyRegistrationIdRoute,
   PlatformPrihlaskyNovaRoute: PlatformPrihlaskyNovaRoute,

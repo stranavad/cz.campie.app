@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { config } from '@/config';
 import { AdminFeedback } from '@/core/platform-shell/components/admin-feedback';
+import { LegalFooter } from '@/core/platform-shell/components/legal-footer';
 import { LogOutButton } from '@/core/platform-shell/components/log-out-button';
 import { SupportBanner } from '@/core/platform-shell/components/support-banner';
 import { TurnusSwitcher } from '@/core/selected-turnus';
@@ -29,6 +30,7 @@ export function PlatformShell() {
         </TwoStepGate>
       </main>
       <AdminFeedback />
+      <LegalFooter />
     </div>
   );
 }

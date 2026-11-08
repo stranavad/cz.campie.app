@@ -4,6 +4,7 @@ import camps from '@/locales/cs/camps.json';
 import common from '@/locales/cs/common.json';
 import consoleTexts from '@/locales/cs/console.json';
 import invitation from '@/locales/cs/invitation.json';
+import legal from '@/locales/cs/legal.json';
 import login from '@/locales/cs/login.json';
 import members from '@/locales/cs/members.json';
 import organisationSettings from '@/locales/cs/organisation-settings.json';
@@ -30,6 +31,7 @@ export const resources = {
     registration,
     portal,
     participants,
+    legal,
     console: consoleTexts,
   },
 };

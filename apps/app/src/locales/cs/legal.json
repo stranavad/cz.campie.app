@@ -1,0 +1,330 @@
+{
+  "draftNotice": {
+    "title": "Návrh - čeká na právní kontrolu",
+    "description": "Tento text je pracovní návrh. Před schválením první organizace ho zkontroluje právník a jeho schválené znění tuto verzi nahradí. Údaje v hranatých závorkách doplní provozovatel."
+  },
+  "numberedHeading": "{{number}}. {{heading}}",
+  "paragraphNumber": "{{article}}.{{paragraph}}",
+  "terms": {
+    "title": "Obchodní podmínky platformy {{productName}}",
+    "intro": [
+      "Tyto obchodní podmínky upravují vztah mezi provozovatelem platformy {{productName}} a organizacemi, které na ní provozují přihlašování na své tábory. Rodiče a další zákonní zástupci, kteří přes platformu přihlašují děti, uzavírají smlouvu o účasti na táboře s organizací, ne s provozovatelem."
+    ],
+    "sections": [
+      {
+        "heading": "Úvodní ustanovení",
+        "paragraphs": [
+          "Provozovatelem platformy {{productName}} dostupné na adrese {{platformDomain}} je [doplní provozovatel: název nebo jméno, IČO, sídlo, zápis v rejstříku, kontaktní e-mail] (dále jen „provozovatel“).",
+          "Organizací se rozumí právnická osoba nebo podnikající fyzická osoba, která se na platformě zaregistrovala, aby přes ni přijímala přihlášky na své tábory (dále jen „organizace“). Organizace jedná při užívání platformy v rámci své podnikatelské nebo jiné samostatné činnosti, nikoli jako spotřebitel.",
+          "Vlastníkem se rozumí uživatel organizace s plným oprávněním včetně nastavení organizace, správy uživatelů, platebních klíčů, přístupu podpory a výmazu přihlášek. Správcem se rozumí každý uživatel organizace, kterého organizace na platformu pozvala.",
+          "Nedílnou součástí smlouvy podle těchto podmínek je Smlouva o zpracování osobních údajů, kterou organizace přijímá spolu s nimi."
+        ]
+      },
+      {
+        "heading": "Uzavření smlouvy",
+        "paragraphs": [
+          "Smlouva vzniká, když osoba oprávněná jednat za organizaci vyplní registraci organizace, přijme tyto podmínky a Smlouvu o zpracování osobních údajů a registraci odešle. Platforma ukládá, kdo, kdy a kterou verzi dokumentů přijal.",
+          "Osoba, která registraci odesílá, potvrzuje, že je oprávněna za organizaci jednat a že údaje o organizaci (název, IČO, sídlo, statutární zástupce a kontakty) jsou pravdivé.",
+          "Před zveřejněním přihlášek provozovatel organizaci schvaluje. Provozovatel může registraci bez udání důvodu odmítnout; odmítnutím se smlouva ruší a údaje odmítnuté organizace se smažou.",
+          "Do schválení může organizace platformu nastavovat, ale nemůže zveřejnit přihlášky ani přijímat přihlášky od rodičů."
+        ]
+      },
+      {
+        "heading": "Popis služby",
+        "paragraphs": [
+          "Platforma organizaci umožňuje zejména: zveřejnit stránky táborů a turnusů na vlastní adrese ve tvaru nazev-organizace.{{platformDomain}}, přijímat přihlášky přes formulář, který si organizace sama sestaví, evidovat platby, vytvářet přihlášky ve formátu PDF s QR platbou, posílat rodičům e-maily, sbírat souhlasy a dokumenty a poskytovat rodičům portál pro správu jejich přihlášek.",
+          "Platby od rodičů jdou přímo organizaci: bankovním převodem na její účet, nebo kartou přes její vlastní účet u platební brány Comgate. Provozovatel peníze rodičů nepřijímá ani nespravuje. Smlouvu s platební bránou uzavírá organizace sama.",
+          "Platforma se vyvíjí. Provozovatel může funkce přidávat, měnit nebo odebírat, pokud tím podstatně nezhorší službu, za kterou organizace platí; o podstatných změnách organizaci předem informuje.",
+          "Zdrojový kód platformy je zveřejněn pod licencí GNU Affero General Public License verze 3 (AGPL-3.0). Licence se týká kódu, nikoli dat organizací."
+        ]
+      },
+      {
+        "heading": "Cena a platební podmínky",
+        "paragraphs": [
+          "[doplní provozovatel: cena služby, zda se liší podle modulů nebo počtu dětí, zkušební nebo pilotní období, fakturace na fakturační e-mail organizace, splatnost, důsledky prodlení]."
+        ]
+      },
+      {
+        "heading": "Povinnosti organizace",
+        "paragraphs": [
+          "Organizace odpovídá za to, že údaje, které na platformě zpracovává, zpracovává oprávněně a na základě platného právního titulu, a že rodiče informuje o zpracování jejich osobních údajů a osobních údajů jejich dětí.",
+          "Organizace odpovídá za obsah, který na platformě vytváří: texty stránek, formuláře, souhlasy, dokumenty, ceny a e-maily. Provozovatel je předem nekontroluje.",
+          "Organizace spravuje přístupy svých uživatelů: rozhoduje, koho pozve a jaká oprávnění mu přidělí, a přístup odebírá lidem, kteří ho už nepotřebují. Doporučujeme zapnout dvoufázové přihlášení; vlastník ho může pro celou organizaci vyžadovat.",
+          "Organizace nesmí platformu používat k rozesílání nevyžádaných sdělení, k činnosti v rozporu s právními předpisy, k vydávání se za jinou osobu ani k narušování provozu nebo zabezpečení platformy.",
+          "Organizace bez zbytečného odkladu oznámí provozovateli změnu svých identifikačních údajů a jakékoli podezření na zneužití přístupu."
+        ]
+      },
+      {
+        "heading": "Povinnosti a práva provozovatele",
+        "paragraphs": [
+          "Provozovatel provozuje platformu s odbornou péčí a usiluje o její nepřetržitou dostupnost. Nezaručuje však dostupnost bez přerušení; plánovanou údržbu provádí pokud možno mimo dobu zvýšeného provozu. [doplní provozovatel: případná garantovaná dostupnost]",
+          "Provozovatel může organizaci pozastavit, pokud organizace hrubě porušuje tyto podmínky, jde zjevně o falešnou organizaci nebo platformu zneužívá. Pozastavením přestanou být dostupné veřejné stránky organizace a platforma za ni přestane odesílat e-maily; data se tím nemažou. O pozastavení a jeho důvodu provozovatel vlastníky informuje e-mailem.",
+          "Provozovatel posílá vlastníkům a správcům provozní e-maily týkající se služby, například o změnách podmínek nebo dalších zpracovatelů."
+        ]
+      },
+      {
+        "heading": "Přístup provozovatele k datům organizace",
+        "paragraphs": [
+          "Provozovatel do dat o dětech a rodičích běžně nevstupuje. Konzole provozovatele zobrazuje jen údaje o organizaci (identifikační údaje, stav schválení, souhrnné počty a zpětnou vazbu), nikoli přihlášky.",
+          "Do dat organizace provozovatel vstoupí jen v režimu podpory, který mu vlastník udělí na omezenou dobu (nejvýše 7 dní). Přístup je jen pro čtení, pokud vlastník výslovně nepovolí změny, a vlastník ho může kdykoli zrušit. Každá akce provozovatele v režimu podpory se zapisuje do historie organizace, kterou vlastník vidí.",
+          "Toto omezení je pravidlo aplikace, které platforma vynucuje a zaznamenává, nikoli kryptografická záruka: provozovatel spravuje servery a hlavní klíč, ze kterého se odvozují klíče organizací. Podrobnosti popisuje stránka o zpracování dat."
+        ]
+      },
+      {
+        "heading": "Ochrana osobních údajů",
+        "paragraphs": [
+          "Osobní údaje dětí, rodičů a dalších osob, které organizace na platformě zpracovává, zpracovává provozovatel jako zpracovatel pro organizaci jako správce, podle Smlouvy o zpracování osobních údajů.",
+          "Osobní údaje uživatelů organizace (jméno, e-mail, přihlašovací údaje) a kontaktní a fakturační údaje organizace zpracovává provozovatel jako správce za účelem poskytování služby, její fakturace a zabezpečení. [doplní provozovatel: odkaz na informace o zpracování osobních údajů uživatelů]"
+        ]
+      },
+      {
+        "heading": "Odpovědnost",
+        "paragraphs": [
+          "Provozovatel neodpovídá za obsah, který na platformě vytváří organizace, za vztahy mezi organizací a rodiči ani za služby třetích stran, které si organizace sama zvolila, zejména platební brány a banky.",
+          "Provozovatel neodpovídá za škodu způsobenou výpadkem služby, který nezavinil, ani za ušlý zisk. [doplní provozovatel po konzultaci s právníkem: omezení výše náhrady škody, například na cenu zaplacenou za posledních 12 měsíců]",
+          "Organizace odpovídá provozovateli za škodu, kterou mu způsobí porušením těchto podmínek nebo zpracováním údajů bez právního titulu."
+        ]
+      },
+      {
+        "heading": "Data organizace",
+        "paragraphs": [
+          "Data, která organizace na platformu vloží nebo přes ni získá, patří organizaci. Provozovatel je používá jen k poskytování služby.",
+          "Organizace uděluje provozovateli oprávnění zobrazovat své logo, název a další prvky vzhledu na stránkách organizace a v dokumentech, které platforma vytváří, po dobu trvání smlouvy.",
+          "Organizace si může svá data kdykoli stáhnout pomocí exportů, které platforma nabízí."
+        ]
+      },
+      {
+        "heading": "Trvání a ukončení smlouvy",
+        "paragraphs": [
+          "Smlouva se uzavírá na dobu neurčitou.",
+          "Organizace může smlouvu kdykoli vypovědět e-mailem z kontaktního e-mailu organizace nebo e-mailem vlastníka. [doplní provozovatel: výpovědní doba, vztah k zaplacené ceně]",
+          "Provozovatel může smlouvu vypovědět s výpovědní dobou [doplní provozovatel: délka, například 3 měsíce], která nesmí skončit během probíhajícího turnusu organizace. Při hrubém porušení podmínek může provozovatel od smlouvy odstoupit s okamžitou účinností.",
+          "Před koncem smlouvy si organizace stáhne data, která potřebuje. Po skončení smlouvy provozovatel data organizace smaže postupem a ve lhůtách podle Smlouvy o zpracování osobních údajů."
+        ]
+      },
+      {
+        "heading": "Změny podmínek",
+        "paragraphs": [
+          "Provozovatel může tyto podmínky měnit. Změnu oznámí vlastníkům e-mailem nejméně [doplní provozovatel: počet] dní předem. Pokud organizace se změnou nesouhlasí, může smlouvu před účinností změny vypovědět; jinak platí, že změnu přijala.",
+          "Platforma eviduje, kterou verzi podmínek organizace přijala."
+        ]
+      },
+      {
+        "heading": "Závěrečná ustanovení",
+        "paragraphs": [
+          "Smlouva se řídí právem České republiky. Spory rozhodují obecné soudy České republiky.",
+          "Pokud se některé ustanovení ukáže jako neplatné, ostatní ustanovení zůstávají v platnosti.",
+          "Tyto podmínky jsou účinné od [doplní provozovatel: datum účinnosti]."
+        ]
+      }
+    ]
+  },
+  "dataProcessingAgreement": {
+    "title": "Smlouva o zpracování osobních údajů",
+    "intro": [
+      "Tato smlouva upravuje zpracování osobních údajů podle čl. 28 nařízení Evropského parlamentu a Rady (EU) 2016/679 (obecné nařízení o ochraně osobních údajů, dále jen „GDPR“) při užívání platformy {{productName}}. Je nedílnou součástí smlouvy podle Obchodních podmínek platformy {{productName}}."
+    ],
+    "sections": [
+      {
+        "heading": "Smluvní strany",
+        "paragraphs": [
+          "Správcem je organizace, jejíž identifikační údaje (název, IČO, sídlo a statutární zástupce) byly zadány při registraci organizace na platformě (dále jen „správce“).",
+          "Zpracovatelem je provozovatel platformy {{productName}}: [doplní provozovatel: název nebo jméno, IČO, sídlo, kontaktní e-mail pro ochranu osobních údajů] (dále jen „zpracovatel“).",
+          "Smlouva se uzavírá tím, že osoba oprávněná jednat za správce ji přijme při registraci organizace. Platforma ukládá, kdo, kdy a kterou verzi smlouvy přijal."
+        ]
+      },
+      {
+        "heading": "Předmět, povaha a účel zpracování",
+        "paragraphs": [
+          "Zpracovatel pro správce zpracovává osobní údaje v rozsahu nezbytném k poskytování platformy: k přijímání a evidenci přihlášek na tábory, evidenci plateb, vytváření dokumentů ve formátu PDF, sběru souhlasů a dokumentů, provozu portálu pro rodiče a odesílání e-mailů.",
+          "Zpracování zahrnuje zejména shromažďování přes formuláře, ukládání, uspořádání, vyhledávání, nahlížení, úpravy, předávání e-mailem a platební bráně, vytváření dokumentů, export a výmaz.",
+          "Rozsah zpracovávaných údajů určuje správce: sám sestavuje přihlašovací formulář, rozhoduje, které moduly zapne, a vkládá další údaje."
+        ]
+      },
+      {
+        "heading": "Kategorie subjektů údajů a osobních údajů",
+        "paragraphs": [
+          "Subjekty údajů jsou zejména: děti přihlášené na tábor, jejich rodiče a další zákonní zástupci, další osoby, kterým rodiče nebo správce zpřístupní přihlášku, uživatelé správce a pracovníci tábora, pokud je správce na platformě eviduje.",
+          "Kategorie osobních údajů jsou zejména: jméno a příjmení, datum narození, adresa, e-mail, telefon, odpovědi z přihlašovacího formuláře, údaje o platbách, podepsané souhlasy včetně jména podepisujícího, času, IP adresy a prohlížeče, nahrané dokumenty, poznámky správce a záznamy o změnách.",
+          "Podle nastavení správce může jít i o rodné číslo a o údaje o zdravotním stavu dětí, tedy o zvláštní kategorii osobních údajů podle čl. 9 GDPR. Správce odpovídá za to, že má k jejich zpracování právní titul."
+        ]
+      },
+      {
+        "heading": "Doba zpracování",
+        "paragraphs": [
+          "Zpracovatel zpracovává osobní údaje po dobu trvání smlouvy podle Obchodních podmínek a poté jen po dobu nutnou k jejich výmazu podle článku Ukončení a výmaz."
+        ]
+      },
+      {
+        "heading": "Povinnosti zpracovatele",
+        "paragraphs": [
+          "Zpracovatel zpracovává osobní údaje jen na základě doložených pokynů správce. Pokyny jsou tato smlouva, Obchodní podmínky a úkony, které správce a jeho uživatelé provádějí na platformě a v jejím nastavení. Pokud zpracovatel usoudí, že pokyn porušuje právní předpisy, správce na to bez zbytečného odkladu upozorní.",
+          "Zpracovatel nepoužije osobní údaje k žádnému jinému účelu, zejména ne k marketingu, profilování ani prodeji.",
+          "Zpracovatel zajistí, aby se osoby oprávněné zpracovávat osobní údaje zavázaly k mlčenlivosti nebo aby se na ně vztahovala zákonná povinnost mlčenlivosti.",
+          "Zpracovatel přijme technická a organizační opatření podle čl. 32 GDPR popsaná v článku Zabezpečení.",
+          "Zpracovatel správci pomáhá plnit povinnosti vůči subjektům údajů a povinnosti podle čl. 32 až 36 GDPR, s ohledem na povahu zpracování a informace, které má k dispozici."
+        ]
+      },
+      {
+        "heading": "Zabezpečení",
+        "paragraphs": [
+          "Každá organizace má vlastní datový klíč. Datový klíč je uložen zašifrovaný hlavním klíčem, který je uložen mimo databázi jako tajný údaj nasazení. Šifruje se algoritmem AES-256-GCM.",
+          "Datovým klíčem organizace se šifrují všechny nahrané a vytvořené soubory včetně jejich názvů (dokumenty od rodičů, přihlášky v PDF, podepsané souhlasy, exporty) a přístupové klíče k platební bráně. Úložiště souborů tak obsahuje jen šifrovaná data. Rodné číslo a zdravotní údaje platforma ukládá šifrovaně, jakmile je přihlašovací formulář nebo zdravotní záznam umožní sbírat.",
+          "Data organizací jsou v databázi oddělena zabezpečením na úrovni řádků: databáze odmítne každý přístup mimo aktuální organizaci a aplikace se připojuje rolí, která toto omezení nemůže obejít.",
+          "Uživatelé správce mají oprávnění po oblastech (přihlášky, nastavení táborů, zdraví a další) ve stupni žádné, čtení nebo zápis. Bez oprávnění ke zdraví se zdravotní údaje nezobrazí nikde, ani v exportech.",
+          "Hesla se ukládají jen jako otisk algoritmem Argon2id, počet chybných přihlášení je omezen a platforma podporuje dvoufázové přihlášení, které je pro provozovatele povinné. Přihlášení je v zabezpečených cookies dostupných jen serveru, změny jsou chráněny proti CSRF a veškerá komunikace probíhá šifrovaně přes HTTPS.",
+          "Soubory se stahují jen přes aplikaci odkazem s krátkou platností, po ověření oprávnění; adresa v úložišti se nikdy nezveřejňuje.",
+          "Platforma vede historii změn, do které nelze zpětně zasahovat. Zaznamenává, kdo, kdy, z jaké IP adresy a co změnil; u šifrovaných údajů jen to, které údaje se změnily, nikoli jejich hodnoty.",
+          "Zálohy databáze zajišťuje poskytovatel databáze. [doplní provozovatel: způsob a doba uchování záloh]"
+        ]
+      },
+      {
+        "heading": "Další zpracovatelé",
+        "paragraphs": [
+          "Správce uděluje zpracovateli obecné povolení zapojit další zpracovatele. Jejich aktuální seznam s účelem a místem zpracování je zveřejněn na stránce o zpracování dat na adrese app.{{platformDomain}}/zpracovani-dat.",
+          "O zamýšleném přidání nebo nahrazení dalšího zpracovatele zpracovatel informuje vlastníky správce e-mailem nejméně [doplní provozovatel: počet] dní předem. Správce může proti změně vznést námitku; pokud se strany nedohodnou, může správce smlouvu vypovědět.",
+          "Zpracovatel s každým dalším zpracovatelem uzavře smlouvu, která mu ukládá stejné povinnosti ochrany osobních údajů, a odpovídá za jejich plnění.",
+          "Platební brána Comgate není dalším zpracovatelem zpracovatele: správce s ní uzavírá vlastní smlouvu a platforma jí na pokyn správce předává údaje nutné k platbě kartou."
+        ]
+      },
+      {
+        "heading": "Předávání do třetích zemí",
+        "paragraphs": [
+          "Pokud další zpracovatel zpracovává osobní údaje mimo Evropský hospodářský prostor nebo jde o společnost ze třetí země, zajistí zpracovatel předání na základě rozhodnutí o odpovídající ochraně (například rámce EU-USA pro ochranu osobních údajů) nebo standardních smluvních doložek. [doplní provozovatel po konzultaci s právníkem: konkrétní záruky pro každého dalšího zpracovatele]"
+        ]
+      },
+      {
+        "heading": "Přístup zpracovatele k datům",
+        "paragraphs": [
+          "Zpracovatel do osobních údajů v datech správce běžně nevstupuje. Vstoupí do nich jen v režimu podpory na základě časově omezeného povolení, které udělí vlastník správce, jen pro čtení, pokud vlastník nepovolí změny, a se záznamem každé akce v historii správce.",
+          "Bez takového povolení může zpracovatel k datům přistoupit jen v nezbytném rozsahu, pokud to vyžaduje odstranění závažné technické poruchy, zabezpečení platformy nebo právní předpis. O takovém přístupu správce bez zbytečného odkladu informuje.",
+          "Toto omezení je pravidlo aplikace a provozu, nikoli kryptografická záruka: zpracovatel spravuje servery a hlavní klíč, takže by technicky mohl šifrovaná data zpřístupnit. Platforma nenabízí šifrování klíči, které by držel jen správce."
+        ]
+      },
+      {
+        "heading": "Porušení zabezpečení osobních údajů",
+        "paragraphs": [
+          "Zpracovatel oznámí správci porušení zabezpečení osobních údajů bez zbytečného odkladu, nejpozději do [doplní provozovatel: počet, například 48] hodin poté, co se o něm dozvěděl, e-mailem vlastníkům a na kontaktní e-mail organizace.",
+          "Oznámení obsahuje v rozsahu, v jakém jsou informace dostupné: popis porušení, kategorie a přibližný počet dotčených subjektů údajů a záznamů, pravděpodobné důsledky, přijatá a navržená opatření a kontakt pro další informace. Informace, které nejsou k dispozici hned, zpracovatel doplní postupně.",
+          "Ohlášení Úřadu pro ochranu osobních údajů a oznámení subjektům údajů je povinností správce; zpracovatel mu k tomu poskytne potřebnou součinnost."
+        ]
+      },
+      {
+        "heading": "Práva subjektů údajů",
+        "paragraphs": [
+          "Žádosti subjektů údajů vyřizuje správce. Platforma mu k tomu poskytuje nástroje: zobrazení a export údajů, jejich opravu a výmaz přihlášky, který provádí vlastník.",
+          "Pokud zpracovatel obdrží žádost subjektu údajů přímo, předá ji bez zbytečného odkladu správci a sám ji nevyřizuje."
+        ]
+      },
+      {
+        "heading": "Ukončení a výmaz",
+        "paragraphs": [
+          "Před skončením smlouvy si správce stáhne údaje, které potřebuje, pomocí exportů na platformě.",
+          "Do [doplní provozovatel: počet] dní po skončení smlouvy zpracovatel smaže všechny osobní údaje správce: zničí datový klíč organizace, čímž se všechna šifrovaná data organizace stanou nečitelnými všude včetně záloh, a smaže záznamy v databázi a soubory v úložišti.",
+          "Nešifrované údaje mohou do vypršení přetrvat v zálohách databáze, nejdéle [doplní provozovatel: doba uchování záloh]; zálohy se nepoužívají k jinému účelu než k obnově po havárii.",
+          "Zpracovatel neuchová kopie osobních údajů, ledaže to vyžaduje právní předpis. Na žádost správce výmaz písemně potvrdí."
+        ]
+      },
+      {
+        "heading": "Audit a kontrola",
+        "paragraphs": [
+          "Zpracovatel poskytne správci informace potřebné k doložení plnění povinností podle čl. 28 GDPR. Vlastník správce má na platformě k dispozici historii změn včetně akcí provozovatele v režimu podpory.",
+          "Správce nebo jím pověřený auditor vázaný mlčenlivostí může provést audit nebo kontrolu po oznámení nejméně [doplní provozovatel: počet] dní předem, v přiměřeném rozsahu a na náklady správce. Audit nesmí ohrozit data jiných organizací."
+        ]
+      },
+      {
+        "heading": "Závěrečná ustanovení",
+        "paragraphs": [
+          "Ve věcech ochrany osobních údajů má tato smlouva přednost před Obchodními podmínkami.",
+          "Změny této smlouvy se řídí stejným postupem jako změny Obchodních podmínek. Platforma eviduje, kterou verzi správce přijal.",
+          "Smlouva se řídí právem České republiky a je účinná od [doplní provozovatel: datum účinnosti]."
+        ]
+      }
+    ]
+  },
+  "dataPage": {
+    "title": "Kde jsou data a kdo je zpracovává",
+    "intro": [
+      "Tato stránka je pro tábory, které zvažují {{productName}}. Popisuje, kde platforma ukládá data, kteří poskytovatelé je zpracovávají, co se šifruje a kdo k datům má přístup. Za údaje o dětech a rodičích odpovídá jako správce organizace, která tábor pořádá; provozovatel platformy je pro ni zpracovává jako zpracovatel."
+    ],
+    "sections": [
+      {
+        "heading": "Co šifrujeme",
+        "paragraphs": [
+          "Každá organizace má vlastní datový klíč. Ten je uložen zašifrovaný hlavním klíčem, který není v databázi, ale v tajných údajích nasazení. Šifruje se algoritmem AES-256-GCM.",
+          "Šifrované jsou všechny nahrané a vytvořené soubory včetně jejich názvů: dokumenty od rodičů, přihlášky v PDF, podepsané souhlasy a exporty. Úložiště souborů tak drží jen šifrovaná data a soubory se stahují jen přes aplikaci, po ověření oprávnění. Šifrované jsou i přístupové klíče organizace k platební bráně Comgate.",
+          "Rodné číslo a zdravotní údaje dětí platforma zatím nesbírá. Až je přihlašovací formulář a zdravotní záznam umožní, budou uloženy šifrovaně stejným klíčem.",
+          "Jména, e-maily, adresy a platby šifrované datovým klíčem nejsou, protože podle nich správci vyhledávají a párují platby. Chrání je oddělení dat organizací v databázi, oprávnění uživatelů a šifrované spojení přes HTTPS. [doplní provozovatel: zda poskytovatelé databáze a úložiště šifrují data na disku]",
+          "Když se datový klíč organizace zničí, její šifrovaná data se stanou nečitelnými všude, i v zálohách."
+        ]
+      },
+      {
+        "heading": "Kdo k datům má přístup",
+        "paragraphs": [
+          "Správci organizace podle oprávnění, která jim přidělil vlastník: ke každé oblasti (přihlášky, nastavení táborů, zdraví a další) žádné, čtení nebo zápis. Bez oprávnění ke zdraví se zdravotní údaje nezobrazí nikde, ani v exportech.",
+          "Rodiče vidí jen své přihlášky, a to jen v organizaci, u které se přihlásili.",
+          "Provozovatel platformy vidí v konzoli jen údaje o organizacích: identifikační údaje, stav schválení, souhrnné počty a zpětnou vazbu. Do přihlášek vstoupí jen v režimu podpory, který mu vlastník udělí na omezenou dobu (nejvýše 7 dní), jen pro čtení, pokud vlastník nepovolí změny. Vlastník ho může kdykoli zrušit a každá akce provozovatele se zapisuje do historie organizace.",
+          "Historie změn zaznamenává, kdo, kdy, z jaké IP adresy a co změnil. U šifrovaných údajů zaznamená jen to, které se změnily, ne jejich hodnoty."
+        ]
+      },
+      {
+        "heading": "Co neslibujeme",
+        "paragraphs": [
+          "To, že provozovatel nevidí data o dětech, je pravidlo aplikace, které platforma vynucuje povolením vlastníka a zaznamenává v historii změn. Není to kryptografická záruka: provozovatel spravuje servery a hlavní klíč, takže by technicky mohl šifrovaná data zpřístupnit. Platforma nenabízí šifrování klíčem, který by držel jen tábor."
+        ]
+      },
+      {
+        "heading": "Cookies a měření",
+        "paragraphs": [
+          "Platforma používá jen cookies nezbytné pro přihlášení správců a rodičů. Nepoužívá analytické, reklamní ani jiné sledovací nástroje třetích stran."
+        ]
+      },
+      {
+        "heading": "Kdo je za data odpovědný",
+        "paragraphs": [
+          "Za údaje o dětech, rodičích a dalších osobách odpovídá jako správce organizace, která tábor pořádá. S dotazy a žádostmi o přístup, opravu nebo výmaz se obracejte na ni.",
+          "Za údaje o uživatelích organizací a o organizacích samotných odpovídá jako správce provozovatel platformy: [doplní provozovatel: název nebo jméno, IČO, sídlo, kontaktní e-mail].",
+          "Změny v seznamu poskytovatelů oznamuje provozovatel vlastníkům organizací e-mailem předem, jak stanoví Smlouva o zpracování osobních údajů."
+        ]
+      }
+    ]
+  },
+  "processors": {
+    "title": "Kde jsou data uložena a kdo je zpracovává",
+    "purpose": "Účel",
+    "data": "Jaká data",
+    "location": "Kde",
+    "rows": [
+      {
+        "name": "Server aplikace: [doplní provozovatel: poskytovatel serveru]",
+        "purpose": "Běh aplikace, webových stránek a fronty úloh na jednom serveru spravovaném nástrojem Dokploy. Na stejném serveru běží Gotenberg, který z přihlášek a souhlasů vytváří PDF; data se kvůli tomu nikam dál neposílají.",
+        "data": "Všechna data procházejí serverem při zpracování; trvale se zde neukládají, kromě krátkodobé fronty úloh.",
+        "location": "[doplní provozovatel: stát a datové centrum]"
+      },
+      {
+        "name": "Neon (databáze PostgreSQL)",
+        "purpose": "Ukládání všech záznamů platformy a jejich záloh.",
+        "data": "Organizace, tábory, turnusy, přihlášky, děti, rodiče, platby, souhlasy, historie změn. Šifrované údaje jen jako šifrovaný text.",
+        "location": "[doplní provozovatel: region, například EU (Frankfurt)]"
+      },
+      {
+        "name": "Tigris (úložiště souborů)",
+        "purpose": "Ukládání souborů.",
+        "data": "Jen šifrované soubory: dokumenty od rodičů, přihlášky v PDF, podepsané souhlasy, exporty, loga.",
+        "location": "[doplní provozovatel: region úložiště a zda je omezen na EU]"
+      },
+      {
+        "name": "Resend (odesílání e-mailů)",
+        "purpose": "Doručování e-mailů rodičům a správcům a hlášení nedoručitelných adres.",
+        "data": "Adresa příjemce, předmět a text e-mailu, přílohy (například přihláška v PDF nebo kopie podepsaného souhlasu).",
+        "location": "[doplní provozovatel: region odesílání]"
+      },
+      {
+        "name": "Comgate (platby kartou)",
+        "purpose": "Platby kartou, jen u organizací, které připojí svůj vlastní účet u Comgate. Smlouvu s Comgate uzavírá organizace sama.",
+        "data": "Částka, popis platby, variabilní symbol a e-mail plátce.",
+        "location": "Česká republika"
+      }
+    ]
+  }
+}
