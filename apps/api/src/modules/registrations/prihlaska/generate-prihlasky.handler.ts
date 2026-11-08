@@ -19,8 +19,8 @@ export class GeneratePrihlaskyHandler extends JobHandler<typeof generatePrihlask
     super();
   }
 
-  public async handle({ registrationId }: JobPayload<typeof generatePrihlaskyJob>): Promise<void> {
-    if (await this.prihlasky.generateMissing({ kind: 'system' }, registrationId)) {
+  public async handle({ registrationId, sendConfirmation }: JobPayload<typeof generatePrihlaskyJob>): Promise<void> {
+    if ((await this.prihlasky.generateMissing({ kind: 'system' }, registrationId)) && sendConfirmation) {
       await this.confirmations.enqueue(registrationId);
     }
   }

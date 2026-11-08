@@ -47,6 +47,7 @@ import {
   verifyClaimedDiscountEndpoint,
   type AddParticipantBody,
   type AddPriceAdjustmentBody,
+  type CreateRegistrationBody,
   type EditAnswersBody,
   type EditGuardianBody,
   type ParticipantListQuery,
@@ -54,7 +55,6 @@ import {
   type SaveAddParticipantBody,
   type SaveEditAnswersBody,
   type StartPaymentsExportBody,
-  type SubmitRegistrationBody,
   type VerifyClaimedDiscountBody,
 } from '@repo/schema/registrations';
 
@@ -104,7 +104,7 @@ export const participantsService = {
     }),
   turnusForm: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
     apiClient.request(getTurnusFormEndpoint, { organisationId, params: { turnusId }, signal }),
-  create: (organisationId: string, campId: string, body: SubmitRegistrationBody) =>
+  create: (organisationId: string, campId: string, body: CreateRegistrationBody) =>
     apiClient.request(createRegistrationEndpoint, { organisationId, params: { campId }, body }),
   cancelParticipant: (organisationId: string, registrationId: string, participantId: string) =>
     apiClient.request(cancelParticipantEndpoint, { organisationId, params: { registrationId, participantId } }),

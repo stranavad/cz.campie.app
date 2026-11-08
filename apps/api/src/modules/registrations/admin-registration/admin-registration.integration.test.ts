@@ -121,6 +121,31 @@ describe('admin registrations', () => {
     ]);
   });
 
+  it('sends the guardian the confirmation only when the admin chose to, and audits the choice', async () => {
+    const confirmed = await create();
+    const silent = await create({ sendConfirmation: false });
+    await jobs().drain();
+
+    const toGuardian = mail().sent.filter(({ to }) => to.includes('jana.testovaci@example.com'));
+    expect(toGuardian).toHaveLength(1);
+    expect(toGuardian[0]?.text).toContain(confirmed.body.variableSymbol);
+    expect(await query('SELECT count(*)::int AS pdfs FROM participants WHERE prihlaska_file_id IS NOT NULL')).toEqual([
+      { pdfs: 2 },
+    ]);
+    expect(
+      await query(
+        `SELECT target_id, changes->'sendConfirmation'->'new' AS send FROM audit_entries
+          WHERE action = 'registration.create' ORDER BY target_id`,
+        [],
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        { target_id: confirmed.body.id, send: true },
+        { target_id: silent.body.id, send: false },
+      ]),
+    );
+  });
+
   it('applies a code past its limit or expiry, counted as a use, but not an unknown one', async () => {
     await http()
       .post(`/api/camps/${campId}/discount-codes`)

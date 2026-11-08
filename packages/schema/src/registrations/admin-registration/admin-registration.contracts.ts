@@ -13,6 +13,13 @@ import {
 
 const answersSchema = z.record(z.string().max(100), answerValueSchema);
 
+export const createRegistrationBodySchema = submitRegistrationBodySchema.extend({
+  // Whether the guardians get the confirmation email, as after a public submission.
+  sendConfirmation: z.boolean().default(true),
+});
+
+export type CreateRegistrationBody = z.infer<typeof createRegistrationBodySchema>;
+
 // Creates a Registration from a phone call or a paper form: the same form, but outside the Registration
 // window, over capacity and outside age limits, without mandatory declarations, and a Discount code past
 // its limit or expiry still applies and counts as a use. Registrations write.
@@ -20,7 +27,7 @@ export const createRegistrationEndpoint = defineEndpoint({
   method: 'POST',
   path: '/camps/:campId/registrations',
   params: campParamsSchema,
-  body: submitRegistrationBodySchema,
+  body: createRegistrationBodySchema,
   response: submittedRegistrationSchema,
 });
 

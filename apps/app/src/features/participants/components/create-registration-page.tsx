@@ -28,6 +28,7 @@ export function CreateRegistrationPage() {
   const [registration, setRegistration] = useState<Answers>({});
   const [children, setChildren] = useState<Answers[]>([{}]);
   const [ticked, setTicked] = useState<readonly string[]>([]);
+  const [sendConfirmation, setSendConfirmation] = useState(true);
   const [key] = useState(() => crypto.randomUUID());
 
   if (isSignedOut) {
@@ -122,6 +123,14 @@ export function CreateRegistrationPage() {
               {declaration.text}
             </label>
           ))}
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={sendConfirmation}
+              onChange={(event) => setSendConfirmation(event.target.checked)}
+            />
+            {t('create.sendConfirmation')}
+          </label>
           {create.isError ? <p className="text-sm text-destructive">{t('create.failed')}</p> : null}
           <Button
             type="button"
@@ -143,6 +152,7 @@ export function CreateRegistrationPage() {
                           id,
                           accepted: ticked.includes(id),
                         })),
+                        sendConfirmation,
                       },
                     },
                     {

@@ -149,6 +149,7 @@
     "child": "Dítě {{number}}",
     "addChild": "Přidat další dítě",
     "failed": "Přihlášku se nepodařilo založit. Zkontrolujte údaje.",
+    "sendConfirmation": "Poslat zákonným zástupcům potvrzovací e-mail s přihláškou",
     "submit": "Založit přihlášku",
     "open": "Nová přihláška"
   },

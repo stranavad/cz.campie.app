@@ -3,6 +3,7 @@ import { keepPreviousData, skipToken, useMutation, useQuery, useQueryClient } fr
 import type {
   AddParticipantBody,
   AddPriceAdjustmentBody,
+  CreateRegistrationBody,
   EditAnswersBody,
   EditGuardianBody,
   ParticipantListQuery,
@@ -10,7 +11,6 @@ import type {
   SaveAddParticipantBody,
   SaveEditAnswersBody,
   StartPaymentsExportBody,
-  SubmitRegistrationBody,
   VerifyClaimedDiscountBody,
 } from '@repo/schema/registrations';
 
@@ -108,7 +108,7 @@ export const useTurnusFormQuery = (organisationId: string, turnusId: string | nu
   });
 
 export const useCreateRegistrationMutation = (organisationId: string) =>
-  useRegistrationChange(organisationId, ({ campId, body }: { campId: string; body: SubmitRegistrationBody }) =>
+  useRegistrationChange(organisationId, ({ campId, body }: { campId: string; body: CreateRegistrationBody }) =>
     participantsService.create(organisationId, campId, body),
   );
 

@@ -181,7 +181,9 @@ describe('registration confirmation', () => {
 
     await app()
       .get(UnitOfWork)
-      .run(organisationId, async () => app().get(JobQueue).enqueue(generatePrihlaskyJob, { registrationId: id }));
+      .run(organisationId, async () =>
+        app().get(JobQueue).enqueue(generatePrihlaskyJob, { registrationId: id, sendConfirmation: true }),
+      );
     await jobs().drain();
 
     expect(confirmations()).toHaveLength(1);

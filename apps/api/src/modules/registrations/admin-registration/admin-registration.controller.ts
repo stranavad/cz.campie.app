@@ -20,6 +20,7 @@ import {
   type AccessEmailParams,
   type AddParticipantBody,
   type AdminGuardianParams,
+  type CreateRegistrationBody,
   type EditAnswersBody,
   type EditGuardianBody,
   type MoveRegistrationBody,
@@ -29,7 +30,6 @@ import {
   type RegistrationParams,
   type SaveAddParticipantBody,
   type SaveEditAnswersBody,
-  type SubmitRegistrationBody,
   type SubmittedRegistration,
   type TurnusForm,
   type TurnusFormParams,
@@ -107,7 +107,7 @@ export class AdminRegistrationController {
   public create(
     @RequestActor() actor: Actor,
     @EndpointParams(createRegistrationEndpoint) { campId }: CampParams,
-    @EndpointBody(createRegistrationEndpoint) body: SubmitRegistrationBody,
+    @EndpointBody(createRegistrationEndpoint) body: CreateRegistrationBody,
   ): Promise<SubmittedRegistration> {
     return this.registrations.createByAdmin(actor, campId, body);
   }

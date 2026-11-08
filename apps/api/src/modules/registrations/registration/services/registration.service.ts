@@ -25,6 +25,7 @@ import {
 } from '@repo/schema/form-engine';
 import { dueDatesOf, priceRegistration, type RegistrationPrice } from '@repo/schema/pricing';
 import type {
+  CreateRegistrationBody,
   SubmissionErrorCode,
   SubmissionFieldErrorCode,
   SubmitRegistrationBody,
@@ -184,6 +185,7 @@ export class RegistrationService {
       ipAddress,
       actor,
       action: 'registration.submit',
+      sendConfirmation: true,
     });
   }
 
@@ -191,17 +193,17 @@ export class RegistrationService {
    * Create a Registration for an admin, from a phone call or a paper form: under the Camp's latest form, but
    * outside the Registration window, over capacity and outside age limits, without mandatory declarations,
    * and with a Discount code past its limit or expiry, still counted as a use. The same idempotency key
-   * returns the first Registration.
+   * returns the first Registration. The admin chooses whether the guardians get the confirmation email.
    * @param actor the admin
    * @param campId Camp id
-   * @param body the Turnus, the answers, the payment choice, the code and the declarations
+   * @param body the Turnus, the answers, the payment choice, the code, the declarations and whether to confirm
    * @throws {NotFoundException} when the Camp has no published form or the Turnus is not its
    * @throws {BadRequestException} submission_invalid with the reasons in `fields`
    */
   public async createByAdmin(
     actor: Actor,
     campId: string,
-    body: SubmitRegistrationBody,
+    body: CreateRegistrationBody,
   ): Promise<SubmittedRegistration> {
     if (actor.kind === 'system') {
       throw new Error('An admin creates a Registration, never the system');
@@ -248,6 +250,7 @@ export class RegistrationService {
       ipAddress: actor.ipAddress,
       actor,
       action: 'registration.create',
+      sendConfirmation: body.sendConfirmation,
     });
   }
 
@@ -443,7 +446,8 @@ export class RegistrationService {
    * Participants, price lines, code use and declaration answers; audit it and enqueue what follows.
    * @param place the form and the Turnus, locked
    * @param body the submission
-   * @param checked the checked answers, the price, the code, the instant, who submits and from where
+   * @param checked the checked answers, the price, the code, the instant, who submits and from where, and
+   * whether the guardians get the confirmation email
    */
   private async store(
     { form, turnus }: Omit<Place, 'camp'>,
@@ -456,9 +460,10 @@ export class RegistrationService {
       ipAddress: string;
       actor: Actor;
       action: 'registration.submit' | 'registration.create';
+      sendConfirmation: boolean;
     },
   ): Promise<SubmittedRegistration> {
-    const { submission, price, code, now, ipAddress, actor, action } = checked;
+    const { submission, price, code, now, ipAddress, actor, action, sendConfirmation } = checked;
     const registration = await this.createWithVariableSymbol({
       turnusId: turnus.id,
       formVersionId: form.id,
@@ -512,10 +517,11 @@ export class RegistrationService {
             declarationId,
             accepted: ticked,
           })),
+          sendConfirmation,
         },
       },
     });
-    this.jobs.enqueue(generatePrihlaskyJob, { registrationId: registration.id });
+    this.jobs.enqueue(generatePrihlaskyJob, { registrationId: registration.id, sendConfirmation });
     this.jobs.enqueue(notifyTeamJob, { registrationId: registration.id });
 
     return {
