@@ -5,6 +5,7 @@ import {
   approveDocumentEndpoint,
   getRegistrationDocumentsEndpoint,
   markDocumentOnPaperEndpoint,
+  openInternalDocumentEndpoint,
   removeInternalDocumentEndpoint,
   returnDocumentEndpoint,
   uploadDocumentOnBehalfEndpoint,
@@ -18,6 +19,7 @@ import {
   type RegistrationDocumentsParams,
   type ReturnDocumentBody,
 } from '@repo/schema/documents';
+import type { FileLink } from '@repo/schema/files';
 
 import { Access } from '../../../core/access/access.decorator.ts';
 import { Requires } from '../../../core/access/permission.ts';
@@ -88,6 +90,15 @@ export class DocumentReviewController {
     @UploadedFile() upload: FileUpload,
   ): Promise<InternalDocument> {
     return this.reviews.addInternal(actor, params, upload);
+  }
+
+  @Endpoint(openInternalDocumentEndpoint)
+  @Requires('registrations', 'read')
+  public openInternal(
+    @RequestActor() actor: Actor,
+    @EndpointParams(openInternalDocumentEndpoint) { internalDocumentId }: InternalDocumentParams,
+  ): Promise<FileLink> {
+    return this.reviews.openInternal(actor, internalDocumentId);
   }
 
   @Endpoint(removeInternalDocumentEndpoint)

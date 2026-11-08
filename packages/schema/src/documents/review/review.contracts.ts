@@ -19,12 +19,12 @@ export const adminUploadSchema = z.object({
 
 export type AdminUpload = z.infer<typeof adminUploadSchema>;
 
+// Its file opens only through `openInternalDocumentEndpoint`, so every view is audited.
 export const internalDocumentSchema = z.object({
   id: z.uuid(),
   // The uploaded file's name.
   name: z.string(),
   uploadedAt: z.iso.datetime(),
-  file: fileLinkSchema,
 });
 
 export type InternalDocument = z.infer<typeof internalDocumentSchema>;
@@ -138,4 +138,12 @@ export const removeInternalDocumentEndpoint = defineEndpoint({
   method: 'DELETE',
   path: '/internal-documents/:internalDocumentId',
   params: internalDocumentParamsSchema,
+});
+
+// A short-lived link to an Internal document's file; every call is audited as a view. Registrations read.
+export const openInternalDocumentEndpoint = defineEndpoint({
+  method: 'POST',
+  path: '/internal-documents/:internalDocumentId/open',
+  params: internalDocumentParamsSchema,
+  response: fileLinkSchema,
 });

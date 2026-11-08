@@ -233,6 +233,13 @@ export const useDownloadSignedConsentMutation = (organisationId: string) =>
     mutationFn: (signatureId: string) => participantsService.downloadSignedConsent(organisationId, signatureId),
   });
 
+// Each opening of an Internal document is audited, so its link is asked for at the click.
+export const useOpenInternalDocumentMutation = (organisationId: string) =>
+  useMutation({
+    mutationFn: (internalDocumentId: string) =>
+      participantsService.openInternalDocument(organisationId, internalDocumentId),
+  });
+
 const documentsKey = (organisationId: string, registrationId: string) =>
   [...participantsKeys.detail(organisationId, registrationId), 'documents'] as const;
 

@@ -6,7 +6,11 @@ import { czechDateTime } from '@repo/schema/shared';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useDocumentReview, useRegistrationDocumentsQuery } from '@/features/participants/api/participants.queries';
+import {
+  useDocumentReview,
+  useOpenInternalDocumentMutation,
+  useRegistrationDocumentsQuery,
+} from '@/features/participants/api/participants.queries';
 import { participantsService } from '@/features/participants/api/participants.service';
 
 interface RegistrationDocumentsProps {
@@ -21,6 +25,9 @@ export function RegistrationDocuments({ organisationId, registrationId, canWrite
   const documents = useRegistrationDocumentsQuery(organisationId, registrationId);
   const action = useDocumentReview(organisationId, registrationId, (run: () => Promise<unknown>) => run());
   const [returning, setReturning] = useState<{ uploadId: string; note: string } | null>(null);
+  const openInternal = useOpenInternalDocumentMutation(organisationId);
+  // A link to open by hand when the browser blocked the new tab.
+  const [blocked, setBlocked] = useState<string | null>(null);
 
   if (documents.isError) {
     return <p className="text-sm text-destructive">{t('documents.loadFailed')}</p>;
@@ -167,9 +174,22 @@ export function RegistrationDocuments({ organisationId, registrationId, canWrite
             ) : null}
             {participant.internal.map((document) => (
               <span key={document.id} className="flex flex-wrap items-center gap-2">
-                <a href={document.file.url} target="_blank" rel="noreferrer" className="underline">
+                <button
+                  type="button"
+                  className="underline"
+                  disabled={openInternal.isPending}
+                  onClick={() => {
+                    // Opened at the click, where browsers allow it, and pointed at the link once it comes.
+                    const tab = window.open('', '_blank');
+
+                    openInternal.mutate(document.id, {
+                      onSuccess: ({ url }) => (tab === null ? setBlocked(url) : tab.location.assign(url)),
+                      onError: () => tab?.close(),
+                    });
+                  }}
+                >
                   {document.name}
-                </a>
+                </button>
                 <span className="text-muted-foreground">{czechDateTime(document.uploadedAt)}</span>
                 {canWrite ? (
                   <Button
@@ -211,6 +231,12 @@ export function RegistrationDocuments({ organisationId, registrationId, canWrite
         </div>
       ))}
       {action.isError ? <p className="text-sm text-destructive">{t('documents.actionFailed')}</p> : null}
+      {openInternal.isError ? <p className="text-sm text-destructive">{t('documents.openFailed')}</p> : null}
+      {blocked === null ? null : (
+        <a href={blocked} target="_blank" rel="noreferrer" className="self-start text-sm underline">
+          {t('documents.openBlocked')}
+        </a>
+      )}
     </section>
   );
 }

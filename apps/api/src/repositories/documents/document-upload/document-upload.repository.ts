@@ -180,6 +180,16 @@ export class DocumentUploadRepository {
   }
 
   /**
+   * Get an Internal document of the current Organisation.
+   * @param id Internal document id
+   */
+  public async getInternalById(id: string): Promise<InternalDocumentRow | null> {
+    const [row] = await this.unitOfWork.db.select().from(internalDocuments).where(eq(internalDocuments.id, id));
+
+    return row ?? null;
+  }
+
+  /**
    * Remove an Internal document of the current Organisation.
    * @param id Internal document id
    * @returns the removed one, or null when there was none

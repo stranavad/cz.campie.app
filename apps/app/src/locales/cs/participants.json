@@ -270,6 +270,8 @@
     "noInternal": "Žádné interní dokumenty.",
     "addInternal": "Přidat interní dokument",
     "removeInternal": "Smazat",
+    "openFailed": "Dokument se nepodařilo otevřít.",
+    "openBlocked": "Otevřít dokument",
     "actionFailed": "Akci se nepodařilo provést. Načtěte stránku a zkuste to znovu."
   },
   "openItems": {

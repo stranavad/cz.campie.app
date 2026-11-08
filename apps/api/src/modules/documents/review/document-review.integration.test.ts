@@ -155,6 +155,35 @@ describe('reviewing documents', () => {
     expect(await query('SELECT FROM internal_documents')).toEqual([]);
   });
 
+  it('audits every opening of an Internal document, for Registrations read, within its Organisation', async () => {
+    await http().post(`${childPath()}/internal-documents`).set(owner).attach('file', INTERNAL, 'zapis.pdf');
+    const [row] = await query<{ id: string }>('SELECT id FROM internal_documents');
+    const open = (headers = owner) => http().post(`/api/internal-documents/${row?.id}/open`).set(headers);
+    const listed = await http().get(`/api/registrations/${registrationId}/documents`).set(owner);
+
+    expect(listed.body.participants[0].internal).toEqual([
+      { id: row?.id, name: 'zapis.pdf', uploadedAt: expect.any(String) },
+    ]);
+    const link = await open();
+    expect(link.status).toBe(201);
+    expect((await http().get(link.body.url)).body).toEqual(INTERNAL);
+    await open();
+    const views = () =>
+      query(
+        `SELECT actor_kind, target_type, target_id, changes->'internalDocumentId'->>'new' AS document
+           FROM audit_entries WHERE action = 'internal_document.view'`,
+      );
+    expect(await views()).toEqual([
+      { actor_kind: 'admin', target_type: 'participant', target_id: participantId, document: row?.id },
+      { actor_kind: 'admin', target_type: 'participant', target_id: participantId, document: row?.id },
+    ]);
+
+    await expectPermission(['registrations', 'read'], organisationId, (headers) => open(headers));
+    const otherId = await createOrganisation(app());
+    const otherOwner = (await createAdmin(app(), { memberOf: [otherId], owner: true })).headers(otherId);
+    await expectIsolated(() => open(otherOwner));
+  });
+
   it('lets Registrations read view but not review, and keeps another Organisation away', async () => {
     const uploadId = await handIn();
     const otherId = await createOrganisation(app());

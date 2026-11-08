@@ -9,6 +9,7 @@ import type {
   ReturnDocumentBody,
   ReviewErrorCode,
 } from '@repo/schema/documents';
+import type { FileLink } from '@repo/schema/files';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
@@ -64,11 +65,7 @@ export class DocumentReviewService {
     const ids = participants.map(({ id }) => id);
     const uploads = await this.uploads.listOf(ids);
     const internal = await this.uploads.listInternalOf(ids);
-    const fileIds = [
-      ...uploads.flatMap(({ fileId }) => (fileId === null ? [] : [fileId])),
-      ...internal.map(({ fileId }) => fileId),
-    ];
-    const links = await this.files.links(fileIds);
+    const links = await this.files.links(uploads.flatMap(({ fileId }) => (fileId === null ? [] : [fileId])));
     const names = await this.files.names(internal.map(({ fileId }) => fileId));
     const uploadsOf = Map.groupBy(uploads, ({ participantId }) => participantId);
     const internalOf = Map.groupBy(internal, ({ participantId }) => participantId);
@@ -84,20 +81,11 @@ export class DocumentReviewService {
             ([typeId, own]) => [typeId, own.map((upload) => shownUpload(upload, links))],
           ),
         ),
-        internal: (internalOf.get(participant.id) ?? []).flatMap((document): InternalDocument[] => {
-          const file = links.get(document.fileId);
-
-          return file === undefined
-            ? []
-            : [
-                {
-                  id: document.id,
-                  name: names.get(document.fileId) ?? '',
-                  uploadedAt: document.uploadedAt.toISOString(),
-                  file,
-                },
-              ];
-        }),
+        internal: (internalOf.get(participant.id) ?? []).map((document): InternalDocument => ({
+          id: document.id,
+          name: names.get(document.fileId) ?? '',
+          uploadedAt: document.uploadedAt.toISOString(),
+        })),
       })),
     };
   }
@@ -190,12 +178,31 @@ export class DocumentReviewService {
       change: { before: null, after: document },
     });
 
-    return {
-      id: document.id,
-      name: upload.name,
-      uploadedAt: document.uploadedAt.toISOString(),
-      file: await this.files.link(fileId),
-    };
+    return { id: document.id, name: upload.name, uploadedAt: document.uploadedAt.toISOString() };
+  }
+
+  /**
+   * Hand out a short-lived link to an Internal document's file, audited as a view of the child's document.
+   * @param actor the admin
+   * @param internalDocumentId Internal document id
+   * @throws {NotFoundException} when the Organisation has no such Internal document
+   */
+  public async openInternal(actor: Actor, internalDocumentId: string): Promise<FileLink> {
+    const document = await this.uploads.getInternalById(internalDocumentId);
+
+    if (document === null) {
+      throw new NotFoundException();
+    }
+
+    // Targets the child, as the document's other entries do, so the view stays in the child's history
+    // after the document is removed; which document is the entry's only value.
+    await this.audit.record(actor, {
+      action: 'internal_document.view',
+      target: { type: 'participant', id: document.participantId },
+      change: { before: null, after: { internalDocumentId: document.id } },
+    });
+
+    return this.files.link(document.fileId);
   }
 
   /**

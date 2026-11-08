@@ -9,6 +9,7 @@ import {
   approveDocumentEndpoint,
   getRegistrationDocumentsEndpoint,
   markDocumentOnPaperEndpoint,
+  openInternalDocumentEndpoint,
   removeInternalDocumentEndpoint,
   returnDocumentEndpoint,
   uploadDocumentOnBehalfEndpoint,
@@ -159,6 +160,8 @@ export const participantsService = {
     apiClient.request(markDocumentOnPaperEndpoint, { organisationId, params }),
   addInternalDocument: (organisationId: string, registrationId: string, participantId: string, file: File) =>
     apiClient.request(addInternalDocumentEndpoint, { organisationId, params: { registrationId, participantId }, file }),
+  openInternalDocument: (organisationId: string, internalDocumentId: string) =>
+    apiClient.request(openInternalDocumentEndpoint, { organisationId, params: { internalDocumentId } }),
   removeInternalDocument: (organisationId: string, internalDocumentId: string) =>
     apiClient.request(removeInternalDocumentEndpoint, { organisationId, params: { internalDocumentId } }),
   openItemsPreview: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
