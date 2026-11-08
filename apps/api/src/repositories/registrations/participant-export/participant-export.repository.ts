@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { and, asc, eq, gt, isNull, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
+import { and, asc, eq, gt, isNull, type InferInsertModel, type InferSelectModel, type SQL } from 'drizzle-orm';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { exportPresets, exportSelections, participantExports } from '../../../db/schema.ts';
@@ -7,6 +8,15 @@ import { exportPresets, exportSelections, participantExports } from '../../../db
 export type ParticipantExportRow = InferSelectModel<typeof participantExports>;
 type ParticipantExportInsert = InferInsertModel<typeof participantExports>;
 export type ExportPresetRow = InferSelectModel<typeof exportPresets>;
+
+/**
+ * Match a column to a value, a missing one included.
+ * @param column the column
+ * @param value the value, or null for none
+ */
+function sameAs(column: AnyPgColumn, value: string | null): SQL {
+  return value === null ? isNull(column) : eq(column, value);
+}
 
 @Injectable()
 export class ParticipantExportRepository {
@@ -77,13 +87,9 @@ export class ParticipantExportRepository {
       .where(
         and(
           eq(participantExports.adminId, adminId),
-          scope.turnusId === null
-            ? isNull(participantExports.turnusId)
-            : eq(participantExports.turnusId, scope.turnusId),
-          scope.paidFrom === null
-            ? isNull(participantExports.paidFrom)
-            : eq(participantExports.paidFrom, scope.paidFrom),
-          scope.paidTo === null ? isNull(participantExports.paidTo) : eq(participantExports.paidTo, scope.paidTo),
+          sameAs(participantExports.turnusId, scope.turnusId),
+          sameAs(participantExports.paidFrom, scope.paidFrom),
+          sameAs(participantExports.paidTo, scope.paidTo),
           eq(participantExports.status, 'pending'),
           gt(participantExports.createdAt, since),
         ),

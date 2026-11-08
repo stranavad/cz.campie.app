@@ -9,6 +9,7 @@ import type {
   RecordPaymentBody,
   SaveAddParticipantBody,
   SaveEditAnswersBody,
+  StartPaymentsExportBody,
   SubmitRegistrationBody,
   VerifyClaimedDiscountBody,
 } from '@repo/schema/registrations';
@@ -141,7 +142,8 @@ export const useRegeneratePrihlaskaMutation = (organisationId: string, registrat
 
 // What an export holds: a Turnus's Participants with the columns chosen, or the payments within dates.
 export type ExportRequest =
-  { kind: 'participants'; turnusId: string; columns?: string[] } | { kind: 'payments'; from: string; to: string };
+  | { kind: 'participants'; turnusId: string; columns?: string[] }
+  | ({ kind: 'payments' } & Required<StartPaymentsExportBody>);
 
 export const useStartExportMutation = (organisationId: string) =>
   useMutation({

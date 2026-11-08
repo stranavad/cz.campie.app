@@ -285,7 +285,7 @@
     "overpaid": "Přeplaceno",
     "overdue": "Přihlášky po splatnosti",
     "byStatus": "Přihlášky podle platby",
-    "statusCount": "{{status}}: {{count}}"
+    "statusCount": "{{status}}: {{registrations}}"
   },
   "filters": {
     "overdue": "Po splatnosti",

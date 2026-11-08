@@ -53,6 +53,7 @@ import {
   type RecordPaymentBody,
   type SaveAddParticipantBody,
   type SaveEditAnswersBody,
+  type StartPaymentsExportBody,
   type SubmitRegistrationBody,
   type VerifyClaimedDiscountBody,
 } from '@repo/schema/registrations';
@@ -126,7 +127,7 @@ export const participantsService = {
       params: { turnusId },
       body: columns === undefined ? {} : { columns },
     }),
-  startPaymentsExport: (organisationId: string, range: { from: string; to: string }) =>
+  startPaymentsExport: (organisationId: string, range: StartPaymentsExportBody) =>
     apiClient.request(startPaymentsExportEndpoint, { organisationId, body: range }),
   exportOptions: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
     apiClient.request(getExportOptionsEndpoint, { organisationId, params: { turnusId }, signal }),

@@ -227,7 +227,7 @@ export class LedgerService {
   }
 
   /**
-   * Derive the balance now of each of Registrations, in a few queries.
+   * Derive the balance now of each of the given Registrations, in a few queries.
    * @param registrations the Registrations
    * @returns the balance by Registration id
    */

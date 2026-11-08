@@ -35,7 +35,10 @@ export function TurnusOverview({ organisationId, turnusId }: { organisationId: s
       t('overview.byStatus'),
       PAYMENT_STATUSES.filter((status) => registrationsByPaymentStatus[status] > 0)
         .map((status) =>
-          t('overview.statusCount', { status: t(`status.${status}`), count: registrationsByPaymentStatus[status] }),
+          t('overview.statusCount', {
+            status: t(`status.${status}`),
+            registrations: registrationsByPaymentStatus[status],
+          }),
         )
         .join(', '),
     ],

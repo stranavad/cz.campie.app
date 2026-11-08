@@ -173,19 +173,15 @@ export function priceRegistration(input: PricingInput): RegistrationPrice {
  * Take a percentage Discount code off children's prices, as its line; a fixed code has none here, since it
  * comes off the total once. Surcharges and the Sibling discount are never part of the prices.
  * @param code the Registration's code
- * @param childPrices the Base or Early bird prices of the children it applies to
- * @param participant the one child it applies to, or null for the whole Registration
+ * @param prices the sum of the Base or Early bird prices it comes off
+ * @param participant the one Participant it applies to, or null for the whole Registration
  */
-export function percentageCodeLine(
-  code: DiscountCode,
-  childPrices: number,
-  participant: number | null,
-): PriceLine | null {
+export function percentageCodeLine(code: DiscountCode, prices: number, participant: number | null): PriceLine | null {
   if (code.kind !== 'percentage') {
     return null;
   }
 
-  const line = codeLine(code, -Math.round((childPrices * Math.max(0, code.value)) / 100));
+  const line = codeLine(code, -Math.round((prices * Math.max(0, code.value)) / 100));
 
   return { ...line, participant };
 }

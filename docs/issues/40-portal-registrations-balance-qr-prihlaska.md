@@ -26,3 +26,7 @@ The guardian portal home lists all the guardian's Registrations at this Organisa
 - Card payment from the portal comes in issue 49.
 
 2026-11-07 - **Done.** `GET /portal/registrations` returns the guardian's Registrations at the Organisation, newest first, past ones included, each with its Camp (contact falling back to the Organisation's, `campContactOf`), Turnus, Participants (status, position, a 5-minute Přihláška download link), frozen price lines, Price adjustment amounts (not their notes, which are the camp's own), payments (amount and date, not the note), the ledger's total, paid, balance, status and Overdue, and the payment: amount due now with its date and QR platba payload, and while Deposits are owed the rest with its date and everything at once with its own QR platba (`paymentInstructionsOf` gained the second payload). `technicalContact` is `PLATFORM_OPERATOR_EMAIL`. The portal page groups by Turnus, draws the QR codes in the browser (`qrcode`), refetches every 4 minutes so the links stay valid, and fits a phone. No health data exists in these responses; a test pins the keys a guardian sees.
+
+## Comments
+
+2026-11-08 - **Decisions by the project lead (issue 38).** The portal reads each Registration's stored due dates, so editing the Turnus no longer moves what a guardian sees as due; it names the new `partly_paid` status (Částečně zaplaceno); the second QR platba for all outstanding, shown only while it differs from the amount due now, is unchanged.
