@@ -4,10 +4,11 @@
 	auto_https off
 	admin off
 	servers {
-		# Only Traefik reaches this server, over the Docker network. Trusting it keeps the X-Forwarded-For
-		# it set (the browser's address) and appends Traefik's own, so the API, behind two proxies, finds the
-		# browser's address second from the end (TRUST_PROXY_HOPS=2). It also keeps Traefik's
-		# X-Forwarded-Host and X-Forwarded-Proto.
+		# Traefik reaches this server over Dokploy's shared Docker network. Trusting it keeps the
+		# X-Forwarded-For it set (the browser's address) and appends Traefik's own, so the API, behind two
+		# proxies, finds the browser's address second from the end (TRUST_PROXY_HOPS=2). It also keeps
+		# Traefik's X-Forwarded-Host and X-Forwarded-Proto. Every other container on that network is a
+		# private peer too, so /api serves only requests carrying the edge secret, which only Traefik adds.
 		trusted_proxies static private_ranges
 	}
 }
@@ -22,11 +23,18 @@
 	}
 
 	handle /api/* {
+		# Traefik sets the edge secret on every request it routes here, replacing whatever the client sent. A
+		# request without it bypassed Traefik, from another container on the shared network, with an
+		# X-Forwarded-For of its choosing.
+		@notFromEdge not header X-Edge-Secret {$EDGE_SECRET}
+		respond @notFromEdge 403
+
 		# The API under its deployment's own name: this container also sits on Dokploy's shared network,
 		# where another project's service could be called plain `api`.
 		reverse_proxy {$API_UPSTREAM} {
 			# Replaces whatever the client sent under this name; the API refuses any request without it.
 			header_up X-Proxy-Secret {env.PROXY_SECRET}
+			header_up -X-Edge-Secret
 		}
 	}
 
