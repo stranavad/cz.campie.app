@@ -1,12 +1,16 @@
 import { slugify } from '@repo/schema/shared';
 
-// Names that address the platform itself, or could pass for it.
+// Names that address the platform itself, or could pass for it: staging's own domain and the mail
+// domains' subdomains among them.
 export const RESERVED_SUBDOMAINS = [
   'www',
   'app',
   'api',
   'admin',
+  'staging',
   'mail',
+  'auth',
+  'posta',
   'static',
   'cdn',
   'status',

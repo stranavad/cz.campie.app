@@ -14,12 +14,24 @@ describe('subdomainProblem', () => {
     },
   );
 
-  it.each(['www', 'app', 'api', 'admin', 'mail', 'static', 'cdn', 'status', 'help', 'docs', 'blog'])(
-    'calls %s reserved',
-    (subdomain) => {
-      expect(subdomainProblem(subdomain, 'Campie')).toBe('subdomain_reserved');
-    },
-  );
+  it.each([
+    'www',
+    'app',
+    'api',
+    'admin',
+    'staging',
+    'mail',
+    'auth',
+    'posta',
+    'static',
+    'cdn',
+    'status',
+    'help',
+    'docs',
+    'blog',
+  ])('calls %s reserved', (subdomain) => {
+    expect(subdomainProblem(subdomain, 'Campie')).toBe('subdomain_reserved');
+  });
 
   it('reserves the configured product name, as it would be written in an address', () => {
     expect(subdomainProblem('campie', 'Campie')).toBe('subdomain_reserved');
