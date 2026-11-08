@@ -128,7 +128,9 @@ export class ConsentSignatureService {
       (await this.consents.listVersionsOf(consents.map(({ id }) => id))).map((version) => [version.id, version]),
     );
 
-    const summaryOf = async (participantId: string, consentId: string, version: ConsentVersionRow) => {
+    const signedPdfs = await this.files.links(signed.flatMap(({ fileId }) => (fileId === null ? [] : [fileId])));
+
+    const summaryOf = (participantId: string, consentId: string, version: ConsentVersionRow) => {
       const signature = signed.find(
         (candidate) => candidate.participantId === participantId && candidate.consentId === consentId,
       );
@@ -140,25 +142,21 @@ export class ConsentSignatureService {
         signedVersion: signature === undefined ? null : (versions.get(signature.consentVersionId)?.version ?? null),
         signedAt: signature?.signedAt.toISOString() ?? null,
         signedPdf:
-          signature === undefined || signature.fileId === null ? null : await this.files.link(signature.fileId),
+          signature === undefined || signature.fileId === null ? null : (signedPdfs.get(signature.fileId) ?? null),
       };
     };
 
     return {
-      participants: await Promise.all(
-        participants.map(async (participant) => ({
-          id: participant.id,
-          firstName: participant.firstName,
-          lastName: participant.lastName,
-          consents: await Promise.all(
-            consents.flatMap(({ id }) => {
-              const version = newest.get(id);
+      participants: participants.map((participant) => ({
+        id: participant.id,
+        firstName: participant.firstName,
+        lastName: participant.lastName,
+        consents: consents.flatMap(({ id }) => {
+          const version = newest.get(id);
 
-              return version === undefined ? [] : [summaryOf(participant.id, id, version)];
-            }),
-          ),
-        })),
-      ),
+          return version === undefined ? [] : [summaryOf(participant.id, id, version)];
+        }),
+      })),
     };
   }
 
@@ -385,7 +383,10 @@ export class ConsentSignatureService {
   }
 
   /**
-   * Email a signed PDF to one guardian, unless the Camp switched the copy off.
+   * Email a signed PDF to one guardian, unless the Camp switched the copy off. It takes no lock: a mail
+   * cannot be taken back, so an erasure or a withdrawal committed while it is sent is no different from one
+   * committed just after, and holding the Registration's lock through the send would only hold up its
+   * payments, signatures and uploads. One that committed before it is seen, and nothing is sent.
    * @param signatureId signature id
    * @param guardian the guardian's position, 1 or 2
    */
@@ -402,7 +403,7 @@ export class ConsentSignatureService {
     }
 
     const participant = await this.registrations.getParticipantOrThrow(signature.participantId);
-    const registration = await this.registrations.lockByIdOrThrow(participant.registrationId);
+    const registration = await this.registrations.getByIdOrThrow(participant.registrationId);
 
     // An erasure that came first removed the signature's family; nothing is left to print.
     if (registration.erasedAt !== null) {
@@ -500,6 +501,18 @@ export class ConsentSignatureService {
     version: ConsentVersionRow,
     signature: ConsentSignatureRow | null,
   ): Promise<GuardianConsent> {
+    const links = await this.files.links(
+      [version.fileId, signature?.fileId ?? null].filter((fileId): fileId is string => fileId !== null),
+    );
+    const linkOf = (fileId: string) => {
+      const link = links.get(fileId);
+
+      if (link === undefined) {
+        throw new NotFoundException();
+      }
+
+      return link;
+    };
     const shown: ConsentVersion = {
       id: version.id,
       version: version.version,
@@ -510,7 +523,7 @@ export class ConsentSignatureService {
       file:
         version.fileId === null || version.fileSha256 === null
           ? null
-          : { id: version.fileId, sha256: version.fileSha256, link: await this.files.link(version.fileId) },
+          : { id: version.fileId, sha256: version.fileSha256, link: linkOf(version.fileId) },
       publishedAt: version.publishedAt.toISOString(),
     };
 
@@ -532,7 +545,7 @@ export class ConsentSignatureService {
               signerName: signature.signerName,
               signerPlace: signature.signerPlace,
               signedAt: signature.signedAt.toISOString(),
-              signedPdf: signature.fileId === null ? null : await this.files.link(signature.fileId),
+              signedPdf: signature.fileId === null ? null : linkOf(signature.fileId),
               withdrawnAt: withdrawnAt?.toISOString() ?? null,
             },
     };

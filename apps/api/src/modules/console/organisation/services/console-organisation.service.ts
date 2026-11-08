@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import type { ConsoleErrorCode } from '@repo/schema/console';
 import { subdomainProblem, type OrganisationStatus, type SubdomainErrorCode } from '@repo/schema/organisations';
 
+import { OrganisationHostCache } from '../../../../core/access/organisation-host-cache.ts';
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
 import type { Env } from '../../../../core/config/env.schema.ts';
@@ -47,6 +48,7 @@ export class ConsoleOrganisationService {
     private readonly statistics: MailStatisticsRepository,
     private readonly admins: AdminRepository,
     private readonly audit: AuditService,
+    private readonly hosts: OrganisationHostCache,
     config: ConfigService<Env, true>,
   ) {
     this.productName = config.get('PRODUCT_NAME', { infer: true });
@@ -122,6 +124,7 @@ export class ConsoleOrganisationService {
       throw await this.refusal(id, 'pending');
     }
 
+    this.hosts.forgetAfterCommit();
     await this.audit.recordForPlatform(actor, {
       action: 'organisation.remove',
       target: { type: 'organisation', id },
@@ -164,6 +167,7 @@ export class ConsoleOrganisationService {
       throw await this.refusal(id, status);
     }
 
+    this.hosts.forgetAfterCommit();
     await this.audit.recordForPlatform(actor, {
       action,
       target: { type: 'organisation', id },

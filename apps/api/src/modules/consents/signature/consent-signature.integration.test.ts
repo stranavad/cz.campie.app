@@ -134,6 +134,23 @@ describe('signing Consents', () => {
     ).toMatchObject({ state: 'signed', signedVersion: 1, signedPdf: { url: expect.any(String) } });
   });
 
+  it('sends the copies without waiting for a change that holds the Registration', async () => {
+    await sign(guardian);
+
+    await withClient(database().ownerUrl, async (client) => {
+      await client.query('BEGIN');
+      await client.query('SELECT FROM registrations WHERE id = $1 FOR UPDATE', [registrationId]);
+
+      try {
+        await jobs().drain();
+      } finally {
+        await client.query('ROLLBACK');
+      }
+    });
+
+    expect(mail().sent.filter(({ subject }) => subject.startsWith('Kopie podepsaného souhlasu'))).toHaveLength(2);
+  });
+
   it('sends no copy when the Camp switched it off', async () => {
     await http()
       .put(`/api/camps/${campId}/email-texts/consent_copy`)

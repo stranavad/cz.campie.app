@@ -74,6 +74,9 @@ export class RegistrationDetailService {
     ]);
     const rowsOf = (scope: FieldScope, answers: Answers) =>
       answerRows(scope, version.definition, latest.definition, published, answers);
+    const prihlasky = await this.files.links(
+      participants.flatMap(({ prihlaskaFileId: id }) => (id === null ? [] : [id])),
+    );
 
     return {
       id: registration.id,
@@ -90,19 +93,17 @@ export class RegistrationDetailService {
         undeliverable: undeliverable.has(guardian.email),
       })),
       accessEmails: accessEmails.map((access) => ({ ...access, undeliverable: undeliverable.has(access.email) })),
-      participants: await Promise.all(
-        participants.map(async (participant) => ({
-          id: participant.id,
-          position: participant.position,
-          firstName: participant.firstName,
-          lastName: participant.lastName,
-          birthDate: participant.birthDate,
-          ageOnStart: participant.birthDate === null ? null : ageOnStart(participant.birthDate, turnus.startDate),
-          status: participant.status,
-          prihlaska: participant.prihlaskaFileId === null ? null : await this.files.link(participant.prihlaskaFileId),
-          answers: rowsOf('participant', participant.answers),
-        })),
-      ),
+      participants: participants.map((participant) => ({
+        id: participant.id,
+        position: participant.position,
+        firstName: participant.firstName,
+        lastName: participant.lastName,
+        birthDate: participant.birthDate,
+        ageOnStart: participant.birthDate === null ? null : ageOnStart(participant.birthDate, turnus.startDate),
+        status: participant.status,
+        prihlaska: participant.prihlaskaFileId === null ? null : (prihlasky.get(participant.prihlaskaFileId) ?? null),
+        answers: rowsOf('participant', participant.answers),
+      })),
       registrationAnswers: rowsOf('registration', registration.answers),
       priceLines: await this.registrations.listPriceLines(registrationId),
       ledger: await this.ledgers.get(registrationId),

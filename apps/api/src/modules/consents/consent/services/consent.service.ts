@@ -231,8 +231,11 @@ export class ConsentService {
    */
   private async show(consent: ConsentRow): Promise<Consent> {
     const versions = await this.consents.listVersionsOf([consent.id]);
-    const shown = await Promise.all(
-      versions.map(async (version): Promise<ConsentVersion> => ({
+    const links = await this.files.links(versions.flatMap(({ fileId }) => (fileId === null ? [] : [fileId])));
+    const shown = versions.map((version): ConsentVersion => {
+      const link = version.fileId === null ? undefined : links.get(version.fileId);
+
+      return {
         id: version.id,
         version: version.version,
         title: version.title,
@@ -240,12 +243,12 @@ export class ConsentService {
         items: version.items,
         withdrawable: version.withdrawable,
         file:
-          version.fileId === null || version.fileSha256 === null
+          version.fileId === null || version.fileSha256 === null || link === undefined
             ? null
-            : { id: version.fileId, sha256: version.fileSha256, link: await this.files.link(version.fileId) },
+            : { id: version.fileId, sha256: version.fileSha256, link },
         publishedAt: version.publishedAt.toISOString(),
-      })),
-    );
+      };
+    });
 
     return { id: consent.id, campId: consent.campId, versions: shown };
   }

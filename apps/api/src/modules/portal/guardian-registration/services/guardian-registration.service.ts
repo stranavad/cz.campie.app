@@ -89,6 +89,9 @@ export class GuardianRegistrationService {
     const camp = await this.camps.getByIdOrThrow(turnus.campId);
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
     const participants = await this.registrations.listParticipants(registration.id);
+    const prihlasky = await this.files.links(
+      participants.flatMap(({ prihlaskaFileId: id }) => (id === null ? [] : [id])),
+    );
     const ledger = await this.ledgers.get(registration.id);
     const undeliverable = await this.undeliverable.listMarked(
       (await this.registrations.listGuardians(registration.id)).map(({ email }) => email),
@@ -119,16 +122,14 @@ export class GuardianRegistrationService {
         endDate: turnus.endDate,
         place: turnus.place,
       },
-      participants: await Promise.all(
-        participants.map(async (participant) => ({
-          id: participant.id,
-          position: participant.position,
-          firstName: participant.firstName,
-          lastName: participant.lastName,
-          status: participant.status,
-          prihlaska: participant.prihlaskaFileId === null ? null : await this.files.link(participant.prihlaskaFileId),
-        })),
-      ),
+      participants: participants.map((participant) => ({
+        id: participant.id,
+        position: participant.position,
+        firstName: participant.firstName,
+        lastName: participant.lastName,
+        status: participant.status,
+        prihlaska: participant.prihlaskaFileId === null ? null : (prihlasky.get(participant.prihlaskaFileId) ?? null),
+      })),
       undeliverableEmails: [...undeliverable],
       priceLines: await this.registrations.listPriceLines(registration.id),
       adjustments: ledger.adjustments.map(({ amount }) => ({ amount })),

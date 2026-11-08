@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ORGANISATION_HOST_TTL_MS } from '../../../core/access/organisation-host-cache.ts';
 import { DiscountCodeRepository } from '../../../repositories/camps/discount-code/discount-code.repository.ts';
 import { TurnusRepository } from '../../../repositories/camps/turnus/turnus.repository.ts';
 import { RegistrationRepository } from '../../../repositories/registrations/registration/registration.repository.ts';
@@ -492,7 +493,9 @@ describe('registration submission', () => {
     const pendingId = await createOrganisation(app(), { status: 'pending' });
     expect((await submit(bodyOf(), await organisationHost(app(), pendingId))).status).toBe(404);
 
+    // Suspended past the app, as another API instance would: it shows once the subdomain's cache expires.
     await query("UPDATE organisations SET status = 'suspended' WHERE id = $1", [state.organisationId]);
+    clock().advance(ORGANISATION_HOST_TTL_MS);
     const refused = await submit();
     expect(refused.status).toBe(403);
     expect(refused.body).toMatchObject({ code: 'organisation_suspended' });

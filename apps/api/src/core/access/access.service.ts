@@ -15,6 +15,7 @@ import { UnitOfWork } from '../database/unit-of-work.ts';
 import { Clock } from '../ports/clock/clock.port.ts';
 import { SessionService } from '../sessions/session.service.ts';
 import { parseHost } from './host.ts';
+import { OrganisationHostCache } from './organisation-host-cache.ts';
 import type { RequestScope } from './request-scope.ts';
 
 const uuid = z.uuid();
@@ -60,6 +61,7 @@ export class AccessService {
     private readonly supportGrants: SupportGrantRepository,
     private readonly totpCredentials: TotpCredentialRepository,
     private readonly clock: Clock,
+    private readonly hosts: OrganisationHostCache,
     config: ConfigService<Env, true>,
   ) {
     this.platformDomain = config.get('PLATFORM_DOMAIN', { infer: true });
@@ -342,7 +344,9 @@ export class AccessService {
 
     const organisation =
       parsed.kind === 'organisation'
-        ? await this.unitOfWork.runForPlatform(() => this.organisations.getBySubdomain(parsed.subdomain))
+        ? await this.hosts.get(parsed.subdomain, () =>
+            this.unitOfWork.runForPlatform(() => this.organisations.getBySubdomain(parsed.subdomain)),
+          )
         : null;
 
     if (organisation === null || organisation.status === 'pending') {

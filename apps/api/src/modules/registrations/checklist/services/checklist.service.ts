@@ -4,14 +4,18 @@ import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
 import { checklistOf, type ChecklistItem, type GuardianChecklist, type RequirementState } from '@repo/schema/checklist';
 import type { ConsentState } from '@repo/schema/consents';
 import { missingNewAnswers } from '@repo/schema/form-engine';
+import type { Balance } from '@repo/schema/pricing';
 
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
+import type { RegistrationFormVersionEntity } from '../../../../repositories/camps/registration-form/registration-form.entity.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
+import type { TurnusEntity } from '../../../../repositories/camps/turnus/turnus.entity.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { ConsentSignatureRepository } from '../../../../repositories/consents/consent-signature/consent-signature.repository.ts';
 import { ConsentRepository } from '../../../../repositories/consents/consent/consent.repository.ts';
 import { DocumentTypeRepository } from '../../../../repositories/documents/document-type/document-type.repository.ts';
 import { DocumentUploadRepository } from '../../../../repositories/documents/document-upload/document-upload.repository.ts';
+import type { ParticipantEntity } from '../../../../repositories/registrations/participant/participant.entity.ts';
 import type { RegistrationEntity } from '../../../../repositories/registrations/registration/registration.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
@@ -23,6 +27,18 @@ export interface ParticipantChecklist {
   readonly firstName: string;
   readonly lastName: string;
   readonly items: ChecklistItem[];
+}
+
+// What a checklist is gathered from, as a list of a Turnus loads it anyway.
+export interface LoadedRegistrations {
+  readonly turnus: TurnusEntity;
+  readonly registrations: readonly RegistrationEntity[];
+  // Every child of the Registrations, Registered or not.
+  readonly participants: readonly ParticipantEntity[];
+  readonly balances: ReadonlyMap<string, Balance>;
+  // The Registrations' form versions by id.
+  readonly versions: ReadonlyMap<string, RegistrationFormVersionEntity>;
+  readonly latest: RegistrationFormVersionEntity | null;
 }
 
 // Each Registered child's checklist, gathered from what every module reports: the money, answers owed to
@@ -95,18 +111,38 @@ export class ChecklistService {
     registrations: readonly RegistrationEntity[],
   ): Promise<ParticipantChecklist[]> {
     const turnus = await this.turnusy.getByIdOrThrow(turnusId);
-    const camp = await this.camps.getByIdOrThrow(turnus.campId);
-    const participants = (await this.registrations.listParticipantsOf(registrations.map(({ id }) => id))).filter(
-      ({ status }) => status === 'registered',
-    );
-    const childIds = participants.map(({ id }) => id);
-    const balances = await this.ledger.balancesOf(registrations);
-    const latest = await this.forms.getLatestVersion(camp.id);
-    const versions = new Map(
-      (await this.forms.listVersionsByIds([...new Set(registrations.map(({ formVersionId }) => formVersionId))])).map(
-        (version) => [version.id, version],
+
+    return this.ofLoaded({
+      turnus,
+      registrations,
+      participants: await this.registrations.listParticipantsOf(registrations.map(({ id }) => id)),
+      balances: await this.ledger.balancesOf(registrations),
+      versions: new Map(
+        (await this.forms.listVersionsByIds([...new Set(registrations.map(({ formVersionId }) => formVersionId))])).map(
+          (version) => [version.id, version],
+        ),
       ),
-    );
+      latest: await this.forms.getLatestVersion(turnus.campId),
+    });
+  }
+
+  /**
+   * Gather the checklists of the Registered children of some of a Turnus's Registrations, from what the
+   * caller has loaded already, such as the participant list.
+   * @param loaded the Turnus, the Registrations with their children, balances and form versions, and the
+   * Camp's latest form version
+   */
+  public async ofLoaded({
+    turnus,
+    registrations,
+    participants: children,
+    balances,
+    versions,
+    latest,
+  }: LoadedRegistrations): Promise<ParticipantChecklist[]> {
+    const camp = await this.camps.getByIdOrThrow(turnus.campId);
+    const participants = children.filter(({ status }) => status === 'registered');
+    const childIds = participants.map(({ id }) => id);
     const consentStates = await this.consentStatesOf(camp.id, childIds);
     const requirementStates = await this.requirementStatesOf(camp.id, childIds);
     const registrationOf = new Map(registrations.map((registration) => [registration.id, registration]));

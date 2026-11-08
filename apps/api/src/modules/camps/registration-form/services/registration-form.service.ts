@@ -222,12 +222,13 @@ export class RegistrationFormService {
    * @param declarations the declarations
    */
   private async show(declarations: readonly Declaration[]): Promise<ShownDeclaration[]> {
-    return Promise.all(
-      declarations.map(async ({ fileId, ...declaration }) => ({
-        ...declaration,
-        file: fileId === null ? null : { id: fileId, link: await this.files.link(fileId) },
-      })),
-    );
+    const links = await this.files.links(declarations.flatMap(({ fileId }) => (fileId === null ? [] : [fileId])));
+
+    return declarations.map(({ fileId, ...declaration }) => {
+      const link = fileId === null ? undefined : links.get(fileId);
+
+      return { ...declaration, file: fileId === null || link === undefined ? null : { id: fileId, link } };
+    });
   }
 
   /**

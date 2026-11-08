@@ -15,6 +15,7 @@ import { previewOrganisationEndpoint } from '@repo/schema/console';
 import { Access } from './access.decorator.ts';
 import { AccessGuard } from './access.guard.ts';
 import { AccessService } from './access.service.ts';
+import { OrganisationHostCache } from './organisation-host-cache.ts';
 import { RequirePermission } from './permission.ts';
 import { UnitOfWorkInterceptor } from './unit-of-work.interceptor.ts';
 
@@ -26,9 +27,11 @@ type MetadataTarget = Parameters<Reflector['get']>[1];
   imports: [DiscoveryModule],
   providers: [
     AccessService,
+    OrganisationHostCache,
     { provide: APP_GUARD, useClass: AccessGuard },
     { provide: APP_INTERCEPTOR, useClass: UnitOfWorkInterceptor },
   ],
+  exports: [OrganisationHostCache],
 })
 export class AccessModule implements OnModuleInit {
   constructor(

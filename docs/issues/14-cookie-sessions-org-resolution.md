@@ -41,3 +41,5 @@ Implement ADR-0001 in the API. Sessions are httpOnly, Secure, SameSite=Lax cooki
   - The unit of work opens before route interceptors, so an upload's transaction stays open while its body arrives.
   - A guardian request uses three short transactions (host lookup, session lookup, route).
 - Local setup: a local env file needs `PLATFORM_DOMAIN=localhost` (now in the example file and Compose). The migration adds `subdomain` as NOT NULL, so a local database that already holds Organisations needs a reset.
+
+2026-11-08 - **Project lead follow-up.** Public and guardian requests resolve the subdomain through `OrganisationHostCache` (`core/access/`): in-process, 5 s TTL by the Clock, at most 1000 entries (oldest evicted). Only found Organisations are kept, never a not-found. The console's approve, suspend, rename and reject clear it after commit on that instance; another instance sees a suspension within 5 s. A guardian request now uses two transactions when the subdomain is cached.

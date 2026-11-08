@@ -114,14 +114,17 @@ export class ParticipantListService {
     );
     const byId = new Map(registrations.map((registration) => [registration.id, registration]));
     const verifications = await this.verifications.listOf(participants.map(({ id }) => id));
-    const latestDefinition = (await this.forms.getLatestVersion(turnus.campId))?.definition;
+    const latest = await this.forms.getLatestVersion(turnus.campId);
+    const latestDefinition = latest?.definition;
     const words = searchable(query.search ?? '')
       .split(/\s+/)
       .filter((word) => word !== '');
 
     // Cancelled children have no checklist, so no checklist filter finds them.
     const checklistOf = new Map(
-      (await this.checklists.ofTurnus(turnusId)).map(({ participantId, items }) => [participantId, items]),
+      (await this.checklists.ofLoaded({ turnus, registrations, participants, balances, versions, latest })).map(
+        ({ participantId, items }) => [participantId, items],
+      ),
     );
     const rows = participants.flatMap((participant): ParticipantRow[] => {
       const registration = byId.get(participant.registrationId);
