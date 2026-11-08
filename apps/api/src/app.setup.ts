@@ -18,8 +18,8 @@ export function setupApp<T extends NestExpressApplication>(app: T): T {
 
   // Each of the TRUST_PROXY_HOPS proxies in front of the API appends the address it was called from to
   // X-Forwarded-For, so the entry that many places from the end is the browser's; earlier ones came from
-  // the client and prove nothing. Without a proxy (in tests) the peer address is the browser's. Audit entries, login
-  // limits and request limits rely on it.
+  // the client and prove nothing. Tests send the header as the one proxy would. Audit entries, login limits
+  // and request limits rely on it.
   app.set('trust proxy', config.get('TRUST_PROXY_HOPS', { infer: true }));
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new HttpErrorFilter());

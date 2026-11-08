@@ -1,13 +1,13 @@
 import { ConflictException, Controller, Get, NotFoundException, type INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { errorResponseSchema } from '@repo/schema/shared';
 
-import { AppModule } from '../../app.module.ts';
-import { setupApp } from '../../app.setup.ts';
+import { bootApp, restoreEnv } from '../../testing/boot-app.ts';
+import { Access } from '../access/access.decorator.ts';
 
+@Access('unscoped')
 @Controller('errors')
 class ThrowingController {
   @Get('internal')
@@ -30,16 +30,12 @@ describe('HTTP errors', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-      controllers: [ThrowingController],
-    }).compile();
-    app = setupApp(moduleRef.createNestApplication({ logger: false }));
-    await app.init();
+    app = await bootApp({ controllers: [ThrowingController] });
   });
 
   afterEach(async () => {
     await app.close();
+    restoreEnv();
   });
 
   it('answers an unexpected error with a bare 500 that leaks nothing', async () => {

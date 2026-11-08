@@ -4,6 +4,6 @@ Sessions are httpOnly, Secure, SameSite=Lax cookies, not bearer tokens in localS
 
 ## Consequences
 
-- The API must sit under the platform's registrable domain or behind the frontend's rewrite; backend hosting is still open but must allow this.
+- The API must sit under the platform's registrable domain or behind the frontend's rewrite. Deployed, it sits behind the frontend's Caddy proxy on one Dokploy server (`deploy/compose.yaml`) and refuses any request without the proxy's shared secret, so `X-Forwarded-For` and `X-Forwarded-Host` come only from the proxies.
 - The API resolves the Organisation for public and guardian requests from the forwarded original host; a guardian session's Organisation must match it. Admin requests name the Organisation in a header, checked against membership. Gateway notifications carry it in the URL path; jobs in their payload.
 - Mutations require SameSite=Lax plus a custom request header against CSRF.

@@ -38,13 +38,20 @@ describe('configuration', () => {
     );
   });
 
-  it('refuses to boot staging with live payments, and boots it with test payments or the fake gateway', async () => {
-    const staging = { ...PRODUCTION_ENV, APP_ENV: 'staging' };
-
-    await expect(bootApp({ env: staging })).rejects.toThrow(/COMGATE_TEST_PAYMENTS: staging takes no live payments/);
-    await (await bootApp({ env: { ...staging, COMGATE_TEST_PAYMENTS: 'true' } })).close();
-    await (await bootApp({ env: { ...staging, PAYMENT_GATEWAY_ADAPTER: 'fake' } })).close();
+  it('refuses to boot staging with live payments', async () => {
+    await expect(bootApp({ env: { ...PRODUCTION_ENV, APP_ENV: 'staging' } })).rejects.toThrow(
+      /COMGATE_TEST_PAYMENTS: staging takes no live payments/,
+    );
   });
+
+  it.each([{ COMGATE_TEST_PAYMENTS: 'true' }, { PAYMENT_GATEWAY_ADAPTER: 'fake' }])(
+    'boots staging with %o',
+    async (payments) => {
+      const app = await bootApp({ env: { ...PRODUCTION_ENV, APP_ENV: 'staging', ...payments } });
+
+      await expect(app.close()).resolves.toBeUndefined();
+    },
+  );
 
   it('refuses to boot staging with a local adapter, as production does', async () => {
     await expect(

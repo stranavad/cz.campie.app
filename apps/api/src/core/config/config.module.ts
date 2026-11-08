@@ -1,7 +1,7 @@
 import type { DynamicModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { envSchema } from './env.schema.ts';
+import { envSchema, isDeployment } from './env.schema.ts';
 
 // Loads and validates the configuration from the environment the app starts in.
 export function appConfigModule(): Promise<DynamicModule> {
@@ -11,7 +11,7 @@ export function appConfigModule(): Promise<DynamicModule> {
   return ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: appEnv === 'test' ? '.env.test' : '.env',
-    ignoreEnvFile: appEnv === 'production' || appEnv === 'staging',
+    ignoreEnvFile: isDeployment(appEnv),
     validationSchema: envSchema,
   });
 }

@@ -54,6 +54,7 @@ Exact versions at the time of the decision. The lockfile is authoritative afterw
 | Redis      | 8.8 (8.8.3) |                                                                                                                                                                  |
 | Gotenberg  | 8.38.1      |                                                                                                                                                                  |
 | RustFS     | 1.0.1       |                                                                                                                                                                  |
+| Caddy      | 2.11.9      | Serves the deployed frontend and proxies `/api` (`docker/caddy/Caddyfile`); production only.                                                                     |
 
 ## Drizzle: 1.0 release candidate, not the 0.45 fallback
 

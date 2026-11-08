@@ -24,6 +24,7 @@ services:
     restart: unless-stopped
     environment:
       PROXY_SECRET: ${PROXY_SECRET:?}
+      API_UPSTREAM: ${DEPLOYMENT_NAME:?}-api:3000
     depends_on:
       api:
         condition: service_healthy
@@ -69,6 +70,10 @@ services:
       context: ..
       target: api
     restart: unless-stopped
+    networks:
+      default:
+        aliases:
+          - ${DEPLOYMENT_NAME}-api
     environment:
       APP_ENV: ${APP_ENV:?}
       PLATFORM_DOMAIN: ${PLATFORM_DOMAIN}

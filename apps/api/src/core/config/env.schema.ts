@@ -246,6 +246,14 @@ const requestLimits = z
     };
   });
 
+/**
+ * Tell whether an environment is deployed: it reads no env file and needs every production adapter.
+ * @param appEnv the value of APP_ENV
+ */
+export function isDeployment(appEnv: string | undefined): appEnv is 'staging' | 'production' {
+  return appEnv === 'staging' || appEnv === 'production';
+}
+
 export const envSchema = z
   .object({
     // staging is a deployed copy of production that takes no live payments.
@@ -269,8 +277,9 @@ export const envSchema = z
       .regex(/^[\x21-\x7e]{32,}$/, 'must be at least 32 printable ASCII characters without spaces')
       .optional(),
     // How many proxies in front of the API append to X-Forwarded-For: the client's address is the entry
-    // this many places from the end. 0 trusts no proxy and takes the connection's peer.
-    TRUST_PROXY_HOPS: z.coerce.number().int().nonnegative(),
+    // this many places from the end. 0 trusts no proxy and takes the connection's peer; 1 is the dev
+    // server's proxy.
+    TRUST_PROXY_HOPS: z.coerce.number().int().nonnegative().default(1),
 
     REDIS_URL: z.url(),
     // auto runs queued jobs in this process; manual leaves them queued until a test drains them.
@@ -287,7 +296,7 @@ export const envSchema = z
   .and(loginLimits)
   .and(requestLimits)
   .superRefine((env, context) => {
-    if (env.APP_ENV !== 'production' && env.APP_ENV !== 'staging') {
+    if (!isDeployment(env.APP_ENV)) {
       return;
     }
 
@@ -321,6 +330,11 @@ export const envSchema = z
       { variable: 'FILE_STORAGE_ADAPTER', chosen: env.fileStorage.adapter, required: 'tigris' },
       { variable: 'PDF_RENDERER_ADAPTER', chosen: env.pdfRenderer.adapter, required: 'gotenberg' },
       { variable: 'KEY_PROVIDER_ADAPTER', chosen: env.keyProvider.adapter, required: 'secret' },
+      // Production takes only live card payments and staging never does: a staging copy tests with the
+      // fake gateway or Comgate's test payments, so nobody pays real money there.
+      ...(deployment === 'production'
+        ? [{ variable: 'PAYMENT_GATEWAY_ADAPTER', chosen: env.paymentGateway.adapter, required: 'comgate' }]
+        : []),
     ];
 
     for (const { variable, chosen, required } of ports) {
@@ -333,17 +347,7 @@ export const envSchema = z
       }
     }
 
-    // Production takes only live card payments and staging never does: a staging copy tests with the fake
-    // gateway or Comgate's test payments, so nobody pays real money there.
     const payments = env.paymentGateway;
-
-    if (deployment === 'production' && payments.adapter !== 'comgate') {
-      context.addIssue({
-        code: 'custom',
-        path: ['PAYMENT_GATEWAY_ADAPTER'],
-        message: `${payments.adapter} is a local adapter; production requires comgate`,
-      });
-    }
 
     if (deployment === 'production' && payments.adapter === 'comgate' && payments.testPayments) {
       context.addIssue({

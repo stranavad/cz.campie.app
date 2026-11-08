@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import { ACCESS_HEADERS } from '@repo/schema/shared';
 
+import { PRODUCTION_ENV } from '../../testing/boot-app.ts';
 import { mainHost } from '../../testing/fixtures.ts';
 import { useTestApp } from '../../testing/test-app.ts';
 import { PROXY_SECRET_HEADER } from './proxy-secret.ts';
 
-const PROXY_SECRET = 'test-only-proxy-secret-0123456789abcdef';
+const { PROXY_SECRET } = PRODUCTION_ENV;
 const REFUSED = { statusCode: 403, message: 'Forbidden' };
 
 describe('proxy secret', () => {

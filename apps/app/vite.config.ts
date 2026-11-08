@@ -18,8 +18,8 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // The Host header is kept and X-Forwarded-Host is added, as Vercel's rewrite does, so the API
-      // sees which Organisation's subdomain was called (ADR-0001).
+      // The Host header is kept and X-Forwarded-Host is added, as the deployed Caddy proxy does, so the
+      // API sees which Organisation's subdomain was called (ADR-0001).
       '/api': { target: process.env.API_PROXY_TARGET ?? 'http://localhost:3000', xfwd: true },
     },
   },

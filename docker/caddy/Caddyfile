@@ -22,7 +22,9 @@
 	}
 
 	handle /api/* {
-		reverse_proxy api:3000 {
+		# The API under its deployment's own name: this container also sits on Dokploy's shared network,
+		# where another project's service could be called plain `api`.
+		reverse_proxy {$API_UPSTREAM} {
 			# Replaces whatever the client sent under this name; the API refuses any request without it.
 			header_up X-Proxy-Secret {env.PROXY_SECRET}
 		}
