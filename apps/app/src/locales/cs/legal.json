@@ -66,7 +66,7 @@
         "heading": "Přístup provozovatele k datům organizace",
         "paragraphs": [
           "Provozovatel do dat o dětech a rodičích běžně nevstupuje. Konzole provozovatele zobrazuje jen údaje o organizaci (identifikační údaje, stav schválení, souhrnné počty a zpětnou vazbu), nikoli přihlášky.",
-          "Do dat organizace provozovatel vstoupí jen v režimu podpory, který mu vlastník udělí na omezenou dobu (nejvýše 7 dní). Přístup je jen pro čtení, pokud vlastník výslovně nepovolí změny, a vlastník ho může kdykoli zrušit. Každá akce provozovatele v režimu podpory se zapisuje do historie organizace, kterou vlastník vidí.",
+          "Do dat organizace provozovatel vstoupí jen v režimu podpory, který mu vlastník udělí na omezenou dobu (nejvýše 7 dní). V režimu podpory provozovatel vidí totéž co vlastník, včetně zdravotních údajů. Přístup je jen pro čtení, pokud vlastník výslovně nepovolí změny, a vlastník ho může kdykoli zrušit. Do historie organizace, kterou vlastník vidí, se zapisuje udělení a zrušení povolení, každý vstup provozovatele, každá jeho změna, každé zobrazení zdravotních údajů a každý export s citlivými údaji.",
           "Toto omezení je pravidlo aplikace, které platforma vynucuje a zaznamenává, nikoli kryptografická záruka: provozovatel spravuje servery a hlavní klíč, ze kterého se odvozují klíče organizací. Podrobnosti popisuje stránka o zpracování dat."
         ]
       },
@@ -158,7 +158,7 @@
       {
         "heading": "Povinnosti zpracovatele",
         "paragraphs": [
-          "Zpracovatel zpracovává osobní údaje jen na základě doložených pokynů správce. Pokyny jsou tato smlouva, Obchodní podmínky a úkony, které správce a jeho uživatelé provádějí na platformě a v jejím nastavení. Pokud zpracovatel usoudí, že pokyn porušuje právní předpisy, správce na to bez zbytečného odkladu upozorní.",
+          "Zpracovatel zpracovává osobní údaje jen na základě doložených pokynů správce. Pokyny jsou tato smlouva, Obchodní podmínky a úkony, které správce a jeho uživatelé provádějí na platformě a v jejím nastavení. Pokud zpracovatel usoudí, že pokyn porušuje právní předpisy, správce na to bez zbytečného odkladu upozorní. Pokud zpracovateli zpracování nad rámec pokynů ukládá právní předpis, informuje správce předem, ledaže to tento předpis zakazuje.",
           "Zpracovatel nepoužije osobní údaje k žádnému jinému účelu, zejména ne k marketingu, profilování ani prodeji.",
           "Zpracovatel zajistí, aby se osoby oprávněné zpracovávat osobní údaje zavázaly k mlčenlivosti nebo aby se na ně vztahovala zákonná povinnost mlčenlivosti.",
           "Zpracovatel přijme technická a organizační opatření podle čl. 32 GDPR popsaná v článku Zabezpečení.",
@@ -196,7 +196,7 @@
       {
         "heading": "Přístup zpracovatele k datům",
         "paragraphs": [
-          "Zpracovatel do osobních údajů v datech správce běžně nevstupuje. Vstoupí do nich jen v režimu podpory na základě časově omezeného povolení, které udělí vlastník správce, jen pro čtení, pokud vlastník nepovolí změny, a se záznamem každé akce v historii správce.",
+          "Zpracovatel do osobních údajů v datech správce běžně nevstupuje. Vstoupí do nich jen v režimu podpory na základě časově omezeného povolení, které udělí vlastník správce, jen pro čtení, pokud vlastník nepovolí změny. V historii správce se zaznamená každý vstup zpracovatele, každá jeho změna, každé zobrazení zdravotních údajů a každý export s citlivými údaji; samotné prohlížení přihlášek se nezaznamenává.",
           "Bez takového povolení může zpracovatel k datům přistoupit jen v nezbytném rozsahu, pokud to vyžaduje odstranění závažné technické poruchy, zabezpečení platformy nebo právní předpis. O takovém přístupu správce bez zbytečného odkladu informuje.",
           "Toto omezení je pravidlo aplikace a provozu, nikoli kryptografická záruka: zpracovatel spravuje servery a hlavní klíč, takže by technicky mohl šifrovaná data zpřístupnit. Platforma nenabízí šifrování klíči, které by držel jen správce."
         ]
@@ -263,7 +263,7 @@
         "paragraphs": [
           "Správci organizace podle oprávnění, která jim přidělil vlastník: ke každé oblasti (přihlášky, nastavení táborů, zdraví a další) žádné, čtení nebo zápis. Bez oprávnění ke zdraví se zdravotní údaje nezobrazí nikde, ani v exportech.",
           "Rodiče vidí jen své přihlášky, a to jen v organizaci, u které se přihlásili.",
-          "Provozovatel platformy vidí v konzoli jen údaje o organizacích: identifikační údaje, stav schválení, souhrnné počty a zpětnou vazbu. Do přihlášek vstoupí jen v režimu podpory, který mu vlastník udělí na omezenou dobu (nejvýše 7 dní), jen pro čtení, pokud vlastník nepovolí změny. Vlastník ho může kdykoli zrušit a každá akce provozovatele se zapisuje do historie organizace.",
+          "Provozovatel platformy vidí v konzoli jen údaje o organizacích: identifikační údaje, stav schválení, souhrnné počty a zpětnou vazbu. Do přihlášek vstoupí jen v režimu podpory, který mu vlastník udělí na omezenou dobu (nejvýše 7 dní), jen pro čtení, pokud vlastník nepovolí změny. V režimu podpory vidí totéž co vlastník, včetně zdravotních údajů. Vlastník ho může kdykoli zrušit. Do historie organizace se zapisuje každý vstup provozovatele, každá jeho změna, každé zobrazení zdravotních údajů a každý export s citlivými údaji; samotné prohlížení přihlášek se nezaznamenává.",
           "Historie změn zaznamenává, kdo, kdy, z jaké IP adresy a co změnil. U šifrovaných údajů zaznamená jen to, které se změnily, ne jejich hodnoty."
         ]
       },
@@ -298,7 +298,7 @@
       {
         "name": "Server aplikace: [doplní provozovatel: poskytovatel serveru]",
         "purpose": "Běh aplikace, webových stránek a fronty úloh na jednom serveru spravovaném nástrojem Dokploy. Na stejném serveru běží Gotenberg, který z přihlášek a souhlasů vytváří PDF; data se kvůli tomu nikam dál neposílají.",
-        "data": "Všechna data procházejí serverem při zpracování; trvale se zde neukládají, kromě krátkodobé fronty úloh.",
+        "data": "Všechna data procházejí serverem při zpracování. Trvale se zde neukládají; krátkodobě zde zůstává fronta úloh a počítadla pro omezení počtu požadavků podle IP adresy a e-mailu.",
         "location": "[doplní provozovatel: stát a datové centrum]"
       },
       {
@@ -322,7 +322,7 @@
       {
         "name": "Comgate (platby kartou)",
         "purpose": "Platby kartou, jen u organizací, které připojí svůj vlastní účet u Comgate. Smlouvu s Comgate uzavírá organizace sama.",
-        "data": "Částka, popis platby, variabilní symbol a e-mail plátce.",
+        "data": "Částka, popis platby, identifikátor přihlášky, e-mail plátce a adresa, na kterou se plátce po platbě vrátí.",
         "location": "Česká republika"
       }
     ]

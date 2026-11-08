@@ -12,17 +12,18 @@ interface LegalSectionProps {
 // One article or section of a legal text.
 export function LegalSection({ number, heading, paragraphs }: LegalSectionProps) {
   const { t } = useTranslation('legal');
+  const isNumbered = number !== null;
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">{number === null ? heading : t('numberedHeading', { number, heading })}</h2>
+      <h2 className="text-lg font-semibold">{isNumbered ? t('numberedHeading', { number, heading }) : heading}</h2>
       {paragraphs.map((paragraph, index) => (
         <p key={paragraph}>
-          {number === null ? null : (
+          {isNumbered ? (
             <span className="mr-2 font-medium tabular-nums">
               {t('paragraphNumber', { article: number, paragraph: index + 1 })}
             </span>
-          )}
+          ) : null}
           <LegalText text={paragraph} />
         </p>
       ))}
