@@ -122,6 +122,14 @@ class UndeclaredController {
   public read(): void {}
 }
 
+// Stands in for a route that tried to read an Organisation's data as the operator's preview.
+@Access('operator-preview')
+@Controller('test-access/console/organisations/:organisationId/camps')
+class PreviewReachingController {
+  @Get()
+  public read(): void {}
+}
+
 const CSRF = { [ACCESS_HEADERS.csrf]: '1' };
 
 describe('access', () => {
@@ -400,6 +408,10 @@ describe('access declarations', () => {
 
   it('refuses to boot with a controller that declares no access', async () => {
     await expect(bootApp({ controllers: [UndeclaredController] })).rejects.toThrow(/UndeclaredController/);
+  });
+
+  it("refuses to boot with an operator-preview route other than the public pages' preview", async () => {
+    await expect(bootApp({ controllers: [PreviewReachingController] })).rejects.toThrow(/PreviewReachingController/);
   });
 });
 

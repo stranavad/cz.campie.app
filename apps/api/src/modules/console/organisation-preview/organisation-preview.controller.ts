@@ -9,7 +9,7 @@ import { CampService } from '../../camps/camp/services/camp.service.ts';
 // Runs in the previewed Organisation's unit of work: only its public pages' data may leave it here.
 @Access('operator-preview')
 @Controller()
-export class ConsolePreviewController {
+export class OrganisationPreviewController {
   constructor(private readonly camps: CampService) {}
 
   @Endpoint(previewOrganisationEndpoint)

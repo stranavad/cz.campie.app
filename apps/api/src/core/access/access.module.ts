@@ -1,5 +1,6 @@
 import { Global, Module, type OnModuleInit } from '@nestjs/common';
-import { PATH_METADATA } from '@nestjs/common/constants.js';
+import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants.js';
+import { RequestMethod } from '@nestjs/common/enums/request-method.enum.js';
 import {
   APP_GUARD,
   APP_INTERCEPTOR,
@@ -8,6 +9,8 @@ import {
   MetadataScanner,
   Reflector,
 } from '@nestjs/core';
+
+import { previewOrganisationEndpoint } from '@repo/schema/console';
 
 import { Access } from './access.decorator.ts';
 import { AccessGuard } from './access.guard.ts';
@@ -35,7 +38,8 @@ export class AccessModule implements OnModuleInit {
   ) {}
 
   // No route is reachable by accident: a controller without a declared access, an admin route without a
-  // declared permission, or a permission where no membership is checked stops the app booting.
+  // declared permission, a permission where no membership is checked, or an operator-preview route other
+  // than the preview of public pages stops the app booting.
   public onModuleInit(): void {
     const problems = this.discovery
       .getControllers()
@@ -71,6 +75,16 @@ export class AccessModule implements OnModuleInit {
       }
 
       const declared = this.reflector.getAllAndOverride(RequirePermission, [route, controller]) !== undefined;
+
+      // The operator's preview runs in an Organisation's unit of work without its support grant, so it may
+      // reach the public pages' data only.
+      if (
+        kind === 'operator-preview' &&
+        (this.reflector.get<string | undefined>(PATH_METADATA, route) !== previewOrganisationEndpoint.path ||
+          this.reflector.get<RequestMethod | undefined>(METHOD_METADATA, route) !== RequestMethod.GET)
+      ) {
+        return [`operator-preview serves only the public pages' preview; found on ${controller.name}.${name}`];
+      }
 
       if (kind === 'admin' && !declared) {
         return [`Declare @Requires(...) on every admin route; missing on ${controller.name}.${name}`];

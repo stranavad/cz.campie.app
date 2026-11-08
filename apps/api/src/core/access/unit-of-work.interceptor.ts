@@ -6,7 +6,8 @@ import { UnitOfWork } from '../database/unit-of-work.ts';
 import { requestScope } from './request-scope.ts';
 
 // Runs each route inside the unit of work of the Organisation its access resolved to, or a platform one,
-// so the whole route commits or rolls back as one; the operator console's can never enter an Organisation.
+// so the whole route commits or rolls back as one; the operator console's can never enter an Organisation
+// (its preview of a pending Organisation's public pages runs in that Organisation's, like a public route).
 // Route interceptors run inside it, an upload's parsing included, which holds the transaction open while
 // the body arrives.
 @Injectable()

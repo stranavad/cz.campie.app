@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { AdminsModule } from '../admins/admins.module.ts';
 import { CampsModule } from '../camps/camps.module.ts';
-import { ConsolePreviewController } from './organisation-preview/console-preview.controller.ts';
+import { OrganisationPreviewController } from './organisation-preview/organisation-preview.controller.ts';
 import { ConsoleOrganisationController } from './organisation/console-organisation.controller.ts';
 import { ConsoleOrganisationService } from './organisation/services/console-organisation.service.ts';
 import { ConsoleProblemReportController } from './problem-report/console-problem-report.controller.ts';
@@ -15,7 +15,7 @@ import { ProblemReportService } from './problem-report/services/problem-report.s
   imports: [AdminsModule, CampsModule],
   controllers: [
     ConsoleOrganisationController,
-    ConsolePreviewController,
+    OrganisationPreviewController,
     ConsoleProblemReportController,
     FeedbackController,
     PublicProblemReportController,
