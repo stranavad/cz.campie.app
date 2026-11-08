@@ -182,7 +182,7 @@ export class DocumentReviewService {
   }
 
   /**
-   * Hand out a short-lived link to an Internal document's file, audited as a view of the child's document.
+   * Hand out a short-lived link to an Internal document's file, audited as a view of the document.
    * @param actor the admin
    * @param internalDocumentId Internal document id
    * @throws {NotFoundException} when the Organisation has no such Internal document
@@ -194,12 +194,11 @@ export class DocumentReviewService {
       throw new NotFoundException();
     }
 
-    // Targets the child, as the document's other entries do, so the view stays in the child's history
-    // after the document is removed; which document is the entry's only value.
+    // A view, so no change; the document's child stays known from its creation entry, which the
+    // append-only log keeps after the document is removed.
     await this.audit.record(actor, {
       action: 'internal_document.view',
-      target: { type: 'participant', id: document.participantId },
-      change: { before: null, after: { internalDocumentId: document.id } },
+      target: { type: 'internal_document', id: document.id },
     });
 
     return this.files.link(document.fileId);
