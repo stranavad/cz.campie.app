@@ -239,6 +239,7 @@
     "loadFailed": "Souhlasy se nepodařilo načíst.",
     "none": "Tábor zatím nemá žádný souhlas.",
     "new": "Nový souhlas",
+    "fromStarter": "nebo začněte ze vzoru a upravte ho pro svůj tábor:",
     "versionOf": "verze {{version}} z {{date}}",
     "withdrawableShort": "lze odvolat",
     "versions": "Všechny verze",

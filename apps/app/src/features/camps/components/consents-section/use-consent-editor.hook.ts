@@ -5,6 +5,7 @@ import {
   type ConsentItem,
   type ConsentItemKind,
   type ConsentVersion,
+  type StarterConsent,
 } from '@repo/schema/consents';
 import type { FileLink } from '@repo/schema/files';
 
@@ -40,6 +41,20 @@ export function draftOf(version: ConsentVersion | null): ConsentDraft {
         withdrawable: version.withdrawable,
         file: version.file === null ? null : { id: version.file.id, link: version.file.link },
       };
+}
+
+/**
+ * Start a new Consent from a starter: its text with fresh item ids, unsaved until the admin publishes it.
+ * @param starter one of STARTER_CONSENTS
+ */
+export function draftOfStarter(starter: StarterConsent): ConsentDraft {
+  return {
+    title: starter.title,
+    introduction: starter.introduction,
+    items: starter.items.map((item) => ({ id: uuidv7(), ...item })),
+    withdrawable: starter.withdrawable,
+    file: null,
+  };
 }
 
 // Writing a Consent: each save publishes it as a new version, the earlier ones staying as signed.
