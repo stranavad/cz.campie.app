@@ -8,7 +8,7 @@ import { uuidv7 } from '@/lib/utils';
  * @param label its label
  */
 export function newCustomField(type: CustomFieldType, label: string): CustomField {
-  const base = { id: uuidv7(), label, hint: null, required: false, scope: 'participant' as const };
+  const base = { id: uuidv7(), label, hint: null, required: false, scope: 'participant' as const, health: false };
 
   switch (type) {
     case 'single_choice':

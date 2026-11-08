@@ -15,6 +15,34 @@ interface CustomFieldEditorProps {
   onMove: (by: -1 | 1) => void;
 }
 
+/**
+ * Mark a field as health data or not; health data carries no surcharge, so marking it drops them.
+ * @param field the field
+ * @param health whether it is health data
+ */
+function asHealth(field: CustomField, health: boolean): CustomField {
+  if (!health) {
+    return { ...field, health };
+  }
+
+  switch (field.type) {
+    case 'yes_no':
+      return { ...field, health, surcharge: null, needsVerification: false };
+    case 'single_choice':
+    case 'multiple_choice':
+      return {
+        ...field,
+        health,
+        options: field.options.map((option) => ({ ...option, surcharge: null, needsVerification: false })),
+      };
+    case 'short_text':
+    case 'long_text':
+    case 'number':
+    case 'date':
+      return { ...field, health };
+  }
+}
+
 // One custom field's settings; a choice's options and a yes's surcharge in their own editors.
 export function CustomFieldEditor({ field, canWrite, onChange, onRemove, onMove }: CustomFieldEditorProps) {
   const { t } = useTranslation('camps');
@@ -58,6 +86,14 @@ export function CustomFieldEditor({ field, canWrite, onChange, onRemove, onMove 
           {t('registrationForm.required')}
         </label>
         <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={field.health}
+            onChange={(event) => onChange(asHealth(field, event.target.checked))}
+          />
+          {t('registrationForm.health')}
+        </label>
+        <label className="flex items-center gap-2">
           {t('registrationForm.scope')}
           <select
             className="rounded border border-input bg-transparent px-1"
@@ -74,10 +110,15 @@ export function CustomFieldEditor({ field, canWrite, onChange, onRemove, onMove 
           </select>
         </label>
       </div>
+      {field.health ? <p className="text-sm text-muted-foreground">{t('registrationForm.healthHint')}</p> : null}
       {field.type === 'single_choice' || field.type === 'multiple_choice' ? (
-        <OptionsEditor options={field.options} onChange={(options) => onChange({ ...field, options })} />
+        <OptionsEditor
+          options={field.options}
+          surcharges={!field.health}
+          onChange={(options) => onChange({ ...field, options })}
+        />
       ) : null}
-      {field.type === 'yes_no' ? (
+      {field.type === 'yes_no' && !field.health ? (
         <SurchargeInputs
           surcharge={field.surcharge}
           needsVerification={field.needsVerification}

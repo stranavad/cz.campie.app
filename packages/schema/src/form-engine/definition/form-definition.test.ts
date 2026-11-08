@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import { TEST_CATALOGUE } from '../testing-catalogue.ts';
-import { formDefinitionSchema } from './form-definition.ts';
+import { formDefinitionSchema, formDefinitionShape, sensitiveKeys } from './form-definition.ts';
 
 const ID = '0190a2b4-0000-7000-8000-000000000001';
 
@@ -13,6 +13,7 @@ const RETURNING = {
   hint: null,
   required: false,
   scope: 'participant',
+  health: false,
   surcharge: -500,
   needsVerification: true,
 };
@@ -63,7 +64,13 @@ describe('formDefinitionSchema', () => {
   it('refuses a catalogue key that is a core field, and a choice without options', () => {
     const catalogue = {
       ...TEST_CATALOGUE,
-      firstName: { scope: 'participant' as const, labelKey: 'x', schema: z.string() },
+      firstName: {
+        scope: 'participant' as const,
+        labelKey: 'x',
+        sensitivity: 'plain' as const,
+        input: 'text' as const,
+        schema: z.string(),
+      },
     };
     const noOptions = { ...RETURNING, type: 'single_choice', options: [] };
 
@@ -77,6 +84,65 @@ describe('formDefinitionSchema', () => {
   it('marks only a discount as needing verification', () => {
     expect(messages({ standard: [], custom: [{ ...RETURNING, surcharge: 300 }] })).toEqual([
       ['custom.0.needsVerification', 'form_verification_without_discount'],
+    ]);
+  });
+
+  it('refuses a surcharge on health data, which a price line would tell', () => {
+    expect(messages({ standard: [], custom: [{ ...RETURNING, health: true }] })).toEqual([
+      ['custom.0.health', 'form_health_surcharge'],
+    ]);
+    expect(
+      messages({ standard: [], custom: [{ ...RETURNING, health: true, surcharge: null, needsVerification: false }] }),
+    ).toEqual([]);
+  });
+
+  it('takes the camp own options only on a field that takes them, each value once', () => {
+    const places = (ids: string[]) => ids.map((id) => ({ id, label: `Místo ${id}` }));
+
+    expect(
+      messages({
+        standard: [{ key: 'boardingPlace', state: 'optional', options: places(['praha', 'brno']) }],
+        custom: [],
+      }),
+    ).toEqual([]);
+    expect(
+      messages({
+        standard: [
+          { key: 'boardingPlace', state: 'optional', options: places(['praha', 'own', 'praha']) },
+          { key: 'insurer', state: 'optional', options: places(['999']) },
+        ],
+        custom: [],
+      }),
+    ).toEqual([
+      ['standard.0.options.1.id', 'form_option_duplicate'],
+      ['standard.0.options.2.id', 'form_option_duplicate'],
+      ['standard.1.options', 'form_field_unknown'],
+    ]);
+  });
+});
+
+describe('sensitiveKeys', () => {
+  it('names the catalogue fields that are not plain and the custom fields any version marks as health data', () => {
+    const catalogue = {
+      ...TEST_CATALOGUE,
+      birthNumber: {
+        scope: 'participant' as const,
+        labelKey: 'x',
+        sensitivity: 'encrypted' as const,
+        input: 'birth_number' as const,
+        schema: z.string(),
+      },
+    };
+    const health = { ...RETURNING, id: '0190a2b4-0000-7000-8000-000000000009', health: true, surcharge: null };
+
+    expect([
+      ...sensitiveKeys(
+        [RETURNING, health].map((field) => formDefinitionShape.parse({ standard: [], custom: [field] })),
+        catalogue,
+      ),
+    ]).toEqual([
+      ['birthNumber', 'encrypted'],
+      [health.id, 'health'],
     ]);
   });
 });

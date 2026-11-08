@@ -20,8 +20,8 @@ import {
 } from '@repo/schema/registrations';
 
 import { Access } from '../../../core/access/access.decorator.ts';
-import { Requires } from '../../../core/access/permission.ts';
-import { RequestActor, RequestAdminId } from '../../../core/access/request-actor.decorator.ts';
+import { allows, Requires, type MemberAccess } from '../../../core/access/permission.ts';
+import { RequestActor, RequestAdminId, RequestMember } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
 import { ParticipantExportService } from './services/participant-export.service.ts';
@@ -35,18 +35,20 @@ export class ParticipantExportController {
   @Endpoint(getExportOptionsEndpoint)
   public options(
     @RequestAdminId() adminId: string,
+    @RequestMember() member: MemberAccess,
     @EndpointParams(getExportOptionsEndpoint) { turnusId }: ParticipantListParams,
   ): Promise<ExportOptions> {
-    return this.exports.options(adminId, turnusId);
+    return this.exports.options(adminId, turnusId, allows(member, { area: 'health', level: 'read' }));
   }
 
   @Endpoint(startParticipantExportEndpoint)
   public start(
     @RequestActor() actor: Actor,
+    @RequestMember() member: MemberAccess,
     @EndpointParams(startParticipantExportEndpoint) { turnusId }: ParticipantListParams,
     @EndpointBody(startParticipantExportEndpoint) body: StartParticipantExportBody,
   ): Promise<ParticipantExport> {
-    return this.exports.start(actor, turnusId, body);
+    return this.exports.start(actor, turnusId, body, allows(member, { area: 'health', level: 'read' }));
   }
 
   @Endpoint(startPaymentsExportEndpoint)

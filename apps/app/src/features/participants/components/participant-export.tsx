@@ -35,8 +35,7 @@ export function ParticipantExport({ organisationId, turnusId, campId }: Particip
       return t(`export.columns.${id}`, { defaultValue: id });
     }
 
-    const label =
-      form.label ?? (form.labelKey === null ? id : t(form.labelKey, { ns: 'registration', defaultValue: id }));
+    const label = form.label ?? (form.labelKey === null ? id : t(form.labelKey, { ns: 'common', defaultValue: id }));
 
     return form.removed ? t('export.removed', { label }) : label;
   };

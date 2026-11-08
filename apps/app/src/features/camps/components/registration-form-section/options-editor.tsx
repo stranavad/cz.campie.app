@@ -9,11 +9,13 @@ import { SurchargeInputs } from '@/features/camps/components/registration-form-s
 
 interface OptionsEditorProps {
   options: readonly ChoiceOption[];
+  // Whether options may carry a surcharge; health data may not.
+  surcharges: boolean;
   onChange: (options: ChoiceOption[]) => void;
 }
 
 // A choice's options, each with its label and what it adds or takes off per child.
-export function OptionsEditor({ options, onChange }: OptionsEditorProps) {
+export function OptionsEditor({ options, surcharges, onChange }: OptionsEditorProps) {
   const { t } = useTranslation('camps');
   const replace = (index: number, option: ChoiceOption) =>
     onChange(options.map((current, at) => (at === index ? option : current)));
@@ -38,11 +40,13 @@ export function OptionsEditor({ options, onChange }: OptionsEditorProps) {
               {t('registrationForm.removeOption')}
             </Button>
           </div>
-          <SurchargeInputs
-            surcharge={option.surcharge}
-            needsVerification={option.needsVerification}
-            onChange={(surcharge, needsVerification) => replace(index, { ...option, surcharge, needsVerification })}
-          />
+          {surcharges ? (
+            <SurchargeInputs
+              surcharge={option.surcharge}
+              needsVerification={option.needsVerification}
+              onChange={(surcharge, needsVerification) => replace(index, { ...option, surcharge, needsVerification })}
+            />
+          ) : null}
         </div>
       ))}
       <Button

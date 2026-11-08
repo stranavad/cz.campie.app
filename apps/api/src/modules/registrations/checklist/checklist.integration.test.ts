@@ -78,6 +78,7 @@ describe('Participant checklist', () => {
               hint: null,
               required: true,
               scope: 'participant',
+              health: false,
             },
           ],
         },

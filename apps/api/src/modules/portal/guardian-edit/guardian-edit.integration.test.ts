@@ -23,10 +23,19 @@ const bus = {
   hint: null,
   required: false,
   scope: 'participant',
+  health: false,
   surcharge: 300,
   needsVerification: false,
 };
-const shirt = { id: SHIRT, type: 'short_text', label: 'Tričko', hint: null, required: false, scope: 'participant' };
+const shirt = {
+  id: SHIRT,
+  type: 'short_text',
+  label: 'Tričko',
+  hint: null,
+  required: false,
+  scope: 'participant',
+  health: false,
+};
 
 describe('guardian edits in the portal', () => {
   const { app, http, clock, database, jobs, mail } = useTestApp();

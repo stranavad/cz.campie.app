@@ -11,6 +11,7 @@ import {
 } from '@repo/schema/registrations';
 
 import { Access } from '../../../core/access/access.decorator.ts';
+import { adminAccessOf } from '../../../core/access/admin-access.ts';
 import { allows, Requires, type MemberAccess } from '../../../core/access/permission.ts';
 import { RequestActor, RequestMember } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
@@ -25,9 +26,11 @@ export class RegistrationDetailController {
   @Endpoint(getRegistrationDetailEndpoint)
   @Requires('registrations', 'read')
   public get(
+    @RequestActor() actor: Actor,
+    @RequestMember() member: MemberAccess,
     @EndpointParams(getRegistrationDetailEndpoint) { registrationId }: RegistrationParams,
   ): Promise<RegistrationDetail> {
-    return this.details.get(registrationId);
+    return this.details.get(registrationId, adminAccessOf(actor, member));
   }
 
   @Endpoint(getRegistrationHistoryEndpoint)
@@ -45,7 +48,8 @@ export class RegistrationDetailController {
     @RequestActor() actor: Actor,
     @EndpointParams(verifyClaimedDiscountEndpoint) { registrationId }: RegistrationParams,
     @EndpointBody(verifyClaimedDiscountEndpoint) body: VerifyClaimedDiscountBody,
+    @RequestMember() member: MemberAccess,
   ): Promise<RegistrationDetail> {
-    return this.details.verifyClaimedDiscount(actor, registrationId, body);
+    return this.details.verifyClaimedDiscount(adminAccessOf(actor, member), registrationId, body);
   }
 }

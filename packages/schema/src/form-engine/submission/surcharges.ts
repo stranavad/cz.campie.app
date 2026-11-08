@@ -1,5 +1,5 @@
-import type { CustomField, FormDefinition } from '../definition/form-definition.ts';
-import type { AnswerValue, Submission } from './validate-submission.ts';
+import type { AnswerValue, CustomField, FormDefinition } from '../definition/form-definition.ts';
+import type { Submission } from './validate-submission.ts';
 
 // One answer's amount on one child: positive a Paid extra, negative a Claimed discount. Pricing takes the
 // label and amount; the ids and the verification flag let the camp find and confirm a Claimed discount.

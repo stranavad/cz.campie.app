@@ -3,7 +3,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
-import { formFields, type Answers, type AnswerValue } from '@repo/schema/form-engine';
+import {
+  fieldSensitivity,
+  formFields,
+  type Answers,
+  type AnswerValue,
+  type FormDefinition,
+} from '@repo/schema/form-engine';
 import { czechDate } from '@repo/schema/shared';
 
 import { Button } from '@/components/ui/button';
@@ -21,6 +27,11 @@ export function CreateRegistrationPage() {
   const organisationId = membership?.organisation.id ?? '';
   const canWrite = membershipAllows(membership, 'registrations', 'write');
   const selected = useSelectedTurnus();
+  // Health data takes Health write, so its fields are left out without it.
+  const asked = (definition: FormDefinition, scope: 'registration' | 'participant') =>
+    formFields(definition, REGISTRATION_FIELD_CATALOGUE, scope).filter(
+      (field) => membershipAllows(membership, 'health', 'write') || fieldSensitivity(field) !== 'health',
+    );
   const [turnusId, setTurnusId] = useState<string | null>(null);
   const chosen = turnusId ?? selected.turnusId;
   const form = useTurnusFormQuery(organisationId, chosen);
@@ -75,7 +86,7 @@ export function CreateRegistrationPage() {
         <>
           <fieldset className="flex flex-col gap-3 rounded-lg border p-4">
             <legend className="px-1 font-medium">{t('create.guardian')}</legend>
-            {formFields(definition, REGISTRATION_FIELD_CATALOGUE, 'registration').map((field) => (
+            {asked(definition, 'registration').map((field) => (
               <RegistrationField
                 key={field.key}
                 field={field}
@@ -87,7 +98,7 @@ export function CreateRegistrationPage() {
           {children.map((answers, index) => (
             <fieldset key={index} className="flex flex-col gap-3 rounded-lg border p-4">
               <legend className="px-1 font-medium">{t('create.child', { number: index + 1 })}</legend>
-              {formFields(definition, REGISTRATION_FIELD_CATALOGUE, 'participant').map((field) => (
+              {asked(definition, 'participant').map((field) => (
                 <RegistrationField
                   key={field.key}
                   field={field}

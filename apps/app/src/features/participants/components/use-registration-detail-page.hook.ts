@@ -21,6 +21,7 @@ export function useRegistrationDetailPage(registrationId: string) {
     hasNoAccess: hasNoMembership || !canRead,
     isError: detail.isError,
     canWrite: membershipAllows(membership, 'registrations', 'write'),
+    canWriteHealth: membershipAllows(membership, 'health', 'write'),
     isOwner: membership?.owner === true,
     detail: detail.data,
     history: history.data ?? [],

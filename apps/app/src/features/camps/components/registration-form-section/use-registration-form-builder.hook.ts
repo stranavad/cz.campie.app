@@ -6,7 +6,13 @@ import {
   type RegistrationForm,
   type ShownDeclaration,
 } from '@repo/schema/camps';
-import type { CustomField, CustomFieldType, FormDefinition, StandardFieldState } from '@repo/schema/form-engine';
+import type {
+  CampOption,
+  CustomField,
+  CustomFieldType,
+  FormDefinition,
+  StandardFieldState,
+} from '@repo/schema/form-engine';
 
 import { useSaveRegistrationFormMutation } from '@/features/camps/api/camps.queries';
 import { newCustomField } from '@/features/camps/components/registration-form-section/custom-field.helper';
@@ -85,12 +91,12 @@ export function useRegistrationFormBuilder(organisationId: string, campId: strin
     isSaving: save.isPending,
     setMaxParticipants,
     // A field keeps its place among the standard fields; a new one joins at the end.
-    setStandardState: (key: string, state: StandardFieldState) =>
+    setStandardField: (key: string, entry: { state: StandardFieldState; options?: CampOption[] }) =>
       setDefinition({
         ...definition,
         standard: definition.standard.some((field) => field.key === key)
-          ? definition.standard.map((field) => (field.key === key ? { key, state } : field))
-          : [...definition.standard, { key, state }],
+          ? definition.standard.map((field) => (field.key === key ? { key, ...entry } : field))
+          : [...definition.standard, { key, ...entry }],
       }),
     addField: (type: CustomFieldType, label: string) => setCustom([...definition.custom, newCustomField(type, label)]),
     updateField: (field: CustomField) =>

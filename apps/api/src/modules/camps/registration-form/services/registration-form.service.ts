@@ -22,8 +22,24 @@ import { CampRepository } from '../../../../repositories/camps/camp/camp.reposit
 import { RegistrationFormDraftEntity } from '../../../../repositories/camps/registration-form/registration-form.entity.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
 
-// The form a new Camp starts with: the locked core alone, ready to publish as it is.
-const PRESET: FormDefinition = { standard: [], custom: [] };
+// The form a new Camp starts with, ready to publish as it is: the locked core and the standard fields most
+// camps ask, optional until the Camp requires them; the t-shirt, the guardian's address and transport,
+// which needs the Camp's boarding places, start off.
+const PRESET: FormDefinition = {
+  standard: [
+    { key: 'gender', state: 'optional' },
+    { key: 'birthNumber', state: 'optional' },
+    { key: 'insurer', state: 'optional' },
+    { key: 'participantAddress', state: 'optional' },
+    { key: 'tshirtSize', state: 'off' },
+    { key: 'healthNote', state: 'optional' },
+    { key: 'campFriend', state: 'optional' },
+    { key: 'guardianAddress', state: 'off' },
+    { key: 'transport', state: 'off', options: [] },
+    { key: 'howDidYouHear', state: 'optional' },
+  ],
+  custom: [],
+};
 
 // The declarations a new Camp starts with, every one mandatory; the Camp adds its own documents to them.
 // Fixed ids, so the preset reads the same until the Camp saves its own draft.

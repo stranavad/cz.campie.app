@@ -24,11 +24,26 @@ const TSHIRT = {
   hint: null,
   required: true,
   scope: 'participant',
+  health: false,
   options: [
     { id: 's', label: 'S', surcharge: null, needsVerification: false },
     { id: 'm', label: 'M', surcharge: null, needsVerification: false },
   ],
 };
+
+// The standard fields of the preset draft every new Camp starts with.
+const PRESET_STANDARD = [
+  { key: 'gender', state: 'optional' },
+  { key: 'birthNumber', state: 'optional' },
+  { key: 'insurer', state: 'optional' },
+  { key: 'participantAddress', state: 'optional' },
+  { key: 'tshirtSize', state: 'off' },
+  { key: 'healthNote', state: 'optional' },
+  { key: 'campFriend', state: 'optional' },
+  { key: 'guardianAddress', state: 'off' },
+  { key: 'transport', state: 'off', options: [] },
+  { key: 'howDidYouHear', state: 'optional' },
+];
 
 type Admin = Awaited<ReturnType<typeof createAdmin>>;
 
@@ -66,7 +81,12 @@ describe('registration form', () => {
   it('gives a new Camp a preset draft that publishes unchanged as version 1, audited', async () => {
     const preset = (await form(owner.headers(organisationId))).body;
 
-    expect(preset).toMatchObject({ campId, draft: { standard: [], custom: [] }, maxParticipants: 4, latest: null });
+    expect(preset).toMatchObject({
+      campId,
+      draft: { standard: PRESET_STANDARD, custom: [] },
+      maxParticipants: 4,
+      latest: null,
+    });
     expect(preset.declarations).toHaveLength(4);
     expect(preset.declarations.every(({ mandatory }: { mandatory: boolean }) => mandatory)).toBe(true);
 
@@ -75,7 +95,7 @@ describe('registration form', () => {
     expect(published.status).toBe(201);
     expect(published.body).toEqual({
       version: 1,
-      definition: { standard: [], custom: [] },
+      definition: { standard: PRESET_STANDARD, custom: [] },
       maxParticipants: 4,
       declarations: preset.declarations,
       publishedAt: expect.any(String),
@@ -109,7 +129,7 @@ describe('registration form', () => {
     });
     expect(
       (await http().get(`/api/camps/${campId}/registration-form/versions/1`).set(owner.headers(organisationId))).body,
-    ).toMatchObject({ version: 1, definition: { standard: [], custom: [] }, maxParticipants: 4 });
+    ).toMatchObject({ version: 1, definition: { standard: PRESET_STANDARD, custom: [] }, maxParticipants: 4 });
     expect((await form(owner.headers(organisationId))).body.latest).toMatchObject({ version: 2 });
   });
 
@@ -254,7 +274,7 @@ describe('registration form', () => {
         target_type: 'registration_form',
         target_id: campId,
         changes: {
-          draft: { old: { standard: [], custom: [] }, new: { standard: [], custom: [TSHIRT] } },
+          draft: { old: { standard: PRESET_STANDARD, custom: [] }, new: { standard: [], custom: [TSHIRT] } },
           maxParticipants: { old: 4, new: 2 },
           declarations: { old: expect.any(Array), new: [] },
         },

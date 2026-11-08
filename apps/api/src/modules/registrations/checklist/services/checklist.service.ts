@@ -6,6 +6,7 @@ import type { ConsentState } from '@repo/schema/consents';
 import { missingNewAnswers } from '@repo/schema/form-engine';
 import type { Balance } from '@repo/schema/pricing';
 
+import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import type { RegistrationFormVersionEntity } from '../../../../repositories/camps/registration-form/registration-form.entity.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
@@ -18,6 +19,7 @@ import { DocumentUploadRepository } from '../../../../repositories/documents/doc
 import type { ParticipantEntity } from '../../../../repositories/registrations/participant/participant.entity.ts';
 import type { RegistrationEntity } from '../../../../repositories/registrations/registration/registration.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
+import { answerOpener } from '../../answers/sealed-answers.helper.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
 
 // A child's checklist with who the child is.
@@ -56,6 +58,7 @@ export class ChecklistService {
     private readonly types: DocumentTypeRepository,
     private readonly uploads: DocumentUploadRepository,
     private readonly ledger: LedgerService,
+    private readonly encryption: EncryptionService,
   ) {}
 
   /**
@@ -146,6 +149,12 @@ export class ChecklistService {
     const consentStates = await this.consentStatesOf(camp.id, childIds);
     const requirementStates = await this.requirementStatesOf(camp.id, childIds);
     const registrationOf = new Map(registrations.map((registration) => [registration.id, registration]));
+    // Whether a required field added later is answered counts the encrypted answers too, so they are opened
+    // here only to tell that, and only when there are any.
+    const answersOf = await answerOpener(this.encryption, [...registrations, ...participants]);
+    const openedRegistrations = new Map(
+      registrations.map((registration) => [registration.id, answersOf(registration)]),
+    );
     const modules = {
       consents: camp.modules.includes('consents'),
       documents: camp.modules.includes('documents'),
@@ -167,8 +176,8 @@ export class ChecklistService {
                 version === undefined || latest === null
                   ? 0
                   : missingNewAnswers(version.definition, latest.definition, REGISTRATION_FIELD_CATALOGUE, {
-                      registration: registration.answers,
-                      participant: participant.answers,
+                      registration: openedRegistrations.get(registration.id) ?? {},
+                      participant: answersOf(participant),
                     }),
               consents: consentStates.get(participant.id) ?? [],
               healthRecord: null,

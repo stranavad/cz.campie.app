@@ -31,6 +31,7 @@ const DEFINITION: FormDefinition = {
       hint: null,
       required: true,
       scope: 'participant',
+      health: false,
       options: [
         { id: 's', label: 'S', surcharge: null, needsVerification: false },
         { id: 'm', label: 'M', surcharge: null, needsVerification: false },
@@ -43,13 +44,30 @@ const DEFINITION: FormDefinition = {
       hint: null,
       required: false,
       scope: 'registration',
+      health: false,
       options: [
         { id: 'tam', label: 'Tam', surcharge: 200, needsVerification: false },
         { id: 'zpet', label: 'Zpět', surcharge: 200, needsVerification: false },
       ],
     },
-    { id: NOTE, type: 'long_text', label: 'Poznámka', hint: null, required: false, scope: 'registration' },
-    { id: ALLERGIES, type: 'short_text', label: 'Alergie', hint: null, required: false, scope: 'participant' },
+    {
+      id: NOTE,
+      type: 'long_text',
+      label: 'Poznámka',
+      hint: null,
+      required: false,
+      scope: 'registration',
+      health: false,
+    },
+    {
+      id: ALLERGIES,
+      type: 'short_text',
+      label: 'Alergie',
+      hint: null,
+      required: false,
+      scope: 'participant',
+      health: false,
+    },
     {
       id: SWIMMER,
       type: 'yes_no',
@@ -57,11 +75,20 @@ const DEFINITION: FormDefinition = {
       hint: null,
       required: true,
       scope: 'participant',
+      health: false,
       surcharge: null,
       needsVerification: false,
     },
-    { id: HEIGHT, type: 'number', label: 'Výška v cm', hint: null, required: false, scope: 'participant' },
-    { id: ARRIVAL, type: 'date', label: 'Příjezd', hint: null, required: false, scope: 'registration' },
+    {
+      id: HEIGHT,
+      type: 'number',
+      label: 'Výška v cm',
+      hint: null,
+      required: false,
+      scope: 'participant',
+      health: false,
+    },
+    { id: ARRIVAL, type: 'date', label: 'Příjezd', hint: null, required: false, scope: 'registration', health: false },
   ],
 };
 
@@ -230,6 +257,33 @@ describe('checkSubmission', () => {
     ).toEqual([]);
   });
 
+  it("takes a camp choice's platform option or one of the camp's own, nothing else", () => {
+    const withPlaces: FormDefinition = {
+      ...DEFINITION,
+      standard: [
+        { key: 'insurer', state: 'required' },
+        { key: 'boardingPlace', state: 'optional', options: [{ id: 'praha', label: 'Praha, Florenc' }] },
+      ],
+    };
+    const check = (boardingPlace: string) =>
+      checkSubmission(withPlaces, TEST_CATALOGUE, {
+        ...SUBMISSION,
+        registration: { ...SUBMISSION.registration, boardingPlace },
+      }).errors;
+
+    expect(check('praha')).toEqual([]);
+    expect(check('own')).toEqual([]);
+    expect(check('brno')).toEqual([{ path: ['registration', 'boardingPlace'], code: 'form_answer_invalid' }]);
+    expect(
+      formFields(withPlaces, TEST_CATALOGUE, 'registration').find(({ key }) => key === 'boardingPlace'),
+    ).toMatchObject({
+      options: [
+        { value: 'own', label: null, labelKey: 'form.standard.own' },
+        { value: 'praha', label: 'Praha, Florenc', labelKey: null },
+      ],
+    });
+  });
+
   it('requires at least one child', () => {
     expect(errors({ ...SUBMISSION, participants: [] })).toEqual([
       { path: ['participants'], code: 'form_participants_required' },
@@ -310,6 +364,7 @@ describe('checkAnswersTo', () => {
           hint: null,
           required: true,
           scope: 'participant',
+          health: false,
         },
       ],
     },

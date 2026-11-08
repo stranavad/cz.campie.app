@@ -41,7 +41,7 @@ export function RegistrationFormBuilder({ organisationId, campId, form, canWrite
           onChange={(event) => builder.setMaxParticipants(Number(event.target.value))}
         />
       </label>
-      <StandardFieldsFieldset definition={builder.definition} canWrite={canWrite} onChange={builder.setStandardState} />
+      <StandardFieldsFieldset definition={builder.definition} canWrite={canWrite} onChange={builder.setStandardField} />
       <div className="flex flex-col gap-3">
         <h3 className="font-medium">{t('registrationForm.custom')}</h3>
         {builder.definition.custom.map((field) => (

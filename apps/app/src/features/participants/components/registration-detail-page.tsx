@@ -2,6 +2,7 @@ import { Link, Navigate } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { isRegistrationFieldKey, REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
 import type { AnswerValue } from '@repo/schema/form-engine';
 import type { AnswerRow } from '@repo/schema/registrations';
 import { czechDate, czechDateTime, czk } from '@repo/schema/shared';
@@ -58,6 +59,11 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
   }
 
   const { detail } = page;
+  // A standard choice by its option's name: a boarding place's own, the platform's translated.
+  const answerText = (row: AnswerRow) =>
+    row.option === null
+      ? shown(row.value)
+      : (row.option.label ?? tCommon(row.option.labelKey ?? '', { defaultValue: String(row.value) }));
   const shown = (value: AnswerValue) =>
     value === null
       ? t('detail.unanswered')
@@ -70,6 +76,13 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
     const label = row.label ?? (row.labelKey === null ? row.key : tCommon(row.labelKey, { defaultValue: row.key }));
 
     return row.state === 'answered' ? label : t(`detail.state.${row.state}`, { label });
+  };
+  // An encrypted field the history names: a custom one by its label, a standard one by the platform's.
+  const fieldName = (key: string) => {
+    const custom = detail.latestDefinition.custom.find(({ id }) => id === key)?.label;
+    const standard = isRegistrationFieldKey(key) ? REGISTRATION_FIELD_CATALOGUE[key] : undefined;
+
+    return custom ?? (standard === undefined ? key : tCommon(standard.labelKey, { defaultValue: key }));
   };
   const nameAt = (position: number | null) => {
     const participant = detail.participants.find((candidate) => candidate.position === position);
@@ -112,7 +125,7 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
           </p>
         ))}
         {detail.registrationAnswers.map((row) => (
-          <Row key={row.key} label={answerLabel(row)} value={shown(row.value)} />
+          <Row key={row.key} label={answerLabel(row)} value={answerText(row)} />
         ))}
       </Section>
       {detail.participants.map((participant) => (
@@ -130,7 +143,7 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
             <Row label={t('detail.ageOnStart')} value={String(participant.ageOnStart)} />
           )}
           {participant.answers.map((row) => (
-            <Row key={row.key} label={answerLabel(row)} value={shown(row.value)} />
+            <Row key={row.key} label={answerLabel(row)} value={answerText(row)} />
           ))}
           {participant.prihlaska === null ? null : (
             <a href={participant.prihlaska.url} target="_blank" rel="noreferrer" className="text-sm underline">
@@ -213,7 +226,9 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
         registrationId={registrationId}
         canWrite={page.canWrite}
       />
-      {page.canWrite ? <AdminActions organisationId={page.organisationId} detail={detail} /> : null}
+      {page.canWrite ? (
+        <AdminActions organisationId={page.organisationId} detail={detail} canWriteHealth={page.canWriteHealth} />
+      ) : null}
       {page.canWrite ? <RegistrationControls organisationId={page.organisationId} detail={detail} /> : null}
       {page.isOwner && detail.guardians.length > 0 ? (
         <EraseRegistration organisationId={page.organisationId} registrationId={registrationId} />
@@ -236,7 +251,7 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
               })}
               {entry.encryptedFields.length === 0 ? null : (
                 <span className="block text-muted-foreground">
-                  {t('detail.encryptedChanged', { fields: entry.encryptedFields.join(', ') })}
+                  {t('detail.encryptedChanged', { fields: entry.encryptedFields.map(fieldName).join(', ') })}
                 </span>
               )}
               {entry.changes === null ? null : (

@@ -79,7 +79,16 @@ function GuardianEditor({
 
 // What an admin with Registrations write changes on a Registration: guardians, answers, a new child and the
 // Turnus, each change of price shown before it is saved.
-export function AdminActions({ organisationId, detail }: { organisationId: string; detail: RegistrationDetail }) {
+export function AdminActions({
+  organisationId,
+  detail,
+  canWriteHealth,
+}: {
+  organisationId: string;
+  detail: RegistrationDetail;
+  // Health data is changed only with Health write, so its fields are left out of the editors without it.
+  canWriteHealth: boolean;
+}) {
   const { t } = useTranslation('participants');
   const previewAnswers = usePreviewAnswersMutation(organisationId, detail.id);
   const editAnswers = useEditAnswersMutation(organisationId, detail.id);
@@ -114,6 +123,7 @@ export function AdminActions({ organisationId, detail }: { organisationId: strin
         <AnswersEditor
           key={`registration-${detail.ledger.total}`}
           definition={detail.latestDefinition}
+          withHealth={canWriteHealth}
           scope="registration"
           initial={{}}
           onPreview={(answers) => previewAnswers.mutateAsync({ registration: answers, participants: [] })}
@@ -132,6 +142,7 @@ export function AdminActions({ organisationId, detail }: { organisationId: strin
           <AnswersEditor
             key={`${participant.id}-${detail.ledger.total}`}
             definition={detail.latestDefinition}
+            withHealth={canWriteHealth}
             scope="participant"
             initial={answersOf(participant)}
             onPreview={(answers) =>
@@ -157,6 +168,7 @@ export function AdminActions({ organisationId, detail }: { organisationId: strin
         <AnswersEditor
           key={`new-${detail.participants.length}`}
           definition={detail.latestDefinition}
+          withHealth={canWriteHealth}
           scope="participant"
           initial={{}}
           onPreview={(answers) => previewParticipant.mutateAsync({ answers })}

@@ -1,11 +1,13 @@
 import {
   CORE_FIELDS,
   coreLabelKey,
+  type Answers,
   type FieldScope,
+  type FieldSensitivity,
   type FormDefinition,
   type StandardFieldCatalogue,
 } from '../definition/form-definition.ts';
-import { formFields, isEmpty, type Answers } from '../submission/validate-submission.ts';
+import { formFields, isEmpty } from '../submission/validate-submission.ts';
 
 /**
  * List the keys of the fields a version asks beyond the core, in order: standard fields switched on, then
@@ -35,7 +37,11 @@ export function diffVersions(
   const changed = later.custom.flatMap((field) => {
     const previous = earlier.custom.find(({ id }) => id === field.id);
 
-    return previous !== undefined && (previous.type !== field.type || previous.scope !== field.scope) ? [field.id] : [];
+    // Health data is stored encrypted, so a field cannot become or stop being health data under its id.
+    return previous !== undefined &&
+      (previous.type !== field.type || previous.scope !== field.scope || previous.health !== field.health)
+      ? [field.id]
+      : [];
   });
 
   return {
@@ -57,6 +63,7 @@ export interface FormColumn {
   readonly labelKey: string | null;
   // No longer asked by the latest version; still holds answers given before.
   readonly removed: boolean;
+  readonly sensitivity: FieldSensitivity;
 }
 
 /**
@@ -74,6 +81,7 @@ export function columnCatalogue(versions: readonly FormDefinition[], catalogue: 
     label: null,
     labelKey: coreLabelKey(key),
     removed: false,
+    sensitivity: 'plain',
   }));
   const latest = versions.at(-1);
   const latestKeys = new Set(latest === undefined ? [] : askedKeys(latest));
@@ -95,6 +103,7 @@ export function columnCatalogue(versions: readonly FormDefinition[], catalogue: 
           label: null,
           labelKey: spec.labelKey,
           removed: !latestKeys.has(key),
+          sensitivity: spec.sensitivity,
         });
       }
     }
@@ -109,6 +118,7 @@ export function columnCatalogue(versions: readonly FormDefinition[], catalogue: 
           label: field.label,
           labelKey: null,
           removed: !latestKeys.has(field.id),
+          sensitivity: field.health ? 'health' : 'plain',
         });
       }
     }

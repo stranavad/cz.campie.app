@@ -21,6 +21,7 @@ const returning = (label: string) => ({
   hint: null,
   required: false,
   scope: 'participant',
+  health: false,
   surcharge: -500,
   needsVerification: true,
 });
@@ -31,9 +32,18 @@ const diet = {
   hint: null,
   required: false,
   scope: 'participant',
+  health: false,
   options: [{ id: 'veg', label: 'Vegetariánská', surcharge: null, needsVerification: false }],
 };
-const shirt = { id: SHIRT, type: 'short_text', label: 'Tričko', hint: null, required: false, scope: 'participant' };
+const shirt = {
+  id: SHIRT,
+  type: 'short_text',
+  label: 'Tričko',
+  hint: null,
+  required: false,
+  scope: 'participant',
+  health: false,
+};
 
 describe('registration detail', () => {
   const { app, http, clock, database, jobs, expectIsolated, expectPermission } = useTestApp();

@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
-import { formFields, type Answers, type AnswerValue, type FormDefinition } from '@repo/schema/form-engine';
+import {
+  fieldSensitivity,
+  formFields,
+  type Answers,
+  type AnswerValue,
+  type FormDefinition,
+} from '@repo/schema/form-engine';
 import type { PriceChange } from '@repo/schema/registrations';
 import { czk } from '@repo/schema/shared';
 
@@ -15,6 +21,7 @@ export function AnswersEditor({
   definition,
   scope,
   initial,
+  withHealth,
   onPreview,
   onSave,
   isSaving,
@@ -23,6 +30,8 @@ export function AnswersEditor({
   definition: FormDefinition;
   scope: 'registration' | 'participant';
   initial: Answers;
+  // Whether health data may be answered here, which takes Health write.
+  withHealth: boolean;
   onPreview: (answers: Answers) => Promise<PriceChange>;
   onSave: (answers: Answers, expectedLines: PriceChange['lines']) => void;
   isSaving: boolean;
@@ -31,9 +40,9 @@ export function AnswersEditor({
   const { t } = useTranslation('participants');
   const [answers, setAnswers] = useState<Answers>(initial);
   const [preview, setPreview] = useState<PriceChange | null>(null);
-  const fields = formFields(definition, REGISTRATION_FIELD_CATALOGUE, scope).filter(
-    (field) => scope === 'participant' || field.tier !== 'core',
-  );
+  const fields = formFields(definition, REGISTRATION_FIELD_CATALOGUE, scope)
+    .filter((field) => withHealth || fieldSensitivity(field) !== 'health')
+    .filter((field) => scope === 'participant' || field.tier !== 'core');
   // Only what changed is sent, so the rest stays as it is.
   const changed = Object.fromEntries(
     fields

@@ -18,6 +18,8 @@ import {
 import {
   checkSubmission,
   CORE_FIELDS,
+  isEmpty,
+  sensitiveKeys,
   surchargesOf,
   type Answers,
   type CoreFieldKey,
@@ -33,11 +35,13 @@ import type {
 } from '@repo/schema/registrations';
 import type { FieldError } from '@repo/schema/shared';
 
+import type { AdminAccess } from '../../../../core/access/admin-access.ts';
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
 import type { Env } from '../../../../core/config/env.schema.ts';
 import { lockTimedOut } from '../../../../core/database/lock-timeout.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
+import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
 import { JobQueue } from '../../../../core/jobs/job-queue.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { RateLimiter, type RequestLimit } from '../../../../core/rate-limits/rate-limiter.ts';
@@ -57,6 +61,7 @@ import {
 } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { CampEmailService } from '../../../camps/camp-email/services/camp-email.service.ts';
 import { DiscountCodeService } from '../../../camps/discount-code/services/discount-code.service.ts';
+import { changedSensitive, ensureHealthWritable, sealAnswers } from '../../answers/sealed-answers.helper.ts';
 import { generatePrihlaskyJob } from '../../prihlaska/generate-prihlasky.job.ts';
 import { notifyTeamJob } from '../notify-team.job.ts';
 import { VariableSymbols } from './variable-symbols.ts';
@@ -115,6 +120,7 @@ export class RegistrationService {
     private readonly unitOfWork: UnitOfWork,
     private readonly jobs: JobQueue,
     private readonly audit: AuditService,
+    private readonly encryption: EncryptionService,
     private readonly clock: Clock,
     config: ConfigService<Env, true>,
   ) {
@@ -194,17 +200,20 @@ export class RegistrationService {
    * outside the Registration window, over capacity and outside age limits, without mandatory declarations,
    * and with a Discount code past its limit or expiry, still counted as a use. The same idempotency key
    * returns the first Registration. The admin chooses whether the guardians get the confirmation email.
-   * @param actor the admin
+   * Health answers need Health write.
+   * @param admin the admin
    * @param campId Camp id
    * @param body the Turnus, the answers, the payment choice, the code, the declarations and whether to confirm
    * @throws {NotFoundException} when the Camp has no published form or the Turnus is not its
    * @throws {BadRequestException} submission_invalid with the reasons in `fields`
    */
   public async createByAdmin(
-    actor: Actor,
+    admin: AdminAccess,
     campId: string,
     body: CreateRegistrationBody,
   ): Promise<SubmittedRegistration> {
+    const { actor } = admin;
+
     if (actor.kind === 'system') {
       throw new Error('An admin creates a Registration, never the system');
     }
@@ -224,6 +233,14 @@ export class RegistrationService {
     if (form === null || turnus === null || turnus.campId !== camp.id) {
       throw new NotFoundException();
     }
+
+    ensureHealthWritable(
+      admin.health.write,
+      [body.submission.registration, ...body.submission.participants].map((answers) =>
+        Object.fromEntries(Object.entries(answers).filter(([, value]) => !isEmpty(value))),
+      ),
+      sensitiveKeys([form.definition], REGISTRATION_FIELD_CATALOGUE),
+    );
 
     const { submission, errors } = this.checkAnswers(form, turnus, body, false);
     const { code, error } = await this.discountCodeOf(camp.id, body.discountCode, 'admin');
@@ -464,19 +481,28 @@ export class RegistrationService {
     },
   ): Promise<SubmittedRegistration> {
     const { submission, price, code, now, ipAddress, actor, action, sendConfirmation } = checked;
+    // The rodné číslo and health data are sealed here and never reach the audit entry but by name.
+    const sensitive = sensitiveKeys([form.definition], REGISTRATION_FIELD_CATALOGUE);
+    const cipher = await this.encryption.cipher();
     const registration = await this.createWithVariableSymbol({
       turnusId: turnus.id,
       formVersionId: form.id,
       idempotencyKey: body.idempotencyKey,
       paymentChoice: price.depositTotal === null ? 'full' : 'deposit',
       depositTotal: price.depositTotal,
-      answers: withoutCore(submission.registration),
+      ...sealAnswers(cipher, withoutCore(submission.registration), sensitive),
       submittedAt: now,
       // The Turnus's terms as they are now; a later edit of the Turnus moves no Registration's dates.
       ...dueDatesOf({ submittedAt: now, depositDueDays: turnus.depositDueDays, balanceDueDate: turnus.balanceDueDate }),
     });
     const guardians = guardiansOf(submission.registration);
-    const children = submission.participants.map(participantOf);
+    const children = submission.participants.map((answers) => ({
+      ...coreOf(answers),
+      ...sealAnswers(cipher, withoutCore(answers), sensitive),
+    }));
+    const sealedNames = [submission.registration, ...submission.participants].flatMap((answers) =>
+      changedSensitive({}, answers, sensitive),
+    );
     const declarations = form.declarations.map(({ id }) => ({
       declarationId: id,
       accepted: accepted(body, id),
@@ -521,6 +547,7 @@ export class RegistrationService {
           ...(action === 'registration.create' ? { sendConfirmation } : {}),
         },
       },
+      encryptedFields: sealedNames,
     });
     this.jobs.enqueue(generatePrihlaskyJob, { registrationId: registration.id, sendConfirmation });
     this.jobs.enqueue(notifyTeamJob, { registrationId: registration.id });
@@ -629,14 +656,13 @@ function guardiansOf(answers: Answers): GuardianFields[] {
 }
 
 /**
- * Read a child from its checked answers: the core as columns, the rest as answers.
+ * Read a child's core from its checked answers, stored as columns.
  * @param answers the child's checked answers
  */
-function participantOf(answers: Answers): ParticipantFields {
+function coreOf(answers: Answers): Pick<ParticipantFields, 'firstName' | 'lastName' | 'birthDate'> {
   return {
     firstName: requiredTextOf(answers, 'firstName'),
     lastName: requiredTextOf(answers, 'lastName'),
     birthDate: requiredTextOf(answers, 'birthDate'),
-    answers: withoutCore(answers),
   };
 }

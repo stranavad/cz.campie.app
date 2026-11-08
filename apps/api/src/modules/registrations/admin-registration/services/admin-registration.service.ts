@@ -4,12 +4,14 @@ import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
 import {
   checkAnswersTo,
   formFields,
+  sensitiveKeys,
   surchargesOf,
   type Answers,
   type AnswerValue,
   type CustomField,
   type FieldScope,
   type FormDefinition,
+  type SensitiveKeys,
 } from '@repo/schema/form-engine';
 import { dueDatesOf, percentageCodeLine, priceInForce } from '@repo/schema/pricing';
 import type {
@@ -26,8 +28,11 @@ import type {
 } from '@repo/schema/registrations';
 import type { FieldError } from '@repo/schema/shared';
 
+import type { AdminAccess } from '../../../../core/access/admin-access.ts';
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
+import type { OrganisationCipher } from '../../../../core/encryption/cipher.ts';
+import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
 import { JobQueue } from '../../../../core/jobs/job-queue.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { generateSessionToken, hashSessionToken } from '../../../../core/sessions/session-token.ts';
@@ -46,6 +51,12 @@ import {
   type PriceLineFields,
 } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { UndeliverableEmailService } from '../../../emails/undeliverable-email/services/undeliverable-email.service.ts';
+import {
+  changedSensitive,
+  ensureHealthWritable,
+  openAnswers,
+  sealAnswers,
+} from '../../answers/sealed-answers.helper.ts';
 import { emailChangeConfirmedJob } from '../../guardian-email/guardian-email-notice.job.ts';
 import { answeredDefinition } from '../../payment/claimed-discounts.helper.ts';
 import { regeneratePrihlaskaJob } from '../../prihlaska/regenerate-prihlaska.job.ts';
@@ -60,6 +71,16 @@ interface Loaded {
   // that version asked them, and fields added since, as the latest asks them.
   readonly editable: FormDefinition;
   readonly participants: readonly ParticipantEntity[];
+  readonly cipher: OrganisationCipher;
+  readonly sensitive: SensitiveKeys;
+  // The answers beyond the core with the encrypted ones opened, for checking and changing them.
+  readonly registrationAnswers: Answers;
+  readonly participantAnswers: ReadonlyMap<string, Answers>;
+}
+
+// A Participant's core and its answers beyond it, the encrypted ones open, before they are stored.
+interface OpenParticipant extends Omit<ParticipantFields, 'answers' | 'encryptedAnswers'> {
+  readonly answers: Answers;
 }
 
 /**
@@ -196,6 +217,7 @@ export class AdminRegistrationService {
     private readonly emailChanges: GuardianEmailChangeRepository,
     private readonly details: RegistrationDetailService,
     private readonly audit: AuditService,
+    private readonly encryption: EncryptionService,
     private readonly jobs: JobQueue,
     private readonly clock: Clock,
   ) {}
@@ -223,40 +245,51 @@ export class AdminRegistrationService {
 
   /**
    * Tell which price lines changing answers would add, without saving.
+   * @param admin the admin
    * @param registrationId Registration id
    * @param body the answers
    */
-  public async previewAnswers(registrationId: string, body: EditAnswersBody): Promise<PriceChange> {
-    return shown((await this.planAnswers(await this.load(registrationId, false), body)).lines);
+  public async previewAnswers(admin: AdminAccess, registrationId: string, body: EditAnswersBody): Promise<PriceChange> {
+    return shown((await this.planAnswers(await this.load(registrationId, false), admin, body)).lines);
   }
 
   /**
    * Change answers, audited, adding the price lines the preview showed.
-   * @param actor the admin
+   * @param admin the admin
    * @param registrationId Registration id
    * @param body the answers and the previewed lines
    * @throws {ConflictException} price_changed when the lines differ from the preview's
    */
   public async editAnswers(
-    actor: Actor,
+    admin: AdminAccess,
     registrationId: string,
     body: SaveEditAnswersBody,
   ): Promise<RegistrationDetail> {
     const loaded = await this.load(registrationId, true);
-    const { registrationAnswers, children, lines } = await this.planAnswers(loaded, body);
+    const { registrationAnswers, children, lines } = await this.planAnswers(loaded, admin, body);
 
     if (!sameLines(lines, body.expectedLines)) {
       throw refused('price_changed');
     }
 
-    await this.registrations.setAnswers(registrationId, registrationAnswers);
+    const { cipher, sensitive } = loaded;
+    const storedRegistration = sealAnswers(cipher, registrationAnswers, sensitive);
+    const storedParticipants = new Map(
+      [...children].map(([participantId, { answers, ...core }]) => [
+        participantId,
+        { ...core, ...sealAnswers(cipher, answers, sensitive) },
+      ]),
+    );
 
-    for (const [participantId, child] of children) {
+    await this.registrations.setAnswers(registrationId, storedRegistration);
+
+    for (const [participantId, child] of storedParticipants) {
       await this.registrations.updateParticipant(participantId, child);
     }
 
     await this.registrations.appendPriceLines(registrationId, lines, idsByPosition(loaded.participants));
-    await this.audit.record(actor, {
+    // Plain answers by value; the encrypted and health ones only by the names of those that changed.
+    await this.audit.record(admin.actor, {
       action: 'registration.edit',
       target: { type: 'registration', id: registrationId },
       change: {
@@ -271,74 +304,97 @@ export class AdminRegistrationService {
           })),
         },
         after: {
-          answers: registrationAnswers,
-          participants: loaded.participants.map(({ id, firstName, lastName, birthDate, answers }) => ({
-            id,
-            ...(children.get(id) ?? { firstName, lastName, birthDate, answers }),
-          })),
+          answers: storedRegistration.answers,
+          participants: loaded.participants.map(({ id, firstName, lastName, birthDate, answers }) => {
+            const child = storedParticipants.get(id);
+
+            return child === undefined
+              ? { id, firstName, lastName, birthDate, answers }
+              : {
+                  id,
+                  firstName: child.firstName,
+                  lastName: child.lastName,
+                  birthDate: child.birthDate,
+                  answers: child.answers,
+                };
+          }),
           priceLines: lines,
         },
       },
+      encryptedFields: [
+        ...changedSensitive(loaded.registrationAnswers, registrationAnswers, sensitive),
+        ...[...children].flatMap(([participantId, { answers }]) =>
+          changedSensitive(loaded.participantAnswers.get(participantId) ?? {}, answers, sensitive),
+        ),
+      ],
     });
 
-    return this.details.get(registrationId);
+    return this.details.get(registrationId, admin);
   }
 
   /**
    * Tell which price lines adding a child would add, without saving.
+   * @param admin the admin
    * @param registrationId Registration id
    * @param body the child's answers
    */
-  public async previewParticipant(registrationId: string, body: AddParticipantBody): Promise<PriceChange> {
-    return shown((await this.planParticipant(await this.load(registrationId, false), body)).lines);
+  public async previewParticipant(
+    admin: AdminAccess,
+    registrationId: string,
+    body: AddParticipantBody,
+  ): Promise<PriceChange> {
+    return shown((await this.planParticipant(await this.load(registrationId, false), admin, body)).lines);
   }
 
   /**
    * Add a child at the price list in force now, outside capacity and age limits, with the previewed lines,
    * audited.
-   * @param actor the admin
+   * @param admin the admin
    * @param registrationId Registration id
    * @param body the child's answers and the previewed lines
    * @throws {ConflictException} price_changed when the lines differ from the preview's
    */
   public async addParticipant(
-    actor: Actor,
+    admin: AdminAccess,
     registrationId: string,
     body: SaveAddParticipantBody,
   ): Promise<RegistrationDetail> {
     const loaded = await this.load(registrationId, true);
-    const { child, position, lines } = await this.planParticipant(loaded, body);
+    const { child, position, lines } = await this.planParticipant(loaded, admin, body);
 
     if (!sameLines(lines, body.expectedLines)) {
       throw refused('price_changed');
     }
 
-    const participant = await this.registrations.addParticipant(registrationId, position, child);
+    const { answers, ...core } = child;
+    const stored = sealAnswers(loaded.cipher, answers, loaded.sensitive);
+    const participant = await this.registrations.addParticipant(registrationId, position, { ...core, ...stored });
 
     await this.registrations.appendPriceLines(
       registrationId,
       lines,
       idsByPosition([...loaded.participants, participant]),
     );
-    await this.audit.record(actor, {
+    await this.audit.record(admin.actor, {
       action: 'participant.create',
       target: { type: 'participant', id: participant.id },
-      change: { before: null, after: { ...child, priceLines: lines } },
+      change: { before: null, after: { ...core, answers: stored.answers, priceLines: lines } },
+      encryptedFields: changedSensitive({}, answers, loaded.sensitive),
     });
 
-    return this.details.get(registrationId);
+    return this.details.get(registrationId, admin);
   }
 
   /**
    * Move a whole Registration to another Turnus of its Camp, outside capacity and age limits; its price
    * lines stay, and money is settled with Price adjustments. Its due dates become the other Turnus's for
    * its original submission, as if it had been submitted there. Audited.
-   * @param actor the admin
+   * @param admin the admin
    * @param registrationId Registration id
    * @param turnusId the other Turnus
    * @throws {ConflictException} turnus_other_camp when the Turnus belongs to another Camp
    */
-  public async move(actor: Actor, registrationId: string, turnusId: string): Promise<RegistrationDetail> {
+  public async move(admin: AdminAccess, registrationId: string, turnusId: string): Promise<RegistrationDetail> {
     const { registration, turnus } = await this.load(registrationId, true);
     const target = await this.turnusy.getByIdOrThrow(turnusId);
 
@@ -354,7 +410,7 @@ export class AdminRegistrationService {
       });
 
       await this.registrations.setTurnus(registrationId, turnusId, dueDates);
-      await this.audit.record(actor, {
+      await this.audit.record(admin.actor, {
         action: 'registration.move',
         target: { type: 'registration', id: registrationId },
         change: {
@@ -368,20 +424,20 @@ export class AdminRegistrationService {
       });
     }
 
-    return this.details.get(registrationId);
+    return this.details.get(registrationId, admin);
   }
 
   /**
    * Change a guardian of a Registration, audited. A new email holds at once, replaces any change the
    * guardian is still confirming, and the old address is told once this commits.
-   * @param actor the admin
+   * @param admin the admin
    * @param registrationId Registration id
    * @param position the guardian's position, 1 or 2
    * @param body the guardian
    * @throws {ConflictException} guardian_email_taken when the other guardian has the email
    */
   public async editGuardian(
-    actor: Actor,
+    admin: AdminAccess,
     registrationId: string,
     position: number,
     body: EditGuardianBody,
@@ -399,14 +455,14 @@ export class AdminRegistrationService {
     }
 
     await this.registrations.updateGuardian(registrationId, position, body);
-    await this.audit.record(actor, {
+    await this.audit.record(admin.actor, {
       action: 'registration_guardian.update',
       target: { type: 'registration', id: registrationId },
       change: { before: { position, ...before }, after: { position, ...body } },
     });
     // A changed address, such as one corrected after a bounce, starts without a mark.
     if (body.email !== before.email) {
-      await this.undeliverable.clear(actor, body.email);
+      await this.undeliverable.clear(admin.actor, body.email);
     }
 
     if (body.email !== before.email) {
@@ -420,18 +476,18 @@ export class AdminRegistrationService {
       this.jobs.enqueue(emailChangeConfirmedJob, { changeId });
     }
 
-    return this.details.get(registrationId);
+    return this.details.get(registrationId, admin);
   }
 
   /**
    * Give another address portal access to a Registration, audited; it receives no automatic email.
-   * @param actor the admin
+   * @param admin the admin
    * @param registrationId Registration id
    * @param email the address
    * @throws {ConflictException} access_email_taken when the Registration has the address as a guardian or
    * an access email already
    */
-  public async addAccessEmail(actor: Actor, registrationId: string, email: string): Promise<RegistrationDetail> {
+  public async addAccessEmail(admin: AdminAccess, registrationId: string, email: string): Promise<RegistrationDetail> {
     await this.load(registrationId, true);
     const guardians = await this.registrations.listGuardians(registrationId);
 
@@ -442,23 +498,27 @@ export class AdminRegistrationService {
       throw refused('access_email_taken');
     }
 
-    await this.audit.record(actor, {
+    await this.audit.record(admin.actor, {
       action: 'registration_access_email.create',
       target: { type: 'registration', id: registrationId },
       change: { before: null, after: { email } },
     });
 
-    return this.details.get(registrationId);
+    return this.details.get(registrationId, admin);
   }
 
   /**
    * Clear the undeliverable mark of one of the Registration's guardian or access email addresses, audited.
-   * @param actor the admin
+   * @param admin the admin
    * @param registrationId Registration id
    * @param email the address, lowercase
    * @throws {NotFoundException} when the address is neither a guardian's nor an access email of the Registration
    */
-  public async clearUndeliverable(actor: Actor, registrationId: string, email: string): Promise<RegistrationDetail> {
+  public async clearUndeliverable(
+    admin: AdminAccess,
+    registrationId: string,
+    email: string,
+  ): Promise<RegistrationDetail> {
     await this.load(registrationId, false);
     const guardians = await this.registrations.listGuardians(registrationId);
     const accessEmails = await this.registrations.listAccessEmails(registrationId);
@@ -468,42 +528,46 @@ export class AdminRegistrationService {
       throw new NotFoundException();
     }
 
-    await this.undeliverable.clear(actor, email);
+    await this.undeliverable.clear(admin.actor, email);
 
-    return this.details.get(registrationId);
+    return this.details.get(registrationId, admin);
   }
 
   /**
    * Take an access email's portal access away, audited.
-   * @param actor the admin
+   * @param admin the admin
    * @param registrationId Registration id
    * @param accessEmailId the access email
    */
   public async removeAccessEmail(
-    actor: Actor,
+    admin: AdminAccess,
     registrationId: string,
     accessEmailId: string,
   ): Promise<RegistrationDetail> {
     await this.load(registrationId, true);
     const email = await this.registrations.removeAccessEmail(registrationId, accessEmailId);
 
-    await this.audit.record(actor, {
+    await this.audit.record(admin.actor, {
       action: 'registration_access_email.remove',
       target: { type: 'registration', id: registrationId },
       change: { before: { email }, after: null },
     });
 
-    return this.details.get(registrationId);
+    return this.details.get(registrationId, admin);
   }
 
   /**
    * Remove one of two guardians, who loses access at once, audited; the other becomes the first.
-   * @param actor the admin
+   * @param admin the admin
    * @param registrationId Registration id
    * @param position the guardian's position, 1 or 2
    * @throws {ConflictException} guardian_last when the Registration would have no guardian
    */
-  public async removeGuardian(actor: Actor, registrationId: string, position: number): Promise<RegistrationDetail> {
+  public async removeGuardian(
+    admin: AdminAccess,
+    registrationId: string,
+    position: number,
+  ): Promise<RegistrationDetail> {
     await this.load(registrationId, true);
     const guardians = await this.registrations.listGuardians(registrationId);
     const removed = guardians[position - 1];
@@ -517,13 +581,13 @@ export class AdminRegistrationService {
     }
 
     await this.registrations.removeGuardian(registrationId, position);
-    await this.audit.record(actor, {
+    await this.audit.record(admin.actor, {
       action: 'registration_guardian.remove',
       target: { type: 'registration', id: registrationId },
       change: { before: { position, ...removed }, after: null },
     });
 
-    return this.details.get(registrationId);
+    return this.details.get(registrationId, admin);
   }
 
   /**
@@ -572,6 +636,8 @@ export class AdminRegistrationService {
       ),
     );
     const all = answeredDefinition(version.definition, latest);
+    const participants = await this.registrations.listParticipants(registrationId);
+    const cipher = await this.encryption.cipher();
 
     return {
       registration,
@@ -581,7 +647,13 @@ export class AdminRegistrationService {
         standard: all.standard.filter(({ key }) => asked.has(key)),
         custom: all.custom.filter(({ id }) => asked.has(id)),
       },
-      participants: await this.registrations.listParticipants(registrationId),
+      participants,
+      cipher,
+      sensitive: sensitiveKeys([version.definition, latest], REGISTRATION_FIELD_CATALOGUE),
+      registrationAnswers: openAnswers(cipher, registration),
+      participantAnswers: new Map(
+        participants.map((participant) => [participant.id, openAnswers(cipher, participant)]),
+      ),
     };
   }
 
@@ -590,20 +662,28 @@ export class AdminRegistrationService {
    * a changed surcharge answer adds: an option no longer chosen reversed as charged, a newly chosen one at
    * today's amount, on every Registered Participant it concerns.
    * @param loaded the Registration
+   * @param admin the admin, who needs Health write to change health data
    * @param body the answers
    * @throws {BadRequestException} submission_invalid with the reasons in `fields`
    */
   private async planAnswers(
     loaded: Loaded,
+    admin: AdminAccess,
     body: EditAnswersBody,
-  ): Promise<{ registrationAnswers: Answers; children: Map<string, ParticipantFields>; lines: PriceLineFields[] }> {
+  ): Promise<{ registrationAnswers: Answers; children: Map<string, OpenParticipant>; lines: PriceLineFields[] }> {
+    ensureHealthWritable(
+      admin.health.write,
+      [body.registration, ...body.participants.map(({ answers }) => answers)],
+      loaded.sensitive,
+    );
+
     const fieldsOf = (scope: FieldScope) =>
       formFields(loaded.editable, REGISTRATION_FIELD_CATALOGUE, scope).filter(
         (field) => scope === 'participant' || field.tier !== 'core',
       );
     const errors: FieldError[] = [];
-    const check = (scope: FieldScope, answers: Answers, path: (string | number)[]) => {
-      const checked = checkAnswersTo(fieldsOf(scope), answers, path);
+    const check = (scope: FieldScope, answers: Answers, path: (string | number)[], stored: Answers) => {
+      const checked = checkAnswersTo(fieldsOf(scope), answers, path, stored);
 
       errors.push(...checked.errors.map((error) => ({ ...error, path: [...error.path] })));
 
@@ -616,8 +696,8 @@ export class AdminRegistrationService {
 
       return checked.value;
     };
-    const registrationChange = check('registration', body.registration, ['registration']);
-    const children = new Map<string, ParticipantFields>();
+    const registrationChange = check('registration', body.registration, ['registration'], loaded.registrationAnswers);
+    const children = new Map<string, OpenParticipant>();
 
     body.participants.forEach(({ participantId, answers }, index) => {
       const participant = loaded.participants.find(({ id }) => id === participantId);
@@ -626,13 +706,28 @@ export class AdminRegistrationService {
         throw new NotFoundException();
       }
 
-      const { firstName, lastName, birthDate, ...rest } = check('participant', answers, ['participants', index]);
+      const opened = loaded.participantAnswers.get(participantId) ?? {};
+      const kept = opened.birthNumber;
+      // A new birth date is checked against the rodné číslo kept, as a new rodné číslo is against the date.
+      const sent =
+        'birthDate' in answers &&
+        !('birthNumber' in answers) &&
+        typeof kept === 'string' &&
+        fieldsOf('participant').some(({ key }) => key === 'birthNumber')
+          ? { ...answers, birthNumber: kept }
+          : answers;
+      const { firstName, lastName, birthDate, ...rest } = check('participant', sent, ['participants', index], {
+        ...opened,
+        firstName: participant.firstName,
+        lastName: participant.lastName,
+        birthDate: participant.birthDate,
+      });
 
       children.set(participantId, {
         firstName: typeof firstName === 'string' ? firstName : participant.firstName,
         lastName: typeof lastName === 'string' ? lastName : participant.lastName,
         birthDate: typeof birthDate === 'string' ? birthDate : (participant.birthDate ?? ''),
-        answers: merged(participant.answers, rest),
+        answers: merged(opened, rest),
       });
     });
 
@@ -640,7 +735,7 @@ export class AdminRegistrationService {
       throw invalid(errors);
     }
 
-    const registrationAnswers = merged(loaded.registration.answers, registrationChange);
+    const registrationAnswers = merged(loaded.registrationAnswers, registrationChange);
     const charged = await this.registrations.listSurchargeLines(loaded.registration.id);
     const registered = loaded.participants.filter(({ status }) => status === 'registered');
     const lines: PriceLineFields[] = [];
@@ -695,13 +790,17 @@ export class AdminRegistrationService {
    * discount, to the new child and, when the Camp gives it to every child, to each Registered child that has
    * none yet.
    * @param loaded the Registration
+   * @param admin the admin, who needs Health write to give health data
    * @param body the child's answers
    * @throws {BadRequestException} submission_invalid with the reasons in `fields`
    */
   private async planParticipant(
     loaded: Loaded,
+    admin: AdminAccess,
     body: AddParticipantBody,
-  ): Promise<{ child: ParticipantFields; position: number; lines: PriceLineFields[] }> {
+  ): Promise<{ child: OpenParticipant; position: number; lines: PriceLineFields[] }> {
+    ensureHealthWritable(admin.health.write, [body.answers], loaded.sensitive);
+
     const fields = formFields(loaded.editable, REGISTRATION_FIELD_CATALOGUE, 'participant');
     const checked = checkAnswersTo(fields, body.answers, ['answers']);
     const errors: FieldError[] = checked.errors.map((error) => ({ ...error, path: [...error.path] }));
@@ -724,7 +823,7 @@ export class AdminRegistrationService {
       throw invalid(errors);
     }
 
-    const child: ParticipantFields = { firstName, lastName, birthDate, answers: merged({}, rest) };
+    const child: OpenParticipant = { firstName, lastName, birthDate, answers: merged({}, rest) };
     const position = Math.max(-1, ...loaded.participants.map((participant) => participant.position)) + 1;
     const price = priceInForce(loaded.turnus, this.clock.now());
     const [surcharges] = surchargesOf(loaded.editable, {

@@ -41,17 +41,17 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 
 ### E2 Camp setup - "admin configures a Camp end to end"
 
-| #   | Issue                                                        | Status          | Blocked by |
-| --- | ------------------------------------------------------------ | --------------- | ---------- |
-| 24  | Camps, slugs, module switches                                | done            | 19         |
-| 25  | Turnusy with price list, Deposit and dates                   | done            | 24         |
-| 26  | Pricing pure module                                          | done            | 02         |
-| 27  | Sibling discount and Discount codes                          | done            | 25, 26     |
-| 28  | Form engine pure module                                      | done            | 02         |
-| 29  | Standard field catalogue                                     | ready-for-human | 28         |
-| 30  | Form builder and form versions                               | done            | 24, 28     |
-| 31  | Registration declarations                                    | done            | 12, 30     |
-| 32  | Email texts, notification recipients, contact-edit lock date | done            | 16, 24     |
+| #   | Issue                                                        | Status | Blocked by |
+| --- | ------------------------------------------------------------ | ------ | ---------- |
+| 24  | Camps, slugs, module switches                                | done   | 19         |
+| 25  | Turnusy with price list, Deposit and dates                   | done   | 24         |
+| 26  | Pricing pure module                                          | done   | 02         |
+| 27  | Sibling discount and Discount codes                          | done   | 25, 26     |
+| 28  | Form engine pure module                                      | done   | 02         |
+| 29  | Standard field catalogue                                     | done   | 28         |
+| 30  | Form builder and form versions                               | done   | 24, 28     |
+| 31  | Registration declarations                                    | done   | 12, 30     |
+| 32  | Email texts, notification recipients, contact-edit lock date | done   | 16, 24     |
 
 ### E3 Public registration - "guardian registers and gets a confirmation"
 
@@ -129,7 +129,7 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 
 ## Non-code dependencies (start now)
 
-- Pilot camps paper exercise - blocks freezing 26 and 29.
+- Pilot camps paper exercise - blocks freezing 26; the field catalogue (29) shipped as a draft on 2026-11-08 that the pilot camp (Šťastné a veselé tábory) adjusts before it is frozen.
 - Legal texts (terms, data processing agreement) - block approving the first Organisation (21).
 - Starter Consent licence: confirmed 2026-11-08, recorded in issue 52.
 - Product name and domain: decided - Campie, `campie.cz`, repository `cz.campie.app`. Mail domain warm-up and DKIM before the first pilot approval.

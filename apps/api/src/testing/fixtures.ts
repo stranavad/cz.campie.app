@@ -149,6 +149,8 @@ export async function submitRegistration(
     // An existing Turnus to register to instead of a new one.
     turnusId?: string;
     paymentChoice?: PaymentChoice;
+    // The answers asked once beyond the guardians, such as transport.
+    answers?: Readonly<Record<string, string>>;
     // Each child's answers, the core ones included.
     children?: readonly Readonly<Record<string, string | boolean>>[];
   } = {},
@@ -183,6 +185,7 @@ export async function submitRegistration(
             guardianLastName: 'Testovací',
             guardianEmail: 'jana.testovaci@example.com',
             guardianPhone: '+420 123 456 789',
+            ...options.answers,
             ...(secondGuardian
               ? {
                   secondGuardianFirstName: 'Petr',

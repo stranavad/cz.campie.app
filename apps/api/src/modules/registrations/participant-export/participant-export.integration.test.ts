@@ -62,7 +62,15 @@ describe('participant export', () => {
     campId = await createCamp(app(), organisationId, 'Letní tábor', 'letni-tabor');
     owner = (await createAdmin(app(), { memberOf: [organisationId], owner: true })).headers(organisationId);
     await publish([
-      { id: SHIRT, type: 'short_text', label: 'Tričko', hint: null, required: false, scope: 'participant' },
+      {
+        id: SHIRT,
+        type: 'short_text',
+        label: 'Tričko',
+        hint: null,
+        required: false,
+        scope: 'participant',
+        health: false,
+      },
       {
         id: DIET,
         type: 'single_choice',
@@ -70,6 +78,7 @@ describe('participant export', () => {
         hint: null,
         required: false,
         scope: 'participant',
+        health: false,
         options: [{ id: 'veg', label: 'Vegetariánská', surcharge: null, needsVerification: false }],
       },
     ]);
@@ -83,7 +92,15 @@ describe('participant export', () => {
 
   it('exports one row per Participant with the columns of every form version, removed ones marked', async () => {
     await publish([
-      { id: SHIRT, type: 'short_text', label: 'Velikost trička', hint: null, required: false, scope: 'participant' },
+      {
+        id: SHIRT,
+        type: 'short_text',
+        label: 'Velikost trička',
+        hint: null,
+        required: false,
+        scope: 'participant',
+        health: false,
+      },
     ]);
 
     const [headers, row] = await exportSheet();

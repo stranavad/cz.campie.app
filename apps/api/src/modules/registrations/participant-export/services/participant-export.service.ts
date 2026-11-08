@@ -4,7 +4,9 @@ import ExcelJS from 'exceljs';
 import { ageOnStart, REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
 import { XLSX_CONTENT_TYPE } from '@repo/schema/files';
 import {
+  chosenOption,
   columnCatalogue,
+  formFields,
   withOptionLabels,
   type Answers,
   type AnswerValue,
@@ -27,6 +29,7 @@ import { czechDate, czechDateTime, pragueDateOf } from '@repo/schema/shared';
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
+import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
 import { FileService } from '../../../../core/files/file.service.ts';
 import { JobQueue } from '../../../../core/jobs/job-queue.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
@@ -45,7 +48,10 @@ import type { RegistrationEntity } from '../../../../repositories/registrations/
 import {
   RegistrationRepository,
   type GuardianFields,
+  type StoredAnswers,
 } from '../../../../repositories/registrations/registration/registration.repository.ts';
+import { answerOpener } from '../../answers/sealed-answers.helper.ts';
+import { standardAnswerText, standardLabel } from '../../answers/standard-field-texts.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
 import { exportParticipantsJob } from '../export-participants.job.ts';
 
@@ -64,6 +70,9 @@ interface Row {
   readonly second: GuardianFields | undefined;
   readonly balance: Balance;
   readonly turnus: TurnusEntity;
+  // The answers beyond the core, the encrypted ones opened when a column of them is chosen.
+  readonly registrationAnswers: Answers;
+  readonly participantAnswers: Answers;
 }
 
 const STATUS_HEADERS = { registered: 'Přihlášen', cancelled: 'Zrušen' } as const;
@@ -147,7 +156,7 @@ function presetOf({ id, name, columns }: ExportPresetRow): ExportPreset {
 // Excel exports, built by jobs and kept for the admin who started them: a Turnus's Participants with the
 // columns chosen (every column the admin may see, the form's taken from all its published versions), with
 // named presets shared per Camp and each admin's last choice remembered; and the Organisation's whole
-// payment ledger for its accountant. No column is encrypted or health data yet. Permission (Registrations
+// payment ledger for its accountant. Health columns only for an admin with Health read. Permission (Registrations
 // read) is the route's.
 @Injectable()
 export class ParticipantExportService {
@@ -161,6 +170,7 @@ export class ParticipantExportService {
     private readonly forms: RegistrationFormRepository,
     private readonly files: FileService,
     private readonly audit: AuditService,
+    private readonly encryption: EncryptionService,
     private readonly jobs: JobQueue,
     private readonly unitOfWork: UnitOfWork,
     private readonly clock: Clock,
@@ -171,12 +181,13 @@ export class ParticipantExportService {
    * choice.
    * @param adminId the admin
    * @param turnusId Turnus id
+   * @param healthRead whether the admin may read health data, without which its columns are not offered
    */
-  public async options(adminId: string, turnusId: string): Promise<ExportOptions> {
+  public async options(adminId: string, turnusId: string, healthRead: boolean): Promise<ExportOptions> {
     const turnus = await this.turnusy.getByIdOrThrow(turnusId);
 
     return {
-      formColumns: (await this.formColumnsOf(turnus.campId)).map(({ key, label, labelKey, removed }) => ({
+      formColumns: (await this.formColumnsOf(turnus.campId, healthRead)).map(({ key, label, labelKey, removed }) => ({
         id: `field:${key}`,
         label,
         labelKey,
@@ -193,8 +204,14 @@ export class ParticipantExportService {
    * @param actor the admin
    * @param turnusId Turnus id
    * @param body the columns, or none for every column
+   * @param healthRead whether the admin may read health data now, which the export keeps for its job
    */
-  public async start(actor: Actor, turnusId: string, body: StartParticipantExportBody): Promise<ParticipantExport> {
+  public async start(
+    actor: Actor,
+    turnusId: string,
+    body: StartParticipantExportBody,
+    healthRead: boolean,
+  ): Promise<ParticipantExport> {
     if (actor.kind === 'system') {
       throw new Error('An admin starts an export, never the system');
     }
@@ -211,7 +228,18 @@ export class ParticipantExportService {
       });
     }
 
-    return this.begin(actor, { turnusId: turnus.id, columns, paidFrom: null, paidTo: null });
+    // The columns of encrypted answers and health data it holds, named in the audit entry.
+    const sensitiveColumns = (await this.formColumnsOf(turnus.campId, healthRead))
+      .filter(
+        ({ key, sensitivity }) => sensitivity !== 'plain' && (columns === null || columns.includes(`field:${key}`)),
+      )
+      .map(({ key }) => `field:${key}`);
+
+    return this.begin(
+      actor,
+      { turnusId: turnus.id, columns, paidFrom: null, paidTo: null, includeHealth: healthRead },
+      sensitiveColumns,
+    );
   }
 
   /**
@@ -223,12 +251,17 @@ export class ParticipantExportService {
   public async startPayments(actor: Actor, body: StartPaymentsExportBody): Promise<ParticipantExport> {
     const year = pragueDateOf(this.clock.now()).slice(0, 4);
 
-    return this.begin(actor, {
-      turnusId: null,
-      columns: null,
-      paidFrom: body.from ?? `${year}-01-01`,
-      paidTo: body.to ?? `${year}-12-31`,
-    });
+    return this.begin(
+      actor,
+      {
+        turnusId: null,
+        columns: null,
+        paidFrom: body.from ?? `${year}-01-01`,
+        paidTo: body.to ?? `${year}-12-31`,
+        includeHealth: false,
+      },
+      [],
+    );
   }
 
   /**
@@ -334,7 +367,7 @@ export class ParticipantExportService {
         exportId,
         `ucastnici-${turnus.startDate}.xlsx`,
         'Účastníci',
-        await this.participantsSheet(turnus, found.columns),
+        await this.participantsSheet(turnus, found.columns, found.includeHealth),
       );
     }
   }
@@ -342,12 +375,14 @@ export class ParticipantExportService {
   /**
    * Record an export, or give back the admin's same one still waiting, audited; its job builds the file.
    * @param actor the admin
-   * @param scope a Participant export's Turnus and columns (null for every column), or the payments
-   * export's dates
+   * @param scope a Participant export's Turnus, columns (null for every column) and whether health columns
+   * may be in it, or the payments export's dates
+   * @param sensitiveColumns the columns of encrypted or health answers it holds, named in its audit entry
    */
   private async begin(
     actor: Actor,
-    scope: Pick<ParticipantExportRow, 'turnusId' | 'columns' | 'paidFrom' | 'paidTo'>,
+    scope: Pick<ParticipantExportRow, 'turnusId' | 'columns' | 'paidFrom' | 'paidTo' | 'includeHealth'>,
+    sensitiveColumns: string[],
   ): Promise<ParticipantExport> {
     if (actor.kind === 'system') {
       throw new Error('An admin starts an export, never the system');
@@ -382,7 +417,7 @@ export class ParticipantExportService {
         after:
           scope.turnusId === null
             ? { kind: started.kind, columns: scope.columns, paidFrom: scope.paidFrom, paidTo: scope.paidTo }
-            : { kind: started.kind, columns: scope.columns },
+            : { kind: started.kind, columns: scope.columns, sensitiveColumns },
       },
     });
     this.jobs.enqueue(exportParticipantsJob, { exportId: started.id });
@@ -391,43 +426,68 @@ export class ParticipantExportService {
   }
 
   /**
-   * List a Camp's form columns beyond the core, from all its published versions.
+   * List a Camp's form columns beyond the core, from all its published versions; health data only for an
+   * admin who may read it.
    * @param campId Camp id
+   * @param healthRead whether health columns are among them
    */
-  private async formColumnsOf(campId: string): Promise<FormColumn[]> {
+  private async formColumnsOf(campId: string, healthRead: boolean): Promise<FormColumn[]> {
     const published = (await this.forms.listPublished(campId)).map(({ definition }) => definition);
 
-    return columnCatalogue(published, REGISTRATION_FIELD_CATALOGUE).filter(({ tier }) => tier !== 'core');
+    return columnCatalogue(published, REGISTRATION_FIELD_CATALOGUE).filter(
+      ({ tier, sensitivity }) => tier !== 'core' && (healthRead || sensitivity !== 'health'),
+    );
   }
 
   /**
    * Lay out a Turnus's Participants, by surname, in the columns chosen, kept in the export's own order.
+   * Encrypted answers are decrypted here, inside the job, only when a column of them is chosen.
    * @param turnus the Turnus
    * @param chosen the columns chosen, or null for every column
+   * @param includeHealth whether the admin who started it could read health data then
    */
   private async participantsSheet(
     turnus: TurnusEntity,
     chosen: readonly string[] | null,
+    includeHealth: boolean,
   ): Promise<{ headers: string[]; rows: Cell[][] }> {
     const published = (await this.forms.listPublished(turnus.campId)).map(({ definition }) => definition);
     // A custom field as its newest version asks it, for the labels of its options.
     const fields = new Map(published.flatMap(({ custom }: FormDefinition) => custom.map((field) => [field.id, field])));
-    const formColumns = await this.formColumnsOf(turnus.campId);
+    // A standard field as each version asked it, newest first, for its options, a boarding place since
+    // removed included.
+    const standardFields = published
+      .toReversed()
+      .flatMap((definition) =>
+        (['registration', 'participant'] as const).flatMap((scope) =>
+          formFields(definition, REGISTRATION_FIELD_CATALOGUE, scope).filter(({ tier }) => tier === 'standard'),
+        ),
+      );
+    const formColumns = await this.formColumnsOf(turnus.campId, includeHealth);
     const wanted = (id: string) => chosen === null || chosen.includes(id);
     const answerCell = (key: string, answers: Answers) => {
       const value = answers[key];
       const field = fields.get(key);
 
-      return cellOf(
-        field === undefined || value === undefined || value === null ? value : withOptionLabels(field, value),
-      );
+      if (value === undefined || value === null) {
+        return null;
+      }
+
+      if (field !== undefined) {
+        return cellOf(withOptionLabels(field, value));
+      }
+
+      const asked = standardFields.find((standard) => standard.key === key && chosenOption(standard, value) !== null);
+
+      return cellOf(asked === undefined ? value : standardAnswerText(asked, value));
     };
     const formEntries = formColumns
       .filter(({ key }) => wanted(`field:${key}`))
-      .map(({ key, scope, label, removed }) => ({
-        header: `${label ?? key}${removed ? ' (odstraněno)' : ''}`,
+      .map(({ key, tier, scope, label, removed, sensitivity }) => ({
+        header: `${tier === 'standard' ? standardLabel(key) : (label ?? key)}${removed ? ' (odstraněno)' : ''}`,
+        sealed: sensitivity !== 'plain',
         cell: (row: Row) =>
-          answerCell(key, scope === 'registration' ? row.registration.answers : row.participant.answers),
+          answerCell(key, scope === 'registration' ? row.registrationAnswers : row.participantAnswers),
       }));
     const columns = FIXED_EXPORT_COLUMNS.flatMap((id) => [
       ...(wanted(id) ? [FIXED[id]] : []),
@@ -442,6 +502,14 @@ export class ParticipantExportService {
     );
     const guardians = await this.registrations.listGuardiansOf(ids);
     const balances = await this.ledger.balancesOf(registrations);
+    // Encrypted answers are opened only when a column of them is chosen; health columns are already left out
+    // above without Health read, so health answers opened beside them never reach the file.
+    const answersOf = formEntries.some(({ sealed }) => sealed)
+      ? await answerOpener(this.encryption, [...registrations, ...participants])
+      : (stored: StoredAnswers) => stored.answers;
+    const registrationAnswers = new Map(
+      registrations.map((registration) => [registration.id, answersOf(registration)]),
+    );
 
     return {
       headers: columns.map(({ header }) => header),
@@ -454,7 +522,16 @@ export class ParticipantExportService {
         }
 
         const [first, second] = guardians.get(registration.id) ?? [];
-        const row: Row = { participant, registration, first, second, balance, turnus };
+        const row: Row = {
+          participant,
+          registration,
+          first,
+          second,
+          balance,
+          turnus,
+          registrationAnswers: registrationAnswers.get(registration.id) ?? {},
+          participantAnswers: answersOf(participant),
+        };
 
         return [columns.map(({ cell }) => cell(row))];
       }),

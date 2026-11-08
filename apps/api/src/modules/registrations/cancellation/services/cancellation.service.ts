@@ -3,6 +3,7 @@ import { createElement } from 'react';
 
 import type { RegistrationDetail } from '@repo/schema/registrations';
 
+import type { AdminAccess } from '../../../../core/access/admin-access.ts';
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
 import { JobQueue } from '../../../../core/jobs/job-queue.ts';
@@ -31,13 +32,13 @@ export class CancellationService {
 
   /**
    * Cancel a Participant, audited, and tell the guardians once this commits.
-   * @param actor the admin
+   * @param admin the admin
    * @param registrationId Registration id
    * @param participantId Participant id
    * @throws {NotFoundException} when the Registration has no such Participant
    */
   public async cancelParticipant(
-    actor: Actor,
+    admin: AdminAccess,
     registrationId: string,
     participantId: string,
   ): Promise<RegistrationDetail> {
@@ -50,29 +51,29 @@ export class CancellationService {
       throw new NotFoundException();
     }
 
-    await this.cancel(actor, registrationId, participant.status === 'registered' ? [participantId] : []);
+    await this.cancel(admin.actor, registrationId, participant.status === 'registered' ? [participantId] : []);
 
-    return this.details.get(registrationId);
+    return this.details.get(registrationId, admin);
   }
 
   /**
    * Cancel every Registered Participant of a Registration, audited, and tell the guardians once this commits.
-   * @param actor the admin
+   * @param admin the admin
    * @param registrationId Registration id
    */
-  public async cancelAll(actor: Actor, registrationId: string): Promise<RegistrationDetail> {
+  public async cancelAll(admin: AdminAccess, registrationId: string): Promise<RegistrationDetail> {
     await this.registrations.lockByIdOrThrow(registrationId);
     const registered = (await this.registrations.listParticipants(registrationId)).filter(
       ({ status }) => status === 'registered',
     );
 
     await this.cancel(
-      actor,
+      admin.actor,
       registrationId,
       registered.map(({ id }) => id),
     );
 
-    return this.details.get(registrationId);
+    return this.details.get(registrationId, admin);
   }
 
   /**

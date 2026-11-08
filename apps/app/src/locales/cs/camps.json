@@ -162,6 +162,16 @@
     "label": "Otázka",
     "hint": "Nápověda",
     "required": "Povinné",
+    "health": "Zdravotní údaj",
+    "healthHint": "Odpověď se uloží šifrovaně, uvidí ji jen ten, kdo smí číst zdravotní údaje, a na přihlášku v PDF se netiskne. Zdravotní údaj nemůže mít příplatek ani slevu.",
+    "sensitivity": {
+      "encrypted": "(šifrováno)",
+      "health": "(zdravotní údaj, šifrováno)"
+    },
+    "boardingPlaces": "Nástupní místa",
+    "boardingPlacesHint": "Rodiče vybírají z vlastní dopravy a z těchto míst. Odebrané místo zůstane u přihlášek, které ho už vybraly.",
+    "boardingPlace": "Nástupní místo",
+    "addBoardingPlace": "Přidat nástupní místo",
     "scope": "Ptát se",
     "options": "Možnosti",
     "optionLabel": "Text možnosti",
@@ -183,8 +193,8 @@
     "status": {
       "saved": "Koncept je uložený.",
       "published": "Přihláška je zveřejněná.",
-      "invalid": "Přihlášku nejde uložit: každá otázka a prohlášení potřebuje text, výběr aspoň jednu možnost s textem, příplatky celé koruny, ověření jen u slevy a odkazy začínající http:// nebo https://.",
-      "form_field_changed": "Otázka, která už byla zveřejněná, nemůže změnit druh ani to, za koho se vyplňuje. Přidejte místo ní novou. Koncept je uložený.",
+      "invalid": "Přihlášku nejde uložit: každá otázka, nástupní místo a prohlášení potřebuje text, výběr aspoň jednu možnost s textem, příplatky celé koruny, ověření jen u slevy, zdravotní údaj žádný příplatek a odkazy začínající http:// nebo https://.",
+      "form_field_changed": "Otázka, která už byla zveřejněná, nemůže změnit druh, to, za koho se vyplňuje, ani to, zda je zdravotním údajem. Přidejte místo ní novou. Koncept je uložený.",
       "failed": "Přihlášku se nepodařilo uložit. Zkuste to prosím znovu.",
       "invalid_max": "Nejvíce dětí na přihlášce musí být 1 až 10.",
       "form_definition_invalid": "Koncept už neodpovídá nabídce standardních polí. Zkontrolujte je a uložte znovu.",

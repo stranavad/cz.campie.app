@@ -44,6 +44,7 @@ describe('participant list', () => {
               hint: null,
               required: false,
               scope: 'participant',
+              health: false,
               surcharge: -500,
               needsVerification: true,
             },

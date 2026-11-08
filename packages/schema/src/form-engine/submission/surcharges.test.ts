@@ -17,6 +17,7 @@ const DEFINITION: FormDefinition = {
       hint: null,
       required: false,
       scope: 'registration',
+      health: false,
       options: [
         { id: 'tam', label: 'Tam', surcharge: 200, needsVerification: false },
         { id: 'zpet', label: 'Zpět', surcharge: 150, needsVerification: false },
@@ -30,6 +31,7 @@ const DEFINITION: FormDefinition = {
       hint: null,
       required: false,
       scope: 'participant',
+      health: false,
       surcharge: -500,
       needsVerification: true,
     },
@@ -40,6 +42,7 @@ const DEFINITION: FormDefinition = {
       hint: null,
       required: false,
       scope: 'participant',
+      health: false,
       options: [
         { id: 'ano', label: 'Ano', surcharge: 250, needsVerification: false },
         { id: 'ne', label: 'Ne', surcharge: 0, needsVerification: false },
@@ -96,7 +99,15 @@ describe('pricedFieldIds', () => {
       pricedFieldIds({
         standard: [],
         custom: [
-          { id: TSHIRT, type: 'short_text', label: 'Alergie', hint: null, required: false, scope: 'participant' },
+          {
+            id: TSHIRT,
+            type: 'short_text',
+            label: 'Alergie',
+            hint: null,
+            required: false,
+            scope: 'participant',
+            health: false,
+          },
         ],
       }),
     ).toEqual([]);
@@ -111,6 +122,7 @@ describe('withOptionLabels', () => {
     hint: null,
     required: false,
     scope: 'participant',
+    health: false,
     options: [
       { id: 'veg', label: 'Vegetariánská', surcharge: null, needsVerification: false },
       { id: 'gluten', label: 'Bezlepková', surcharge: null, needsVerification: false },

@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { ageOnStart, REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
+import { ageOnStart, isRegistrationFieldKey, REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
 import {
+  chosenOption,
   formFields,
+  sensitiveKeys,
   withOptionLabels,
   type Answers,
   type FieldScope,
@@ -16,8 +18,9 @@ import type {
   VerifyClaimedDiscountBody,
 } from '@repo/schema/registrations';
 
-import type { Actor } from '../../../../core/audit/actor.ts';
+import type { AdminAccess } from '../../../../core/access/admin-access.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
+import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
 import { FileService } from '../../../../core/files/file.service.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { AdminRepository } from '../../../../repositories/admins/admin/admin.repository.ts';
@@ -27,7 +30,11 @@ import { RegistrationFormRepository } from '../../../../repositories/camps/regis
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { UndeliverableEmailRepository } from '../../../../repositories/emails/undeliverable-email/undeliverable-email.repository.ts';
 import { ClaimedDiscountVerificationRepository } from '../../../../repositories/registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
-import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
+import {
+  RegistrationRepository,
+  type StoredAnswers,
+} from '../../../../repositories/registrations/registration/registration.repository.ts';
+import { answerOpener, withoutHealth } from '../../answers/sealed-answers.helper.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
 import { answeredDefinition, claimedDiscountsOf } from '../../payment/claimed-discounts.helper.ts';
 
@@ -47,15 +54,19 @@ export class RegistrationDetailService {
     private readonly auditEntries: AuditEntryRepository,
     private readonly admins: AdminRepository,
     private readonly audit: AuditService,
+    private readonly encryption: EncryptionService,
     private readonly clock: Clock,
   ) {}
 
   /**
    * Get a Registration in full: answers labelled as its form version asked them, with fields added later and
    * removed ones marked, its guardians, Participants, price, ledger, declarations and Claimed discounts.
+   * Encrypted answers are decrypted for this response only; health data is in it only for a admin with
+   * Health read, and showing it is audited.
    * @param registrationId Registration id
+   * @param admin who looks, and what of health data they may
    */
-  public async get(registrationId: string): Promise<RegistrationDetail> {
+  public async get(registrationId: string, admin: AdminAccess): Promise<RegistrationDetail> {
     const registration = await this.registrations.getByIdOrThrow(registrationId);
     const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
     const camp = await this.camps.getByIdOrThrow(turnus.campId);
@@ -63,6 +74,15 @@ export class RegistrationDetailService {
     const latest = (await this.forms.getLatestVersion(camp.id)) ?? version;
     const published = (await this.forms.listPublished(camp.id)).map(({ definition }) => definition);
     const participants = await this.registrations.listParticipants(registrationId);
+    const sensitive = sensitiveKeys([version.definition, ...published], REGISTRATION_FIELD_CATALOGUE);
+    const open = await answerOpener(this.encryption, [registration, ...participants]);
+    const shownAnswers = (stored: StoredAnswers) =>
+      admin.health.read ? open(stored) : withoutHealth(open(stored), sensitive);
+    const registrationAnswers = shownAnswers(registration);
+    const participantAnswers = new Map(participants.map((participant) => [participant.id, shownAnswers(participant)]));
+    const healthShown = [registrationAnswers, ...participantAnswers.values()].some((answers) =>
+      Object.keys(answers).some((key) => sensitive.get(key) === 'health'),
+    );
     const verifications = await this.verifications.listOf(participants.map(({ id }) => id));
     const answered = await this.registrations.listDeclarationAnswers(registrationId);
     const merged = answeredDefinition(version.definition, latest.definition);
@@ -73,10 +93,19 @@ export class RegistrationDetailService {
       ...accessEmails.map(({ email }) => email),
     ]);
     const rowsOf = (scope: FieldScope, answers: Answers) =>
-      answerRows(scope, version.definition, latest.definition, published, answers);
+      answerRows(scope, version.definition, latest.definition, published, answers).filter(
+        ({ key }) => admin.health.read || sensitive.get(key) !== 'health',
+      );
     const prihlasky = await this.files.links(
       participants.flatMap(({ prihlaskaFileId: id }) => (id === null ? [] : [id])),
     );
+
+    if (healthShown) {
+      await this.audit.record(admin.actor, {
+        action: 'health_answers.view',
+        target: { type: 'registration', id: registration.id },
+      });
+    }
 
     return {
       id: registration.id,
@@ -102,9 +131,9 @@ export class RegistrationDetailService {
         ageOnStart: participant.birthDate === null ? null : ageOnStart(participant.birthDate, turnus.startDate),
         status: participant.status,
         prihlaska: participant.prihlaskaFileId === null ? null : (prihlasky.get(participant.prihlaskaFileId) ?? null),
-        answers: rowsOf('participant', participant.answers),
+        answers: rowsOf('participant', participantAnswers.get(participant.id) ?? {}),
       })),
-      registrationAnswers: rowsOf('registration', registration.answers),
+      registrationAnswers: rowsOf('registration', registrationAnswers),
       priceLines: await this.registrations.listPriceLines(registrationId),
       ledger: await this.ledgers.get(registrationId),
       declarations: version.declarations.map(({ id, text, mandatory }) => {
@@ -133,12 +162,20 @@ export class RegistrationDetailService {
    * @param healthRead whether the admin may read health data, and so its entries
    */
   public async history(registrationId: string, healthRead: boolean): Promise<HistoryEntry[]> {
-    await this.registrations.getByIdOrThrow(registrationId);
+    const registration = await this.registrations.getByIdOrThrow(registrationId);
     const participants = await this.registrations.listParticipants(registrationId);
-    // Who viewed or changed health data is itself health data: shown only with Health read.
+    const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
+    const sensitive = sensitiveKeys(
+      (await this.forms.listPublished(turnus.campId)).map(({ definition }) => definition),
+      REGISTRATION_FIELD_CATALOGUE,
+    );
+    // Who viewed or changed health data is itself health data: shown only with Health read, as are the
+    // names of the health fields a change touched.
     const entries = (
       await this.auditEntries.listByTargets([registrationId, ...participants.map(({ id }) => id)])
     ).filter(({ action }) => healthRead || !action.startsWith('health'));
+    const named = (fields: readonly string[]) =>
+      healthRead ? [...fields] : fields.filter((field) => sensitive.get(field) !== 'health');
     const adminIds = entries.flatMap(({ actorKind, actorIdentity }) =>
       (actorKind === 'admin' || actorKind === 'operator') && actorIdentity !== null ? [actorIdentity] : [],
     );
@@ -158,24 +195,24 @@ export class RegistrationDetailService {
       },
       action: entry.action,
       changes: entry.changes,
-      encryptedFields: entry.encryptedFields,
+      encryptedFields: named(entry.encryptedFields),
     }));
   }
 
   /**
    * Confirm a Participant's Claimed discount after checking it, audited; confirming it again changes nothing.
-   * @param actor who confirms it
+   * @param admin who confirms it
    * @param registrationId Registration id
    * @param body the Participant and the answer
    * @throws {NotFoundException} claimed_discount_unknown when the Participant has no such Claimed discount
    * needing verification
    */
   public async verifyClaimedDiscount(
-    actor: Actor,
+    admin: AdminAccess,
     registrationId: string,
     body: VerifyClaimedDiscountBody,
   ): Promise<RegistrationDetail> {
-    const detail = await this.get(registrationId);
+    const detail = await this.get(registrationId, { ...admin, health: { read: false, write: false } });
     const discount = detail.claimedDiscounts.find(
       ({ participantId, fieldId, optionId }) =>
         participantId === body.participantId && fieldId === body.fieldId && optionId === body.optionId,
@@ -195,14 +232,14 @@ export class RegistrationDetailService {
     };
 
     if (await this.verifications.create(verification)) {
-      await this.audit.record(actor, {
+      await this.audit.record(admin.actor, {
         action: 'claimed_discount.verify',
         target: { type: 'participant', id: body.participantId },
         change: { before: null, after: { ...verification, label: discount.label, amount: discount.amount } },
       });
     }
 
-    return this.get(registrationId);
+    return this.get(registrationId, admin);
   }
 }
 
@@ -231,11 +268,14 @@ function answerRows(
   const shown = (field: (typeof asked)[number], state: AnswerRow['state']): AnswerRow => {
     const value = answers[field.key] ?? null;
 
+    const option = chosenOption(field, value);
+
     return {
       key: field.key,
       label: field.tier === 'custom' ? field.field.label : null,
       labelKey: field.tier === 'standard' ? field.labelKey : null,
       value: field.tier === 'custom' && value !== null ? withOptionLabels(field.field, value) : value,
+      option: option === null ? null : { label: option.label, labelKey: option.labelKey },
       state,
     };
   };
@@ -253,12 +293,14 @@ function answerRows(
       )
       .map(([key, value]): AnswerRow => {
         const field = newest.flatMap(({ custom }) => custom).find(({ id }) => id === key);
+        const standard = isRegistrationFieldKey(key) ? REGISTRATION_FIELD_CATALOGUE[key] : undefined;
 
         return {
           key,
-          label: field?.label ?? key,
-          labelKey: null,
+          label: standard === undefined ? (field?.label ?? key) : null,
+          labelKey: standard?.labelKey ?? null,
           value: field === undefined || value === null ? value : withOptionLabels(field, value),
+          option: null,
           state: 'removed',
         };
       }),

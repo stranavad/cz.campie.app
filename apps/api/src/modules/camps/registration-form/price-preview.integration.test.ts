@@ -25,6 +25,7 @@ const DEFINITION = {
       hint: null,
       required: false,
       scope: 'registration',
+      health: false,
       options: [{ id: 'bus', label: 'Autobusem', surcharge: 300, needsVerification: false }],
     },
     {
@@ -34,6 +35,7 @@ const DEFINITION = {
       hint: null,
       required: false,
       scope: 'participant',
+      health: false,
       surcharge: -500,
       needsVerification: true,
     },

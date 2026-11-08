@@ -4,6 +4,7 @@ import * as p from 'drizzle-orm/pg-core';
 import type { Answers } from '@repo/schema/form-engine';
 import { PARTICIPANT_STATUSES } from '@repo/schema/registrations';
 
+import { encrypted } from '../helpers/encrypted.ts';
 import { id } from '../helpers/ids.ts';
 import { organisationId, organisationPolicy } from '../helpers/organisation.ts';
 import { registrations } from './registrations.ts';
@@ -23,6 +24,8 @@ export const participants = p.snakeCase.table.withRLS(
     birthDate: p.date({ mode: 'string' }),
     status: participantStatus().notNull().default('registered'),
     answers: p.jsonb().$type<Answers>().notNull().default({}),
+    // The encrypted and health answers, as one encrypted JSON object; null when there are none.
+    encryptedAnswers: encrypted(),
     // No foreign key to files, as for logos: the Přihláška is replaced or removed through the Participant.
     prihlaskaFileId: p.uuid(),
   },

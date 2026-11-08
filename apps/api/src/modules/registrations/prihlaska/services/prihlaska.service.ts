@@ -1,6 +1,16 @@
 import { Injectable } from '@nestjs/common';
 
-import type { Answers, AnswerValue, CustomField, FieldScope, FormDefinition } from '@repo/schema/form-engine';
+import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
+import {
+  fieldSensitivity,
+  formFields,
+  isEmpty,
+  type Answers,
+  type AnswerValue,
+  type CustomField,
+  type FieldScope,
+  type FormDefinition,
+} from '@repo/schema/form-engine';
 import type { PaymentInstructions } from '@repo/schema/payments';
 import { czechDate, czechDateTime } from '@repo/schema/shared';
 
@@ -8,6 +18,8 @@ import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
 import { DocumentService, type DocumentBranding } from '../../../../core/documents/document.service.ts';
+import type { OrganisationCipher } from '../../../../core/encryption/cipher.ts';
+import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
 import { FileService } from '../../../../core/files/file.service.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
@@ -16,6 +28,8 @@ import { OrganisationRepository } from '../../../../repositories/organisations/o
 import type { ParticipantEntity } from '../../../../repositories/registrations/participant/participant.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { effectiveBranding } from '../../../camps/camp-branding/services/camp-branding.service.ts';
+import { openAnswers } from '../../answers/sealed-answers.helper.ts';
+import { standardAnswerText, standardLabel } from '../../answers/standard-field-texts.ts';
 import { qrPlatbaSvg, registrationPaymentOf } from '../../payment/payment-instructions.helper.ts';
 import {
   PrihlaskaDocument,
@@ -36,6 +50,7 @@ interface PrihlaskaBasis {
   readonly participants: readonly ParticipantEntity[];
   readonly variableSymbol: string;
   readonly branding: DocumentBranding;
+  readonly cipher: OrganisationCipher;
 }
 
 // The Přihláška PDF of each Participant: generated after submission and again on an admin's request, stored
@@ -51,6 +66,7 @@ export class PrihlaskaService {
     private readonly documents: DocumentService,
     private readonly files: FileService,
     private readonly audit: AuditService,
+    private readonly encryption: EncryptionService,
     private readonly unitOfWork: UnitOfWork,
   ) {}
 
@@ -95,12 +111,13 @@ export class PrihlaskaService {
    */
   private async generateFor(actor: Actor, basis: PrihlaskaBasis, participantId: string): Promise<void> {
     const before = await this.registrations.getParticipantOrThrow(participantId);
+    // The rodné číslo is printed, so it is decrypted here, inside the job, and goes nowhere but the PDF.
     const propsOf = (participant: typeof before): PrihlaskaProps => ({
       ...basis.shared,
       participant: {
         name: `${participant.firstName} ${participant.lastName}`,
         birthDate: participant.birthDate === null ? '-' : czechDate(participant.birthDate),
-        answers: rowsOf(basis.definition, 'participant', participant.answers),
+        answers: rowsOf(basis.definition, 'participant', openAnswers(basis.cipher, participant)),
       },
       otherParticipants: basis.participants
         .filter(({ id }) => id !== participant.id)
@@ -153,6 +170,7 @@ export class PrihlaskaService {
     const guardians = await this.registrations.listGuardians(registrationId);
     const lines = await this.registrations.listPriceLines(registrationId);
     const answered = await this.registrations.listDeclarationAnswers(registrationId);
+    const cipher = await this.encryption.cipher();
 
     const total = lines.reduce((sum, { amount }) => sum + amount, 0);
     // A snapshot of the submission: nothing paid yet, whatever was paid since.
@@ -183,7 +201,7 @@ export class PrihlaskaService {
           email,
           phone,
         })),
-        registrationAnswers: rowsOf(form.definition, 'registration', registration.answers),
+        registrationAnswers: rowsOf(form.definition, 'registration', openAnswers(cipher, registration)),
         lines: lines.map(({ kind, label, participant, amount }) => ({
           kind,
           label,
@@ -201,34 +219,44 @@ export class PrihlaskaService {
       participants,
       variableSymbol: registration.variableSymbol,
       branding: { displayName: camp.name, ...effectiveBranding(camp, organisation) },
+      cipher,
     };
   }
 }
 
 /**
- * List the custom questions of a scope a child or the Registration answered, with the labels of the form
- * version it was submitted under.
+ * List the questions beyond the core of a scope a child or the Registration answered, with the labels of
+ * the form version it was submitted under: standard fields named in Czech, then the custom ones. Health
+ * data stays off the Přihláška.
  * @param definition the form version's definition
  * @param scope per child or per Registration
- * @param answers the stored answers
+ * @param answers the answers, the encrypted ones opened
  */
 function rowsOf(definition: FormDefinition, scope: FieldScope, answers: Answers): PrihlaskaRow[] {
-  return definition.custom
-    .filter((field) => field.scope === scope)
+  return formFields(definition, REGISTRATION_FIELD_CATALOGUE, scope)
+    .filter((field) => field.tier !== 'core' && fieldSensitivity(field) !== 'health')
     .flatMap((field) => {
-      const value = shown(field, answers[field.id]);
+      const answer = answers[field.key];
+      const value =
+        field.tier === 'custom'
+          ? shown(field.field, answer)
+          : answer === undefined || isEmpty(answer)
+            ? null
+            : String(standardAnswerText(field, answer));
+      const label = field.tier === 'custom' ? field.field.label : standardLabel(field.key);
 
-      return value === null ? [] : [{ label: cut(field.label, MAX_LABEL), value: cut(value, MAX_VALUE) }];
+      return value === null ? [] : [{ label: cut(label, MAX_LABEL), value: cut(value, MAX_VALUE) }];
     });
 }
 
 /**
- * Write an answer as the form offered it: options by their labels, yes or no in words, dates the Czech way.
+ * Write a custom answer as the form offered it: options by their labels, yes or no in words, dates the
+ * Czech way.
  * @param field the custom field
  * @param value the stored answer
  */
 function shown(field: CustomField, value: AnswerValue | undefined): string | null {
-  if (value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
+  if (value === undefined || isEmpty(value)) {
     return null;
   }
 

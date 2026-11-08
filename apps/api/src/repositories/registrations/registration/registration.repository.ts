@@ -5,6 +5,7 @@ import type { Answers } from '@repo/schema/form-engine';
 import type { DueDates, PriceLineKind, SurchargeSource } from '@repo/schema/pricing';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
+import type { Encrypted } from '../../../core/encryption/cipher.ts';
 import {
   declarationAnswers,
   guardianEmailChanges,
@@ -26,11 +27,16 @@ export interface GuardianFields {
   readonly phone: string | null;
 }
 
-export interface ParticipantFields {
+// Answers beyond the core as stored: the plain ones as JSON, the encrypted and health ones sealed together.
+export interface StoredAnswers {
+  readonly answers: Answers;
+  readonly encryptedAnswers: Encrypted | null;
+}
+
+export interface ParticipantFields extends StoredAnswers {
   readonly firstName: string;
   readonly lastName: string;
   readonly birthDate: string;
-  readonly answers: Answers;
 }
 
 export interface PriceLineFields {
@@ -568,10 +574,13 @@ export class RegistrationRepository {
   /**
    * Replace a Registration's per-Registration answers.
    * @param registrationId Registration id
-   * @param answers all its answers beyond the core
+   * @param stored all its answers beyond the core
    */
-  public async setAnswers(registrationId: string, answers: Answers): Promise<void> {
-    await this.unitOfWork.db.update(registrations).set({ answers }).where(eq(registrations.id, registrationId));
+  public async setAnswers(registrationId: string, { answers, encryptedAnswers }: StoredAnswers): Promise<void> {
+    await this.unitOfWork.db
+      .update(registrations)
+      .set({ answers, encryptedAnswers })
+      .where(eq(registrations.id, registrationId));
   }
 
   /**
@@ -622,10 +631,16 @@ export class RegistrationRepository {
   /**
    * Replace a Participant's answers beyond the core.
    * @param participantId Participant id
-   * @param answers all its answers beyond the core
+   * @param stored all its answers beyond the core
    */
-  public async setParticipantAnswers(participantId: string, answers: Answers): Promise<void> {
-    await this.unitOfWork.db.update(participants).set({ answers }).where(eq(participants.id, participantId));
+  public async setParticipantAnswers(
+    participantId: string,
+    { answers, encryptedAnswers }: StoredAnswers,
+  ): Promise<void> {
+    await this.unitOfWork.db
+      .update(participants)
+      .set({ answers, encryptedAnswers })
+      .where(eq(participants.id, participantId));
   }
 
   /**

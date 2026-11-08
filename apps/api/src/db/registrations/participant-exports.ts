@@ -27,6 +27,8 @@ export const participantExports = p.snakeCase.table.withRLS(
     // The payments export's payment dates, both inclusive; null for a Participant export.
     paidFrom: p.date({ mode: 'string' }),
     paidTo: p.date({ mode: 'string' }),
+    // Whether the admin who started it held Health read then, which decides if health columns are in it.
+    includeHealth: p.boolean().notNull().default(false),
     status: exportStatus().notNull().default('pending'),
     fileId: p.uuid(),
     createdAt: p.timestamp({ withTimezone: true }).notNull(),

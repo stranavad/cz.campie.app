@@ -25,6 +25,7 @@ const transport = (label: string) => ({
   hint: null,
   required: false,
   scope: 'participant',
+  health: false,
   options: [{ id: 'bus', label: 'Autobusem', surcharge: 300, needsVerification: false }],
 });
 

@@ -21,12 +21,16 @@ export const answerRowSchema = z.object({
   // For a core or standard field the app names, its i18n key.
   labelKey: z.string().nullable(),
   value: answerValueSchema,
+  // The option a standard choice's answer chose, as the form named it: the platform's by its i18n key, a
+  // boarding place by its label; null for any other answer.
+  option: z.object({ label: z.string().nullable(), labelKey: z.string().nullable() }).nullable(),
   state: z.enum(ANSWER_STATES),
 });
 
 export type AnswerRow = z.infer<typeof answerRowSchema>;
 
-// Everything an admin needs to answer a guardian's question about a Registration. Never health data.
+// Everything an admin needs to answer a guardian's question about a Registration. Health data only for an
+// admin with Health read, and that view is audited.
 export const registrationDetailSchema = z.object({
   id: z.uuid(),
   variableSymbol: z.string(),

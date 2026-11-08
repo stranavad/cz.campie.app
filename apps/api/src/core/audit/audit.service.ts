@@ -18,6 +18,9 @@ export interface AuditEvent {
   readonly target: AuditTarget;
   // The row before and after a change; omitted for a view or an export.
   readonly change?: { readonly before: AuditedRow | null; readonly after: AuditedRow | null };
+  // Encrypted fields the change touched beyond the rows' own byte values, by name, such as answers sealed
+  // together in one column: the caller tells which changed by comparing their plaintext.
+  readonly encryptedFields?: readonly string[];
 }
 
 @Injectable()
@@ -48,7 +51,7 @@ export class AuditService {
       targetType: event.target.type,
       targetId: event.target.id,
       changes: diff?.values ?? null,
-      encryptedFields: [...(diff?.encryptedFields ?? [])],
+      encryptedFields: [...new Set([...(diff?.encryptedFields ?? []), ...(event.encryptedFields ?? [])])],
     });
   }
 

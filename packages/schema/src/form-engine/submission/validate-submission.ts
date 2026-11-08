@@ -3,37 +3,27 @@ import { z } from 'zod';
 import { emailSchema, phoneSchema } from '@repo/schema/shared';
 
 import {
+  answerValueSchema,
   CORE_FIELDS,
   coreLabelKey,
   SECOND_GUARDIAN_FIELDS,
   SECOND_GUARDIAN_NEEDED,
+  type Answers,
+  type AnswerValue,
   type CoreFieldKey,
   type CustomField,
   type FieldScope,
+  type FieldSensitivity,
+  type FormAnswerErrorCode,
   type FormDefinition,
   type StandardFieldCatalogue,
   type StandardFieldSpec,
 } from '../definition/form-definition.ts';
 
 // Bounds that hold whatever the form, so a crafted submission cannot make checking it expensive.
-const MAX_ANSWER_TEXT = 10_000;
-const MAX_CHOSEN = 50;
 const MAX_ANSWERS = 300;
 // Above any Camp's own limit per Registration, which placement checks.
 const MAX_PARTICIPANTS = 20;
-
-// An answer as the form sends it: text, a number, yes or no, the chosen option ids, or nothing.
-export const answerValueSchema = z.union([
-  z.string().max(MAX_ANSWER_TEXT),
-  z.number(),
-  z.boolean(),
-  z.array(z.string().max(100)).max(MAX_CHOSEN),
-  z.null(),
-]);
-
-export type AnswerValue = z.infer<typeof answerValueSchema>;
-
-export type Answers = Readonly<Record<string, AnswerValue>>;
 
 export interface Submission {
   // Answered once: the guardian's core and every per-Registration field.
@@ -41,16 +31,6 @@ export interface Submission {
   // One per child, in order.
   readonly participants: readonly Answers[];
 }
-
-export const FORM_ANSWER_ERROR_CODES = [
-  'form_answer_required',
-  'form_answer_invalid',
-  'form_answer_too_long',
-  'form_answer_unknown',
-  'form_participants_required',
-] as const;
-
-export type FormAnswerErrorCode = (typeof FORM_ANSWER_ERROR_CODES)[number];
 
 // A field-level error: where, an i18n key, and what the key's text needs.
 export interface FormAnswerError {
@@ -166,8 +146,16 @@ export function isEmpty(value: AnswerValue | undefined): boolean {
   );
 }
 
-// A field as the form shows it: core and standard ones named by an i18n key, custom ones carrying their
-// definition (type, label, options).
+// An option of a standard field as the form shows it: the platform's named by an i18n key, the camp's by
+// its own label.
+export interface FieldOption {
+  readonly value: string;
+  readonly label: string | null;
+  readonly labelKey: string | null;
+}
+
+// A field as the form shows it: core and standard ones named by an i18n key, standard ones with the
+// options they offer, custom ones carrying their definition (type, label, options).
 export type FormField =
   | {
       readonly tier: 'core';
@@ -183,6 +171,8 @@ export type FormField =
       readonly required: boolean;
       readonly labelKey: string;
       readonly spec: StandardFieldSpec;
+      // Every option of a choice: the platform's, then the camp's own; none for any other input.
+      readonly options: readonly FieldOption[];
     }
   | {
       readonly tier: 'custom';
@@ -191,6 +181,51 @@ export type FormField =
       readonly required: boolean;
       readonly field: CustomField;
     };
+
+/**
+ * List the options a standard field offers: a choice's the platform's, a camp choice's the platform's and
+ * then the camp's own; none for any other input.
+ * @param spec the field's meaning
+ * @param campOptions the options the form gives it
+ */
+function optionsOf(spec: StandardFieldSpec, campOptions: readonly { id: string; label: string }[]): FieldOption[] {
+  if (spec.input !== 'choice' && spec.input !== 'camp_choice') {
+    return [];
+  }
+
+  const platform = spec.options.map(({ value, labelKey }) => ({ value, label: null, labelKey }));
+
+  return spec.input === 'choice'
+    ? platform
+    : [...platform, ...campOptions.map(({ id, label }) => ({ value: id, label, labelKey: null }))];
+}
+
+/**
+ * Tell how sensitive a field's answers are: the catalogue's word for a standard field, health or plain for a
+ * custom one; the core is plain.
+ * @param field the field
+ */
+export function fieldSensitivity(field: FormField): FieldSensitivity {
+  switch (field.tier) {
+    case 'core':
+      return 'plain';
+    case 'standard':
+      return field.spec.sensitivity;
+    case 'custom':
+      return field.field.health ? 'health' : 'plain';
+  }
+}
+
+/**
+ * Find the option a standard choice's answer chose, to name it.
+ * @param field the field
+ * @param value the answer
+ */
+export function chosenOption(field: FormField, value: AnswerValue | undefined): FieldOption | null {
+  return field.tier === 'standard' && typeof value === 'string'
+    ? (field.options.find((option) => option.value === value) ?? null)
+    : null;
+}
 
 /**
  * List the fields a form asks in a scope, in its fixed order: the core, the standard fields switched on,
@@ -211,12 +246,22 @@ export function formFields(
     required,
     labelKey: coreLabelKey(key),
   }));
-  const standard: FormField[] = definition.standard.flatMap(({ key, state }) => {
+  const standard: FormField[] = definition.standard.flatMap(({ key, state, options }) => {
     const spec = Object.hasOwn(catalogue, key) ? catalogue[key] : undefined;
 
     return spec === undefined || state === 'off' || spec.scope !== scope
       ? []
-      : [{ tier: 'standard' as const, key, scope, required: state === 'required', labelKey: spec.labelKey, spec }];
+      : [
+          {
+            tier: 'standard' as const,
+            key,
+            scope,
+            required: state === 'required',
+            labelKey: spec.labelKey,
+            spec,
+            options: optionsOf(spec, options ?? []),
+          },
+        ];
   });
   const custom: FormField[] = definition.custom
     .filter((field) => field.scope === scope)
@@ -226,16 +271,36 @@ export function formFields(
 }
 
 /**
+ * Check a standard field's answer by how it is filled in, then against the scope's other answers.
+ * @param field the field
+ * @param value the answer, not empty
+ * @param answers the scope's answers
+ */
+function standardCheck(field: Extract<FormField, { tier: 'standard' }>, value: AnswerValue, answers: Answers): Check {
+  const { spec } = field;
+  const checked =
+    'schema' in spec
+      ? bySchema(value, spec.schema)
+      : typeof value === 'string' && field.options.some((option) => option.value === value)
+        ? ({ ok: true, value } as const)
+        : invalid;
+  const disagreement = checked.ok && spec.agrees !== undefined ? spec.agrees(checked.value, answers) : null;
+
+  return disagreement === null ? checked : { ok: false, error: { code: disagreement } };
+}
+
+/**
  * Check an answer by its field.
  * @param field the field
  * @param value the answer, not empty
+ * @param answers the scope's answers, for a check against the others
  */
-function checkField(field: FormField, value: AnswerValue): Check {
+function checkField(field: FormField, value: AnswerValue, answers: Answers): Check {
   switch (field.tier) {
     case 'core':
       return CORE_CHECKS[field.key](value);
     case 'standard':
-      return bySchema(value, field.spec.schema);
+      return standardCheck(field, value, answers);
     case 'custom':
       return customCheck(field.field, value);
   }
@@ -276,7 +341,7 @@ function checkAnswers(
       continue;
     }
 
-    const checked = checkField(field, answer ?? null);
+    const checked = checkField(field, answer ?? null, answers);
 
     if (checked.ok) {
       value[field.key] = checked.value;
@@ -312,14 +377,17 @@ function checkAnswers(
  * @param fields the fields that may be answered
  * @param answers the answers sent
  * @param path where the answers sit in the request
+ * @param stored the answers kept so far, which an answer is checked against beside those sent
  */
 export function checkAnswersTo(
   fields: readonly FormField[],
   answers: Answers,
   path: readonly (string | number)[],
+  stored: Answers = {},
 ): { errors: FormAnswerError[]; value: Record<string, AnswerValue> } {
   const errors: FormAnswerError[] = [];
   const value: Record<string, AnswerValue> = {};
+  const together = { ...stored, ...answers };
 
   for (const [key, answer] of Object.entries(answers)) {
     const field = fields.find((candidate) => candidate.key === key);
@@ -334,7 +402,7 @@ export function checkAnswersTo(
       continue;
     }
 
-    const checked = checkField(field, answer);
+    const checked = checkField(field, answer, together);
 
     if (checked.ok) {
       value[key] = checked.value;

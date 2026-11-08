@@ -36,13 +36,13 @@ export class ParticipantExportRepository {
 
   /**
    * Record an export an admin started in the current Organisation, waiting for its job.
-   * @param input the admin, the kind, a Participant export's Turnus and columns or the payments export's
-   * dates, and when
+   * @param input the admin, the kind, a Participant export's Turnus, columns and whether health columns may be
+   * in it, or the payments export's dates, and when
    */
   public async create(
     input: Pick<
       ParticipantExportInsert,
-      'adminId' | 'kind' | 'turnusId' | 'columns' | 'paidFrom' | 'paidTo' | 'createdAt'
+      'adminId' | 'kind' | 'turnusId' | 'columns' | 'includeHealth' | 'paidFrom' | 'paidTo' | 'createdAt'
     >,
   ): Promise<ParticipantExportRow> {
     const [row] = await this.unitOfWork.db

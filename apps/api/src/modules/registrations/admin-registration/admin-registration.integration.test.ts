@@ -20,6 +20,7 @@ const bus = {
   hint: null,
   required: false,
   scope: 'participant',
+  health: false,
   options: [
     { id: 'bus', label: 'Autobus', surcharge: 300, needsVerification: false },
     { id: 'train', label: 'Vlak', surcharge: 200, needsVerification: false },

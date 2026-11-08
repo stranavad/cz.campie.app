@@ -11,6 +11,7 @@ const field = (id: string, label: string): CustomField => ({
   hint: null,
   required: false,
   scope: 'participant',
+  health: false,
 });
 
 const A = '0190a2b4-0000-7000-8000-00000000000a';
@@ -49,6 +50,12 @@ describe('diffVersions', () => {
 
     expect(diffVersions(V1, retyped).changed).toEqual([A, B]);
   });
+
+  it('reports a field that became health data under its id, since its answers are stored otherwise', () => {
+    const marked: FormDefinition = { ...V1, custom: [{ ...field(A, 'Alergie'), health: true }, field(B, 'Plavec')] };
+
+    expect(diffVersions(V1, marked).changed).toEqual([A]);
+  });
 });
 
 describe('columnCatalogue', () => {
@@ -76,9 +83,26 @@ describe('columnCatalogue', () => {
         label: null,
         labelKey: 'form.standard.boardingPlace',
         removed: false,
+        sensitivity: 'plain',
       },
-      { key: A, tier: 'custom', scope: 'participant', label: 'Alergie a léky', labelKey: null, removed: false },
-      { key: C, tier: 'custom', scope: 'participant', label: 'Velikost trička', labelKey: null, removed: false },
+      {
+        key: A,
+        tier: 'custom',
+        scope: 'participant',
+        label: 'Alergie a léky',
+        labelKey: null,
+        removed: false,
+        sensitivity: 'plain',
+      },
+      {
+        key: C,
+        tier: 'custom',
+        scope: 'participant',
+        label: 'Velikost trička',
+        labelKey: null,
+        removed: false,
+        sensitivity: 'plain',
+      },
       {
         key: 'insurer',
         tier: 'standard',
@@ -86,8 +110,17 @@ describe('columnCatalogue', () => {
         label: null,
         labelKey: 'form.standard.insurer',
         removed: true,
+        sensitivity: 'plain',
       },
-      { key: B, tier: 'custom', scope: 'participant', label: 'Plavec', labelKey: null, removed: true },
+      {
+        key: B,
+        tier: 'custom',
+        scope: 'participant',
+        label: 'Plavec',
+        labelKey: null,
+        removed: true,
+        sensitivity: 'plain',
+      },
     ]);
   });
 });
@@ -98,7 +131,15 @@ describe('missingNewAnswers', () => {
   const later: FormDefinition = {
     standard: [],
     custom: [
-      { id: ADDED, type: 'short_text', label: 'Číslo pojištěnce', hint: null, required: true, scope: 'participant' },
+      {
+        id: ADDED,
+        type: 'short_text',
+        label: 'Číslo pojištěnce',
+        hint: null,
+        required: true,
+        scope: 'participant',
+        health: false,
+      },
     ],
   };
 
