@@ -12,7 +12,7 @@ import { useTestApp } from '../../testing/test-app.ts';
 import type { Env } from '../config/env.schema.ts';
 import { UnitOfWork } from '../database/unit-of-work.ts';
 import { JobQueue } from './job-queue.ts';
-import { defineJob, JOB_QUEUE, JobHandler, type JobEnvelope } from './job.ts';
+import { defineJob, JOB_QUEUE, JobHandler } from './job.ts';
 
 // Test-only jobs: each handler records what it saw, so a test observes what ran and in which Organisation.
 
@@ -64,6 +64,22 @@ class UnreachableHandler extends JobHandler<typeof unreachableJob> {
   }
 }
 
+const watchedJob = defineJob({
+  name: 'test.watched',
+  scope: 'organisation',
+  payload: z.object({ noteId: z.uuid() }),
+  alertWhenFailed: true,
+});
+
+@Injectable()
+class WatchedHandler extends JobHandler<typeof watchedJob> {
+  public readonly job = watchedJob;
+
+  public handle(): Promise<void> {
+    return Promise.resolve();
+  }
+}
+
 const followUpJob = defineJob({ name: 'test.follow-up', scope: 'organisation', payload: z.object({}) });
 
 @Injectable()
@@ -82,8 +98,8 @@ class FollowUpHandler extends JobHandler<typeof followUpJob> {
 }
 
 describe('background jobs', () => {
-  const { app, database, jobs } = useTestApp({
-    providers: [ReadNotesHandler, CountOrganisationsHandler, UnreachableHandler, FollowUpHandler],
+  const { app, database, jobs, mail } = useTestApp({
+    providers: [ReadNotesHandler, CountOrganisationsHandler, UnreachableHandler, WatchedHandler, FollowUpHandler],
   });
   let organisationA: string;
   let organisationB: string;
@@ -93,18 +109,6 @@ describe('background jobs', () => {
     app()
       .get(UnitOfWork)
       .run(organisationId, async () => work(app().get(JobQueue)));
-
-  // Put a job straight into the queue, as a job that bypassed the app's enqueue would sit there.
-  const addToQueue = async (name: string, envelope: JobEnvelope) => {
-    const config: ConfigService<Env, true> = app().get(ConfigService);
-    const queue = new Queue(JOB_QUEUE, { connection: { url: config.get('REDIS_URL', { infer: true }) } });
-
-    try {
-      await queue.add(name, envelope);
-    } finally {
-      await queue.close();
-    }
-  };
 
   beforeEach(async () => {
     await createNotesTable(database().ownerUrl);
@@ -140,7 +144,7 @@ describe('background jobs', () => {
   });
 
   it('fails a queued job without an Organisation at once, but runs a platform job without one', async () => {
-    await addToQueue(readNotesJob.name, { organisationId: null, payload: {} });
+    await jobs().add(readNotesJob.name, { organisationId: null, payload: {} });
     await app()
       .get(UnitOfWork)
       .runForPlatform(async () => app().get(JobQueue).enqueue(countOrganisationsJob, {}));
@@ -152,6 +156,25 @@ describe('background jobs', () => {
     expect(app().get(ReadNotesHandler).seen).toEqual([]);
     expect(app().get(CountOrganisationsHandler).seen).toEqual([{ organisations: 2, notes: 0 }]);
   });
+
+  // As a job an older version of the app queued, before its payload changed, would sit there.
+  it.each([
+    ['payload', () => ({ organisationId: organisationA, payload: {} })],
+    ['envelope', () => ({ payload: { noteId: organisationA } })],
+  ])(
+    'alerts the Platform operator to a job asking for it that cannot start for a malformed %s',
+    async (_, envelope) => {
+      await jobs().add(watchedJob.name, envelope());
+
+      expect(await jobs().drain()).toEqual([
+        { job: watchedJob.name, outcome: 'failed', error: expect.stringMatching(/malformed/) },
+        { job: 'jobs.failed', outcome: 'completed' },
+      ]);
+      expect(mail().sent.map(({ to, subject }) => ({ to, subject }))).toEqual([
+        { to: ['operator@example.com'], subject: `Úloha selhala: ${watchedJob.name}` },
+      ]);
+    },
+  );
 
   it('retries a failing job with growing delays, then keeps it as failed', async () => {
     await inOrganisation(organisationA, (queue) => queue.enqueue(unreachableJob, {}));

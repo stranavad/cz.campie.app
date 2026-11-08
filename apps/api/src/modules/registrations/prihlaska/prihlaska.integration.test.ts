@@ -13,6 +13,7 @@ import {
 } from '../../../testing/fixtures.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
+import { generatePrihlaskyJob } from './generate-prihlasky.job.ts';
 import { PrihlaskaService } from './services/prihlaska.service.ts';
 
 const TRANSPORT = '0190a2b4-0000-7000-8000-000000000002';
@@ -143,6 +144,21 @@ describe('Přihláška PDF', () => {
     expect(pdfs().rendered).toHaveLength(2);
     expect([...files().objects.keys()].sort()).toEqual(stored.sort());
     expect([...files().objects.values()].every((bytes) => !bytes.toString('latin1').includes('%PDF'))).toBe(true);
+  });
+
+  it('makes and confirms the Přihlášky from a job queued before an admin could switch the confirmation off', async () => {
+    pdfs().failing = true;
+    const { id } = await submit();
+    await jobs().drain();
+    pdfs().failing = false;
+
+    await jobs().add(generatePrihlaskyJob.name, { organisationId, payload: { registrationId: id } });
+
+    expect(await jobs().drain()).toEqual(
+      expect.arrayContaining([{ job: generatePrihlaskyJob.name, outcome: 'completed' }]),
+    );
+    expect((await prihlasky()).every(({ prihlaska_file_id }) => prihlaska_file_id !== null)).toBe(true);
+    expect(mail().sent.filter(({ to }) => to.includes('jana.testovaci@example.com'))).toHaveLength(1);
   });
 
   it('prints the Participant, guardian, frozen price, the Deposit owed first and everything at once, each with its QR platba', async () => {

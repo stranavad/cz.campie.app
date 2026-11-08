@@ -52,11 +52,11 @@ export class JobRunner implements OnModuleInit {
   }
 
   /**
-   * Run a queued job in its Organisation's unit of work, or in a platform one for a platform job.
+   * Run a queued job in its Organisation's unit of work, or in a platform one for a platform job. When its
+   * last attempt fails and its job asks for it, the Platform operator is alerted, also when the job could
+   * not even start, such as one queued by an older version of the app; the failure is thrown on either way.
    * @param job the queued job
    * @throws {Error} for a job no handler knows, to retry it: another version of the app may know it
-   * @throws {UnrecoverableError} for a malformed envelope or payload, an Organisation job without an
-   * Organisation or a platform job with one, none of which a retry mends
    */
   public async run(job: QueuedJob): Promise<void> {
     const handler = this.handlers.get(job.name);
@@ -65,6 +65,34 @@ export class JobRunner implements OnModuleInit {
       throw new Error(`No handler for job ${job.name}`);
     }
 
+    try {
+      await this.runWith(handler, job);
+    } catch (error) {
+      const last = error instanceof UnrecoverableError || job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
+
+      if (last && handler.job.alertWhenFailed === true) {
+        await this.alert(job, jobEnvelope.safeParse(job.data).data?.organisationId ?? null);
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * List the recurring jobs some handler runs.
+   */
+  public recurringJobs(): RecurringJobDefinition[] {
+    return [...this.handlers.values()].map(({ job }) => job).filter(isRecurring);
+  }
+
+  /**
+   * Run a queued job with its handler, in the unit of work its envelope names.
+   * @param handler the job's handler
+   * @param job the queued job
+   * @throws {UnrecoverableError} for a malformed envelope or payload, an Organisation job without an
+   * Organisation or a platform job with one, none of which a retry mends
+   */
+  private async runWith(handler: JobHandler, job: QueuedJob): Promise<void> {
     const envelope = jobEnvelope.safeParse(job.data);
 
     if (!envelope.success) {
@@ -85,55 +113,21 @@ export class JobRunner implements OnModuleInit {
         throw new UnrecoverableError(`Platform job ${job.name} carries an Organisation`);
       }
 
-      return this.alertingWhenFailed(handler, job, null, () => this.unitOfWork.runForPlatform(work));
+      return this.unitOfWork.runForPlatform(work);
     }
 
     if (organisationId === null) {
       throw new UnrecoverableError(`Job ${job.name} has no Organisation and is not a platform job`);
     }
 
-    return this.alertingWhenFailed(handler, job, organisationId, () => this.unitOfWork.run(organisationId, work));
-  }
-
-  /**
-   * List the recurring jobs some handler runs.
-   */
-  public recurringJobs(): RecurringJobDefinition[] {
-    return [...this.handlers.values()].map(({ job }) => job).filter(isRecurring);
-  }
-
-  /**
-   * Run a job's unit of work and, when its last attempt fails and its job asks for it, have the Platform
-   * operator alerted. The failure is thrown on either way.
-   * @param handler the job's handler
-   * @param job the queued job
-   * @param organisationId the job's Organisation, or null for a platform job
-   * @param run runs the job's unit of work
-   */
-  private async alertingWhenFailed(
-    handler: JobHandler,
-    job: QueuedJob,
-    organisationId: string | null,
-    run: () => Promise<void>,
-  ): Promise<void> {
-    try {
-      await run();
-    } catch (error) {
-      const last = error instanceof UnrecoverableError || job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
-
-      if (last && handler.job.alertWhenFailed === true) {
-        await this.alert(job, organisationId);
-      }
-
-      throw error;
-    }
+    return this.unitOfWork.run(organisationId, work);
   }
 
   /**
    * Enqueue the Platform operator's alert of a job that failed for good. Best effort: a failure to enqueue
    * it is logged, so the job's own error still ends the attempt.
    * @param job the queued job
-   * @param organisationId the job's Organisation, or null for a platform job
+   * @param organisationId the Organisation the job's envelope names, if any
    */
   private async alert(job: QueuedJob, organisationId: string | null): Promise<void> {
     try {

@@ -93,6 +93,17 @@ export function testJobs(app: INestApplication, redisUrl: string) {
       }),
 
     /**
+     * Put a job straight into the queue, as one that bypassed the app's enqueue, or that an older version
+     * of the app enqueued, would sit there; drain() then runs it.
+     * @param name the job's name
+     * @param envelope what the job carries, malformed if the test wants it so
+     */
+    add: (name: string, envelope: unknown) =>
+      withQueue(redisUrl, async (queue) => {
+        await queue.add(name, envelope);
+      }),
+
+    /**
      * The jobs the queue holds as failed for good, as anyone inspecting the queue sees them.
      */
     failed: () =>
