@@ -6,7 +6,6 @@
   "title": "Přihlášky",
   "noTurnusy": "Organizace zatím nemá žádný turnus.",
   "turnus": "Turnus",
-  "turnusOption": "{{camp}} - {{turnus}} ({{date}})",
   "search": "Hledat jméno, e-mail nebo variabilní symbol",
   "paymentStatus": "Platba",
   "anyStatus": "Všechny",

@@ -9,19 +9,20 @@ import { czechDate } from '@repo/schema/shared';
 import { Button } from '@/components/ui/button';
 import { membershipAllows, useCurrentMembership } from '@/core/account';
 import { RegistrationField } from '@/core/registration-form';
-import { useSelectedTurnusQuery } from '@/core/selected-turnus';
+import { useSelectedTurnus } from '@/core/selected-turnus';
 import { useCreateRegistrationMutation, useTurnusFormQuery } from '@/features/participants/api/participants.queries';
 
 // A Registration taken by phone or on paper: the Camp's form, outside window, capacity and age limits.
 export function CreateRegistrationPage() {
   const { t } = useTranslation('participants');
+  const { t: tCommon } = useTranslation();
   const navigate = useNavigate();
   const { membership, isLoading, isSignedOut } = useCurrentMembership();
   const organisationId = membership?.organisation.id ?? '';
   const canWrite = membershipAllows(membership, 'registrations', 'write');
-  const turnusy = useSelectedTurnusQuery(organisationId, canWrite);
+  const selected = useSelectedTurnus();
   const [turnusId, setTurnusId] = useState<string | null>(null);
-  const chosen = turnusId ?? turnusy.data?.turnusId ?? turnusy.data?.turnusy[0]?.id ?? null;
+  const chosen = turnusId ?? selected.turnusId;
   const form = useTurnusFormQuery(organisationId, chosen);
   const create = useCreateRegistrationMutation(organisationId);
   const [registration, setRegistration] = useState<Answers>({});
@@ -33,7 +34,7 @@ export function CreateRegistrationPage() {
     return <Navigate to="/platform/prihlaseni" replace />;
   }
 
-  if (isLoading || turnusy.isPending) {
+  if (isLoading || selected.isPending) {
     return <p className="py-12 text-muted-foreground">{t('loading')}</p>;
   }
 
@@ -57,9 +58,13 @@ export function CreateRegistrationPage() {
           value={chosen ?? ''}
           onChange={(event) => setTurnusId(event.target.value)}
         >
-          {turnusy.data?.turnusy.map((turnus) => (
+          {selected.turnusy.map((turnus) => (
             <option key={turnus.id} value={turnus.id}>
-              {t('turnusOption', { camp: turnus.campName, turnus: turnus.name, date: czechDate(turnus.startDate) })}
+              {tCommon('selectedTurnus.option', {
+                camp: turnus.campName,
+                turnus: turnus.name,
+                date: czechDate(turnus.startDate),
+              })}
             </option>
           ))}
         </select>

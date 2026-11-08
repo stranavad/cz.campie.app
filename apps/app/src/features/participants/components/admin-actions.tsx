@@ -6,7 +6,7 @@ import { czechDate } from '@repo/schema/shared';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useSelectedTurnusQuery } from '@/core/selected-turnus';
+import { useSelectedTurnus } from '@/core/selected-turnus';
 import {
   useAddParticipantMutation,
   useEditAnswersMutation,
@@ -86,11 +86,9 @@ export function AdminActions({ organisationId, detail }: { organisationId: strin
   const previewParticipant = usePreviewParticipantMutation(organisationId, detail.id);
   const addParticipant = useAddParticipantMutation(organisationId, detail.id);
   const move = useMoveRegistrationMutation(organisationId, detail.id);
-  const turnusy = useSelectedTurnusQuery(organisationId, true);
+  const { turnusy } = useSelectedTurnus();
   const [target, setTarget] = useState('');
-  const others = (turnusy.data?.turnusy ?? []).filter(
-    ({ id, campId }) => campId === detail.camp.id && id !== detail.turnus.id,
-  );
+  const others = turnusy.filter(({ id, campId }) => campId === detail.camp.id && id !== detail.turnus.id);
   const answersOf = (participant: RegistrationDetail['participants'][number]) => ({
     firstName: participant.firstName,
     lastName: participant.lastName,
