@@ -82,15 +82,15 @@ export class ParticipantExportRepository {
   }
 
   /**
-   * Get the same export the admin started that is still waiting for its job: of the Turnus, or of the
-   * payments within the same dates.
+   * Get the same export the admin started that is still waiting for its job: of the Turnus with the same
+   * columns and health decision, or of the payments within the same dates.
    * @param adminId the admin
-   * @param scope the Turnus, or the payments export's dates
+   * @param scope the Turnus, columns and whether health columns may be in it, or the payments export's dates
    * @param since the oldest start still counted; one waiting longer failed
    */
   public async getPending(
     adminId: string,
-    scope: Pick<ParticipantExportRow, 'turnusId' | 'paidFrom' | 'paidTo'>,
+    scope: Pick<ParticipantExportRow, 'turnusId' | 'columns' | 'includeHealth' | 'paidFrom' | 'paidTo'>,
     since: Date,
   ): Promise<ParticipantExportRow | null> {
     const [row] = await this.unitOfWork.db
@@ -102,6 +102,8 @@ export class ParticipantExportRepository {
           sameAs(participantExports.turnusId, scope.turnusId),
           sameAs(participantExports.paidFrom, scope.paidFrom),
           sameAs(participantExports.paidTo, scope.paidTo),
+          scope.columns === null ? isNull(participantExports.columns) : eq(participantExports.columns, scope.columns),
+          eq(participantExports.includeHealth, scope.includeHealth),
           eq(participantExports.status, 'pending'),
           gt(participantExports.createdAt, since),
         ),

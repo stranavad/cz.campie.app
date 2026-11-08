@@ -3,7 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
 import { checklistOf, type ChecklistItem, type GuardianChecklist, type RequirementState } from '@repo/schema/checklist';
 import type { ConsentState } from '@repo/schema/consents';
-import { missingNewAnswers } from '@repo/schema/form-engine';
+import { diffVersions, missingNewAnswers, sensitiveKeys } from '@repo/schema/form-engine';
 import type { Balance } from '@repo/schema/pricing';
 
 import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
@@ -150,10 +150,21 @@ export class ChecklistService {
     const requirementStates = await this.requirementStatesOf(camp.id, childIds);
     const registrationOf = new Map(registrations.map((registration) => [registration.id, registration]));
     // Whether a required field added later is answered counts the encrypted answers too, so they are opened
-    // here only to tell that, and only when there are any.
-    const answersOf = await answerOpener(this.encryption, [...registrations, ...participants]);
+    // here only to tell that: only of Registrations whose fields added since include a sensitive one.
+    const sensitive = sensitiveKeys(latest === null ? [] : [latest.definition], REGISTRATION_FIELD_CATALOGUE);
+    const addedSensitive = (version: RegistrationFormVersionEntity) =>
+      latest !== null && diffVersions(version.definition, latest.definition).added.some((key) => sensitive.has(key));
+    const owesSensitive = new Set([...versions.values()].filter(addedSensitive).map(({ id }) => id));
+    const sealedRegistrations = registrations.filter(({ formVersionId }) => owesSensitive.has(formVersionId));
+    const sealedIds = new Set(sealedRegistrations.map(({ id }) => id));
+    const open = await answerOpener(this.encryption, [
+      ...sealedRegistrations,
+      ...participants.filter(({ registrationId }) => sealedIds.has(registrationId)),
+    ]);
+    const answersOf = (stored: RegistrationEntity | ParticipantEntity, registrationId: string) =>
+      sealedIds.has(registrationId) ? open(stored) : stored.answers;
     const openedRegistrations = new Map(
-      registrations.map((registration) => [registration.id, answersOf(registration)]),
+      registrations.map((registration) => [registration.id, answersOf(registration, registration.id)]),
     );
     const modules = {
       consents: camp.modules.includes('consents'),
@@ -177,7 +188,7 @@ export class ChecklistService {
                   ? 0
                   : missingNewAnswers(version.definition, latest.definition, REGISTRATION_FIELD_CATALOGUE, {
                       registration: openedRegistrations.get(registration.id) ?? {},
-                      participant: answersOf(participant),
+                      participant: answersOf(participant, participant.registrationId),
                     }),
               consents: consentStates.get(participant.id) ?? [],
               healthRecord: null,

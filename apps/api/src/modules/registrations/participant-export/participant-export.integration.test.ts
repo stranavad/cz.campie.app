@@ -132,6 +132,29 @@ describe('participant export', () => {
     expect((await http().get(`/api/exports/${started.body.id}`).set(colleague)).status).toBe(404);
   });
 
+  it('starts a new export, audited, when the columns or the health decision differ from the waiting one', async () => {
+    const admin = await createAdmin(app(), {
+      memberOf: [organisationId],
+      permissions: { registrations: 'read', health: 'read' },
+    });
+    const start = (body: object = {}) =>
+      http().post(`/api/turnusy/${turnusId}/exports`).set(admin.headers(organisationId)).send(body);
+
+    const started = await start();
+    const otherColumns = await start({ columns: ['lastName'] });
+    expect((await start({ columns: ['lastName'] })).body.id).toBe(otherColumns.body.id);
+    await query(`UPDATE memberships SET health = 'none' WHERE admin_id = $1`, [admin.id]);
+    const withoutHealth = await start();
+
+    expect(new Set([started.body.id, otherColumns.body.id, withoutHealth.body.id]).size).toBe(3);
+    expect(
+      await query<{ include_health: boolean }>(
+        'SELECT include_health FROM participant_exports ORDER BY created_at, id',
+      ),
+    ).toEqual([{ include_health: true }, { include_health: true }, { include_health: false }]);
+    expect(await query(`SELECT action FROM audit_entries WHERE action = 'export.create'`)).toHaveLength(3);
+  });
+
   it('takes Registrations read, and keeps another Organisation away', async () => {
     const otherId = await createOrganisation(app());
     const asOther = (await createAdmin(app(), { memberOf: [otherId], owner: true })).headers(otherId);

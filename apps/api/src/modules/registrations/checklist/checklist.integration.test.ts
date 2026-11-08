@@ -90,6 +90,33 @@ describe('Participant checklist', () => {
     expect(await kinds()).toContain('missing_answers:open:open');
   });
 
+  it('counts an encrypted answer to a required health field added since as given', async () => {
+    const allergies = {
+      id: INSURANCE,
+      type: 'short_text',
+      label: 'Alergie',
+      hint: null,
+      required: true,
+      scope: 'participant',
+      health: true,
+    };
+    await http()
+      .put(`/api/camps/${campId}/registration-form/draft`)
+      .set(owner)
+      .send({ definition: { standard: [], custom: [allergies] }, maxParticipants: 3, declarations: [] });
+    await http().post(`/api/camps/${campId}/registration-form/versions`).set(owner);
+    expect(await kinds()).toContain('missing_answers:open:open');
+    const participantId = (await query<{ id: string }>('SELECT id FROM participants'))[0]?.id;
+
+    await http()
+      .put(`/api/portal/registrations/${registrationId}/answers`)
+      .set(guardian)
+      .send({ registration: {}, participants: [{ participantId, answers: { [INSURANCE]: 'Pyl' } }] });
+
+    expect(await query('SELECT answers FROM participants')).toEqual([{ answers: {} }]);
+    expect(await kinds()).not.toContain('missing_answers:open:open');
+  });
+
   it('gives a Cancelled child no checklist, and a guardian of another family nothing', async () => {
     const stranger = (await createGuardianSession(app(), organisationId, 'cizi.rodic@example.com')).headers;
     const otherId = await createOrganisation(app());

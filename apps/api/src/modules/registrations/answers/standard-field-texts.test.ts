@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
@@ -10,7 +11,16 @@ const WITH_PLACE: FormDefinition = {
   custom: [],
 };
 
+// The app's Czech translations, which name the standard fields on screen under the catalogue's i18n keys.
+const APP_TEXTS = new URL('../../../../../app/src/locales/cs/common.json', import.meta.url);
+
 describe('standard field texts', () => {
+  it("prints the standard fields as the app's Czech translations name them", () => {
+    const { form } = JSON.parse(readFileSync(APP_TEXTS, 'utf8')) as { form: { standard: unknown } };
+
+    expect(STANDARD_FIELD_TEXTS).toEqual(form.standard);
+  });
+
   it('names every platform option of the catalogue in Czech', () => {
     for (const [key, spec] of Object.entries(REGISTRATION_FIELD_CATALOGUE)) {
       const texts: Readonly<Record<string, string>> =

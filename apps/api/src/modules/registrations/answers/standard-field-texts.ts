@@ -2,7 +2,7 @@ import { isRegistrationFieldKey, type RegistrationFieldKey } from '@repo/schema/
 import { chosenOption, type AnswerValue, type FormField } from '@repo/schema/form-engine';
 
 // The standard fields' labels and the platform's options as documents and exports print them, in Czech;
-// the app has the same texts in its translations, under the catalogue's i18n keys.
+// the app has the same texts in its translations, under the catalogue's i18n keys, and a test keeps them equal.
 export const STANDARD_FIELD_TEXTS: Readonly<
   Record<RegistrationFieldKey, { label: string; options?: Readonly<Record<string, string>> }>
 > = {

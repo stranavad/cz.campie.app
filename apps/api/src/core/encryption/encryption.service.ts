@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 import { OrganisationKeyRepository } from '../../repositories/organisations/organisation-key/organisation-key.repository.ts';
+import type { Transaction } from '../database/database.port.ts';
+import { UnitOfWork } from '../database/unit-of-work.ts';
 import { KeyProvider } from '../ports/key-provider/key-provider.port.ts';
 import {
   generateWrappedDataKey,
@@ -15,9 +17,13 @@ import {
 // the master key.
 @Injectable()
 export class EncryptionService {
+  // Each unit of work's cipher, by its transaction, so a request unwraps its Organisation's key once.
+  private readonly ciphers = new WeakMap<Transaction, { organisationId: string; cipher: OrganisationCipher }>();
+
   constructor(
     private readonly keyProvider: KeyProvider,
     private readonly organisationKeys: OrganisationKeyRepository,
+    private readonly unitOfWork: UnitOfWork,
   ) {}
 
   /**
@@ -32,18 +38,31 @@ export class EncryptionService {
   }
 
   /**
-   * Get a cipher with the current Organisation's data key. It holds the key in memory, so it keeps
-   * working after the unit of work ends, for streaming a file.
+   * Get a cipher with the current Organisation's data key, the same one for the rest of the unit of work. It
+   * holds the key in memory, so it keeps working after the unit of work ends, for streaming a file.
    * @throws {Error} when the Organisation's data key is destroyed
    */
   public async cipher(): Promise<OrganisationCipher> {
+    const { db, organisationId } = this.unitOfWork;
+    const known = this.ciphers.get(db);
+
+    if (known?.organisationId === organisationId) {
+      return known.cipher;
+    }
+
     const key = await this.organisationKeys.getCurrent();
 
     if (key === null) {
       throw new Error("The Organisation's data key is destroyed; its encrypted data cannot be decrypted");
     }
 
-    return new OrganisationCipher(unwrapDataKey(this.keyProvider.masterKey(), key.wrappedKey, key.organisationId));
+    const cipher = new OrganisationCipher(
+      unwrapDataKey(this.keyProvider.masterKey(), key.wrappedKey, key.organisationId),
+    );
+
+    this.ciphers.set(db, { organisationId, cipher });
+
+    return cipher;
   }
 
   /**

@@ -96,6 +96,21 @@ describe('encryption', () => {
     );
   });
 
+  it('unwraps the data key once per unit of work', async () => {
+    const organisationId = await createOrganisation(app());
+    const encryption = app().get(EncryptionService);
+    const unitOfWork = app().get(UnitOfWork);
+
+    const [first, second] = await unitOfWork.run(organisationId, async () => [
+      await encryption.cipher(),
+      await encryption.cipher(),
+    ]);
+    const later = await unitOfWork.run(organisationId, () => encryption.cipher());
+
+    expect(second).toBe(first);
+    expect(later).not.toBe(first);
+  });
+
   it('never lets the app replace a data key', async () => {
     await createOrganisation(app());
 
