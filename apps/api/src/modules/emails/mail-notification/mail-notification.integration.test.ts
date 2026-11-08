@@ -24,7 +24,7 @@ const SENDER = { name: 'Letní tábor', replyTo: 'tabor@spolek.example.com' };
 
 describe('bounce and complaint notifications', () => {
   const testApp = useTestApp();
-  const { app, http, mail, database } = testApp;
+  const { app, http, mail, database, expectIsolated, expectPermission } = testApp;
 
   let organisationId: string;
   let otherOrganisationId: string;
@@ -175,6 +175,51 @@ describe('bounce and complaint notifications', () => {
     expect(changed.status).toBe(200);
     expect(changed.body.guardians).toEqual([expect.objectContaining({ email: corrected, undeliverable: false })]);
     expect((await marks()).map(({ email }) => email)).toEqual([GUARDIAN]);
+  });
+
+  it("lets Registrations write clear the mark of the Registration's own addresses only, audited", async () => {
+    const grandparent = 'babicka.testovaci@example.com';
+    await http().post(`/api/registrations/${registrationId}/access-emails`).set(admin).send({ email: grandparent });
+    await notify({ reason: 'bounce', organisationId, recipients: [GUARDIAN] });
+    await notify({ reason: 'complaint', organisationId, recipients: [grandparent] });
+    await notify({ reason: 'bounce', organisationId, recipients: ['cizi.rodic@example.com'] });
+    await notify({ reason: 'bounce', organisationId: otherOrganisationId, recipients: [GUARDIAN] });
+    const clear = (email: string, headers = admin) =>
+      http().post(`/api/registrations/${registrationId}/clear-undeliverable`).set(headers).send({ email });
+
+    expect((await clear('cizi.rodic@example.com')).status).toBe(404);
+    const cleared = await clear('Jana.Testovaci@Example.com');
+
+    expect(cleared.status).toBe(200);
+    expect(cleared.body.guardians).toEqual([expect.objectContaining({ email: GUARDIAN, undeliverable: false })]);
+    expect((await clear(grandparent)).body.accessEmails).toEqual([
+      expect.objectContaining({ email: grandparent, undeliverable: false }),
+    ]);
+    expect((await marks()).map(({ organisation_id, email }) => [organisation_id === organisationId, email])).toEqual([
+      [true, 'cizi.rodic@example.com'],
+      [false, GUARDIAN],
+    ]);
+    const audit = await withClient(
+      database().ownerUrl,
+      async (client) =>
+        (
+          await client.query(
+            `SELECT actor_kind, changes->'email'->>'old' AS email FROM audit_entries
+              WHERE action = 'undeliverable_email.clear' ORDER BY occurred_at, id`,
+          )
+        ).rows,
+    );
+    expect(audit).toEqual([
+      { actor_kind: 'admin', email: GUARDIAN },
+      { actor_kind: 'admin', email: grandparent },
+    ]);
+
+    await notify({ reason: 'bounce', organisationId, recipients: [GUARDIAN] });
+    await expectPermission(['registrations', 'write'], organisationId, (headers) => clear(GUARDIAN, headers));
+    const otherAdmin = (await createAdmin(app(), { memberOf: [otherOrganisationId], owner: true })).headers(
+      otherOrganisationId,
+    );
+    await expectIsolated(() => clear(GUARDIAN, otherAdmin));
   });
 
   it('ignores an event of no interest, and one for a deleted Organisation', async () => {

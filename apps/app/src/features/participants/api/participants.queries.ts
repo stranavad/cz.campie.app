@@ -125,6 +125,11 @@ export const useAddAccessEmailMutation = (organisationId: string, registrationId
     participantsService.addAccessEmail(organisationId, registrationId, email),
   );
 
+export const useClearUndeliverableMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, (email: string) =>
+    participantsService.clearUndeliverable(organisationId, registrationId, email),
+  );
+
 export const useRemoveAccessEmailMutation = (organisationId: string, registrationId: string) =>
   useRegistrationChange(organisationId, (accessEmailId: string) =>
     participantsService.removeAccessEmail(organisationId, registrationId, accessEmailId),

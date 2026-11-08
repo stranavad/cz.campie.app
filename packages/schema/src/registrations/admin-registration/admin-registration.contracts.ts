@@ -212,6 +212,18 @@ export const removeAccessEmailEndpoint = defineEndpoint({
   response: registrationDetailSchema,
 });
 
+// Clears the undeliverable mark of a guardian's or access email's address of the Registration, such as one the
+// family says works again, so notification mail goes there again. Audited when there was a mark;
+// Registrations write.
+export const clearUndeliverableEndpoint = defineEndpoint({
+  method: 'POST',
+  path: '/registrations/:registrationId/clear-undeliverable',
+  params: registrationParamsSchema,
+  body: accessEmailBodySchema,
+  response: registrationDetailSchema,
+  status: 200,
+});
+
 // Removes one of two guardians, who loses access at once; the other becomes the first. Audited; Registrations
 // write.
 export const removeGuardianEndpoint = defineEndpoint({

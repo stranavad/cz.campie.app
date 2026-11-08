@@ -110,7 +110,9 @@
       "invalid_amount": "Zadejte celou částku v Kč."
     },
     "encryptedChanged": "Změněná chráněná pole: {{fields}}",
-    "emailUndeliverable": "E-mail nedoručitelný - posíláme sem jen odkazy pro přihlášení. Po opravě adresy se značka zruší."
+    "emailUndeliverable": "E-mail nedoručitelný - posíláme sem jen odkazy pro přihlášení. Po opravě adresy se značka zruší.",
+    "clearUndeliverable": "Zrušit značku nedoručitelnosti",
+    "clearUndeliverableFailed": "Značku se nepodařilo zrušit."
   },
   "edit": {
     "title": "Úpravy přihlášky",

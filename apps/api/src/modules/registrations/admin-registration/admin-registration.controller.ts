@@ -6,6 +6,7 @@ import {
   addParticipantEndpoint,
   cancelParticipantEndpoint,
   cancelRegistrationEndpoint,
+  clearUndeliverableEndpoint,
   createRegistrationEndpoint,
   editAnswersEndpoint,
   editGuardianEndpoint,
@@ -77,6 +78,15 @@ export class AdminRegistrationController {
     @EndpointBody(addAccessEmailEndpoint) { email }: AccessEmailBody,
   ): Promise<RegistrationDetail> {
     return this.admin.addAccessEmail(actor, registrationId, email);
+  }
+
+  @Endpoint(clearUndeliverableEndpoint)
+  public clearUndeliverable(
+    @RequestActor() actor: Actor,
+    @EndpointParams(clearUndeliverableEndpoint) { registrationId }: RegistrationParams,
+    @EndpointBody(clearUndeliverableEndpoint) { email }: AccessEmailBody,
+  ): Promise<RegistrationDetail> {
+    return this.admin.clearUndeliverable(actor, registrationId, email);
   }
 
   @Endpoint(removeAccessEmailEndpoint)

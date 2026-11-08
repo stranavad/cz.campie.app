@@ -21,6 +21,7 @@ import {
   addPriceAdjustmentEndpoint,
   cancelParticipantEndpoint,
   cancelRegistrationEndpoint,
+  clearUndeliverableEndpoint,
   createRegistrationEndpoint,
   editAnswersEndpoint,
   editGuardianEndpoint,
@@ -113,6 +114,8 @@ export const participantsService = {
     apiClient.request(cancelRegistrationEndpoint, { organisationId, params: { registrationId } }),
   addAccessEmail: (organisationId: string, registrationId: string, email: string) =>
     apiClient.request(addAccessEmailEndpoint, { organisationId, params: { registrationId }, body: { email } }),
+  clearUndeliverable: (organisationId: string, registrationId: string, email: string) =>
+    apiClient.request(clearUndeliverableEndpoint, { organisationId, params: { registrationId }, body: { email } }),
   removeAccessEmail: (organisationId: string, registrationId: string, accessEmailId: string) =>
     apiClient.request(removeAccessEmailEndpoint, { organisationId, params: { registrationId, accessEmailId } }),
   removeGuardian: (organisationId: string, registrationId: string, position: number) =>

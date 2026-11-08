@@ -452,6 +452,28 @@ export class AdminRegistrationService {
   }
 
   /**
+   * Clear the undeliverable mark of one of the Registration's guardian or access email addresses, audited.
+   * @param actor the admin
+   * @param registrationId Registration id
+   * @param email the address, lowercase
+   * @throws {NotFoundException} when the address is neither a guardian's nor an access email of the Registration
+   */
+  public async clearUndeliverable(actor: Actor, registrationId: string, email: string): Promise<RegistrationDetail> {
+    await this.load(registrationId, false);
+    const guardians = await this.registrations.listGuardians(registrationId);
+    const accessEmails = await this.registrations.listAccessEmails(registrationId);
+
+    // Only an address of this Registration, so the route clears no mark of another family or a Camp team.
+    if (![...guardians, ...accessEmails].some((known) => known.email === email)) {
+      throw new NotFoundException();
+    }
+
+    await this.undeliverable.clear(actor, email);
+
+    return this.details.get(registrationId);
+  }
+
+  /**
    * Take an access email's portal access away, audited.
    * @param actor the admin
    * @param registrationId Registration id

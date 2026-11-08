@@ -13,6 +13,7 @@ import { LedgerForms } from '@/features/participants/components/ledger-forms';
 import { RegistrationConsents } from '@/features/participants/components/registration-consents';
 import { RegistrationControls } from '@/features/participants/components/registration-controls';
 import { RegistrationDocuments } from '@/features/participants/components/registration-documents';
+import { UndeliverableBadge } from '@/features/participants/components/undeliverable-badge';
 import { useRegistrationDetailPage } from '@/features/participants/components/use-registration-detail-page.hook';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -101,9 +102,12 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
               phone: guardian.phone ?? '',
             })}
             {guardian.undeliverable ? (
-              <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-950">
-                {t('detail.emailUndeliverable')}
-              </span>
+              <UndeliverableBadge
+                organisationId={page.organisationId}
+                registrationId={registrationId}
+                email={guardian.email}
+                canClear={page.canWrite}
+              />
             ) : null}
           </p>
         ))}

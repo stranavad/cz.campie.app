@@ -13,6 +13,7 @@ import {
   useRemoveAccessEmailMutation,
   useRemoveGuardianMutation,
 } from '@/features/participants/api/participants.queries';
+import { UndeliverableBadge } from '@/features/participants/components/undeliverable-badge';
 
 // Cancelling children, access emails, removing a guardian and generating a Přihláška again.
 export function RegistrationControls({
@@ -102,9 +103,12 @@ export function RegistrationControls({
             <span className="flex-1">
               {access.email}
               {access.undeliverable ? (
-                <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-950">
-                  {t('detail.emailUndeliverable')}
-                </span>
+                <UndeliverableBadge
+                  organisationId={organisationId}
+                  registrationId={detail.id}
+                  email={access.email}
+                  canClear
+                />
               ) : null}
             </span>
             <Button type="button" size="sm" variant="outline" onClick={() => removeAccess.mutate(access.id)}>
