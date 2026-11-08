@@ -192,16 +192,29 @@ export class GuardianDocumentService {
     }
 
     await this.rateLimiter.admit(this.limit, { ipAddress: actor.ipAddress, target: actor.identity });
+
     // Checked once before the file is stored, so a refused replacement costs no storage, and again under
     // the locks below.
-    this.refuseUnreplaceable(await this.replaceableOf(actor.identity, params, null));
+    const document = await this.uploads.getById(params.uploadId);
+    await this.ensureReplaceable(actor.identity, params.registrationId, document);
 
     const fileId = await this.files.store(upload);
-    // The same order as an upload's and a review's: the Registration (keeping an erasure out), then the
-    // document before its child, so a review deciding on it meanwhile is seen below.
+
+    // The Registration first, keeping an erasure out, then the document before its requirement and child,
+    // as a review takes them, so a review deciding on it meanwhile is seen below. The requirement is held,
+    // as for an upload, so it is not turned into a download meanwhile.
     await this.registrations.lockById(params.registrationId);
-    const before = await this.replaceableOf(actor.identity, params, await this.uploads.lockById(params.uploadId));
-    this.refuseUnreplaceable(before);
+    const { campId, ...before } = await this.ensureReplaceable(
+      actor.identity,
+      params.registrationId,
+      await this.uploads.lockById(params.uploadId),
+    );
+    const requirement = await this.types.holdOrThrow(campId, before.documentTypeId);
+
+    if (requirement.kind !== 'requirement') {
+      throw new NotFoundException();
+    }
+
     await this.registrations.lockParticipantOrThrow(before.participantId);
 
     const after = await this.uploads.replaceFile(before.id, {
@@ -224,19 +237,20 @@ export class GuardianDocumentService {
   }
 
   /**
-   * Find a document of a Registered child of the guardian's Registration, in a Camp that takes documents.
+   * Make sure a document belongs to a Registered child of the guardian's Registration, in a Camp that takes
+   * documents, and still waits for review with a file; answer it with its Camp.
    * @param email the guardian's email
-   * @param params the Registration and the document
-   * @param locked the document as locked, or null to read it now
+   * @param registrationId Registration id
+   * @param document the document, or null when the Organisation has none with its id
    * @throws {NotFoundException} when the document is not of the guardian's Registered child
+   * @throws {ConflictException} document_upload_not_pending when it was reviewed or handed in on paper
    */
-  private async replaceableOf(
+  private async ensureReplaceable(
     email: string,
-    params: ReplaceUploadParams,
-    locked: DocumentUploadRow | null,
-  ): Promise<DocumentUploadRow> {
-    const document = locked ?? (await this.uploads.getById(params.uploadId));
-    const { camp, participants } = await this.familyOf(email, params.registrationId);
+    registrationId: string,
+    document: DocumentUploadRow | null,
+  ): Promise<DocumentUploadRow & { campId: string }> {
+    const { camp, participants } = await this.familyOf(email, registrationId);
 
     if (
       document === null ||
@@ -246,20 +260,13 @@ export class GuardianDocumentService {
       throw new NotFoundException();
     }
 
-    return document;
-  }
-
-  /**
-   * Refuse to replace a document that was reviewed, or one handed in on paper.
-   * @param document the document
-   * @throws {ConflictException} document_upload_not_pending
-   */
-  private refuseUnreplaceable(document: DocumentUploadRow): void {
     if (document.status !== 'pending' || document.fileId === null) {
       const code: UploadErrorCode = 'document_upload_not_pending';
 
       throw new ConflictException({ code, message: 'The document was reviewed already' });
     }
+
+    return { ...document, campId: camp.id };
   }
 
   /**
