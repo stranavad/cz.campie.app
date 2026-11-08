@@ -1,6 +1,6 @@
 # 69 - Readable audit log
 
-Status: in-progress
+Status: done
 Stage: 1b
 Episode: E9 Trust
 Blocked by: 10, 65
