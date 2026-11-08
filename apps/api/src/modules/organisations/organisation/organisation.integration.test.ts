@@ -72,6 +72,7 @@ describe('organisation signup', () => {
         id: expect.any(String),
         email: 'jana.testovaci@example.com',
         password_hash: expect.stringMatching(/^\$argon2id\$/),
+        email_verified_at: null,
       },
     ]);
     expect(admins[0]?.password_hash).not.toContain(SIGNUP.password);
@@ -90,6 +91,7 @@ describe('organisation signup', () => {
     expect(account.status).toBe(200);
     expect(account.body).toEqual({
       email: 'jana.testovaci@example.com',
+      emailVerified: false,
       operator: false,
       totpEnabled: false,
       secondFactor: false,
@@ -164,8 +166,7 @@ describe('organisation signup', () => {
     expect(mail().sent).toEqual([]);
     await jobs().drain();
 
-    expect(mail().sent).toHaveLength(1);
-    const [sent] = mail().sent;
+    const sent = mail().sent.find(({ to }) => to.includes('operator@example.com'));
     expect(sent).toMatchObject({
       from: '"Campie" <info@posta.campie.test>',
       to: ['operator@example.com'],

@@ -31,6 +31,7 @@ import {
   type CreateOrganisation,
 } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 import { AdminService } from '../../../admins/admin/services/admin.service.ts';
+import { EmailVerificationService } from '../../../admins/email-verification/services/email-verification.service.ts';
 import { MembershipService } from '../../../admins/membership/services/membership.service.ts';
 import { CampService } from '../../../camps/camp/services/camp.service.ts';
 import { organisationSignedUpJob } from '../organisation-signed-up.job.ts';
@@ -51,6 +52,7 @@ export class OrganisationService {
     private readonly legalAcceptances: LegalAcceptanceRepository,
     private readonly encryption: EncryptionService,
     private readonly admins: AdminService,
+    private readonly emailVerifications: EmailVerificationService,
     private readonly memberships: MembershipService,
     private readonly camps: CampService,
     private readonly audit: AuditService,
@@ -95,8 +97,9 @@ export class OrganisationService {
   /**
    * Sign an Organisation up, in a platform unit of work that then enters it: the Organisation pending
    * approval with its data key, its first Camp, the signer as its first Owner and the accepted legal
-   * versions, all audited and committed as one. The Platform operator is notified once it commits. Every
-   * attempt counts against the signup limit of the IP address and the signer's email, before anything else.
+   * versions, all audited and committed as one. The Platform operator is notified once it commits, and the
+   * signer gets a link that verifies their email; they work signed in meanwhile. Every attempt counts
+   * against the signup limit of the IP address and the signer's email, before anything else.
    * @param body what the signer entered
    * @param ipAddress where the signer acts from
    * @throws {ConflictException} when the legal versions are not the current ones, or the email has an
@@ -167,6 +170,7 @@ export class OrganisationService {
     await this.memberships.create(actor, { adminId: admin.id, owner: true });
 
     this.jobs.enqueue(organisationSignedUpJob, { organisationId: organisation.id });
+    this.emailVerifications.send(admin.id);
 
     return this.sessions.startAdmin(admin.id);
   }

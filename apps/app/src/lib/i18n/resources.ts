@@ -4,6 +4,7 @@ import campPages from '@/locales/cs/camp-pages.json';
 import camps from '@/locales/cs/camps.json';
 import common from '@/locales/cs/common.json';
 import consoleTexts from '@/locales/cs/console.json';
+import emailVerification from '@/locales/cs/email-verification.json';
 import invitation from '@/locales/cs/invitation.json';
 import legal from '@/locales/cs/legal.json';
 import login from '@/locales/cs/login.json';
@@ -24,6 +25,7 @@ export const resources = {
     adminHome,
     login,
     passwordReset,
+    emailVerification,
     members,
     invitation,
     organisationSettings,

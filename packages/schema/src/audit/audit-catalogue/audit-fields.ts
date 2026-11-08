@@ -27,7 +27,7 @@ const list = <L extends string>(label: L, values?: string) =>
 // The fields the audit log names, per subject, since a field such as `status` means different things on
 // different records. A recorded field missing here is shown only among an entry's details.
 export const AUDIT_FIELDS = {
-  admin: { email: email('email') },
+  admin: { email: email('email'), emailVerifiedAt: datetime('emailVerifiedAt') },
   camp: {
     name: text('name'),
     slug: text('slug'),

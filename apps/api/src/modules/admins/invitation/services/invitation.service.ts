@@ -22,6 +22,7 @@ import type { InvitationEntity } from '../../../../repositories/admins/invitatio
 import { InvitationRepository } from '../../../../repositories/admins/invitation/invitation.repository.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 import { AdminService } from '../../admin/services/admin.service.ts';
+import { LoginService } from '../../login/services/login.service.ts';
 import { MembershipService } from '../../membership/services/membership.service.ts';
 import { invitationCreatedJob } from '../invitation-created.job.ts';
 
@@ -38,6 +39,7 @@ export class InvitationService {
     private readonly invitations: InvitationRepository,
     private readonly organisations: OrganisationRepository,
     private readonly admins: AdminService,
+    private readonly logins: LoginService,
     private readonly memberships: MembershipService,
     private readonly audit: AuditService,
     private readonly sessions: SessionService,
@@ -136,28 +138,33 @@ export class InvitationService {
   public async lookUp(token: string): Promise<InvitationPreview> {
     const invitation = await this.getValidOrThrow(token);
     const organisation = await this.organisations.getByIdOrThrow(invitation.organisationId);
+    const admin = await this.admins.getByEmail(invitation.email);
 
     return {
       email: invitation.email,
       organisation: { displayName: organisation.displayName },
-      hasAccount: (await this.admins.getByEmail(invitation.email)) !== null,
+      // An account whose email was never verified may be someone else's: the invitee takes it over with a
+      // new password, as if there were none.
+      hasAccount: admin !== null && admin.emailVerifiedAt !== null,
     };
   }
 
   /**
    * Accept an invitation through its link, once, in a platform unit of work that then enters the
-   * invitation's Organisation: the invitee becomes a member with the invited levels, audited as them. An
-   * email without an account gets one with the given password and is signed in; an existing account joins
-   * as it is, since the link proves the email is theirs, and signs in as usual.
-   * @param body the token from the link, and the password of a new account
+   * invitation's Organisation: the invitee becomes a member with the invited levels, audited as them. The
+   * link proves the email is the invitee's, not that an account under it is: an account whose email was
+   * verified joins as it is and signs in as usual. Any other is taken over: the invitee sets its password,
+   * its sessions and TOTP end, and they are signed in, as with an email without an account, which gets one.
+   * @param body the token from the link, and the password unless the account's email is verified
    * @param ipAddress where the invitee acts from
-   * @throws {BadRequestException} when the link is unknown, used or expired, or a new account's password
-   * is missing or too weak
+   * @throws {BadRequestException} when the link is unknown, used or expired, or a needed password is
+   * missing or too weak
    */
   public async accept({ token, password }: AcceptInvitationBody, ipAddress: string): Promise<IssuedSession | null> {
     const read = await this.getValidOrThrow(token);
     const existing = await this.admins.getByEmail(read.email);
-    const passwordHash = existing === null ? await this.newPasswordHash(read.email, password) : undefined;
+    const verified = existing !== null && existing.emailVerifiedAt !== null;
+    const passwordHash = verified ? undefined : await this.newPasswordHash(read.email, password);
     // Its levels as it is used up, not as first read: an Owner may have replaced it meanwhile.
     const invitation = await this.invitations.consumeByTokenHash(hashSessionToken(token));
 
@@ -165,9 +172,9 @@ export class InvitationService {
       throw invitationError(BadRequestException, 'invitation_invalid');
     }
 
-    const admin = existing ?? (await this.admins.create({ email: invitation.email, passwordHash }));
-
     await this.unitOfWork.enter(invitation.organisationId);
+    const admin =
+      existing ?? (await this.admins.create({ email: invitation.email, passwordHash, emailVerified: true }));
     const actor: Actor = { kind: 'admin', identity: admin.id, ipAddress };
 
     if (existing === null) {
@@ -176,6 +183,18 @@ export class InvitationService {
         target: { type: 'admin', id: admin.id },
         change: { before: null, after: admin },
       });
+    } else if (passwordHash !== undefined) {
+      // A password was required, so the account's email was never verified: the invitee takes it over.
+      await this.audit.record(actor, {
+        action: 'admin.replace_credentials',
+        target: { type: 'admin', id: admin.id },
+        change: await this.admins.setPassword(admin.id, passwordHash),
+      });
+    }
+
+    if (passwordHash !== undefined) {
+      // Like a reset link, the invitation proves the email: failed logins run up against it before count no more.
+      this.logins.forgetFailures(invitation.email);
     }
 
     await this.audit.record(actor, {
@@ -188,7 +207,7 @@ export class InvitationService {
       await this.memberships.create(actor, { adminId: admin.id, owner: false, permissions: invitation.permissions });
     }
 
-    return existing === null ? this.sessions.startAdmin(admin.id) : null;
+    return verified ? null : this.sessions.startAdmin(admin.id);
   }
 
   /**
@@ -207,9 +226,9 @@ export class InvitationService {
   }
 
   /**
-   * Check and hash the password of a new account. Hashed before the link is used up, so the slow hash
-   * holds no lock a simultaneous use waits for.
-   * @param email the new account's email
+   * Check and hash the password of a new or taken over account. Hashed before the link is used up, so the
+   * slow hash holds no lock a simultaneous use waits for.
+   * @param email the account's email
    * @param password the password the invitee chose, if any
    * @throws {BadRequestException} when it is missing or too weak
    */

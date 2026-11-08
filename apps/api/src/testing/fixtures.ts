@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 import type { Permissions } from '@repo/schema/admins';
 import type { TurnusBody } from '@repo/schema/camps';
+import { CURRENT_LEGAL_VERSIONS } from '@repo/schema/organisations';
 import type { PaymentChoice } from '@repo/schema/pricing';
 import { ACCESS_HEADERS, slugify } from '@repo/schema/shared';
 
@@ -235,7 +236,8 @@ export async function organisationHost(app: INestApplication, organisationId: st
  * in one of them as that admin.
  * @param app the running test app
  * @param options the Organisations the admin is a member of; whether an Owner of each, and their level per
- * area in each, none where left out; their password, none as if invited
+ * area in each, none where left out; their password, none as if invited; whether their email is verified,
+ * as an invited admin's is
  */
 export async function createAdmin(
   app: INestApplication,
@@ -244,13 +246,20 @@ export async function createAdmin(
     owner = false,
     permissions,
     password,
-  }: { memberOf: readonly string[]; owner?: boolean; permissions?: Partial<Permissions>; password?: string },
+    emailVerified = true,
+  }: {
+    memberOf: readonly string[];
+    owner?: boolean;
+    permissions?: Partial<Permissions>;
+    password?: string;
+    emailVerified?: boolean;
+  },
 ): Promise<{ id: string; email: string; headers: (organisationId: string) => RequestHeaders }> {
   const unitOfWork = app.get(UnitOfWork);
   const passwordHash = password === undefined ? undefined : await hashPassword(password);
 
   const admin = await unitOfWork.runForPlatform(() =>
-    app.get(AdminService).create({ email: `admin-${randomUUID()}@example.com`, passwordHash }),
+    app.get(AdminService).create({ email: `admin-${randomUUID()}@example.com`, passwordHash, emailVerified }),
   );
 
   // Arranged without an audit entry, so a test's audit log holds only what the test itself did.
@@ -266,6 +275,56 @@ export async function createAdmin(
     id: admin.id,
     email: admin.email,
     headers: (organisationId) => ({ ...headers, [ACCESS_HEADERS.organisation]: organisationId }),
+  };
+}
+
+/**
+ * Sign an Organisation up as the signup form does, so its Owner's account is new and their email not yet
+ * verified; the verification mail waits among the queued jobs.
+ * @param app the running test app
+ * @param credentials the Owner's email and password
+ * @returns the Organisation, and the signed-in Owner's headers in it
+ */
+export async function signUpOrganisation(
+  app: INestApplication,
+  { email, password }: { email: string; password: string },
+): Promise<{ organisationId: string; headers: RequestHeaders }> {
+  const subdomain = `tabor-${randomUUID().slice(0, 8)}`;
+  const unitOfWork = app.get(UnitOfWork);
+  const session = await unitOfWork.runForPlatform(() =>
+    app.get(OrganisationService).signUp(
+      {
+        legalName: 'Testovací tábornický spolek z. s.',
+        ico: '12345679',
+        vatId: null,
+        address: 'Smyšlená 12, 123 45 Testov',
+        statutoryRepresentative: 'Jana Testovací',
+        contactEmail: 'kontakt@spolek.example.com',
+        contactPhone: '+420 123 456 789',
+        billingEmail: 'fakturace@spolek.example.com',
+        campName: 'Letní tábor Pokusník',
+        subdomain,
+        email,
+        password,
+        acceptedVersions: { ...CURRENT_LEGAL_VERSIONS },
+      },
+      '203.0.113.10',
+    ),
+  );
+  const organisation = await unitOfWork.runForPlatform(() => app.get(OrganisationRepository).getBySubdomain(subdomain));
+
+  if (organisation === null) {
+    throw new Error('The signup created no Organisation');
+  }
+
+  return {
+    organisationId: organisation.id,
+    headers: {
+      Host: mainHost(app),
+      Cookie: `${SESSION_COOKIES.admin}=${session.token}`,
+      [ACCESS_HEADERS.csrf]: '1',
+      [ACCESS_HEADERS.organisation]: organisation.id,
+    },
   };
 }
 

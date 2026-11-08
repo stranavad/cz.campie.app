@@ -21,7 +21,11 @@
   "yes": "Ano",
   "no": "Ne",
   "actions": {
-    "admin": { "create": "Založení účtu správce" },
+    "admin": {
+      "create": "Založení účtu správce",
+      "replace_credentials": "Převzetí neověřeného účtu správce pozvánkou",
+      "verify_email": "Ověření e-mailu správce"
+    },
     "camp": { "create": "Založení tábora", "update": "Úprava tábora" },
     "camp_email_text": {
       "remove": "Obnovení výchozího e-mailu tábora",
@@ -161,6 +165,7 @@
   },
   "fields": {
     "email": "E-mail",
+    "emailVerifiedAt": "E-mail ověřen",
     "name": "Název",
     "slug": "Adresa stránky",
     "websiteUrl": "Web",

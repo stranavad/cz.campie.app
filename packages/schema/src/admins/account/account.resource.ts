@@ -7,6 +7,8 @@ import { permissionsSchema } from '../membership/membership.resource.ts';
 // The signed-in admin's own identity, their second factor and the Organisations they are a member of.
 export const accountSchema = z.object({
   email: z.string(),
+  // Whether the admin proved the email theirs; until then the admin interface asks them to.
+  emailVerified: z.boolean(),
   // Whether the admin is the Platform operator, whose console needs TOTP.
   operator: z.boolean(),
   totpEnabled: z.boolean(),

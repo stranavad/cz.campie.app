@@ -12,6 +12,8 @@ export * from './invitation/look-up-invitation.contract.ts';
 export * from './invitation/accept-invitation.contract.ts';
 export * from './account/account.resource.ts';
 export * from './account/get-account.contract.ts';
+export * from './email-verification/request-email-verification.contract.ts';
+export * from './email-verification/verify-email.contract.ts';
 export * from './password-reset/request-password-reset.contract.ts';
 export * from './password-reset/reset-password.contract.ts';
 export * from './session/log-in.contract.ts';

@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 
 import { AdminRepository } from './admins/admin/admin.repository.ts';
+import { EmailVerificationRepository } from './admins/email-verification/email-verification.repository.ts';
 import { InvitationRepository } from './admins/invitation/invitation.repository.ts';
 import { MembershipRepository } from './admins/membership/membership.repository.ts';
 import { PasswordResetRepository } from './admins/password-reset/password-reset.repository.ts';
@@ -54,6 +55,7 @@ const REPOSITORIES = [
   AdminRepository,
   MembershipRepository,
   InvitationRepository,
+  EmailVerificationRepository,
   PasswordResetRepository,
   TotpCredentialRepository,
   OperatorRepository,

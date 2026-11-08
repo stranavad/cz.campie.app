@@ -22,3 +22,6 @@ export const useLogOutMutation = () => {
     onSuccess: () => queryClient.resetQueries({ queryKey: accountKeys.all }),
   });
 };
+
+export const useRequestEmailVerificationMutation = () =>
+  useMutation({ mutationFn: accountService.requestEmailVerification });

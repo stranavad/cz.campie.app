@@ -3,9 +3,16 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { Permissions } from '@repo/schema/admins';
 import { ACCESS_HEADERS } from '@repo/schema/shared';
 
-import { createAdmin, createOrganisation, mainHost, type RequestHeaders } from '../../../testing/fixtures.ts';
+import {
+  createAdmin,
+  createOrganisation,
+  mainHost,
+  signUpOrganisation,
+  type RequestHeaders,
+} from '../../../testing/fixtures.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
+import { enrolTotp } from '../../../testing/totp.ts';
 
 const PASSWORD = 'nove heslo pro letni tabor';
 
@@ -107,6 +114,80 @@ describe('invitations', () => {
     expect(
       (await platform('sessions', { email: existing.email, password: 'puvodni heslo z jineho taboru' })).status,
     ).toBe(204);
+  });
+
+  it('gives an account whose email was never verified to the invitee, ending its password, sessions and TOTP', async () => {
+    const planted = await signUpOrganisation(app(), {
+      email: 'nova-vedouci@example.com',
+      password: 'heslo toho kdo ucet zalozil',
+    });
+    const { headers: plantedHeaders } = await enrolTotp(http(), planted.headers, clock().now());
+    const token = await inviteAndReadLink('nova-vedouci@example.com');
+
+    expect((await platform('invitations/lookup', { token })).body).toMatchObject({ hasAccount: false });
+    expect((await platform('invitations/accept', { token })).body).toMatchObject({ code: 'password_required' });
+
+    const accepted = await platform('invitations/accept', { token, password: PASSWORD });
+    expect(accepted.status).toBe(204);
+    expect(accepted.headers['set-cookie']).toBeDefined();
+
+    expect((await http().get('/api/account').set(plantedHeaders)).status).toBe(401);
+    expect(
+      (await platform('sessions', { email: 'nova-vedouci@example.com', password: 'heslo toho kdo ucet zalozil' }))
+        .status,
+    ).toBe(401);
+
+    const loggedIn = await platform('sessions', { email: 'nova-vedouci@example.com', password: PASSWORD });
+    expect(loggedIn.status).toBe(204);
+    const invitee = { Host: mainHost(app()), Cookie: String(loggedIn.headers['set-cookie']).split(';')[0] ?? '' };
+    expect((await http().get('/api/account').set(invitee)).body).toMatchObject({
+      totpEnabled: false,
+      memberships: expect.arrayContaining([
+        expect.objectContaining({ owner: true, organisation: expect.objectContaining({ id: planted.organisationId }) }),
+        expect.objectContaining({ permissions: LEVELS, organisation: expect.objectContaining({ id: organisationId }) }),
+      ]),
+    });
+    expect(await members()).toContainEqual(
+      expect.objectContaining({ email: 'nova-vedouci@example.com', permissions: LEVELS }),
+    );
+  });
+
+  it('lifts a login lockout someone ran up against the address before the takeover', async () => {
+    await signUpOrganisation(app(), { email: 'nova-vedouci@example.com', password: 'heslo toho kdo ucet zalozil' });
+    const token = await inviteAndReadLink('nova-vedouci@example.com');
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await platform('sessions', { email: 'nova-vedouci@example.com', password: 'spatne heslo k ciziho uctu' });
+    }
+    expect((await platform('sessions', { email: 'nova-vedouci@example.com', password: PASSWORD })).status).toBe(429);
+
+    await platform('invitations/accept', { token, password: PASSWORD });
+
+    expect((await platform('sessions', { email: 'nova-vedouci@example.com', password: PASSWORD })).status).toBe(204);
+  });
+
+  it('audits a takeover in the inviting Organisation as the invitee', async () => {
+    await signUpOrganisation(app(), { email: 'nova-vedouci@example.com', password: 'heslo toho kdo ucet zalozil' });
+    const token = await inviteAndReadLink('nova-vedouci@example.com');
+    await platform('invitations/accept', { token, password: PASSWORD });
+
+    const [entries, admins] = await withClient(database().ownerUrl, async (client) => [
+      (
+        await client.query(
+          "SELECT organisation_id, actor_identity, target_id, changes FROM audit_entries WHERE action = 'admin.replace_credentials'",
+        )
+      ).rows,
+      (await client.query("SELECT id FROM admins WHERE email = 'nova-vedouci@example.com'")).rows,
+    ]);
+
+    expect(entries).toEqual([
+      {
+        organisation_id: organisationId,
+        actor_identity: admins[0]?.id,
+        target_id: admins[0]?.id,
+        changes: { emailVerifiedAt: { old: null, new: clock().now().toISOString() } },
+      },
+    ]);
   });
 
   it('accepts a link once', async () => {

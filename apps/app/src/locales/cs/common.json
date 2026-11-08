@@ -15,6 +15,15 @@
     "logOut": "Odhlásit se",
     "supportReadOnly": "Režim podpory: jste v organizaci {{organisation}} jen pro čtení, do {{until}}.",
     "supportWrites": "Režim podpory: jste v organizaci {{organisation}} se svolením ke změnám, do {{until}}. Každá změna se zapisuje do historie.",
+    "emailVerification": {
+      "notice": "Ověřte prosím svůj e-mail {{email}} odkazem, který jsme vám poslali. Dokud ho neověříte, může účet převzít ten, kdo dostane pozvánku na tento e-mail.",
+      "resend": "Poslat odkaz znovu",
+      "sent": "Nový odkaz jsme poslali.",
+      "failure": {
+        "requests_throttled": "Odkazů bylo v poslední době příliš mnoho. Zkuste to prosím později.",
+        "unexpected": "Odkaz se nepodařilo odeslat. Zkuste to prosím znovu."
+      }
+    },
     "account": "Můj účet",
     "legal": {
       "label": "Právní dokumenty",

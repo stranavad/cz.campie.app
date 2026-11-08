@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, eq, inArray, notExists } from 'drizzle-orm';
+import { and, eq, inArray, isNull, notExists } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { admins, legalAcceptances, memberships, operators } from '../../../db/schema.ts';
@@ -98,6 +98,22 @@ export class AdminRepository {
     }
 
     return new AdminEntity(row);
+  }
+
+  /**
+   * Mark an admin's email verified, unless it already is: of two simultaneous calls only one does.
+   * @param id admin id
+   * @param at when it was verified
+   * @returns the admin as verified by this call, or null when it was verified already or is missing
+   */
+  public async verifyEmail(id: string, at: Date): Promise<AdminEntity | null> {
+    const [row] = await this.unitOfWork.db
+      .update(admins)
+      .set({ emailVerifiedAt: at })
+      .where(and(eq(admins.id, id), isNull(admins.emailVerifiedAt)))
+      .returning();
+
+    return row === undefined ? null : new AdminEntity(row);
   }
 
   /**

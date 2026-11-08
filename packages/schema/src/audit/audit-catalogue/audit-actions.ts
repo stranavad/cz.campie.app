@@ -26,6 +26,8 @@ interface AuditActionEntry {
 // a guardian's change targets its Registration, a Consent signed its Participant.
 export const AUDIT_ACTIONS = {
   'admin.create': { area: 'members', targets: ['admin'] },
+  'admin.replace_credentials': { area: 'members', targets: ['admin'] },
+  'admin.verify_email': { area: 'members', targets: ['admin'] },
   'camp.create': { area: 'camps', targets: ['camp'] },
   'camp.update': { area: 'camps', targets: ['camp'] },
   'camp_email_text.remove': { area: 'camps', targets: ['camp_email_text'] },

@@ -1,0 +1,11 @@
+{
+  "title": "Ověření e-mailu",
+  "intro": "Potvrďte, že tento e-mail patří vám. Heslo k tomu nepotřebujete.",
+  "submit": "Ověřit e-mail",
+  "done": "E-mail je ověřený.",
+  "continue": "Pokračovat do správy",
+  "failure": {
+    "email_verification_invalid": "Odkaz už neplatí: byl použit, nebo vypršel. Nový si pošlete ze správy organizace.",
+    "unexpected": "E-mail se nepodařilo ověřit. Zkuste to prosím znovu."
+  }
+}

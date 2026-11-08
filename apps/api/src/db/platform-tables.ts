@@ -1,6 +1,7 @@
 import { getTableName } from 'drizzle-orm';
 
 import { admins } from './admins/admins.ts';
+import { emailVerifications } from './admins/email-verifications.ts';
 import { invitations } from './admins/invitations.ts';
 import { memberships } from './admins/memberships.ts';
 import { passwordResets } from './admins/password-resets.ts';
@@ -27,6 +28,7 @@ export const PLATFORM_TABLES: readonly string[] = [
   memberships,
   invitations,
   passwordResets,
+  emailVerifications,
   totpCredentials,
   totpRecoveryCodes,
   operators,

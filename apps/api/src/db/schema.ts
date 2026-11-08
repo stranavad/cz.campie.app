@@ -1,6 +1,7 @@
 export { admins } from './admins/admins.ts';
 export { invitations } from './admins/invitations.ts';
 export { memberships, permissionLevel } from './admins/memberships.ts';
+export { emailVerifications } from './admins/email-verifications.ts';
 export { passwordResets } from './admins/password-resets.ts';
 export { totpCredentials } from './admins/totp-credentials.ts';
 export { auditActorKind, auditEntries } from './audit/audit-entries.ts';

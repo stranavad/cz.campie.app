@@ -11,8 +11,8 @@ export const lookUpInvitationBodySchema = z.object({
 
 export type LookUpInvitationBody = z.infer<typeof lookUpInvitationBodySchema>;
 
-// What the invitee sees before accepting. With an account they join as they are; without one they
-// choose a password.
+// What the invitee sees before accepting. With an account whose email is verified they join as they are;
+// otherwise they choose a password.
 export const invitationPreviewSchema = z.object({
   email: z.string(),
   organisation: z.object({ displayName: z.string() }),

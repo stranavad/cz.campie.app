@@ -10,7 +10,6 @@ import { hashPassword } from '../../../../core/passwords/password-hash.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { RateLimiter, type RequestLimit } from '../../../../core/rate-limits/rate-limiter.ts';
 import { generateSessionToken, hashSessionToken } from '../../../../core/sessions/session-token.ts';
-import { SessionService } from '../../../../core/sessions/session.service.ts';
 import type { AdminEntity } from '../../../../repositories/admins/admin/admin.entity.ts';
 import { PasswordResetRepository } from '../../../../repositories/admins/password-reset/password-reset.repository.ts';
 import { AdminService } from '../../admin/services/admin.service.ts';
@@ -29,7 +28,6 @@ export class PasswordResetService {
     private readonly passwordResets: PasswordResetRepository,
     private readonly admins: AdminService,
     private readonly logins: LoginService,
-    private readonly sessions: SessionService,
     private readonly jobs: JobQueue,
     private readonly rateLimiter: RateLimiter,
     private readonly clock: Clock,
@@ -74,7 +72,8 @@ export class PasswordResetService {
 
   /**
    * Set an admin's new password through a reset link, which then stops working, and end the admin's
-   * sessions. Proving access to the email also lifts a login lockout.
+   * sessions. Proving access to the email verifies it, clears the TOTP of an account whose email was never
+   * verified, and lifts a login lockout.
    * @param body the token from the link and the new password
    * @throws {BadRequestException} when the link is unknown, used or expired, or the password too weak
    */
@@ -99,8 +98,7 @@ export class PasswordResetService {
       throw resetError('password_reset_invalid');
     }
 
-    await this.admins.setPasswordHash(admin.id, passwordHash);
-    await this.sessions.endAllAdmin(admin.id);
+    await this.admins.setPassword(admin.id, passwordHash);
     this.logins.forgetFailures(admin.email);
   }
 }

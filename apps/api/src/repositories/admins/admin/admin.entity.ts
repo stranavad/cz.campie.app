@@ -9,9 +9,11 @@ export type AdminInsertModel = InferInsertModel<typeof admins>;
 export class AdminEntity {
   public readonly id: string;
   public readonly email: string;
+  public readonly emailVerifiedAt: Date | null;
 
   constructor(row: AdminSelectModel) {
     this.id = row.id;
     this.email = row.email;
+    this.emailVerifiedAt = row.emailVerifiedAt;
   }
 }

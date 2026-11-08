@@ -9,6 +9,7 @@ import { useCurrentMembership } from '@/core/account';
 import { brandAttributes } from '@/core/branding';
 import { AdminFeedback } from '@/core/platform-shell/components/admin-feedback';
 import { AdminSidebar } from '@/core/platform-shell/components/admin-sidebar';
+import { EmailVerificationBanner } from '@/core/platform-shell/components/email-verification-banner';
 import { LegalFooter } from '@/core/platform-shell/components/legal-footer';
 import { OrganisationBadge } from '@/core/platform-shell/components/organisation-badge';
 import { SupportBanner } from '@/core/platform-shell/components/support-banner';
@@ -66,6 +67,7 @@ export function AdminLayout() {
 
       <div className="flex min-w-0 flex-1 flex-col lg:min-h-dvh">
         <SupportBanner />
+        <EmailVerificationBanner />
         <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 pt-6 pb-12 sm:px-6 lg:px-10 lg:pt-8">
           <TwoStepGate>
             <Outlet />
