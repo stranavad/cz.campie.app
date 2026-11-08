@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { priceRegistration, type PricingInput } from './registration-price.ts';
+import { percentageCodeLine, priceRegistration, type PricingInput } from './registration-price.ts';
 
 const PRICE_LIST = {
   basePrice: 6500,
@@ -213,5 +213,20 @@ describe('priceRegistration', () => {
       amount: 300,
       source: { fieldId: 'doprava', optionId: 'bus' },
     });
+  });
+});
+
+describe('percentageCodeLine', () => {
+  it("takes a percentage code off one child's price, as that child's line", () => {
+    expect(percentageCodeLine({ code: 'LETO10', kind: 'percentage', value: 10 }, 6550, 2)).toEqual({
+      kind: 'discount_code',
+      participant: 2,
+      label: 'LETO10',
+      amount: -655,
+    });
+  });
+
+  it('has no line for a fixed code, which came off the total once', () => {
+    expect(percentageCodeLine({ code: 'MINUS1000', kind: 'fixed', value: 1000 }, 6500, 2)).toBeNull();
   });
 });

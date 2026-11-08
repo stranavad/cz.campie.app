@@ -95,7 +95,6 @@ export class GuardianRegistrationService {
     );
     const payment = registrationPaymentOf({
       registration,
-      turnus,
       camp,
       organisation,
       total: ledger.total,

@@ -100,7 +100,7 @@ export class ChecklistService {
       ({ status }) => status === 'registered',
     );
     const childIds = participants.map(({ id }) => id);
-    const balances = await this.ledger.balancesOf(turnus, registrations);
+    const balances = await this.ledger.balancesOf(registrations);
     const latest = await this.forms.getLatestVersion(camp.id);
     const versions = new Map(
       (await this.forms.listVersionsByIds([...new Set(registrations.map(({ formVersionId }) => formVersionId))])).map(

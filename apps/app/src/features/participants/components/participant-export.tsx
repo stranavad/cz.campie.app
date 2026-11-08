@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useExportOptionsQuery, usePresetMutations } from '@/features/participants/api/participants.queries';
 import { ExportDownload } from '@/features/participants/components/export-download';
+import { PaymentsExport } from '@/features/participants/components/payments-export';
 
 interface ParticipantExportProps {
   organisationId: string;
@@ -15,7 +16,7 @@ interface ParticipantExportProps {
 }
 
 // The Turnus's Excel export: every column at once, or the columns chosen, from a shared preset or the last
-// choice; and the payment ledger for the accountant.
+// choice; and the payments within dates for the accountant.
 export function ParticipantExport({ organisationId, turnusId, campId }: ParticipantExportProps) {
   const { t } = useTranslation('participants');
   const [isPicking, setPicking] = useState(false);
@@ -43,12 +44,16 @@ export function ParticipantExport({ organisationId, turnusId, campId }: Particip
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-3">
-        <ExportDownload organisationId={organisationId} turnusId={turnusId} label={t('export.start')} />
+        <ExportDownload
+          organisationId={organisationId}
+          request={{ kind: 'participants', turnusId }}
+          label={t('export.start')}
+        />
         <Button type="button" size="sm" variant="outline" onClick={() => setPicking(!isPicking)}>
           {t('export.pick')}
         </Button>
-        <ExportDownload organisationId={organisationId} turnusId={null} label={t('export.payments')} />
       </div>
+      <PaymentsExport organisationId={organisationId} />
       {isPicking && options.data !== undefined ? (
         <div className="flex flex-col gap-3 rounded-lg border p-3 text-sm">
           {options.data.presets.length === 0 ? null : (
@@ -89,8 +94,7 @@ export function ParticipantExport({ organisationId, turnusId, campId }: Particip
           <div className="flex flex-wrap items-end gap-2">
             <ExportDownload
               organisationId={organisationId}
-              turnusId={turnusId}
-              columns={[...selection]}
+              request={{ kind: 'participants', turnusId, columns: [...selection] }}
               label={t('export.startChosen')}
               disabled={selection.length === 0}
             />

@@ -216,6 +216,58 @@ describe('admin registrations', () => {
     expect(saved.body.ledger.total).toBe(6800 + 6700 - 800);
   });
 
+  it('takes a percentage Discount code off an added child, but adds nothing for a fixed one', async () => {
+    const codes = async (code: string, kind: string, value: number) =>
+      http()
+        .post(`/api/camps/${campId}/discount-codes`)
+        .set(owner)
+        .send({ code, kind, value, usageLimit: 1, expiresOn: null });
+    await codes('LETO10', 'percentage', 10);
+    await codes('MINUS500', 'fixed', 500);
+    const child = { answers: { firstName: 'Jan', lastName: 'Testovací', birthDate: '2019-02-02' } };
+    const preview = async (discountCode: string) => {
+      const { id } = (await create({ discountCode })).body;
+
+      return (await http().post(`/api/registrations/${id}/participants/preview`).set(owner).send(child)).body.lines;
+    };
+
+    // The code's only use is taken, so it is past its limit when the child is added.
+    expect(await preview('LETO10')).toEqual([
+      { kind: 'base_price', participant: 1, label: null, amount: 6500 },
+      { kind: 'discount_code', participant: 1, label: 'LETO10', amount: -650 },
+      { kind: 'sibling_discount', participant: 1, label: null, amount: -400 },
+      { kind: 'sibling_discount', participant: 0, label: null, amount: -400 },
+    ]);
+    expect(await preview('MINUS500')).not.toContainEqual(expect.objectContaining({ kind: 'discount_code' }));
+  });
+
+  it('gives a moved Registration the due dates of its new Turnus for its submission, audited', async () => {
+    const { id } = (await create()).body;
+    const ledgerOf = async () => (await http().get(`/api/registrations/${id}/ledger`).set(owner)).body;
+    expect((await ledgerOf()).amountDue).toMatchObject({ phase: 'full', dueDate: '2027-04-24' });
+
+    const later = (
+      await http()
+        .post(`/api/camps/${campId}/turnusy`)
+        .set(owner)
+        .send({ ...TURNUS, name: 'Turnus 2', depositDueDays: 7, balanceDueDate: '2027-06-01' })
+    ).body.id;
+    await http().post(`/api/registrations/${id}/move`).set(owner).send({ turnusId: later });
+
+    expect((await ledgerOf()).amountDue).toMatchObject({ phase: 'full', dueDate: '2027-04-17' });
+    expect(
+      await query(`SELECT changes FROM audit_entries WHERE target_id = $1 AND action = 'registration.move'`, [id]),
+    ).toEqual([
+      {
+        changes: {
+          turnusId: { old: turnusId, new: later },
+          depositDueDate: { old: '2027-04-24', new: '2027-04-17' },
+          balanceDueDate: { old: null, new: '2027-06-01' },
+        },
+      },
+    ]);
+  });
+
   it('moves a Registration within its Camp only, keeping its price lines', async () => {
     const { id } = (await create()).body;
     const before = await lines(id);

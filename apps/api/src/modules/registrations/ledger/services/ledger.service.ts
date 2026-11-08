@@ -227,15 +227,11 @@ export class LedgerService {
   }
 
   /**
-   * Derive the balance now of each of a Turnus's Registrations, in a few queries.
-   * @param turnus the Turnus
-   * @param registrations its Registrations
+   * Derive the balance now of each of Registrations, in a few queries.
+   * @param registrations the Registrations
    * @returns the balance by Registration id
    */
-  public async balancesOf(
-    turnus: TurnusEntity,
-    registrations: readonly RegistrationEntity[],
-  ): Promise<Map<string, Balance>> {
+  public async balancesOf(registrations: readonly RegistrationEntity[]): Promise<Map<string, Balance>> {
     const ids = registrations.map(({ id }) => id);
     const lines = await this.registrations.sumPriceLinesOf(ids);
     const paid = await this.payments.sumOf(ids);
@@ -251,9 +247,8 @@ export class LedgerService {
             adjustments: [{ amount: adjusted.get(registration.id) ?? 0 }],
             payments: [{ amount: paid.get(registration.id) ?? 0 }],
             depositTotal: registration.depositTotal,
-            submittedAt: registration.submittedAt,
-            depositDueDays: turnus.depositDueDays,
-            balanceDueDate: turnus.balanceDueDate,
+            depositDueDate: registration.depositDueDate,
+            balanceDueDate: registration.balanceDueDate,
           },
           today,
         ),
@@ -290,7 +285,6 @@ export class LedgerService {
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
     const instructions = registrationPaymentOf({
       registration: books.registration,
-      turnus: books.turnus,
       camp,
       organisation,
       total: books.balance.total,
@@ -329,7 +323,8 @@ export class LedgerService {
   }
 
   /**
-   * Load a Registration's lines, adjustments and ledger and derive its balance today in Prague.
+   * Load a Registration's lines, adjustments and ledger and derive its balance today in Prague, by its own
+   * due dates.
    * @param registrationId Registration id
    */
   private async booksOf(registrationId: string): Promise<Books> {
@@ -344,9 +339,8 @@ export class LedgerService {
         adjustments,
         payments,
         depositTotal: registration.depositTotal,
-        submittedAt: registration.submittedAt,
-        depositDueDays: turnus.depositDueDays,
-        balanceDueDate: turnus.balanceDueDate,
+        depositDueDate: registration.depositDueDate,
+        balanceDueDate: registration.balanceDueDate,
       },
       pragueDateOf(this.clock.now()),
     );

@@ -3,7 +3,6 @@ import qrcode from 'qrcode';
 import { paymentInstructionsOf, type PaymentInstructions } from '@repo/schema/payments';
 
 import type { CampEntity } from '../../../repositories/camps/camp/camp.entity.ts';
-import type { TurnusEntity } from '../../../repositories/camps/turnus/turnus.entity.ts';
 import type { OrganisationEntity } from '../../../repositories/organisations/organisation/organisation.entity.ts';
 import type { RegistrationEntity } from '../../../repositories/registrations/registration/registration.entity.ts';
 
@@ -11,13 +10,12 @@ import type { RegistrationEntity } from '../../../repositories/registrations/reg
 const QR_OPTIONS = { margin: 2, errorCorrectionLevel: 'M' } as const;
 
 /**
- * Tell how to pay a Registration, the same way on the Přihláška, in emails and in the portal: by its
- * Turnus's dates, to its Organisation's account, with the Camp's name as the message.
- * @param of the Registration, its Turnus, Camp and Organisation, its total and what is paid
+ * Tell how to pay a Registration, the same way on the Přihláška, in emails and in the portal: by its own
+ * due dates, to its Organisation's account, with the Camp's name as the message.
+ * @param of the Registration, its Camp and Organisation, its total and what is paid
  */
 export function registrationPaymentOf(of: {
   readonly registration: RegistrationEntity;
-  readonly turnus: TurnusEntity;
   readonly camp: CampEntity;
   readonly organisation: OrganisationEntity;
   readonly total: number;
@@ -27,9 +25,8 @@ export function registrationPaymentOf(of: {
     total: of.total,
     depositTotal: of.registration.depositTotal,
     paid: of.paid,
-    submittedAt: of.registration.submittedAt,
-    depositDueDays: of.turnus.depositDueDays,
-    balanceDueDate: of.turnus.balanceDueDate,
+    depositDueDate: of.registration.depositDueDate,
+    balanceDueDate: of.registration.balanceDueDate,
     account: of.organisation.bankAccount,
     variableSymbol: of.registration.variableSymbol,
     message: of.camp.name,

@@ -126,7 +126,8 @@ export const participantsService = {
       params: { turnusId },
       body: columns === undefined ? {} : { columns },
     }),
-  startPaymentsExport: (organisationId: string) => apiClient.request(startPaymentsExportEndpoint, { organisationId }),
+  startPaymentsExport: (organisationId: string, range: { from: string; to: string }) =>
+    apiClient.request(startPaymentsExportEndpoint, { organisationId, body: range }),
   exportOptions: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
     apiClient.request(getExportOptionsEndpoint, { organisationId, params: { turnusId }, signal }),
   savePreset: (organisationId: string, campId: string, name: string, columns: string[]) =>

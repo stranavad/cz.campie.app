@@ -139,10 +139,8 @@ export function priceRegistration(input: PricingInput): RegistrationPrice {
       ...(fieldId === undefined ? {} : { source: { fieldId, optionId: optionId ?? null } }),
     })),
   );
-  const percentage: PriceLine[] =
-    discountCode?.kind === 'percentage'
-      ? [codeLine(discountCode, -Math.round((sum(childPrices) * Math.max(0, discountCode.value)) / 100))]
-      : [];
+  const percentageLine = discountCode === null ? null : percentageCodeLine(discountCode, sum(childPrices), null);
+  const percentage: PriceLine[] = percentageLine === null ? [] : [percentageLine];
   const siblings: PriceLine[] =
     siblingDiscount === null || participants.length < 2
       ? []
@@ -169,6 +167,27 @@ export function priceRegistration(input: PricingInput): RegistrationPrice {
     depositAvailable && paymentChoice === 'deposit' ? Math.min(deposit * participants.length, total) : null;
 
   return { lines, total, depositAvailable, depositTotal };
+}
+
+/**
+ * Take a percentage Discount code off children's prices, as its line; a fixed code has none here, since it
+ * comes off the total once. Surcharges and the Sibling discount are never part of the prices.
+ * @param code the Registration's code
+ * @param childPrices the Base or Early bird prices of the children it applies to
+ * @param participant the one child it applies to, or null for the whole Registration
+ */
+export function percentageCodeLine(
+  code: DiscountCode,
+  childPrices: number,
+  participant: number | null,
+): PriceLine | null {
+  if (code.kind !== 'percentage') {
+    return null;
+  }
+
+  const line = codeLine(code, -Math.round((childPrices * Math.max(0, code.value)) / 100));
+
+  return { ...line, participant };
 }
 
 /**

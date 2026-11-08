@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { pragueDateOf } from '@repo/schema/shared';
@@ -51,6 +51,7 @@ export function LedgerForms({ organisationId, registrationId }: { organisationId
   const pay = useRecordPaymentMutation(organisationId, registrationId);
   const adjust = useAddPriceAdjustmentMutation(organisationId, registrationId);
   const [invalid, setInvalid] = useState<'payment' | 'adjustment' | null>(null);
+  const noteHintId = useId();
   const payFailure = invalid === 'payment' ? 'invalid_amount' : failureOf(pay.error);
   const adjustFailure = invalid === 'adjustment' ? 'invalid_amount' : failureOf(adjust.error);
 
@@ -73,7 +74,16 @@ export function LedgerForms({ organisationId, registrationId }: { organisationId
           onChange={(e) => setAmount(e.target.value)}
         />
         <Input type="date" value={paidOn} onChange={(event) => setPaidOn(event.target.value)} />
-        <Input placeholder={t('detail.note')} value={note} onChange={(event) => setNote(event.target.value)} />
+        <Input
+          placeholder={t('detail.note')}
+          aria-describedby={noteHintId}
+          value={note}
+          onChange={(event) => setNote(event.target.value)}
+        />
+        {/* A payment's note outlives the Registration's erasure, since the ledger stays intact. */}
+        <p id={noteHintId} className="text-xs text-muted-foreground">
+          {t('detail.paymentNoteHint')}
+        </p>
         {payFailure === null ? null : <p className="text-sm text-destructive">{t(`detail.failure.${payFailure}`)}</p>}
         <Button
           type="button"

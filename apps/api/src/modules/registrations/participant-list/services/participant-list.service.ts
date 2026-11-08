@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { ageOnStart } from '@repo/schema/camps';
 import type { ChecklistItem } from '@repo/schema/checklist';
+import type { PaymentStatus } from '@repo/schema/pricing';
 import type { ParticipantListQuery, ParticipantRow, SelectedTurnus, TurnusOverview } from '@repo/schema/registrations';
 
 import { MembershipRepository } from '../../../../repositories/admins/membership/membership.repository.ts';
@@ -104,7 +105,7 @@ export class ParticipantListService {
     const undeliverable = await this.undeliverable.listMarked(
       [...guardians.values()].flatMap((named) => named.map(({ email }) => email)),
     );
-    const balances = await this.ledger.balancesOf(turnus, registrations);
+    const balances = await this.ledger.balancesOf(registrations);
     const versions = new Map(
       (await this.forms.listVersionsByIds([...new Set(registrations.map((r) => r.formVersionId))])).map((version) => [
         version.id,
@@ -208,8 +209,19 @@ export class ParticipantListService {
     const turnus = await this.turnusy.getByIdOrThrow(turnusId);
     const registrations = await this.registrations.listByTurnus(turnusId);
     const participants = await this.registrations.listParticipantsOf(registrations.map(({ id }) => id));
-    const balances = [...(await this.ledger.balancesOf(turnus, registrations)).values()];
+    const balances = [...(await this.ledger.balancesOf(registrations)).values()];
     const sum = (amounts: readonly number[]) => amounts.reduce((total, amount) => total + amount, 0);
+    const registrationsByPaymentStatus: Record<PaymentStatus, number> = {
+      unpaid: 0,
+      partly_paid: 0,
+      deposit_paid: 0,
+      paid: 0,
+      overpaid: 0,
+    };
+
+    for (const { status } of balances) {
+      registrationsByPaymentStatus[status] += 1;
+    }
 
     return {
       capacity: turnus.capacity,
@@ -219,6 +231,7 @@ export class ParticipantListService {
       outstanding: sum(balances.map(({ balance }) => Math.max(balance, 0))),
       overpaid: sum(balances.map(({ balance }) => Math.max(-balance, 0))),
       overdueRegistrations: balances.filter(({ overdue }) => overdue).length,
+      registrationsByPaymentStatus,
     };
   }
 }

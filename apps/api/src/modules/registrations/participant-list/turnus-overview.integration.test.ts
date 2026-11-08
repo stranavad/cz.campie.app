@@ -76,7 +76,13 @@ describe('Turnus overview and list filters', () => {
       outstanding: 11_000,
       overpaid: 500,
       overdueRegistrations: 2,
+      registrationsByPaymentStatus: { unpaid: 1, partly_paid: 1, deposit_paid: 0, paid: 1, overpaid: 1 },
     });
+  });
+
+  it('filters a partly paid child apart from unpaid ones', async () => {
+    expect(await names({ paymentStatus: 'partly_paid' })).toEqual(['Bára']);
+    expect(await names({ paymentStatus: 'unpaid' })).toEqual(['Dana']);
   });
 
   it('filters by Overdue, unsigned Consents and missing documents, never finding a Cancelled child', async () => {

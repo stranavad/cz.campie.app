@@ -11,7 +11,7 @@ import {
   type FormColumn,
   type FormDefinition,
 } from '@repo/schema/form-engine';
-import type { Balance } from '@repo/schema/pricing';
+import type { Balance, PaymentStatus } from '@repo/schema/pricing';
 import {
   FIXED_EXPORT_COLUMNS,
   type ExportOptions,
@@ -20,8 +20,9 @@ import {
   type ParticipantExport,
   type SaveExportPresetBody,
   type StartParticipantExportBody,
+  type StartPaymentsExportBody,
 } from '@repo/schema/registrations';
-import { czechDate, czechDateTime } from '@repo/schema/shared';
+import { czechDate, czechDateTime, pragueDateOf } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
@@ -36,6 +37,7 @@ import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.r
 import {
   ParticipantExportRepository,
   type ExportPresetRow,
+  type ParticipantExportRow,
 } from '../../../../repositories/registrations/participant-export/participant-export.repository.ts';
 import type { ParticipantEntity } from '../../../../repositories/registrations/participant/participant.entity.ts';
 import { PaymentRepository } from '../../../../repositories/registrations/payment/payment.repository.ts';
@@ -67,10 +69,11 @@ interface Row {
 const STATUS_HEADERS = { registered: 'Přihlášen', cancelled: 'Zrušen' } as const;
 const PAYMENT_HEADERS = {
   unpaid: 'Nezaplaceno',
+  partly_paid: 'Částečně zaplaceno',
   deposit_paid: 'Záloha zaplacena',
   paid: 'Zaplaceno',
   overpaid: 'Přeplaceno',
-} as const;
+} as const satisfies Record<PaymentStatus, string>;
 const SOURCE_HEADERS = { manual: 'Platba', gateway: 'Platba kartou', correction: 'Oprava' } as const;
 
 const nameOf = (guardian: GuardianFields | undefined) =>
@@ -208,15 +211,24 @@ export class ParticipantExportService {
       });
     }
 
-    return this.begin(actor, turnus.id, columns);
+    return this.begin(actor, { turnusId: turnus.id, columns, paidFrom: null, paidTo: null });
   }
 
   /**
-   * Start an export of the Organisation's whole payment ledger, audited.
+   * Start an export of the Organisation's ledger entries paid within dates, by default the current
+   * calendar year in Prague, audited.
    * @param actor the admin
+   * @param body the first and last payment dates, or neither
    */
-  public async startPayments(actor: Actor): Promise<ParticipantExport> {
-    return this.begin(actor, null, null);
+  public async startPayments(actor: Actor, body: StartPaymentsExportBody): Promise<ParticipantExport> {
+    const year = pragueDateOf(this.clock.now()).slice(0, 4);
+
+    return this.begin(actor, {
+      turnusId: null,
+      columns: null,
+      paidFrom: body.from ?? `${year}-01-01`,
+      paidTo: body.to ?? `${year}-12-31`,
+    });
   }
 
   /**
@@ -300,7 +312,16 @@ export class ParticipantExportService {
     }
 
     if (found.turnusId === null) {
-      await this.complete(exportId, 'platby.xlsx', 'Platby', await this.paymentsSheet());
+      if (found.paidFrom === null || found.paidTo === null) {
+        throw new Error(`Payments export ${exportId} has no dates`);
+      }
+
+      await this.complete(
+        exportId,
+        `platby-${found.paidFrom}-${found.paidTo}.xlsx`,
+        'Platby',
+        await this.paymentsSheet(found.paidFrom, found.paidTo),
+      );
 
       return;
     }
@@ -321,10 +342,13 @@ export class ParticipantExportService {
   /**
    * Record an export, or give back the admin's same one still waiting, audited; its job builds the file.
    * @param actor the admin
-   * @param turnusId the Turnus of a Participant export, or null for the payments export
-   * @param columns the columns chosen, or null for every column
+   * @param scope a Participant export's Turnus and columns (null for every column), or the payments
+   * export's dates
    */
-  private async begin(actor: Actor, turnusId: string | null, columns: string[] | null): Promise<ParticipantExport> {
+  private async begin(
+    actor: Actor,
+    scope: Pick<ParticipantExportRow, 'turnusId' | 'columns' | 'paidFrom' | 'paidTo'>,
+  ): Promise<ParticipantExport> {
     if (actor.kind === 'system') {
       throw new Error('An admin starts an export, never the system');
     }
@@ -332,7 +356,7 @@ export class ParticipantExportService {
     // A repeated click waits for the export already being made instead of building the same file again.
     const pending = await this.exports.getPending(
       actor.identity,
-      turnusId,
+      scope,
       new Date(this.clock.now().getTime() - PENDING_FOR_MS),
     );
 
@@ -342,19 +366,24 @@ export class ParticipantExportService {
 
     const started = await this.exports.create({
       adminId: actor.identity,
-      kind: turnusId === null ? 'payments' : 'participants',
-      turnusId,
-      columns,
+      kind: scope.turnusId === null ? 'payments' : 'participants',
+      ...scope,
       createdAt: this.clock.now(),
     });
 
     await this.audit.record(actor, {
       action: 'export.create',
       target:
-        turnusId === null
+        scope.turnusId === null
           ? { type: 'organisation', id: this.unitOfWork.organisationId }
-          : { type: 'turnus', id: turnusId },
-      change: { before: null, after: { kind: started.kind, columns } },
+          : { type: 'turnus', id: scope.turnusId },
+      change: {
+        before: null,
+        after:
+          scope.turnusId === null
+            ? { kind: started.kind, columns: scope.columns, paidFrom: scope.paidFrom, paidTo: scope.paidTo }
+            : { kind: started.kind, columns: scope.columns },
+      },
     });
     this.jobs.enqueue(exportParticipantsJob, { exportId: started.id });
 
@@ -412,7 +441,7 @@ export class ParticipantExportService {
         one.lastName.localeCompare(other.lastName, 'cs') || one.firstName.localeCompare(other.firstName, 'cs'),
     );
     const guardians = await this.registrations.listGuardiansOf(ids);
-    const balances = await this.ledger.balancesOf(turnus, registrations);
+    const balances = await this.ledger.balancesOf(registrations);
 
     return {
       headers: columns.map(({ header }) => header),
@@ -433,12 +462,14 @@ export class ParticipantExportService {
   }
 
   /**
-   * Lay out the Organisation's whole payment ledger, oldest payment first.
+   * Lay out the Organisation's ledger entries paid within dates, oldest payment first.
+   * @param from the first payment date, inclusive
+   * @param to the last payment date, inclusive
    */
-  private async paymentsSheet(): Promise<{ headers: string[]; rows: Cell[][] }> {
+  private async paymentsSheet(from: string, to: string): Promise<{ headers: string[]; rows: Cell[][] }> {
     return {
       headers: ['Variabilní symbol', 'Datum', 'Částka', 'Druh', 'Poznámka', 'Transakce platební brány', 'Zapsáno'],
-      rows: (await this.payments.listAllWithVariableSymbol()).map((payment) => [
+      rows: (await this.payments.listPaidWithin(from, to)).map((payment) => [
         payment.variableSymbol,
         czechDate(payment.paidOn),
         payment.amount,

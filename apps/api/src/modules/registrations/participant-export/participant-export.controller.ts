@@ -16,6 +16,7 @@ import {
   type ParticipantListParams,
   type SaveExportPresetBody,
   type StartParticipantExportBody,
+  type StartPaymentsExportBody,
 } from '@repo/schema/registrations';
 
 import { Access } from '../../../core/access/access.decorator.ts';
@@ -49,8 +50,11 @@ export class ParticipantExportController {
   }
 
   @Endpoint(startPaymentsExportEndpoint)
-  public startPayments(@RequestActor() actor: Actor): Promise<ParticipantExport> {
-    return this.exports.startPayments(actor);
+  public startPayments(
+    @RequestActor() actor: Actor,
+    @EndpointBody(startPaymentsExportEndpoint) body: StartPaymentsExportBody,
+  ): Promise<ParticipantExport> {
+    return this.exports.startPayments(actor, body);
   }
 
   @Endpoint(saveExportPresetEndpoint)

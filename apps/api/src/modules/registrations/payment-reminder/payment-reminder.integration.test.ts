@@ -78,6 +78,23 @@ describe('payment reminders', () => {
     expect(reminders().map(({ to }) => to)).toEqual([['jana.testovaci@example.com'], ['petr.testovaci@example.com']]);
   });
 
+  it('reminds a partly paid Overdue Registration of what is still due now', async () => {
+    const [overdue] = await query<{ id: string }>('SELECT id FROM registrations WHERE variable_symbol = $1', [
+      overdueSymbol,
+    ]);
+    await http()
+      .post(`/api/registrations/${overdue?.id}/payments`)
+      .set(owner)
+      .send({ kind: 'payment', amount: 2000, paidOn: '2027-04-20', note: 'Převodem' });
+    mail().sent.length = 0;
+
+    expect((await preview()).body).toEqual({ withBalance: 2, overdue: 1, enabled: true });
+    expect((await send(true)).body).toEqual({ reminded: 1 });
+    await jobs().drain();
+
+    expect(reminders()[0]?.html).toMatch(/4\s500\sKč/);
+  });
+
   it('sends nothing and says so when the Camp switched the reminder off', async () => {
     await http()
       .put(`/api/camps/${campId}/email-texts/payment_reminder`)

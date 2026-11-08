@@ -144,7 +144,7 @@ describe('Přihláška PDF', () => {
     expect([...files().objects.values()].every((bytes) => !bytes.toString('latin1').includes('%PDF'))).toBe(true);
   });
 
-  it('prints the Participant, guardian, frozen price and the Deposit owed first with its QR platba', async () => {
+  it('prints the Participant, guardian, frozen price, the Deposit owed first and everything at once, each with its QR platba', async () => {
     const { variableSymbol } = await submit();
     await jobs().drain();
 
@@ -161,7 +161,8 @@ describe('Přihláška PDF', () => {
     expect(ema).toMatch(/Doplatek.*9 300 Kč, splatnost 15\. 6\. 2027/s);
     expect(ema).toMatch(/Nebo vše najednou.*13 300 Kč/s);
     expect(ema).toMatch(/Celkem.*13 300 Kč/s);
-    expect(ema).toContain('<svg');
+    expect(ema.match(/<svg/g)).toHaveLength(2);
+    expect(ema).toMatch(/Záloha<\/figcaption>.*Vše najednou<\/figcaption>/s);
     expect(ema).toContain('☑ Souhlasím s táborovým řádem.');
   });
 
@@ -171,6 +172,9 @@ describe('Přihláška PDF', () => {
 
     expect(pdfs().rendered[0]).toMatch(/Částka k úhradě.*13 300 Kč/s);
     expect(pdfs().rendered[0]).not.toContain('Doplatek');
+    // The amount due now is all outstanding, so one QR platba says it all.
+    expect(pdfs().rendered[0]?.match(/<svg/g)).toHaveLength(1);
+    expect(pdfs().rendered[0]).not.toContain('Vše najednou');
   });
 
   it('labels the answers as the form version the Registration was submitted under did', async () => {

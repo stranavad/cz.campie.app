@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import type { Answers, AnswerValue, CustomField, FieldScope, FormDefinition } from '@repo/schema/form-engine';
+import type { PaymentInstructions } from '@repo/schema/payments';
 import { czechDate, czechDateTime } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
@@ -155,14 +156,11 @@ export class PrihlaskaService {
 
     const total = lines.reduce((sum, { amount }) => sum + amount, 0);
     // A snapshot of the submission: nothing paid yet, whatever was paid since.
-    const instructions = registrationPaymentOf({ registration, turnus, camp, organisation, total, paid: 0 });
+    const instructions = registrationPaymentOf({ registration, camp, organisation, total, paid: 0 });
     const payment: PrihlaskaPayment = {
       ...instructions,
       dueDate: optionalDate(instructions.dueDate),
-      balance:
-        instructions.balance === null
-          ? null
-          : { ...instructions.balance, dueDate: optionalDate(instructions.balance.dueDate) },
+      balance: instructions.balance === null ? null : await printedBalance(instructions.balance),
       qrSvg: instructions.qrPlatba === null ? null : await qrPlatbaSvg(instructions.qrPlatba),
     };
     const nameOf = (position: number | null) => {
@@ -267,4 +265,16 @@ function cut(text: string, max: number): string {
  */
 function optionalDate(date: string | null): string | null {
   return date === null ? null : czechDate(date);
+}
+
+/**
+ * Print the rest after the Deposits and all outstanding, with the QR platba of all outstanding.
+ * @param balance the rest, its date, all outstanding and its QR platba
+ */
+async function printedBalance({
+  qrPlatba,
+  dueDate,
+  ...balance
+}: NonNullable<PaymentInstructions['balance']>): Promise<PrihlaskaPayment['balance']> {
+  return { ...balance, dueDate: optionalDate(dueDate), qrSvg: qrPlatba === null ? null : await qrPlatbaSvg(qrPlatba) };
 }

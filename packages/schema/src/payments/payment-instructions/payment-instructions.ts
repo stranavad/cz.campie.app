@@ -18,8 +18,9 @@ export interface PaymentInstructions {
   readonly amount: number;
   // Prague calendar date, or null.
   readonly dueDate: string | null;
-  // While the Deposits are owed: the rest after them and its date, and all that is outstanding, which a
-  // guardian may pay at once instead, with its own QR platba.
+  // While the Deposits are owed, so the amount due now is less than all outstanding: the rest after them
+  // and its date, and all that is outstanding, which a guardian may pay at once instead, with its own QR
+  // platba; null once the two are the same.
   readonly balance: {
     readonly amount: number;
     readonly dueDate: string | null;

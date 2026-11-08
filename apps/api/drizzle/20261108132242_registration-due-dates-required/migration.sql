@@ -1,0 +1,2 @@
+ALTER TABLE "registrations" ALTER COLUMN "deposit_due_date" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "participant_exports" ADD CONSTRAINT "participant_exports_paid_dates" CHECK (("kind" = 'payments') = ("paid_from" IS NOT NULL AND "paid_to" IS NOT NULL) AND ("paid_from" IS NULL) = ("paid_to" IS NULL));

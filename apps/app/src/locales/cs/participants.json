@@ -11,6 +11,7 @@
   "anyStatus": "Všechny",
   "status": {
     "unpaid": "Nezaplaceno",
+    "partly_paid": "Částečně zaplaceno",
     "deposit_paid": "Záloha zaplacena",
     "paid": "Zaplaceno",
     "overpaid": "Přeplaceno"
@@ -97,6 +98,7 @@
     "correction": "Oprava platby (vrácení)",
     "amount": "Částka v Kč",
     "note": "Poznámka",
+    "paymentNoteHint": "Do poznámky nepište jména ani jiné osobní údaje: poznámka k platbě zůstává v účetnictví i po výmazu přihlášky.",
     "record": "Zapsat",
     "addAdjustment": "Upravit cenu",
     "adjustmentAmount": "Částka v Kč (záporná je sleva)",
@@ -174,6 +176,12 @@
     "slow": "Export trvá déle než obvykle. Zkuste ho spustit znovu později.",
     "pick": "Vybrat sloupce",
     "payments": "Export plateb pro účetní",
+    "paidFrom": "Platby od",
+    "paidTo": "do",
+    "dateRange": {
+      "date_range_incomplete": "Vyplňte obě data.",
+      "date_range_reversed": "Datum „od“ musí být nejpozději datum „do“."
+    },
     "presets": "Uložené výběry:",
     "remove": "×",
     "removePreset": "Smazat výběr {{name}}",
@@ -275,7 +283,9 @@
     "received": "Přijato",
     "outstanding": "Zbývá doplatit",
     "overpaid": "Přeplaceno",
-    "overdue": "Přihlášky po splatnosti"
+    "overdue": "Přihlášky po splatnosti",
+    "byStatus": "Přihlášky podle platby",
+    "statusCount": "{{status}}: {{count}}"
   },
   "filters": {
     "overdue": "Po splatnosti",

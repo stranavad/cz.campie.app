@@ -5,6 +5,7 @@ import {
   createAdmin,
   createCamp,
   createOrganisation,
+  OPEN_TURNUS,
   signIn,
   submitRegistration,
   type RequestHeaders,
@@ -114,6 +115,42 @@ describe('payment ledger', () => {
 
     clock().set(new Date('2027-04-24T22:00:00Z'));
     expect((await ledger()).body.overdue).toBe(true);
+  });
+
+  it('keeps the due dates the Registration was submitted with when the Turnus changes them later', async () => {
+    const [{ turnus_id: turnusId }] = await query<{ turnus_id: string }>(
+      'SELECT turnus_id FROM registrations WHERE id = $1',
+      [registrationId],
+    );
+    const edited = await http()
+      .patch(`/api/turnusy/${turnusId}`)
+      .set(owner)
+      .send({ ...OPEN_TURNUS, ...WITH_DEPOSIT, depositDueDays: 3, balanceDueDate: '2027-05-01' });
+    expect(edited.status).toBe(200);
+
+    clock().set(new Date('2027-04-20T10:00:00Z'));
+    owner = { ...owner, ...(await signIn(app(), adminId)) };
+    expect((await ledger()).body).toMatchObject({
+      amountDue: { phase: 'deposit', dueDate: '2027-04-24' },
+      overdue: false,
+    });
+    await pay({ amount: 2000 });
+    expect((await ledger()).body.amountDue).toMatchObject({ phase: 'balance', dueDate: '2027-06-15' });
+
+    // A Registration submitted now takes the Turnus as it is now.
+    const later = await submitRegistration(app(), organisationId, campId, { turnusId, paymentChoice: 'deposit' });
+    expect((await ledger(owner, later.id)).body.amountDue).toMatchObject({ phase: 'deposit', dueDate: '2027-04-23' });
+  });
+
+  it('tells partly paid from unpaid, and stays Overdue while the amount due now is not covered', async () => {
+    expect((await pay({ amount: 500 })).body).toMatchObject({
+      status: 'partly_paid',
+      amountDue: { phase: 'deposit', amount: 1500, dueDate: '2027-04-24' },
+    });
+
+    clock().set(new Date('2027-04-25T10:00:00Z'));
+    owner = { ...owner, ...(await signIn(app(), adminId)) };
+    expect((await ledger()).body).toMatchObject({ status: 'partly_paid', overdue: true });
   });
 
   it('emails both guardians of a payment received, and nobody of a Correcting payment', async () => {

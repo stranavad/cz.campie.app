@@ -348,8 +348,8 @@ One engine serves both the registration form and the Health record.
 
 - A Registration is one submission to one Turnus with up to two guardians of equal rights, shared by all its Participants, plus admin-added access emails.
 - A Camp setting limits the number of Participants per Registration. The guardian chooses one Turnus first; every child on the form goes to it and must fit its age limits. Siblings at different Turnusy need separate Registrations, each with its own Variable symbol and payments; a Sibling discount never spans Registrations.
-- An admin may move a whole Registration to another Turnus of the same Camp, bypassing capacity and age limits; price lines stay and money is fixed with Price adjustments. Moving one child out means cancelling it and creating a new Registration.
-- Participant states are Registered and Cancelled. Payment status (unpaid, deposit paid, paid, overpaid) is derived from the balance.
+- An admin may move a whole Registration to another Turnus of the same Camp, bypassing capacity and age limits; price lines stay and money is fixed with Price adjustments. The moved Registration's due dates become those the target Turnus gives its original submission. Moving one child out means cancelling it and creating a new Registration.
+- Participant states are Registered and Cancelled. Payment status (unpaid, partly paid, deposit paid, paid, overpaid) is derived from the balance: partly paid is something paid that covers neither the Deposits nor, paying in full, the total.
 - Only an admin can cancel a Participant; guardians contact the camp. Cancelling frees the place and changes no money: price lines stay as they are, and the admin settles any storno fee, removed price or refund manually with Price adjustments and correcting payments. The cancellation email states the current balance.
 - Cancelling a whole Registration means cancelling each of its Participants; a Registration has no state of its own.
 - A place is taken at submission. The capacity check and the insert are serialised per Turnus so the last place cannot be given twice. Capacity counts Registered Participants.
@@ -377,7 +377,8 @@ One engine serves both the registration form and the Health record.
 - Reminders are admin-triggered for all Registrations with a balance, optionally only the Overdue ones.
 - The Deposit is a per-child amount set per Turnus; 0 means no Deposit and hides the choice on the form. A Turnus also sets "Deposit due within N days of submission" (default 14).
 - Amount due now: while deposits are not covered, the deposits minus payments, due by the deposit date; afterwards the total minus payments, due by the balance due date. With full payment chosen, the total minus payments is due by the earlier of the deposit date and the balance due date. Registrations submitted after the balance due date owe the full amount within N days and are not offered a Deposit.
-- The QR code and the portal show the amount due now with its date, and the full outstanding balance as a second option.
+- The deposit date and the balance due date are fixed per Registration when it is submitted (or created by an admin) and stored with it; editing the Turnus later moves no existing Registration's dates. Overdue, reminders, the portal and the lists use the stored dates.
+- The Přihláška and the portal show the amount due now with its date and QR code, and, only when it differs, the full outstanding balance as a second option with its own QR code.
 - Overdue is derived when an amount due now is unpaid past its date. It drives a list filter, the reminder target and the Turnus overview, and never cancels anything automatically.
 
 ### Identity, permissions and audit
@@ -405,7 +406,7 @@ One engine serves both the registration form and the Health record.
 
 - Removing a Registration offers two choices. **Cancel all** cancels every Participant and keeps all data (Registrations write). **Erase** anonymises it (Owner only).
 - Erasure deletes every stored file (uploads, Přihlášky, signed Consent PDFs, Internal documents) and all form answers, declarations, Consent signatures, health data, guardians, access emails and notes. Registered Participants are cancelled first, freeing their places.
-- Erasure keeps a tombstone for accounting: the Registration's Turnus, Variable symbol, Participant count, price lines, Price adjustments with blanked notes and the full payment ledger including gateway transaction identifiers. Names read "Smazáno" with the erasure date.
+- Erasure keeps a tombstone for accounting: the Registration's Turnus, Variable symbol, Participant count, price lines, Price adjustments with blanked notes and the full payment ledger including gateway transaction identifiers and payment notes. The payment form therefore tells admins to keep names and personal data out of a payment's note. Names read "Smazáno" with the erasure date.
 - Audit entries about an erased Registration stay, with value diffs and IP addresses scrubbed and the guardian actor shown as an erased guardian; the erasure itself is a new entry.
 
 ### Encryption
@@ -477,7 +478,7 @@ One engine serves both the registration form and the Health record.
 
 - The column catalogue is derived from all published versions of the Camp's form: core, switched-on standard fields, custom fields (those removed in a later version marked as removed), prices, payments, statuses and Oddíl. Stage 1a ships one fixed export of every column the admin may see; presets follow in 1b.
 - Named presets are shared within the Organisation and tied to a Camp. The last selection is remembered per user.
-- Separate exports exist for payments and for Vedoucí.
+- Separate exports exist for payments and for Vedoucí. The payments export covers the payment dates the admin picks, by default the current calendar year in Prague.
 - The Owner's full export is an asynchronous job producing Excel files and an archive of all files.
 
 ### Other
@@ -571,7 +572,7 @@ The new platform needs its own CONTEXT.md and ADRs. Until it has them, these are
 - An Oddíl can have several Vedoucí.
 - Export presets are shared within the Organisation, per Camp.
 - A website link exists on the Camp, with an optional one per Turnus.
-- A percentage Discount code applies to the per-child prices before the Sibling discount and not to paid extras; a fixed-amount code comes off the Registration total.
+- A percentage Discount code applies to the per-child prices before the Sibling discount and not to paid extras, including a child an admin adds later; a fixed-amount code comes off the Registration total once.
 - When an admin adds a Participant or changes paid extras, only the affected price lines are recalculated from the price list in force at that moment, and shown before saving.
 - The Potvrzení o účasti amount is the Participant's own price lines with Registration-level discounts and adjustments split evenly across its Participants.
 

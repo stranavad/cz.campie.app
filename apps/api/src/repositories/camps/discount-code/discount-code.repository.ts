@@ -72,6 +72,26 @@ export class DiscountCodeRepository {
   }
 
   /**
+   * Get the Discount code a Registration used, if any.
+   * @param registrationId Registration id
+   */
+  public async getUsedBy(registrationId: string): Promise<DiscountCodeEntity | null> {
+    const [row] = await this.unitOfWork.db
+      .select({ code: discountCodes })
+      .from(discountCodeUses)
+      .innerJoin(
+        discountCodes,
+        and(
+          eq(discountCodes.organisationId, discountCodeUses.organisationId),
+          eq(discountCodes.id, discountCodeUses.discountCodeId),
+        ),
+      )
+      .where(eq(discountCodeUses.registrationId, registrationId));
+
+    return row === undefined ? null : new DiscountCodeEntity(row.code);
+  }
+
+  /**
    * Record a Registration's use of a Discount code.
    * @param discountCodeId Discount code id
    * @param registrationId Registration id

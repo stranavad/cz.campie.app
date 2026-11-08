@@ -59,7 +59,7 @@ export class ConfirmationService {
     const camp = await this.camps.getByIdOrThrow(turnus.campId);
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
     const { total, paid } = await this.ledgers.balanceOf(registrationId);
-    const payment = registrationPaymentOf({ registration, turnus, camp, organisation, total, paid });
+    const payment = registrationPaymentOf({ registration, camp, organisation, total, paid });
     const inlineImages: InlineImage[] =
       payment.qrPlatba === null
         ? []

@@ -22,9 +22,13 @@ export interface PrihlaskaLine {
   readonly amount: number;
 }
 
-// The payment instructions as printed: dates written the Czech way, the QR platba as SVG markup.
-export interface PrihlaskaPayment extends Omit<PaymentInstructions, 'qrPlatba'> {
+// The payment instructions as printed: dates written the Czech way, each QR platba as SVG markup.
+export interface PrihlaskaPayment extends Omit<PaymentInstructions, 'qrPlatba' | 'balance'> {
   readonly qrSvg: string | null;
+  // While it differs from the amount due now: the rest after the Deposits and all that is outstanding,
+  // with the QR platba of all outstanding.
+  readonly balance:
+    (Omit<NonNullable<PaymentInstructions['balance']>, 'qrPlatba'> & { readonly qrSvg: string | null }) | null;
 }
 
 export interface PrihlaskaProps {
@@ -67,7 +71,9 @@ const PAGE_STYLES = `
   .prihlaska td.amount { text-align: right; white-space: nowrap; }
   .prihlaska .one-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .prihlaska .payment { display: flex; gap: 12pt; align-items: flex-start; }
-  .prihlaska .qr { flex: 0 0 32mm; width: 32mm; height: 32mm; }
+  .prihlaska .qrs { display: flex; gap: 6pt; }
+  .prihlaska .qr { flex: 0 0 32mm; width: 32mm; margin: 0; text-align: center; font-size: 7.5pt; }
+  .prihlaska .qr div { width: 32mm; height: 32mm; }
   .prihlaska .qr svg { width: 100%; height: 100%; }
 `;
 
@@ -86,6 +92,16 @@ function Rows({ rows }: { rows: readonly PrihlaskaRow[] }) {
       {value}
     </Fact>
   ));
+}
+
+function Qr({ svg, caption }: { svg: string; caption: string }) {
+  return (
+    <figure className="qr">
+      {/* The SVG is the QR library's own markup of the payment; nothing a guardian typed is markup in it. */}
+      <div dangerouslySetInnerHTML={{ __html: svg }} />
+      <figcaption>{caption}</figcaption>
+    </figure>
+  );
 }
 
 function Payment({ payment }: { payment: PrihlaskaPayment }) {
@@ -116,10 +132,14 @@ function Payment({ payment }: { payment: PrihlaskaPayment }) {
           </>
         )}
       </div>
-      {payment.qrSvg === null ? null : (
-        // The SVG is the QR library's own markup of the payment; nothing a guardian typed is markup in it.
-        <div className="qr" dangerouslySetInnerHTML={{ __html: payment.qrSvg }} />
-      )}
+      <div className="qrs">
+        {payment.qrSvg === null ? null : (
+          <Qr svg={payment.qrSvg} caption={payment.kind === 'deposit' ? 'Záloha' : 'K úhradě'} />
+        )}
+        {payment.balance === null || payment.balance.qrSvg === null ? null : (
+          <Qr svg={payment.balance.qrSvg} caption="Vše najednou" />
+        )}
+      </div>
     </div>
   );
 }

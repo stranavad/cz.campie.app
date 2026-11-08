@@ -24,12 +24,19 @@ export const participantExports = p.snakeCase.table.withRLS(
     turnusId: p.uuid(),
     // The columns chosen; null for every column.
     columns: p.jsonb().$type<string[]>(),
+    // The payments export's payment dates, both inclusive; null for a Participant export.
+    paidFrom: p.date({ mode: 'string' }),
+    paidTo: p.date({ mode: 'string' }),
     status: exportStatus().notNull().default('pending'),
     fileId: p.uuid(),
     createdAt: p.timestamp({ withTimezone: true }).notNull(),
   },
   (table) => [
     p.check('participant_exports_turnus', sql`(${table.kind} = 'participants') = (${table.turnusId} IS NOT NULL)`),
+    p.check(
+      'participant_exports_paid_dates',
+      sql`(${table.kind} = 'payments') = (${table.paidFrom} IS NOT NULL AND ${table.paidTo} IS NOT NULL) AND (${table.paidFrom} IS NULL) = (${table.paidTo} IS NULL)`,
+    ),
     organisationPolicy(),
   ],
 );

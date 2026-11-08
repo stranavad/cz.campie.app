@@ -2,19 +2,21 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
-import { useParticipantExportQuery, useStartExportMutation } from '@/features/participants/api/participants.queries';
+import {
+  useParticipantExportQuery,
+  useStartExportMutation,
+  type ExportRequest,
+} from '@/features/participants/api/participants.queries';
 
 interface ExportDownloadProps {
   organisationId: string;
-  // The Turnus of a Participant export, or null for the payment ledger.
-  turnusId: string | null;
-  columns?: string[];
+  request: ExportRequest;
   label: string;
   disabled?: boolean;
 }
 
 // Starts an export and offers its file once the job has made it.
-export function ExportDownload({ organisationId, turnusId, columns, label, disabled = false }: ExportDownloadProps) {
+export function ExportDownload({ organisationId, request, label, disabled = false }: ExportDownloadProps) {
   const { t } = useTranslation('participants');
   const start = useStartExportMutation(organisationId);
   const [exportId, setExportId] = useState<string | null>(null);
@@ -29,12 +31,7 @@ export function ExportDownload({ organisationId, turnusId, columns, label, disab
         size="sm"
         variant="outline"
         disabled={disabled || isWorking}
-        onClick={() =>
-          start.mutate(
-            { turnusId, ...(columns === undefined ? {} : { columns }) },
-            { onSuccess: (started) => setExportId(started.id) },
-          )
-        }
+        onClick={() => start.mutate(request, { onSuccess: (started) => setExportId(started.id) })}
       >
         {isWorking ? t('export.working') : label}
       </Button>

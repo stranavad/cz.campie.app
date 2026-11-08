@@ -6,8 +6,7 @@ const REGISTRATION = {
   total: 13_300,
   depositTotal: 4000,
   paid: 0,
-  submittedAt: new Date('2027-04-10T10:00:00Z'),
-  depositDueDays: 14,
+  depositDueDate: '2027-04-24',
   balanceDueDate: '2027-06-15',
   account: '19-2000145399/0800',
   variableSymbol: '27123456',
@@ -32,7 +31,16 @@ describe('paymentInstructionsOf', () => {
     });
   });
 
-  it('asks for the whole price by the earlier date when paying in full', () => {
+  it('offers no second QR once the amount due now is everything outstanding', () => {
+    expect(paymentInstructionsOf({ ...REGISTRATION, paid: 4000 })).toMatchObject({
+      kind: 'full',
+      amount: 9300,
+      dueDate: '2027-06-15',
+      balance: null,
+    });
+  });
+
+  it('asks for the whole price by the deposit date when paying in full', () => {
     expect(paymentInstructionsOf({ ...REGISTRATION, depositTotal: null })).toMatchObject({
       kind: 'full',
       amount: 13_300,

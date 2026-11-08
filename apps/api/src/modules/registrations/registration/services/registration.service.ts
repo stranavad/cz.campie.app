@@ -23,7 +23,7 @@ import {
   type CoreFieldKey,
   type Submission,
 } from '@repo/schema/form-engine';
-import { priceRegistration, type RegistrationPrice } from '@repo/schema/pricing';
+import { dueDatesOf, priceRegistration, type RegistrationPrice } from '@repo/schema/pricing';
 import type {
   SubmissionErrorCode,
   SubmissionFieldErrorCode,
@@ -467,6 +467,8 @@ export class RegistrationService {
       depositTotal: price.depositTotal,
       answers: withoutCore(submission.registration),
       submittedAt: now,
+      // The Turnus's terms as they are now; a later edit of the Turnus moves no Registration's dates.
+      ...dueDatesOf({ submittedAt: now, depositDueDays: turnus.depositDueDays, balanceDueDate: turnus.balanceDueDate }),
     });
     const guardians = guardiansOf(submission.registration);
     const children = submission.participants.map(participantOf);
@@ -501,6 +503,8 @@ export class RegistrationService {
           turnusId: registration.turnusId,
           paymentChoice: registration.paymentChoice,
           depositTotal: registration.depositTotal,
+          depositDueDate: registration.depositDueDate,
+          balanceDueDate: registration.balanceDueDate,
           guardians,
           participants: children.map(({ firstName, lastName, birthDate }) => ({ firstName, lastName, birthDate })),
           priceLines: price.lines,

@@ -24,6 +24,9 @@ export const registrations = p.snakeCase.table.withRLS(
     depositTotal: p.integer(),
     answers: p.jsonb().$type<Answers>().notNull().default({}),
     submittedAt: p.timestamp({ withTimezone: true }).notNull(),
+    // Fixed from the Turnus's terms when the Registration joined it, so editing the Turnus moves no dates.
+    depositDueDate: p.date({ mode: 'string' }).notNull(),
+    balanceDueDate: p.date({ mode: 'string' }),
     // When the Owner erased it to an accounting tombstone; null for a Registration with its data.
     erasedAt: p.timestamp({ withTimezone: true }),
   },

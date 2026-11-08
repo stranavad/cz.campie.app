@@ -1,12 +1,12 @@
-import { amountDueNow, type AmountDue } from '../amount-due/amount-due.ts';
+import { amountDueNow, type AmountDue, type DueDates } from '../amount-due/amount-due.ts';
 
-// What a Registration's ledger says of its payment; derived, never stored. Paying less than the Deposits
-// leaves it unpaid.
-export const PAYMENT_STATUSES = ['unpaid', 'deposit_paid', 'paid', 'overpaid'] as const;
+// What a Registration's ledger says of its payment; derived, never stored. Something paid that covers
+// neither the Deposits nor, paying in full, the total is partly paid.
+export const PAYMENT_STATUSES = ['unpaid', 'partly_paid', 'deposit_paid', 'paid', 'overpaid'] as const;
 
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
-export interface BalanceInput {
+export interface BalanceInput extends DueDates {
   // The price lines frozen at submission.
   readonly lines: readonly { readonly amount: number }[];
   // Price adjustments, plus or minus.
@@ -15,9 +15,6 @@ export interface BalanceInput {
   readonly payments: readonly { readonly amount: number }[];
   // Owed first when the Deposit was chosen; null when paying in full.
   readonly depositTotal: number | null;
-  readonly submittedAt: Date;
-  readonly depositDueDays: number;
-  readonly balanceDueDate: string | null;
 }
 
 export interface Balance {
@@ -28,7 +25,7 @@ export interface Balance {
   readonly balance: number;
   readonly status: PaymentStatus;
   readonly amountDue: AmountDue;
-  // The amount due now is unpaid past its date.
+  // The amount due now is unpaid past its date, whether partly paid or not at all.
   readonly overdue: boolean;
 }
 
@@ -36,9 +33,9 @@ const sum = (entries: readonly { readonly amount: number }[]) =>
   entries.reduce((total, { amount }) => total + amount, 0);
 
 /**
- * Derive a Registration's total, payments, status and amount due now from its lines, Price adjustments and
- * ledger, as of a Prague calendar date. A payment below the Deposits leaves it unpaid.
- * @param input the lines, adjustments, ledger, Deposit and dates
+ * Derive a Registration's total, payments, status and amount due now from its lines, Price adjustments,
+ * ledger and stored due dates, as of a Prague calendar date.
+ * @param input the lines, adjustments, ledger, Deposit and due dates
  * @param today the Prague calendar date now, YYYY-MM-DD
  */
 export function balanceOf(input: BalanceInput, today: string): Balance {
@@ -72,5 +69,9 @@ function statusOf(total: number, paid: number, deposits: number | null): Payment
     return 'paid';
   }
 
-  return deposits !== null && paid >= deposits && paid > 0 ? 'deposit_paid' : 'unpaid';
+  if (paid <= 0) {
+    return 'unpaid';
+  }
+
+  return deposits !== null && paid >= deposits ? 'deposit_paid' : 'partly_paid';
 }

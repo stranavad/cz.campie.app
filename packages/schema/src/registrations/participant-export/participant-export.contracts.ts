@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { fileLinkSchema } from '@repo/schema/files';
-import { defineEndpoint } from '@repo/schema/shared';
+import { calendarDateSchema, defineEndpoint } from '@repo/schema/shared';
 
 import { participantListParamsSchema } from '../participant-list/participant-list.contracts.ts';
 
@@ -129,11 +129,37 @@ export const removeExportPresetEndpoint = defineEndpoint({
   params: exportPresetParamsSchema,
 });
 
-// Starts an Excel export of the Organisation's whole payment ledger for its accountant: every entry with
-// its Registration's Variable symbol, erased Registrations' included; audited; Registrations read.
+// Why a payments export's dates were refused, at the `to` field.
+export const PAYMENTS_EXPORT_ERROR_CODES = ['date_range_incomplete', 'date_range_reversed'] as const;
+
+export type PaymentsExportErrorCode = (typeof PAYMENTS_EXPORT_ERROR_CODES)[number];
+
+export const startPaymentsExportBodySchema = z
+  .object({
+    // The payment dates to export, both inclusive, on the Prague calendar; both or neither, and neither
+    // means the current calendar year in Prague.
+    from: calendarDateSchema.optional(),
+    to: calendarDateSchema.optional(),
+  })
+  .refine(({ from, to }) => (from === undefined) === (to === undefined), {
+    path: ['to'],
+    message: 'date_range_incomplete' satisfies PaymentsExportErrorCode,
+  })
+  .refine(({ from, to }) => from === undefined || to === undefined || from <= to, {
+    path: ['to'],
+    message: 'date_range_reversed' satisfies PaymentsExportErrorCode,
+  })
+  .default({});
+
+export type StartPaymentsExportBody = z.infer<typeof startPaymentsExportBodySchema>;
+
+// Starts an Excel export of the Organisation's payment ledger for its accountant, the entries paid within
+// the dates: each with its Registration's Variable symbol, erased Registrations' included; audited;
+// Registrations read.
 export const startPaymentsExportEndpoint = defineEndpoint({
   method: 'POST',
   path: '/payment-exports',
+  body: startPaymentsExportBodySchema,
   response: participantExportSchema,
 });
 

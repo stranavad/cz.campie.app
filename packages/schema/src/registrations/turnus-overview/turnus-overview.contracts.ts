@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { PAYMENT_STATUSES } from '@repo/schema/pricing';
 import { defineEndpoint } from '@repo/schema/shared';
 
 import { participantListParamsSchema } from '../participant-list/participant-list.contracts.ts';
@@ -16,6 +17,8 @@ export const turnusOverviewSchema = z.object({
   outstanding: z.number().int(),
   overpaid: z.number().int(),
   overdueRegistrations: z.number().int(),
+  // How many Registrations have each payment status, partly paid apart from unpaid.
+  registrationsByPaymentStatus: z.record(z.enum(PAYMENT_STATUSES), z.number().int()),
 });
 
 export type TurnusOverview = z.infer<typeof turnusOverviewSchema>;

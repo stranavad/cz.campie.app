@@ -14,10 +14,14 @@ export class ParticipantExportRepository {
 
   /**
    * Record an export an admin started in the current Organisation, waiting for its job.
-   * @param input the admin, the kind, a Participant export's Turnus and columns, and when
+   * @param input the admin, the kind, a Participant export's Turnus and columns or the payments export's
+   * dates, and when
    */
   public async create(
-    input: Pick<ParticipantExportInsert, 'adminId' | 'kind' | 'turnusId' | 'columns' | 'createdAt'>,
+    input: Pick<
+      ParticipantExportInsert,
+      'adminId' | 'kind' | 'turnusId' | 'columns' | 'paidFrom' | 'paidTo' | 'createdAt'
+    >,
   ): Promise<ParticipantExportRow> {
     const [row] = await this.unitOfWork.db
       .insert(participantExports)
@@ -56,19 +60,30 @@ export class ParticipantExportRepository {
   }
 
   /**
-   * Get an export of a Turnus the admin started that is still waiting for its job.
+   * Get the same export the admin started that is still waiting for its job: of the Turnus, or of the
+   * payments within the same dates.
    * @param adminId the admin
-   * @param turnusId Turnus id, or null for the payments export
+   * @param scope the Turnus, or the payments export's dates
    * @param since the oldest start still counted; one waiting longer failed
    */
-  public async getPending(adminId: string, turnusId: string | null, since: Date): Promise<ParticipantExportRow | null> {
+  public async getPending(
+    adminId: string,
+    scope: Pick<ParticipantExportRow, 'turnusId' | 'paidFrom' | 'paidTo'>,
+    since: Date,
+  ): Promise<ParticipantExportRow | null> {
     const [row] = await this.unitOfWork.db
       .select()
       .from(participantExports)
       .where(
         and(
           eq(participantExports.adminId, adminId),
-          turnusId === null ? isNull(participantExports.turnusId) : eq(participantExports.turnusId, turnusId),
+          scope.turnusId === null
+            ? isNull(participantExports.turnusId)
+            : eq(participantExports.turnusId, scope.turnusId),
+          scope.paidFrom === null
+            ? isNull(participantExports.paidFrom)
+            : eq(participantExports.paidFrom, scope.paidFrom),
+          scope.paidTo === null ? isNull(participantExports.paidTo) : eq(participantExports.paidTo, scope.paidTo),
           eq(participantExports.status, 'pending'),
           gt(participantExports.createdAt, since),
         ),

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, count, desc, eq, inArray, isNull, or, sql, sum } from 'drizzle-orm';
 
 import type { Answers } from '@repo/schema/form-engine';
-import type { PriceLineKind, SurchargeSource } from '@repo/schema/pricing';
+import type { DueDates, PriceLineKind, SurchargeSource } from '@repo/schema/pricing';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import {
@@ -607,12 +607,16 @@ export class RegistrationRepository {
   }
 
   /**
-   * Move a Registration of the current Organisation to another Turnus.
+   * Move a Registration to another Turnus, with the due dates it has there.
    * @param registrationId Registration id
-   * @param turnusId Turnus id
+   * @param turnusId the other Turnus
+   * @param dueDates the deposit and balance due dates in the other Turnus
    */
-  public async setTurnus(registrationId: string, turnusId: string): Promise<void> {
-    await this.unitOfWork.db.update(registrations).set({ turnusId }).where(eq(registrations.id, registrationId));
+  public async setTurnus(registrationId: string, turnusId: string, dueDates: DueDates): Promise<void> {
+    await this.unitOfWork.db
+      .update(registrations)
+      .set({ turnusId, depositDueDate: dueDates.depositDueDate, balanceDueDate: dueDates.balanceDueDate })
+      .where(eq(registrations.id, registrationId));
   }
 
   /**

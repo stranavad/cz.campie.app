@@ -191,6 +191,46 @@ describe('participant export', () => {
     ]);
   });
 
+  it('exports the payments of the current Prague year by default, or of the dates asked, audited', async () => {
+    const [registration] = await query<{ id: string; variable_symbol: string }>(
+      'SELECT id, variable_symbol FROM registrations',
+    );
+    for (const paidOn of ['2026-12-31', '2027-01-01', '2027-04-12']) {
+      await http()
+        .post(`/api/registrations/${registration?.id}/payments`)
+        .set(owner)
+        .send({ kind: 'payment', amount: 100, paidOn, note: '' });
+    }
+    // 23:30 UTC on 31 December 2026 is already 2027 in Prague.
+    clock().set(new Date('2026-12-31T23:30:00Z'));
+    owner = (await createAdmin(app(), { memberOf: [organisationId], owner: true })).headers(organisationId);
+    const dates = (rows: unknown[][]) => rows.slice(1).map((row) => row[1]);
+
+    expect(dates(await exportSheet({}, '/api/payment-exports'))).toEqual(['1. 1. 2027', '12. 4. 2027']);
+    expect(dates(await exportSheet({ from: '2026-12-01', to: '2027-01-01' }, '/api/payment-exports'))).toEqual([
+      '31. 12. 2026',
+      '1. 1. 2027',
+    ]);
+    expect(
+      await query(
+        `SELECT changes->'paidFrom'->>'new' AS paid_from, changes->'paidTo'->>'new' AS paid_to FROM audit_entries
+         WHERE action = 'export.create' ORDER BY id`,
+      ),
+    ).toEqual([
+      { paid_from: '2027-01-01', paid_to: '2027-12-31' },
+      { paid_from: '2026-12-01', paid_to: '2027-01-01' },
+    ]);
+  });
+
+  it('refuses reversed or half-given payment dates', async () => {
+    const start = (body: object) => http().post('/api/payment-exports').set(owner).send(body);
+
+    expect((await start({ from: '2027-05-01', to: '2027-04-30' })).status).toBe(400);
+    expect((await start({ from: '2027-05-01' })).status).toBe(400);
+    expect((await start({ from: '2027-02-30', to: '2027-03-01' })).status).toBe(400);
+    expect(await query('SELECT FROM participant_exports')).toEqual([]);
+  });
+
   it('removes an export and its file a day later', async () => {
     await exportSheet();
     expect(await query('SELECT FROM participant_exports')).toHaveLength(1);

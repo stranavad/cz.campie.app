@@ -7,8 +7,7 @@ const REGISTRATION = {
   adjustments: [] as { amount: number }[],
   payments: [] as { amount: number }[],
   depositTotal: 4000,
-  submittedAt: new Date('2027-04-10T10:00:00Z'),
-  depositDueDays: 14,
+  depositDueDate: '2027-04-24',
   balanceDueDate: '2027-06-15',
 };
 
@@ -24,15 +23,21 @@ describe('balanceOf', () => {
     });
   });
 
-  it('counts a payment below the Deposits as unpaid, and the Deposits covered as deposit paid', () => {
+  it('counts a payment below the Deposits as partly paid, and the Deposits covered as deposit paid', () => {
     expect(balanceOf({ ...REGISTRATION, payments: [{ amount: 1000 }] }, '2027-04-10')).toMatchObject({
-      status: 'unpaid',
+      status: 'partly_paid',
       amountDue: { phase: 'deposit', amount: 3000 },
     });
     expect(balanceOf({ ...REGISTRATION, payments: [{ amount: 4000 }] }, '2027-04-10')).toMatchObject({
       status: 'deposit_paid',
       amountDue: { phase: 'balance', amount: 9300, dueDate: '2027-06-15' },
     });
+  });
+
+  it('is unpaid again once a Correcting payment takes everything back', () => {
+    expect(balanceOf({ ...REGISTRATION, payments: [{ amount: 1000 }, { amount: -1000 }] }, '2027-04-10').status).toBe(
+      'unpaid',
+    );
   });
 
   it('is paid at the total and overpaid above it, a Correcting payment taking money back', () => {
@@ -50,10 +55,10 @@ describe('balanceOf', () => {
     ).toMatchObject({ status: 'paid' });
   });
 
-  it('asks for the whole price when paying in full, with no deposit paid status', () => {
+  it('counts part of the whole price as partly paid when paying in full', () => {
     expect(
       balanceOf({ ...REGISTRATION, depositTotal: null, payments: [{ amount: 4000 }] }, '2027-04-10'),
-    ).toMatchObject({ status: 'unpaid', amountDue: { phase: 'full', amount: 9300, dueDate: '2027-04-24' } });
+    ).toMatchObject({ status: 'partly_paid', amountDue: { phase: 'full', amount: 9300, dueDate: '2027-04-24' } });
   });
 
   it('adds Price adjustments to the total, never below zero', () => {
@@ -64,9 +69,13 @@ describe('balanceOf', () => {
     });
   });
 
-  it('is Overdue only after the due date, while something is due', () => {
+  it('is Overdue only after the due date, while something is due, partly paid or not', () => {
     expect(balanceOf(REGISTRATION, '2027-04-24').overdue).toBe(false);
     expect(balanceOf(REGISTRATION, '2027-04-25').overdue).toBe(true);
+    expect(balanceOf({ ...REGISTRATION, payments: [{ amount: 1000 }] }, '2027-04-25')).toMatchObject({
+      status: 'partly_paid',
+      overdue: true,
+    });
     expect(balanceOf({ ...REGISTRATION, payments: [{ amount: 4000 }] }, '2027-04-25').overdue).toBe(false);
   });
 
@@ -75,11 +84,5 @@ describe('balanceOf', () => {
       total: 3000,
       amountDue: { phase: 'deposit', amount: 3000 },
     });
-  });
-
-  it('asks a Registration submitted after the balance due date for everything within the deposit days', () => {
-    const late = { ...REGISTRATION, depositTotal: null, submittedAt: new Date('2027-06-20T10:00:00Z') };
-
-    expect(balanceOf(late, '2027-06-20').amountDue).toEqual({ phase: 'full', amount: 13_300, dueDate: '2027-07-04' });
   });
 });

@@ -11,7 +11,7 @@ import {
   type FieldScope,
   type FormDefinition,
 } from '@repo/schema/form-engine';
-import { priceInForce } from '@repo/schema/pricing';
+import { dueDatesOf, percentageCodeLine, priceInForce } from '@repo/schema/pricing';
 import type {
   AddParticipantBody,
   AdminRegistrationErrorCode,
@@ -33,6 +33,7 @@ import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { generateSessionToken, hashSessionToken } from '../../../../core/sessions/session-token.ts';
 import type { CampEntity } from '../../../../repositories/camps/camp/camp.entity.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
+import { DiscountCodeRepository } from '../../../../repositories/camps/discount-code/discount-code.repository.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
 import type { TurnusEntity } from '../../../../repositories/camps/turnus/turnus.entity.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
@@ -190,6 +191,7 @@ export class AdminRegistrationService {
     private readonly registrations: RegistrationRepository,
     private readonly turnusy: TurnusRepository,
     private readonly camps: CampRepository,
+    private readonly discountCodes: DiscountCodeRepository,
     private readonly forms: RegistrationFormRepository,
     private readonly emailChanges: GuardianEmailChangeRepository,
     private readonly details: RegistrationDetailService,
@@ -329,7 +331,8 @@ export class AdminRegistrationService {
 
   /**
    * Move a whole Registration to another Turnus of its Camp, outside capacity and age limits; its price
-   * lines stay, and money is settled with Price adjustments. Audited.
+   * lines stay, and money is settled with Price adjustments. Its due dates become the other Turnus's for
+   * its original submission, as if it had been submitted there. Audited.
    * @param actor the admin
    * @param registrationId Registration id
    * @param turnusId the other Turnus
@@ -344,11 +347,24 @@ export class AdminRegistrationService {
     }
 
     if (target.id !== registration.turnusId) {
-      await this.registrations.setTurnus(registrationId, turnusId);
+      const dueDates = dueDatesOf({
+        submittedAt: registration.submittedAt,
+        depositDueDays: target.depositDueDays,
+        balanceDueDate: target.balanceDueDate,
+      });
+
+      await this.registrations.setTurnus(registrationId, turnusId, dueDates);
       await this.audit.record(actor, {
         action: 'registration.move',
         target: { type: 'registration', id: registrationId },
-        change: { before: { turnusId: registration.turnusId }, after: { turnusId } },
+        change: {
+          before: {
+            turnusId: registration.turnusId,
+            depositDueDate: registration.depositDueDate,
+            balanceDueDate: registration.balanceDueDate,
+          },
+          after: { turnusId, ...dueDates },
+        },
       });
     }
 
@@ -653,8 +669,9 @@ export class AdminRegistrationService {
 
   /**
    * Check a new child's answers and price it now: the price in force, its surcharges with the
-   * Registration's own, and the Sibling discount, to the new child and, when the Camp gives it to every
-   * child, to each Registered child that has none yet.
+   * Registration's own, the Registration's percentage Discount code off the child's price, and the Sibling
+   * discount, to the new child and, when the Camp gives it to every child, to each Registered child that has
+   * none yet.
    * @param loaded the Registration
    * @param body the child's answers
    * @throws {BadRequestException} submission_invalid with the reasons in `fields`
@@ -704,6 +721,14 @@ export class AdminRegistrationService {
         source: { fieldId, optionId },
       })),
     ];
+    // The code the Registration was submitted with, whatever its limit or expiry now: a fixed one came off
+    // the total once and gives nothing more.
+    const code = await this.discountCodes.getUsedBy(loaded.registration.id);
+    const percentage = code === null ? null : percentageCodeLine(code.toPricing(), price.amount, position);
+
+    if (percentage !== null && percentage.amount !== 0) {
+      lines.push(percentage);
+    }
 
     if (sibling !== null && registered.length >= 1) {
       lines.push({ kind: 'sibling_discount', participant: position, label: null, amount: -sibling.amount });

@@ -29,6 +29,7 @@
   "balance": "Zbývá zaplatit",
   "status": {
     "unpaid": "Nezaplaceno",
+    "partly_paid": "Částečně zaplaceno",
     "deposit_paid": "Záloha zaplacena",
     "paid": "Zaplaceno",
     "overpaid": "Přeplaceno"

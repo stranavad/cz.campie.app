@@ -113,7 +113,7 @@ export class PaymentReminderService {
     const active = new Set(
       participants.filter(({ status }) => status === 'registered').map(({ registrationId }) => registrationId),
     );
-    const balances = await this.ledger.balancesOf(turnus, registrations);
+    const balances = await this.ledger.balancesOf(registrations);
     const withBalance = registrations.filter(({ id }) => active.has(id) && (balances.get(id)?.balance ?? 0) > 0);
 
     return {

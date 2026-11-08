@@ -32,6 +32,8 @@ export const payments = p.snakeCase.table.withRLS(
       foreignColumns: [registrations.organisationId, registrations.id],
     }),
     p.index('payments_registration_id_idx').on(table.registrationId),
+    // The payments export reads an Organisation's entries by payment date.
+    p.index('payments_organisation_id_paid_on_idx').on(table.organisationId, table.paidOn),
     p.check(
       'payments_amount',
       sql`(${table.source} = 'correction' AND ${table.amount} < 0) OR (${table.source} <> 'correction' AND ${table.amount} > 0)`,

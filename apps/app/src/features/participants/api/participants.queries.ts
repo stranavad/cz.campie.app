@@ -139,13 +139,16 @@ export const useRegeneratePrihlaskaMutation = (organisationId: string, registrat
     participantsService.regeneratePrihlaska(organisationId, registrationId, participantId),
   );
 
-// Starts an export: a Turnus's Participants with the columns chosen, or the payment ledger without a Turnus.
+// What an export holds: a Turnus's Participants with the columns chosen, or the payments within dates.
+export type ExportRequest =
+  { kind: 'participants'; turnusId: string; columns?: string[] } | { kind: 'payments'; from: string; to: string };
+
 export const useStartExportMutation = (organisationId: string) =>
   useMutation({
-    mutationFn: ({ turnusId, columns }: { turnusId: string | null; columns?: string[] }) =>
-      turnusId === null
-        ? participantsService.startPaymentsExport(organisationId)
-        : participantsService.startExport(organisationId, turnusId, columns),
+    mutationFn: (request: ExportRequest) =>
+      request.kind === 'payments'
+        ? participantsService.startPaymentsExport(organisationId, { from: request.from, to: request.to })
+        : participantsService.startExport(organisationId, request.turnusId, request.columns),
   });
 
 const exportOptionsKey = (organisationId: string, turnusId: string) =>

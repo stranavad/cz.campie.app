@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { PAYMENT_STATUSES } from '@repo/schema/pricing';
 import { czk } from '@repo/schema/shared';
 
 import { useTurnusOverviewQuery } from '@/features/participants/api/participants.queries';
@@ -13,7 +14,16 @@ export function TurnusOverview({ organisationId, turnusId }: { organisationId: s
     return null;
   }
 
-  const { capacity, registered, expected, received, outstanding, overpaid, overdueRegistrations } = overview.data;
+  const {
+    capacity,
+    registered,
+    expected,
+    received,
+    outstanding,
+    overpaid,
+    overdueRegistrations,
+    registrationsByPaymentStatus,
+  } = overview.data;
   const facts = [
     [t('overview.places'), t('overview.placesValue', { registered, capacity })],
     [t('overview.expected'), czk(expected)],
@@ -21,6 +31,14 @@ export function TurnusOverview({ organisationId, turnusId }: { organisationId: s
     [t('overview.outstanding'), czk(outstanding)],
     ...(overpaid > 0 ? [[t('overview.overpaid'), czk(overpaid)]] : []),
     [t('overview.overdue'), String(overdueRegistrations)],
+    [
+      t('overview.byStatus'),
+      PAYMENT_STATUSES.filter((status) => registrationsByPaymentStatus[status] > 0)
+        .map((status) =>
+          t('overview.statusCount', { status: t(`status.${status}`), count: registrationsByPaymentStatus[status] }),
+        )
+        .join(', '),
+    ],
   ];
 
   return (
