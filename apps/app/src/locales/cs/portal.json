@@ -157,6 +157,7 @@
     "open": "Otevřít",
     "upload": "Nahrát dokument",
     "uploadAgain": "Nahrát znovu",
+    "replace": "Nahradit jiným souborem (původní smažeme)",
     "uploadHint": "PDF, JPG nebo PNG, nejvýše 10 MB. Můžete vyfotit telefonem.",
     "uploading": "Nahráváme…",
     "uploadFailed": "Dokument se nepodařilo nahrát. Zkuste to prosím znovu.",
@@ -165,7 +166,8 @@
       "file_too_large": "Soubor je příliš velký, nejvýše 10 MB.",
       "file_type_not_allowed": "Nahrát lze jen PDF, JPG nebo PNG."
     },
-    "notNeeded": "Dokument už čeká na kontrolu. Načtěte prosím stránku znovu."
+    "notNeeded": "Dokument už čeká na kontrolu. Načtěte prosím stránku znovu.",
+    "notPending": "Dokument už mezitím někdo zkontroloval, nahradit ho nelze. Načtěte prosím stránku znovu."
   },
   "checklist": {
     "title": "Co ještě zbývá",

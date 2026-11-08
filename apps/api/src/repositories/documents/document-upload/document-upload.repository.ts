@@ -77,6 +77,16 @@ export class DocumentUploadRepository {
   }
 
   /**
+   * Get a handed-in document of the current Organisation.
+   * @param id document id
+   */
+  public async getById(id: string): Promise<DocumentUploadRow | null> {
+    const [row] = await this.unitOfWork.db.select().from(documentUploads).where(eq(documentUploads.id, id));
+
+    return row ?? null;
+  }
+
+  /**
    * Get a handed-in document of the current Organisation and lock it until the unit of work ends.
    * @param id document id
    */
@@ -107,6 +117,29 @@ export class DocumentUploadRepository {
 
     if (row === undefined) {
       throw new Error('The document was not reviewed');
+    }
+
+    return row;
+  }
+
+  /**
+   * Put another file in place of a handed-in document's, with who handed it in and when.
+   * @param id document id
+   * @param replacement the new file, the guardian's email and the instant
+   * @throws {Error} when the database returns no row
+   */
+  public async replaceFile(
+    id: string,
+    replacement: { fileId: string; uploadedByEmail: string; uploadedAt: Date },
+  ): Promise<DocumentUploadRow> {
+    const [row] = await this.unitOfWork.db
+      .update(documentUploads)
+      .set(replacement)
+      .where(eq(documentUploads.id, id))
+      .returning();
+
+    if (row === undefined) {
+      throw new Error('The document was not replaced');
     }
 
     return row;

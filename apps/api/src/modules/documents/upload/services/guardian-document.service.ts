@@ -1,7 +1,13 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import type { GuardianDocuments, GuardianUpload, UploadDocumentParams, UploadErrorCode } from '@repo/schema/documents';
+import type {
+  GuardianDocuments,
+  GuardianUpload,
+  ReplaceUploadParams,
+  UploadDocumentParams,
+  UploadErrorCode,
+} from '@repo/schema/documents';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
@@ -15,7 +21,10 @@ import { CampRepository } from '../../../../repositories/camps/camp/camp.reposit
 import type { TurnusEntity } from '../../../../repositories/camps/turnus/turnus.entity.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { DocumentTypeRepository } from '../../../../repositories/documents/document-type/document-type.repository.ts';
-import { DocumentUploadRepository } from '../../../../repositories/documents/document-upload/document-upload.repository.ts';
+import {
+  DocumentUploadRepository,
+  type DocumentUploadRow,
+} from '../../../../repositories/documents/document-upload/document-upload.repository.ts';
 import type { ParticipantEntity } from '../../../../repositories/registrations/participant/participant.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 
@@ -166,6 +175,91 @@ export class GuardianDocumentService {
     });
 
     return this.list(actor.identity, params.registrationId);
+  }
+
+  /**
+   * Replace the file of a document still waiting for review, such as a wrong photo: the document keeps its
+   * place, takes the new file, guardian and instant, and the old file is deleted. Audited.
+   * @param actor the guardian
+   * @param params the Registration and the document
+   * @param upload the new file
+   * @throws {NotFoundException} when the document is not of a Registered child of the guardian's Registration
+   * @throws {ConflictException} document_upload_not_pending when it was reviewed already
+   */
+  public async replace(actor: Actor, params: ReplaceUploadParams, upload: FileUpload): Promise<GuardianDocuments> {
+    if (actor.kind !== 'guardian') {
+      throw new Error('Only a guardian replaces a document');
+    }
+
+    await this.rateLimiter.admit(this.limit, { ipAddress: actor.ipAddress, target: actor.identity });
+    // Checked once before the file is stored, so a refused replacement costs no storage, and again under
+    // the locks below.
+    this.refuseUnreplaceable(await this.replaceableOf(actor.identity, params, null));
+
+    const fileId = await this.files.store(upload);
+    // The same order as an upload's and a review's: the Registration (keeping an erasure out), then the
+    // document before its child, so a review deciding on it meanwhile is seen below.
+    await this.registrations.lockById(params.registrationId);
+    const before = await this.replaceableOf(actor.identity, params, await this.uploads.lockById(params.uploadId));
+    this.refuseUnreplaceable(before);
+    await this.registrations.lockParticipantOrThrow(before.participantId);
+
+    const after = await this.uploads.replaceFile(before.id, {
+      fileId,
+      uploadedByEmail: actor.identity,
+      uploadedAt: this.clock.now(),
+    });
+
+    if (before.fileId !== null) {
+      await this.files.remove(before.fileId);
+    }
+
+    await this.audit.record(actor, {
+      action: 'document_upload.replace',
+      target: { type: 'participant', id: before.participantId },
+      change: { before, after },
+    });
+
+    return this.list(actor.identity, params.registrationId);
+  }
+
+  /**
+   * Find a document of a Registered child of the guardian's Registration, in a Camp that takes documents.
+   * @param email the guardian's email
+   * @param params the Registration and the document
+   * @param locked the document as locked, or null to read it now
+   * @throws {NotFoundException} when the document is not of the guardian's Registered child
+   */
+  private async replaceableOf(
+    email: string,
+    params: ReplaceUploadParams,
+    locked: DocumentUploadRow | null,
+  ): Promise<DocumentUploadRow> {
+    const document = locked ?? (await this.uploads.getById(params.uploadId));
+    const { camp, participants } = await this.familyOf(email, params.registrationId);
+
+    if (
+      document === null ||
+      !camp.modules.includes('documents') ||
+      !participants.some(({ id }) => id === document.participantId)
+    ) {
+      throw new NotFoundException();
+    }
+
+    return document;
+  }
+
+  /**
+   * Refuse to replace a document that was reviewed, or one handed in on paper.
+   * @param document the document
+   * @throws {ConflictException} document_upload_not_pending
+   */
+  private refuseUnreplaceable(document: DocumentUploadRow): void {
+    if (document.status !== 'pending' || document.fileId === null) {
+      const code: UploadErrorCode = 'document_upload_not_pending';
+
+      throw new ConflictException({ code, message: 'The document was reviewed already' });
+    }
   }
 
   /**

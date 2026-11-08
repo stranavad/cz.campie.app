@@ -2,9 +2,11 @@ import { Controller, UseGuards } from '@nestjs/common';
 
 import {
   listGuardianDocumentsEndpoint,
+  replaceUploadEndpoint,
   uploadDocumentEndpoint,
   type GuardianDocuments,
   type GuardianDocumentsParams,
+  type ReplaceUploadParams,
   type UploadDocumentParams,
 } from '@repo/schema/documents';
 
@@ -36,5 +38,15 @@ export class GuardianDocumentsController {
     @UploadedFile() upload: FileUpload,
   ): Promise<GuardianDocuments> {
     return this.documents.upload(actor, params, upload);
+  }
+
+  @Endpoint(replaceUploadEndpoint)
+  @UseGuards(FileUploadGuard)
+  public replace(
+    @RequestActor() actor: Actor,
+    @EndpointParams(replaceUploadEndpoint) params: ReplaceUploadParams,
+    @UploadedFile() upload: FileUpload,
+  ): Promise<GuardianDocuments> {
+    return this.documents.replace(actor, params, upload);
   }
 }

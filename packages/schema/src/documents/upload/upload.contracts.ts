@@ -67,8 +67,9 @@ export const uploadDocumentParamsSchema = z.object({
 export type UploadDocumentParams = z.infer<typeof uploadDocumentParamsSchema>;
 
 // `document_upload_not_needed`: the requirement's newest document waits for review or was approved; only a
-// returned one is handed in again.
-export const UPLOAD_ERROR_CODES = ['document_upload_not_needed'] as const;
+// returned one is handed in again. `document_upload_not_pending`: the document to replace was reviewed
+// meanwhile.
+export const UPLOAD_ERROR_CODES = ['document_upload_not_needed', 'document_upload_not_pending'] as const;
 
 export type UploadErrorCode = (typeof UPLOAD_ERROR_CODES)[number];
 
@@ -78,6 +79,20 @@ export const uploadDocumentEndpoint = defineEndpoint({
   method: 'POST',
   path: '/portal/registrations/:registrationId/participants/:participantId/documents/:documentTypeId',
   params: uploadDocumentParamsSchema,
+  upload: true,
+  response: guardianDocumentsSchema,
+});
+
+export const replaceUploadParamsSchema = z.object({ registrationId: z.uuid(), uploadId: z.uuid() });
+
+export type ReplaceUploadParams = z.infer<typeof replaceUploadParamsSchema>;
+
+// Replaces the file of a document still waiting for review (a wrong photo); the old file is deleted. A
+// rejected file answers with a FileErrorCode. Guardians and access emails of the Registration; audited.
+export const replaceUploadEndpoint = defineEndpoint({
+  method: 'PUT',
+  path: '/portal/registrations/:registrationId/uploads/:uploadId',
+  params: replaceUploadParamsSchema,
   upload: true,
   response: guardianDocumentsSchema,
 });

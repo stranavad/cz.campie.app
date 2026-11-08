@@ -29,6 +29,8 @@ export function RequirementUploads({
   const [tooLarge, setTooLarge] = useState(false);
   const [newest] = uploads;
   const canUpload = newest === undefined || newest.status === 'returned';
+  // A document waiting for review, such as a wrong photo, may be swapped for another until it is reviewed.
+  const replacing = newest?.status === 'pending' && newest.file !== null ? newest.id : null;
   const refusal = upload.error instanceof HttpError ? readErrorResponse(upload.error.details)?.code : undefined;
   const fileProblem = FILE_ERROR_CODES.find((known) => known === refusal);
 
@@ -52,9 +54,13 @@ export function RequirementUploads({
           )}
         </span>
       ))}
-      {canUpload ? (
+      {canUpload || replacing !== null ? (
         <label className="flex flex-col gap-1">
-          {newest === undefined ? t('documents.upload') : t('documents.uploadAgain')}
+          {replacing !== null
+            ? t('documents.replace')
+            : newest === undefined
+              ? t('documents.upload')
+              : t('documents.uploadAgain')}
           <input
             type="file"
             accept="application/pdf,image/jpeg,image/png"
@@ -65,7 +71,7 @@ export function RequirementUploads({
               setTooLarge(file !== undefined && file.size > MAX_FILE_BYTES);
 
               if (file !== undefined && file.size <= MAX_FILE_BYTES) {
-                upload.mutate({ params: { registrationId, participantId, documentTypeId }, file });
+                upload.mutate({ params: { registrationId, participantId, documentTypeId }, file, replacing });
               }
 
               event.target.value = '';
@@ -84,9 +90,11 @@ export function RequirementUploads({
         <p role="alert" className="text-destructive">
           {refusal === 'document_upload_not_needed'
             ? t('documents.notNeeded')
-            : fileProblem === undefined
-              ? t('documents.uploadFailed')
-              : t(`documents.fileProblems.${fileProblem}`)}
+            : refusal === 'document_upload_not_pending'
+              ? t('documents.notPending')
+              : fileProblem === undefined
+                ? t('documents.uploadFailed')
+                : t(`documents.fileProblems.${fileProblem}`)}
         </p>
       ) : null}
     </div>

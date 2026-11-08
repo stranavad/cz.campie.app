@@ -9,7 +9,9 @@ import {
 } from '@repo/schema/consents';
 import {
   listGuardianDocumentsEndpoint,
+  replaceUploadEndpoint,
   uploadDocumentEndpoint,
+  type ReplaceUploadParams,
   type UploadDocumentParams,
 } from '@repo/schema/documents';
 import {
@@ -69,6 +71,8 @@ export const portalService = {
     apiClient.request(listGuardianDocumentsEndpoint, { params: { registrationId }, signal }),
   uploadDocument: (params: UploadDocumentParams, file: File) =>
     apiClient.request(uploadDocumentEndpoint, { params, file }),
+  replaceUpload: (params: ReplaceUploadParams, file: File) =>
+    apiClient.request(replaceUploadEndpoint, { params, file }),
   checklist: (registrationId: string, signal?: AbortSignal) =>
     apiClient.request(getGuardianChecklistEndpoint, { params: { registrationId }, signal }),
 };

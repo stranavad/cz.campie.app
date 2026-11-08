@@ -138,13 +138,24 @@ export const useGuardianDocumentsQuery = (registrationId: string) =>
     retry: false,
   });
 
-// The upload answers the Registration's documents as they now are.
+// The upload, or the replacement of a document waiting for review, answers the Registration's documents as
+// they now are.
 export const useUploadDocumentMutation = (registrationId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ params, file }: { params: UploadDocumentParams; file: File }) =>
-      portalService.uploadDocument(params, file),
+    mutationFn: ({
+      params,
+      file,
+      replacing,
+    }: {
+      params: UploadDocumentParams;
+      file: File;
+      replacing: string | null;
+    }) =>
+      replacing === null
+        ? portalService.uploadDocument(params, file)
+        : portalService.replaceUpload({ registrationId: params.registrationId, uploadId: replacing }, file),
     onSuccess: async (documents) => {
       queryClient.setQueryData(portalKeys.documents(registrationId), documents);
       await queryClient.invalidateQueries({ queryKey: portalKeys.checklist(registrationId) });
