@@ -1,6 +1,6 @@
 # 70 - Email verification and safe invitation acceptance
 
-Status: ready-for-agent
+Status: done
 Stage: 1a
 Episode: E1 Organisations and identity
 Blocked by: 17, 20, 67
@@ -95,3 +95,11 @@ Signup keeps working as now. The Owner is signed in and can set up the Organisat
 - After this issue, the "existing account joins as it is, since the link proves the email is theirs" reasoning in invitation acceptance applies only to verified accounts. Its doc comment changes with the code.
 
 ## Comments
+
+- 2026-11-08: Done. Decisions the issue left open:
+  - The signup link is valid 7 days, like an invitation, and lives in the platform table `email_verifications`, which keeps the signup Organisation so its log records the verification.
+  - Resend is an admin route (`POST /email-verifications`), so it carries the Organisation the link is recorded in. It shares the password reset request limit, since both send a link to the account's own email.
+  - The confirmation page (`/overeni-emailu`) confirms on a button, not on opening, so a mail client that prefetches links does not use it up.
+  - Accepting an invitation with a new password also lifts a login lockout on the email, as a password reset does.
+  - Verification by password reset is not audited: the reset has no Organisation, and the issue names audit only for the signup link and the takeover.
+  - `pnpm operator grant` still creates a new account unverified. The operator sets its password through a reset, which verifies it.
