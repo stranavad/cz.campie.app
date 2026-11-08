@@ -179,8 +179,13 @@ export function RegistrationDocuments({ organisationId, registrationId, canWrite
                   className="underline"
                   disabled={openInternal.isPending}
                   onClick={() => {
-                    // Opened at the click, where browsers allow it, and pointed at the link once it comes.
+                    // Opened at the click, where browsers allow it, and pointed at the link once it comes. A
+                    // noopener tab would come back as null, so the tab is cut from this page by hand.
                     const tab = window.open('', '_blank');
+
+                    if (tab !== null) {
+                      tab.opener = null;
+                    }
 
                     openInternal.mutate(document.id, {
                       onSuccess: ({ url }) => (tab === null ? setBlocked(url) : tab.location.assign(url)),
