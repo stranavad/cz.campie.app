@@ -3,16 +3,19 @@ import type { Response } from 'express';
 
 import {
   confirmTotpEnrolmentEndpoint,
+  regenerateRecoveryCodesEndpoint,
   startTotpEnrolmentEndpoint,
   verifyTotpEndpoint,
   type ConfirmTotpEnrolmentBody,
+  type RegenerateRecoveryCodesBody,
   type TotpEnabled,
   type TotpEnrolment,
   type VerifyTotpBody,
 } from '@repo/schema/admins';
 
 import { Access } from '../../../core/access/access.decorator.ts';
-import { RequestAdminId, RequestAdminSession } from '../../../core/access/request-actor.decorator.ts';
+import { RequestActor, RequestAdminId, RequestAdminSession } from '../../../core/access/request-actor.decorator.ts';
+import type { Actor } from '../../../core/audit/actor.ts';
 import { Endpoint, EndpointBody } from '../../../core/http/endpoint.decorator.ts';
 import { writeSessionCookie } from '../../../core/sessions/session-cookie.ts';
 import { TotpService } from './services/totp.service.ts';
@@ -49,5 +52,14 @@ export class TotpController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
     writeSessionCookie(response, 'admin', await this.totp.verify(adminId, session.id, body.code));
+  }
+
+  @Endpoint(regenerateRecoveryCodesEndpoint)
+  public async regenerateRecoveryCodes(
+    @RequestActor() actor: Actor,
+    @RequestAdminSession() session: { secondFactor: boolean },
+    @EndpointBody(regenerateRecoveryCodesEndpoint) body: RegenerateRecoveryCodesBody,
+  ): Promise<TotpEnabled> {
+    return { recoveryCodes: await this.totp.regenerateRecoveryCodes(actor, session, body.code) };
   }
 }

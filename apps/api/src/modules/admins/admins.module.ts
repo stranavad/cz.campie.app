@@ -15,6 +15,7 @@ import { MembershipService } from './membership/services/membership.service.ts';
 import { PasswordResetRequestedHandler } from './password-reset/password-reset-requested.handler.ts';
 import { PasswordResetController } from './password-reset/password-reset.controller.ts';
 import { PasswordResetService } from './password-reset/services/password-reset.service.ts';
+import { RecoveryCodesRegeneratedHandler } from './totp/recovery-codes-regenerated.handler.ts';
 import { TotpService } from './totp/services/totp.service.ts';
 import { TotpResetHandler } from './totp/totp-reset.handler.ts';
 import { TotpController } from './totp/totp.controller.ts';
@@ -41,6 +42,7 @@ import { TotpController } from './totp/totp.controller.ts';
     InvitationCreatedHandler,
     TotpService,
     TotpResetHandler,
+    RecoveryCodesRegeneratedHandler,
   ],
   exports: [AdminService, MembershipService, TotpService],
 })

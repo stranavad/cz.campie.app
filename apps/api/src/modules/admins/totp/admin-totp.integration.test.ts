@@ -177,6 +177,49 @@ describe('two-step login for admins', () => {
     expect(stored.map(({ code_hash }) => code_hash)).not.toContain(bare);
   });
 
+  it('makes new recovery codes for a passed session and a current app code only, audited and emailed', async () => {
+    const { secret, recoveryCodes, headers } = await enrolTotp(http(), member.headers(''), clock().now());
+    const regenerate = (sent: RequestHeaders, code: string) =>
+      http().post('/api/account/totp/recovery-codes').set(sent).send({ code });
+    const [oldCode = ''] = recoveryCodes;
+    clock().advance(THIRTY_SECONDS);
+
+    expect((await regenerate(headers, oldCode)).status).toBe(400);
+    expect((await regenerate(headers, '000000')).body).toMatchObject({ code: 'totp_code_invalid' });
+    const unpassed = await signIn(app(), member.id);
+    expect((await regenerate(unpassed, totpCode(secret, clock().now()))).body).toMatchObject({
+      code: 'second_factor_required',
+    });
+
+    const made = await regenerate(headers, totpCode(secret, clock().now()));
+
+    expect(made.status).toBe(200);
+    const fresh: string[] = made.body.recoveryCodes;
+    expect(fresh).toHaveLength(10);
+    expect(fresh.filter((code) => recoveryCodes.includes(code))).toEqual([]);
+    expect((await regenerate(headers, totpCode(secret, clock().now()))).body).toMatchObject({
+      code: 'totp_code_invalid',
+    });
+    expect((await verify(await signIn(app(), member.id), oldCode)).body).toMatchObject({ code: 'totp_code_invalid' });
+    expect((await verify(await signIn(app(), member.id), fresh[0] ?? '')).status).toBe(204);
+    expect(
+      await withClient(
+        database().ownerUrl,
+        async (client) =>
+          (
+            await client.query(
+              `SELECT actor_kind, actor_identity, target_id FROM platform_audit_entries
+                WHERE action = 'admin.regenerate_recovery_codes'`,
+            )
+          ).rows,
+      ),
+    ).toEqual([{ actor_kind: 'admin', actor_identity: member.id, target_id: member.id }]);
+    await jobs().drain();
+    expect(mail().sent.map(({ to, subject }) => ({ to, subject }))).toEqual([
+      { to: [member.email], subject: 'Nové záložní kódy pro dvoufázové přihlášení' },
+    ]);
+  });
+
   it("refuses a member's TOTP reset to anyone but an Owner", async () => {
     const ownerId = await memberIdOf(owner);
     await enrolTotp(http(), owner.headers(''), clock().now());

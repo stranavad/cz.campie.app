@@ -158,6 +158,7 @@
     "codeOrRecovery": "Kód z aplikace nebo záložní kód",
     "submit": {
       "confirm": "Zapnout dvoufázové přihlášení",
+      "regenerate": "Vytvořit nové záložní kódy",
       "verify": "Ověřit"
     },
     "failure": {
@@ -191,6 +192,8 @@
     "title": "Můj účet",
     "loading": "Načítání…",
     "error": "Účet se nepodařilo načíst. Zkuste to prosím znovu.",
-    "totpOn": "Dvoufázové přihlášení je zapnuté. Když přijdete o telefon i záložní kódy, požádejte vlastníka organizace, aby vám ho vypnul."
+    "totpOn": "Dvoufázové přihlášení je zapnuté. Když přijdete o telefon i záložní kódy, požádejte vlastníka organizace, aby vám ho vypnul.",
+    "newRecoveryCodes": "Nové záložní kódy",
+    "newRecoveryCodesIntro": "Došly vám záložní kódy, nebo je mohl vidět někdo jiný? Zadejte kód z ověřovací aplikace a dostanete deset nových. Původní kódy tím přestanou platit a pošleme vám o tom e-mail."
   }
 }

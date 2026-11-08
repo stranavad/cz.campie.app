@@ -20,3 +20,4 @@ export * from './totp/totp.resource.ts';
 export * from './totp/start-totp-enrolment.contract.ts';
 export * from './totp/confirm-totp-enrolment.contract.ts';
 export * from './totp/verify-totp.contract.ts';
+export * from './totp/regenerate-recovery-codes.contract.ts';

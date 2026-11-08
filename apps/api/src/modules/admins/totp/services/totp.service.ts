@@ -1,5 +1,12 @@
 import { randomInt } from 'node:crypto';
-import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
@@ -8,6 +15,7 @@ import {
   type TotpEnrolment,
   type TotpErrorCode,
 } from '@repo/schema/admins';
+import type { AccessErrorCode } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
@@ -25,6 +33,7 @@ import type { TotpCredentialEntity } from '../../../../repositories/admins/totp-
 import { TotpCredentialRepository } from '../../../../repositories/admins/totp-credential/totp-credential.repository.ts';
 import { OperatorRepository } from '../../../../repositories/operators/operator/operator.repository.ts';
 import { AdminService } from '../../admin/services/admin.service.ts';
+import { recoveryCodesRegeneratedJob } from '../recovery-codes-regenerated.job.ts';
 import { totpResetJob } from '../totp-reset.job.ts';
 
 const RECOVERY_CODES = 10;
@@ -136,14 +145,58 @@ export class TotpService {
       throw totpError('totp_enabled');
     }
 
-    const recoveryCodes = Array.from({ length: RECOVERY_CODES }, () => newRecoveryCode());
-
-    await this.credentials.replaceRecoveryCodes(
-      adminId,
-      recoveryCodes.map((code) => this.recoveryDigest(adminId, code)),
-    );
+    const recoveryCodes = await this.replaceRecoveryCodes(adminId);
 
     return { session: await this.sessions.passSecondFactor(sessionId), recoveryCodes };
+  }
+
+  /**
+   * Give an admin ten new recovery codes in place of theirs, which stop working, for a session that passed
+   * the second step and with a current code from the app, never a recovery code: one who only found a
+   * recovery code cannot mint more. Audited in the platform's log and emailed to the admin.
+   * @param actor the signed-in admin
+   * @param session their session, and whether it passed the second step
+   * @param code the code from their app
+   * @throws {ForbiddenException} second_factor_required when the session has not passed the second step
+   * @throws {HttpException} 409 when the admin's TOTP is not on; 400 for a wrong or used code
+   */
+  public async regenerateRecoveryCodes(
+    actor: Actor,
+    session: { readonly secondFactor: boolean },
+    code: string,
+  ): Promise<string[]> {
+    if (actor.kind !== 'admin') {
+      throw new Error('Only an admin makes their own recovery codes');
+    }
+
+    if (!session.secondFactor) {
+      const refusal: AccessErrorCode = 'second_factor_required';
+
+      throw new ForbiddenException({ code: refusal, message: 'The session has not passed a TOTP code' });
+    }
+
+    const credential = await this.credentials.getByAdmin(actor.identity);
+
+    if (credential === null || !credential.confirmed) {
+      throw totpError('totp_not_enabled');
+    }
+
+    const step = await this.checkCode(credential, code);
+
+    // A code seen already, perhaps by someone looking over a shoulder, counts as wrong.
+    if (!(await this.credentials.useStep(actor.identity, step))) {
+      throw totpError('totp_code_invalid');
+    }
+
+    const recoveryCodes = await this.replaceRecoveryCodes(actor.identity);
+
+    await this.audit.recordForPlatform(actor, {
+      action: 'admin.regenerate_recovery_codes',
+      target: { type: 'admin', id: actor.identity },
+    });
+    this.jobs.enqueue(recoveryCodesRegeneratedJob, { adminId: actor.identity });
+
+    return recoveryCodes;
   }
 
   /**
@@ -240,6 +293,22 @@ export class TotpService {
     await this.sessions.endAllAdmin(adminId);
     await this.audit.record(actor, { action: 'member.reset_totp', target: { type: 'membership', id: membershipId } });
     this.jobs.enqueue(totpResetJob, { adminId, byOperator });
+  }
+
+  /**
+   * Store ten new recovery codes for an admin in place of any they had.
+   * @param adminId the admin
+   * @returns the codes in plain text, to show once
+   */
+  private async replaceRecoveryCodes(adminId: string): Promise<string[]> {
+    const recoveryCodes = Array.from({ length: RECOVERY_CODES }, () => newRecoveryCode());
+
+    await this.credentials.replaceRecoveryCodes(
+      adminId,
+      recoveryCodes.map((code) => this.recoveryDigest(adminId, code)),
+    );
+
+    return recoveryCodes;
   }
 
   /**

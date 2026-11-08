@@ -9,6 +9,9 @@ export const useStartTotpEnrolmentMutation = () => useMutation({ mutationFn: two
 // and with it the page that shows them.
 export const useConfirmTotpEnrolmentMutation = () => useMutation({ mutationFn: twoStepService.confirmEnrolment });
 
+export const useRegenerateRecoveryCodesMutation = () =>
+  useMutation({ mutationFn: twoStepService.regenerateRecoveryCodes });
+
 // A passed code changes the account's session state, which decides what the pages show.
 export const useVerifyTotpMutation = () => {
   const queryClient = useQueryClient();

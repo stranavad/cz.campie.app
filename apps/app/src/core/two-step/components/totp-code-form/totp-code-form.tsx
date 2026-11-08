@@ -7,7 +7,7 @@ import {
 
 interface TotpCodeFormProps {
   purpose: TotpCodePurpose;
-  // Called with the recovery codes once a new secret is confirmed.
+  // Called with the recovery codes once a new secret is confirmed or new ones are made.
   onConfirmed?: (recoveryCodes: string[]) => void;
 }
 
@@ -26,7 +26,7 @@ export function TotpCodeForm({ purpose, onConfirmed }: TotpCodeFormProps) {
     >
       <form.AppField name="code">
         {(field) =>
-          purpose === 'confirm' ? (
+          purpose !== 'verify' ? (
             <field.TextField label={t('twoStep.code')} inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
           ) : (
             <field.TextField

@@ -2,13 +2,14 @@ import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { useAccountQuery } from '@/core/account';
-import { TotpEnrolment } from '@/core/two-step';
+import { TotpCodeForm, TotpEnrolment, useShowRecoveryCodes } from '@/core/two-step';
 import { HttpError } from '@/lib/api';
 
 // The signed-in admin's own account: who they are and their two-step login.
 export function AccountSettingsPage() {
   const { t } = useTranslation();
   const account = useAccountQuery();
+  const showRecoveryCodes = useShowRecoveryCodes();
 
   if (account.error instanceof HttpError && account.error.status === 401) {
     return <Navigate to="/platform/prihlaseni" replace />;
@@ -32,6 +33,9 @@ export function AccountSettingsPage() {
         <section className="flex max-w-xl flex-col gap-2">
           <h2 className="text-xl font-semibold">{t('twoStep.enrolment.title')}</h2>
           <p>{t('accountSettings.totpOn')}</p>
+          <h3 className="mt-4 font-semibold">{t('accountSettings.newRecoveryCodes')}</h3>
+          <p className="text-muted-foreground">{t('accountSettings.newRecoveryCodesIntro')}</p>
+          <TotpCodeForm purpose="regenerate" onConfirmed={showRecoveryCodes} />
         </section>
       ) : (
         <TotpEnrolment intro={t('twoStep.enrolment.voluntary')} />
