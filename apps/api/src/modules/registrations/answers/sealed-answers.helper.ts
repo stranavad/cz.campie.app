@@ -2,7 +2,14 @@ import { isDeepStrictEqual } from 'node:util';
 import { ForbiddenException } from '@nestjs/common';
 import { z } from 'zod';
 
-import { answerValueSchema, type Answers, type SensitiveKeys } from '@repo/schema/form-engine';
+import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
+import {
+  answerValueSchema,
+  sensitiveKeys,
+  type Answers,
+  type FormDefinition,
+  type SensitiveKeys,
+} from '@repo/schema/form-engine';
 import type { AccessErrorCode } from '@repo/schema/shared';
 
 import type { OrganisationCipher } from '../../../core/encryption/cipher.ts';
@@ -49,9 +56,88 @@ export function sealAnswers(cipher: OrganisationCipher, answers: Answers, sensit
  * @param stored the answers as stored
  */
 export function openAnswers(cipher: OrganisationCipher, stored: StoredAnswers): Answers {
-  return stored.encryptedAnswers === null
-    ? stored.answers
-    : { ...stored.answers, ...sealedSchema.parse(JSON.parse(cipher.decrypt(stored.encryptedAnswers))) };
+  return openForChange(cipher, stored).answers;
+}
+
+// Stored answers opened for a change: as stored, all of them joined, and the sealed ones alone.
+export interface OpenedAnswers {
+  readonly stored: StoredAnswers;
+  readonly answers: Answers;
+  readonly sealed: Answers;
+}
+
+/**
+ * Open stored answers for a change, keeping what was sealed, which stays sealed whatever the form says now.
+ * @param cipher the Organisation's cipher
+ * @param stored the answers as stored
+ */
+export function openForChange(cipher: OrganisationCipher, stored: StoredAnswers): OpenedAnswers {
+  const sealed =
+    stored.encryptedAnswers === null ? {} : sealedSchema.parse(JSON.parse(cipher.decrypt(stored.encryptedAnswers)));
+
+  return { stored, answers: { ...stored.answers, ...sealed }, sealed };
+}
+
+/**
+ * Name the sensitive keys a change of stored answers must keep from plain storage and audit values: those of
+ * every published version of the form, and any key sealed already, which only a removed custom health field
+ * can be, since the catalogue names every standard one.
+ * @param published every published version of the Camp's form
+ * @param opened the answers being changed
+ */
+export function sensitiveForChange(
+  published: readonly FormDefinition[],
+  opened: readonly OpenedAnswers[],
+): SensitiveKeys {
+  const keys = new Map(sensitiveKeys(published, REGISTRATION_FIELD_CATALOGUE));
+
+  for (const key of opened.flatMap(({ sealed }) => Object.keys(sealed))) {
+    if (!keys.has(key)) {
+      keys.set(key, 'health');
+    }
+  }
+
+  return keys;
+}
+
+/**
+ * Split changed answers for storing as sealAnswers does, sealing every key sealed before too, and keep the
+ * stored ciphertext when the sealed answers are as they were, so an audit entry sees no change of them.
+ * @param cipher the Organisation's cipher
+ * @param opened the answers as opened before the change
+ * @param answers the answers after the change
+ * @param sensitive the keys that are not plain
+ */
+export function resealAnswers(
+  cipher: OrganisationCipher,
+  opened: OpenedAnswers,
+  answers: Answers,
+  sensitive: SensitiveKeys,
+): StoredAnswers {
+  const isSealed = (key: string) => sensitive.has(key) || Object.hasOwn(opened.sealed, key);
+  const plain = Object.fromEntries(Object.entries(answers).filter(([key]) => !isSealed(key)));
+  const sealed = Object.fromEntries(Object.entries(answers).filter(([key]) => isSealed(key)));
+
+  if (isDeepStrictEqual(sealed, opened.sealed)) {
+    return { answers: plain, encryptedAnswers: opened.stored.encryptedAnswers };
+  }
+
+  return {
+    answers: plain,
+    encryptedAnswers: Object.keys(sealed).length === 0 ? null : cipher.encrypt(JSON.stringify(sealed)),
+  };
+}
+
+/**
+ * Tell whether changed answers would be stored as they are already.
+ * @param opened the answers as opened before the change
+ * @param stored the answers to store
+ */
+export function unchanged(opened: OpenedAnswers, stored: StoredAnswers): boolean {
+  return (
+    stored.encryptedAnswers === opened.stored.encryptedAnswers &&
+    isDeepStrictEqual(stored.answers, opened.stored.answers)
+  );
 }
 
 /**

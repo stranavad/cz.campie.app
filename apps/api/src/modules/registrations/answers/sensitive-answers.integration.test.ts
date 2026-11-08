@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   createAdmin,
   createCamp,
+  createGuardianSession,
   createOrganisation,
   submitRegistration,
   type RequestHeaders,
@@ -17,6 +18,15 @@ const HEALTH_NOTE = 'Alergie na pyl, nosí s sebou sprej';
 const ALLERGY = '0190a2b4-0000-7000-8000-0000000000c1';
 const ALLERGY_ANSWER = 'Laktóza';
 const PLACE = 'misto-1';
+const MEDICATION = '0190a2b4-0000-7000-8000-0000000000c2';
+const MEDICATION_ANSWER = 'Ventolin dvakrát denně';
+const SHIRT = '0190a2b4-0000-7000-8000-0000000000c3';
+const STANDARD = [
+  { key: 'birthNumber', state: 'required' },
+  { key: 'insurer', state: 'optional' },
+  { key: 'healthNote', state: 'optional' },
+  { key: 'transport', state: 'optional', options: [{ id: PLACE, label: 'Praha, Florenc' }] },
+];
 
 const allergy = {
   id: ALLERGY,
@@ -27,6 +37,8 @@ const allergy = {
   scope: 'participant',
   health: true,
 };
+const medication = { ...allergy, id: MEDICATION, label: 'Léky' };
+const shirt = { ...allergy, id: SHIRT, label: 'Tričko', health: false };
 
 const answersOf = (answers: Record<string, string> = {}) => ({
   firstName: 'Ema',
@@ -49,6 +61,43 @@ describe('encrypted answers and health data', () => {
 
   const query = <T>(sql: string, values: unknown[] = []) =>
     withClient(database().ownerUrl, async (client) => (await client.query(sql, values)).rows as T[]);
+  const publish = async (custom: object[]) => {
+    await http()
+      .put(`/api/camps/${campId}/registration-form/draft`)
+      .set(owner)
+      .send({ definition: { standard: STANDARD, custom }, maxParticipants: 3, declarations: [] });
+    await http().post(`/api/camps/${campId}/registration-form/versions`).set(owner);
+  };
+  const portalAnswer = async (answers: object) => {
+    const asJana = (await createGuardianSession(app(), organisationId, 'jana.testovaci@example.com')).headers;
+    const participantId = (
+      await query<{ id: string }>('SELECT id FROM participants WHERE registration_id = $1 ORDER BY position', [
+        registrationId,
+      ])
+    )[0]?.id;
+
+    return http()
+      .put(`/api/portal/registrations/${registrationId}/answers`)
+      .set(asJana)
+      .send({ registration: {}, participants: [{ participantId, answers }] });
+  };
+  // A guardian gives health data to a field added after the submission, which a later version removes again.
+  const answerHealthFieldRemovedLater = async () => {
+    await publish([allergy, medication]);
+    expect((await portalAnswer({ [MEDICATION]: MEDICATION_ANSWER })).status).toBe(200);
+    await publish([allergy, shirt]);
+  };
+  const expectNoPlainMedication = async () => {
+    const history = await http()
+      .get(`/api/registrations/${registrationId}/history`)
+      .set(await adminWith('read', 'none'));
+
+    expect(JSON.stringify(await query('SELECT answers FROM participants'))).not.toContain('Ventolin');
+    expect(JSON.stringify(await query('SELECT changes FROM audit_entries'))).not.toContain('Ventolin');
+    expect(JSON.stringify(history.body)).not.toContain('Ventolin');
+    expect(JSON.stringify((await detail(await adminWith('read', 'none'))).body)).not.toContain('Ventolin');
+    expect(JSON.stringify((await detail(owner)).body)).toContain(MEDICATION_ANSWER);
+  };
   const adminWith = async (registrations: 'read' | 'write', health: 'none' | 'read' | 'write') =>
     (await createAdmin(app(), { memberOf: [organisationId], permissions: { registrations, health } })).headers(
       organisationId,
@@ -88,23 +137,7 @@ describe('encrypted answers and health data', () => {
     organisationId = await createOrganisation(app());
     campId = await createCamp(app(), organisationId, 'Letní tábor', 'letni-tabor');
     owner = (await createAdmin(app(), { memberOf: [organisationId], owner: true })).headers(organisationId);
-    await http()
-      .put(`/api/camps/${campId}/registration-form/draft`)
-      .set(owner)
-      .send({
-        definition: {
-          standard: [
-            { key: 'birthNumber', state: 'required' },
-            { key: 'insurer', state: 'optional' },
-            { key: 'healthNote', state: 'optional' },
-            { key: 'transport', state: 'optional', options: [{ id: PLACE, label: 'Praha, Florenc' }] },
-          ],
-          custom: [allergy],
-        },
-        maxParticipants: 3,
-        declarations: [],
-      });
-    await http().post(`/api/camps/${campId}/registration-form/versions`).set(owner);
+    await publish([allergy]);
     registrationId = (await submitRegistration(app(), organisationId, campId, { children: [answersOf()] })).id;
   });
 
@@ -203,6 +236,38 @@ describe('encrypted answers and health data', () => {
     expect(changed.body.fields).toEqual([
       { path: ['participants', 0, 'birthNumber'], code: 'form_birth_number_mismatch' },
     ]);
+  });
+
+  it('keeps a health answer sealed through an admin edit after its field was removed', async () => {
+    await answerHealthFieldRemovedLater();
+
+    expect((await editAnswers(owner, { insurer: '207' })).status).toBe(200);
+    await expectNoPlainMedication();
+  });
+
+  it('keeps a health answer sealed through a portal save after its field was removed', async () => {
+    await answerHealthFieldRemovedLater();
+
+    expect((await portalAnswer({ [SHIRT]: 'M' })).status).toBe(200);
+    await expectNoPlainMedication();
+  });
+
+  it('re-encrypts no sealed answers a portal save leaves as they were', async () => {
+    registrationId = (
+      await submitRegistration(app(), organisationId, campId, {
+        children: [answersOf(), answersOf({ firstName: 'Jan', birthNumber: '160501/0022' })],
+      })
+    ).id;
+    const sealed = () =>
+      query<{ encrypted_answers: Buffer }>(
+        'SELECT encrypted_answers FROM participants WHERE registration_id = $1 ORDER BY position',
+        [registrationId],
+      );
+    const before = await sealed();
+    await publish([allergy, shirt]);
+
+    expect((await portalAnswer({ [SHIRT]: 'M' })).status).toBe(200);
+    expect(await sealed()).toEqual(before);
   });
 
   it('exports health columns only with Health read, the rodné číslo decrypted in the file', async () => {

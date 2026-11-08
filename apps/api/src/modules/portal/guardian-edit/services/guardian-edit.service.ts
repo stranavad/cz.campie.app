@@ -6,7 +6,6 @@ import {
   diffVersions,
   formFields,
   pricedFieldIds,
-  sensitiveKeys,
   surchargesOf,
   withOptionLabels,
   type Answers,
@@ -42,8 +41,10 @@ import {
 import {
   answerOpener,
   changedSensitive,
-  openAnswers,
-  sealAnswers,
+  openForChange,
+  resealAnswers,
+  sensitiveForChange,
+  unchanged,
 } from '../../../registrations/answers/sealed-answers.helper.ts';
 import { GuardianLoginService } from '../../guardian-session/services/guardian-login.service.ts';
 
@@ -189,16 +190,20 @@ export class GuardianEditService {
     const participants = await this.registrations.listParticipants(registrationId);
     const offered = this.newFieldIds(editable);
     const cipher = await this.encryption.cipher();
-    const sensitive = sensitiveKeys([editable.version.definition, latest.definition], REGISTRATION_FIELD_CATALOGUE);
-    const openedRegistration = openAnswers(cipher, registration);
-    const opened = new Map(participants.map((participant) => [participant.id, openAnswers(cipher, participant)]));
+    const openedRegistration = openForChange(cipher, registration);
+    const opened = new Map(participants.map((participant) => [participant.id, openForChange(cipher, participant)]));
+    const published = (await this.forms.listPublished(editable.campId)).map(({ definition }) => definition);
+    const sensitive = sensitiveForChange(
+      [editable.version.definition, ...published],
+      [openedRegistration, ...opened.values()],
+    );
     const fieldsOf = (scope: FieldScope) =>
       formFields(latest.definition, REGISTRATION_FIELD_CATALOGUE, scope).filter(({ key }) => offered.includes(key));
     const checkedRegistration = checkAnswersTo(
       fieldsOf('registration'),
       body.registration,
       ['registration'],
-      openedRegistration,
+      openedRegistration.answers,
     );
     const checkedParticipants = body.participants.map(({ participantId, answers }, index) => {
       const participant = participants.find(({ id }) => id === participantId);
@@ -210,7 +215,7 @@ export class GuardianEditService {
       return {
         participant,
         ...checkAnswersTo(fieldsOf('participant'), answers, ['participants', index], {
-          ...opened.get(participant.id),
+          ...opened.get(participant.id)?.answers,
           birthDate: participant.birthDate,
         }),
       };
@@ -227,11 +232,11 @@ export class GuardianEditService {
     }
 
     const priced = pricedFieldIds(latest.definition).filter((id) => offered.includes(id));
-    const registrationAnswers = merged(openedRegistration, checkedRegistration.value);
+    const registrationAnswers = merged(openedRegistration.answers, checkedRegistration.value);
     const participantAnswers = new Map(
       participants.map((participant) => {
         const change = checkedParticipants.find((checked) => checked.participant.id === participant.id);
-        const before = opened.get(participant.id) ?? {};
+        const before = opened.get(participant.id)?.answers ?? {};
 
         return [participant.id, change === undefined ? before : merged(before, change.value)];
       }),
@@ -260,16 +265,22 @@ export class GuardianEditService {
       }
     }
 
-    const storedRegistration = sealAnswers(cipher, registrationAnswers, sensitive);
-    const storedParticipants = participants.map(({ id }) => ({
-      id,
-      ...sealAnswers(cipher, participantAnswers.get(id) ?? {}, sensitive),
-    }));
+    const storedRegistration = resealAnswers(cipher, openedRegistration, registrationAnswers, sensitive);
+    const storedParticipants = participants.map((participant) => {
+      const before = opened.get(participant.id) ?? openForChange(cipher, participant);
+      const stored = resealAnswers(cipher, before, participantAnswers.get(participant.id) ?? {}, sensitive);
 
-    await this.registrations.setAnswers(registrationId, storedRegistration);
+      return { id: participant.id, ...stored, changed: !unchanged(before, stored) };
+    });
 
-    for (const { id, ...stored } of storedParticipants) {
-      await this.registrations.setParticipantAnswers(id, stored);
+    if (!unchanged(openedRegistration, storedRegistration)) {
+      await this.registrations.setAnswers(registrationId, storedRegistration);
+    }
+
+    for (const { id, answers, encryptedAnswers, changed } of storedParticipants) {
+      if (changed) {
+        await this.registrations.setParticipantAnswers(id, { answers, encryptedAnswers });
+      }
     }
 
     await this.registrations.appendPriceLines(
@@ -290,9 +301,9 @@ export class GuardianEditService {
         },
       },
       encryptedFields: [
-        ...changedSensitive(openedRegistration, registrationAnswers, sensitive),
+        ...changedSensitive(openedRegistration.answers, registrationAnswers, sensitive),
         ...participants.flatMap(({ id }) =>
-          changedSensitive(opened.get(id) ?? {}, participantAnswers.get(id) ?? {}, sensitive),
+          changedSensitive(opened.get(id)?.answers ?? {}, participantAnswers.get(id) ?? {}, sensitive),
         ),
       ],
     });

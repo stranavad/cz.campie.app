@@ -4,7 +4,6 @@ import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
 import {
   checkAnswersTo,
   formFields,
-  sensitiveKeys,
   surchargesOf,
   type Answers,
   type AnswerValue,
@@ -54,8 +53,12 @@ import { UndeliverableEmailService } from '../../../emails/undeliverable-email/s
 import {
   changedSensitive,
   ensureHealthWritable,
-  openAnswers,
+  openForChange,
+  resealAnswers,
   sealAnswers,
+  sensitiveForChange,
+  unchanged,
+  type OpenedAnswers,
 } from '../../answers/sealed-answers.helper.ts';
 import { emailChangeConfirmedJob } from '../../guardian-email/guardian-email-notice.job.ts';
 import { answeredDefinition } from '../../payment/claimed-discounts.helper.ts';
@@ -72,10 +75,11 @@ interface Loaded {
   readonly editable: FormDefinition;
   readonly participants: readonly ParticipantEntity[];
   readonly cipher: OrganisationCipher;
+  // The keys of every published version's sensitive answers, and of any answer sealed already.
   readonly sensitive: SensitiveKeys;
   // The answers beyond the core with the encrypted ones opened, for checking and changing them.
-  readonly registrationAnswers: Answers;
-  readonly participantAnswers: ReadonlyMap<string, Answers>;
+  readonly openedRegistration: OpenedAnswers;
+  readonly openedParticipants: ReadonlyMap<string, OpenedAnswers>;
 }
 
 // A Participant's core and its answers beyond it, the encrypted ones open, before they are stored.
@@ -272,16 +276,24 @@ export class AdminRegistrationService {
       throw refused('price_changed');
     }
 
-    const { cipher, sensitive } = loaded;
-    const storedRegistration = sealAnswers(cipher, registrationAnswers, sensitive);
+    const { cipher, sensitive, openedRegistration, openedParticipants } = loaded;
+    const storedRegistration = resealAnswers(cipher, openedRegistration, registrationAnswers, sensitive);
     const storedParticipants = new Map(
-      [...children].map(([participantId, { answers, ...core }]) => [
-        participantId,
-        { ...core, ...sealAnswers(cipher, answers, sensitive) },
-      ]),
+      [...children].map(([participantId, { answers, ...core }]) => {
+        const opened = openedParticipants.get(participantId);
+
+        // planAnswers takes only Participants of the Registration, each opened by load.
+        if (opened === undefined) {
+          throw new NotFoundException();
+        }
+
+        return [participantId, { ...core, ...resealAnswers(cipher, opened, answers, sensitive) }];
+      }),
     );
 
-    await this.registrations.setAnswers(registrationId, storedRegistration);
+    if (!unchanged(openedRegistration, storedRegistration)) {
+      await this.registrations.setAnswers(registrationId, storedRegistration);
+    }
 
     for (const [participantId, child] of storedParticipants) {
       await this.registrations.updateParticipant(participantId, child);
@@ -322,9 +334,9 @@ export class AdminRegistrationService {
         },
       },
       encryptedFields: [
-        ...changedSensitive(loaded.registrationAnswers, registrationAnswers, sensitive),
+        ...changedSensitive(openedRegistration.answers, registrationAnswers, sensitive),
         ...[...children].flatMap(([participantId, { answers }]) =>
-          changedSensitive(loaded.participantAnswers.get(participantId) ?? {}, answers, sensitive),
+          changedSensitive(openedParticipants.get(participantId)?.answers ?? {}, answers, sensitive),
         ),
       ],
     });
@@ -630,6 +642,7 @@ export class AdminRegistrationService {
     const camp = await this.camps.getByIdOrThrow(turnus.campId);
     const version = await this.forms.getVersionByIdOrThrow(registration.formVersionId);
     const latest = (await this.forms.getLatestVersion(camp.id))?.definition ?? version.definition;
+    const published = (await this.forms.listPublished(camp.id)).map(({ definition }) => definition);
     const asked = new Set(
       (['registration', 'participant'] as const).flatMap((scope) =>
         formFields(latest, REGISTRATION_FIELD_CATALOGUE, scope).map(({ key }) => key),
@@ -638,6 +651,10 @@ export class AdminRegistrationService {
     const all = answeredDefinition(version.definition, latest);
     const participants = await this.registrations.listParticipants(registrationId);
     const cipher = await this.encryption.cipher();
+    const openedRegistration = openForChange(cipher, registration);
+    const openedParticipants = new Map(
+      participants.map((participant) => [participant.id, openForChange(cipher, participant)]),
+    );
 
     return {
       registration,
@@ -649,11 +666,12 @@ export class AdminRegistrationService {
       },
       participants,
       cipher,
-      sensitive: sensitiveKeys([version.definition, latest], REGISTRATION_FIELD_CATALOGUE),
-      registrationAnswers: openAnswers(cipher, registration),
-      participantAnswers: new Map(
-        participants.map((participant) => [participant.id, openAnswers(cipher, participant)]),
+      sensitive: sensitiveForChange(
+        [version.definition, ...published],
+        [openedRegistration, ...openedParticipants.values()],
       ),
+      openedRegistration,
+      openedParticipants,
     };
   }
 
@@ -696,7 +714,12 @@ export class AdminRegistrationService {
 
       return checked.value;
     };
-    const registrationChange = check('registration', body.registration, ['registration'], loaded.registrationAnswers);
+    const registrationChange = check(
+      'registration',
+      body.registration,
+      ['registration'],
+      loaded.openedRegistration.answers,
+    );
     const children = new Map<string, OpenParticipant>();
 
     body.participants.forEach(({ participantId, answers }, index) => {
@@ -706,7 +729,7 @@ export class AdminRegistrationService {
         throw new NotFoundException();
       }
 
-      const opened = loaded.participantAnswers.get(participantId) ?? {};
+      const opened = loaded.openedParticipants.get(participantId)?.answers ?? {};
       const kept = opened.birthNumber;
       // A new birth date is checked against the rodné číslo kept, as a new rodné číslo is against the date.
       const sent =
@@ -735,7 +758,7 @@ export class AdminRegistrationService {
       throw invalid(errors);
     }
 
-    const registrationAnswers = merged(loaded.registrationAnswers, registrationChange);
+    const registrationAnswers = merged(loaded.openedRegistration.answers, registrationChange);
     const charged = await this.registrations.listSurchargeLines(loaded.registration.id);
     const registered = loaded.participants.filter(({ status }) => status === 'registered');
     const lines: PriceLineFields[] = [];
