@@ -1,4 +1,4 @@
-import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryOptions, skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { RenameOrganisationSubdomainBody } from '@repo/schema/console';
 
@@ -14,6 +14,13 @@ export const consoleOrganisationsQueryOptions = () =>
 // Disabled until the account shows a session that passed TOTP, since the console refuses anything less.
 export const useConsoleOrganisationsQuery = (enabled: boolean) =>
   useQuery({ ...consoleOrganisationsQueryOptions(), enabled });
+
+export const useOrganisationPreviewQuery = (organisationId: string) =>
+  useQuery({
+    queryKey: consoleKeys.preview(organisationId),
+    queryFn: organisationId === '' ? skipToken : ({ signal }) => consoleService.preview(organisationId, signal),
+    retry: false,
+  });
 
 // Every console action changes the list.
 const useOrganisationMutation = <Variables, Result>(mutationFn: (variables: Variables) => Promise<Result>) => {

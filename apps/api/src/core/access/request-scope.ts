@@ -21,6 +21,11 @@ export type RequestScope =
       readonly session: { readonly id: string; readonly secondFactor: boolean };
     }
   | { readonly access: 'operator'; readonly admin: { readonly id: string } }
+  | {
+      readonly access: 'operator-preview';
+      readonly organisationId: string;
+      readonly admin: { readonly id: string };
+    }
   | { readonly access: 'platform' | 'webhook' | 'unscoped' };
 
 const scopes = new WeakMap<Request, RequestScope>();

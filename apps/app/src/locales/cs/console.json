@@ -28,7 +28,14 @@
     "label": "Subdoména",
     "submit": "Změnit subdoménu"
   },
+  "preview": {
+    "back": "Zpět do konzole",
+    "notice": "Náhled veřejných stránek organizace, která čeká na schválení: takto je uvidí rodiče. Jen veřejné údaje; k datům organizace je dál potřeba její zpřístupnění podpoře.",
+    "error": "Náhled se nepodařilo načíst. Organizace možná už nečeká na schválení.",
+    "noCamps": "Organizace zatím nemá žádný tábor."
+  },
   "actions": {
+    "preview": "Náhled",
     "approve": "Schválit",
     "reject": "Zamítnout",
     "suspend": "Pozastavit",

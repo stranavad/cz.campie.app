@@ -106,6 +106,21 @@ export class CampService {
   }
 
   /**
+   * Show every Camp's public page with its Turnusy, by name, as the current Organisation's public pages
+   * will once it is approved.
+   */
+  public async previewAll(): Promise<CampPreview[]> {
+    const previews: CampPreview[] = [];
+
+    // One Camp after another: the unit of work's transaction runs one query at a time anyway.
+    for (const camp of await this.camps.list()) {
+      previews.push(await this.preview(camp.id));
+    }
+
+    return previews;
+  }
+
+  /**
    * Get a Camp of the current Organisation by its slug or a former one.
    * @param slug the slug from the address
    * @throws {NotFoundException} when no Camp of the Organisation has or had the slug

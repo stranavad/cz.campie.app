@@ -5,7 +5,7 @@ import type { Request } from 'express';
 import { ACCESS_HEADERS, type AccessErrorCode } from '@repo/schema/shared';
 
 import { readSessionCookie } from '../sessions/session-cookie.ts';
-import { Access, GATEWAY_ORGANISATION_PARAM, type AccessKind } from './access.decorator.ts';
+import { Access, PATH_ORGANISATION_PARAM, type AccessKind } from './access.decorator.ts';
 import { AccessService } from './access.service.ts';
 import { originalHost } from './host.ts';
 import { allows, RequirePermission, SupportEntry, type MemberAccess } from './permission.ts';
@@ -103,6 +103,9 @@ export class AccessGuard implements CanActivate {
   }
 
   private resolve(kind: AccessKind, request: Request): RequestScope | Promise<RequestScope> {
+    const pathOrganisation = request.params[PATH_ORGANISATION_PARAM];
+    const organisationId = typeof pathOrganisation === 'string' ? pathOrganisation : undefined;
+
     switch (kind) {
       case 'public':
         return this.access.resolvePublic(originalHost(request));
@@ -118,12 +121,16 @@ export class AccessGuard implements CanActivate {
         return this.access.resolveAccount(originalHost(request), readSessionCookie(request, 'admin'));
       case 'operator':
         return this.access.resolveOperator(originalHost(request), readSessionCookie(request, 'admin'));
+      case 'operator-preview':
+        return this.access.resolveOperatorPreview(
+          originalHost(request),
+          readSessionCookie(request, 'admin'),
+          organisationId,
+        );
       case 'platform':
         return this.access.resolvePlatform(originalHost(request));
       case 'gateway':
-        const organisationId = request.params[GATEWAY_ORGANISATION_PARAM];
-
-        return this.access.resolveGateway(typeof organisationId === 'string' ? organisationId : undefined);
+        return this.access.resolveGateway(organisationId);
       case 'webhook':
         return { access: 'webhook' };
       case 'unscoped':

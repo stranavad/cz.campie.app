@@ -10,6 +10,9 @@ import { Reflector } from '@nestjs/core';
 // - operator: the Platform operator's console on the main host, outside any Organisation: an admin session
 //   that passed a TOTP code, of an admin with the operator flag, checked on every request. Its unit of work
 //   cannot enter an Organisation, so no Organisation's own data is within its reach.
+// - operator-preview: the Platform operator, as for the console, looking at the public pages of an
+//   Organisation awaiting approval, named in the path. It runs in that Organisation's unit of work, so its
+//   routes show public data only; everything else of the Organisation stays behind a support grant.
 // - platform: anyone on the main host, outside any Organisation (signup, login).
 // - gateway: a payment gateway's notification; the Organisation is in the path, and the gateway's
 //   signature, checked by the route, is the permission.
@@ -24,6 +27,7 @@ export const ACCESS_KINDS = [
   'admin',
   'account',
   'operator',
+  'operator-preview',
   'platform',
   'gateway',
   'webhook',
@@ -35,5 +39,5 @@ export type AccessKind = (typeof ACCESS_KINDS)[number];
 // Declared on every controller; the app refuses to boot with one that has none.
 export const Access = Reflector.createDecorator<AccessKind>();
 
-// The path parameter a gateway route names its Organisation in.
-export const GATEWAY_ORGANISATION_PARAM = 'organisationId';
+// The path parameter a gateway or operator-preview route names its Organisation in.
+export const PATH_ORGANISATION_PARAM = 'organisationId';

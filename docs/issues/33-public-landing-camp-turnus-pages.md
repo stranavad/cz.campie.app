@@ -34,3 +34,5 @@ The public pages on an Organisation's subdomain. `/` is the Organisation landing
 - `createOrganisation` in the test fixtures now makes an approved Organisation unless told otherwise.
 - Registered Participants are still counted as none (`TurnusService.registeredIn`), so places left equal the capacity until issue 35.
 - The page and the preview share `CampPageView` (`apps/app/src/core/camp-page`). The Turnusy refetch each minute; the countdown follows the browser's clock and says the registration is opening once it runs out.
+
+2026-11-08 - **Decision by the project lead:** the Platform operator now previews a pending Organisation's public pages from the console (`GET /console/organisations/:organisationId/preview`, see issue 21's comments); its subdomain still answers 404 to everyone until approval.

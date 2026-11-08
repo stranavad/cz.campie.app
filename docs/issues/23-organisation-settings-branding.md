@@ -34,3 +34,5 @@ Owners edit the Organisation's legal name, IČO, address, statutory representati
 - Per-Camp branding: `camps.accent_colour` and `camps.logo_file_id`, falling back to the Organisation's (`effectiveBranding`); `GET`/`PATCH /camps/:campId/branding` and `PUT`/`DELETE /camps/:campId/branding/logo` under Camp settings read/write. A Camp's display name is its own name. The UI comes with issue 24's Camp settings page; public Camp pages (33) and Camp mail and documents use `effectiveBranding` when they are built.
 - Contracts can declare `upload: true` (one multipart `file`); the app's client sends it as `FormData`.
 - Not done: removing EXIF data from JPG logos; streaming the logo instead of buffering it (at most 1 MB). Bank transfer needs no gateway by design; payment instructions come with 36.
+
+2026-11-08 - **Decision by the project lead: the Platform operator may preview a pending Organisation's public pages** (in Camp branding) before approving it, from the console; public data only. See issue 21's comments.

@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import type { ConsoleOrganisation } from '@repo/schema/console';
@@ -74,6 +75,15 @@ export function OrganisationRow({ organisation }: OrganisationRowProps) {
         </form>
       ) : null}
       <div className="flex flex-wrap gap-2">
+        {isPending ? (
+          <Link
+            to="/platform/konzole/nahled"
+            search={{ organizace: organisation.id }}
+            className="self-center text-sm underline underline-offset-4"
+          >
+            {t('actions.preview')}
+          </Link>
+        ) : null}
         {isPending ? (
           <Button size="sm" disabled={row.isBusy} onClick={row.approve}>
             {t('actions.approve')}

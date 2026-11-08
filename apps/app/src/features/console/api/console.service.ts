@@ -2,6 +2,7 @@ import {
   approveOrganisationEndpoint,
   listConsoleOrganisationsEndpoint,
   listProblemReportsEndpoint,
+  previewOrganisationEndpoint,
   rejectOrganisationEndpoint,
   renameOrganisationSubdomainEndpoint,
   resetOwnerTotpEndpoint,
@@ -21,6 +22,8 @@ export const consoleService = {
     apiClient.request(renameOrganisationSubdomainEndpoint, { params: { organisationId }, body }),
   resetOwnerTotp: (organisationId: string, email: string) =>
     apiClient.request(resetOwnerTotpEndpoint, { params: { organisationId }, body: { email } }),
+  preview: (organisationId: string, signal?: AbortSignal) =>
+    apiClient.request(previewOrganisationEndpoint, { params: { organisationId }, signal }),
   reject: (organisationId: string) => apiClient.request(rejectOrganisationEndpoint, { params: { organisationId } }),
   enterSupport: (organisationId: string) => apiClient.request(enterSupportAccessEndpoint, { organisationId }),
   problemReports: (signal?: AbortSignal) => apiClient.request(listProblemReportsEndpoint, { signal }),

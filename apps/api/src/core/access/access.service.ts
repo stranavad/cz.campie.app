@@ -240,12 +240,48 @@ export class AccessService {
    * the session must have passed a TOTP code.
    * @param host the host the browser called
    * @param token the admin session token, if the request carries one
+   */
+  public async resolveOperator(host: string, token: string | null): Promise<RequestScope> {
+    return { access: 'operator', admin: { id: await this.operatorOf(host, token) } };
+  }
+
+  /**
+   * Resolve the Platform operator's preview of the public pages of an Organisation awaiting approval, named
+   * in the path: the operator as for the console, the unit of work the Organisation's. An approved
+   * Organisation's pages are on its subdomain, so only a pending one is previewed here.
+   * @param host the host the browser called
+   * @param token the admin session token, if the request carries one
+   * @param organisationId the Organisation id from the path
+   * @throws {NotFoundException} organisation_unknown when the path names no Organisation awaiting approval
+   */
+  public async resolveOperatorPreview(
+    host: string,
+    token: string | null,
+    organisationId: string | undefined,
+  ): Promise<RequestScope> {
+    const adminId = await this.operatorOf(host, token);
+    const named = idOrNull(organisationId);
+    const organisation =
+      named === null ? null : await this.unitOfWork.runForPlatform(() => this.organisations.getById(named));
+
+    if (organisation === null || organisation.status !== 'pending') {
+      throw organisationUnknown();
+    }
+
+    return { access: 'operator-preview', organisationId: organisation.id, admin: { id: adminId } };
+  }
+
+  /**
+   * Find the Platform operator a request on the main host comes from: an admin session that passed a TOTP
+   * code, of an admin with the operator flag now.
+   * @param host the host the browser called
+   * @param token the admin session token, if the request carries one
    * @throws {NotFoundException} when the host is not the main host
    * @throws {UnauthorizedException} when there is no live admin session
    * @throws {ForbiddenException} when the admin is not the Platform operator, or the session has no TOTP
    * code
    */
-  public async resolveOperator(host: string, token: string | null): Promise<RequestScope> {
+  private async operatorOf(host: string, token: string | null): Promise<string> {
     this.requireMainHost(host);
 
     return this.unitOfWork.runForPlatform(async () => {
@@ -263,7 +299,7 @@ export class AccessService {
         throw refusal('second_factor_required', 'The console needs a session that passed a TOTP code');
       }
 
-      return { access: 'operator', admin: { id: session.adminId } };
+      return session.adminId;
     });
   }
 

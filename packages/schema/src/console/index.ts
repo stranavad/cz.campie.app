@@ -6,3 +6,4 @@ export * from './organisation/reject-organisation.contract.ts';
 export * from './organisation/suspend-organisation.contract.ts';
 export * from './organisation/reset-owner-totp.contract.ts';
 export * from './problem-report/problem-report.contracts.ts';
+export * from './organisation/preview-organisation.contract.ts';

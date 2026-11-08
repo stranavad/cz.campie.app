@@ -29,6 +29,7 @@ function actorOf(request: Request): Actor {
     case 'account':
       return { kind: 'admin', identity: scope.admin.id, ipAddress };
     case 'operator':
+    case 'operator-preview':
       return { kind: 'operator', identity: scope.admin.id, ipAddress };
     case 'guardian':
       return { kind: 'guardian', identity: scope.guardian.email, ipAddress };
