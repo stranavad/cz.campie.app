@@ -4,7 +4,7 @@ import type { Camp } from '@repo/schema/camps';
 
 import { useAppForm } from '@/core/form';
 import { useUpdateCampMutation } from '@/features/camps/api/camps.queries';
-import { campChangeOf, campFormSchema, campFormValues } from '@/features/camps/components/camp-form/camp-form.schema';
+import { campChangeOf, campFormOptions, campFormValues } from '@/features/camps/components/camp-form/camp-form.schema';
 import { HttpError } from '@/lib/api';
 
 export function useCampForm(organisationId: string, camp: Camp) {
@@ -12,8 +12,8 @@ export function useCampForm(organisationId: string, camp: Camp) {
   const [status, setStatus] = useState<'saved' | 'failed' | null>(null);
 
   const form = useAppForm({
+    ...campFormOptions,
     defaultValues: campFormValues(camp),
-    validators: { onChange: campFormSchema },
     onSubmit: async ({ value, formApi }) => {
       setStatus(null);
 

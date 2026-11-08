@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LegalText } from '@/features/legal/components/legal-document/legal-text';
 
 // Each provider that stores or processes data, what for, which data and where.
@@ -9,30 +10,35 @@ export function ProcessorList() {
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">{t('processors.title')}</h2>
-      <ul className="flex flex-col gap-3">
-        {rows.map((row) => (
-          <li key={row.name} className="flex flex-col gap-2 rounded-lg border p-4">
-            <h3 className="font-medium">
-              <LegalText text={row.name} />
-            </h3>
-            <dl className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[8rem_1fr]">
-              <dt className="text-muted-foreground">{t('processors.purpose')}</dt>
-              <dd>
+      <h2 className="text-2xl leading-tight font-bold tracking-[-0.02em] sm:text-[26px]">{t('processors.title')}</h2>
+      <Table className="min-w-[44rem] text-[15px] leading-normal">
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t('processors.name')}</TableHead>
+            <TableHead>{t('processors.purpose')}</TableHead>
+            <TableHead>{t('processors.data')}</TableHead>
+            <TableHead>{t('processors.location')}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={row.name}>
+              <TableCell className="w-44 align-top font-semibold">
+                <LegalText text={row.name} />
+              </TableCell>
+              <TableCell className="align-top">
                 <LegalText text={row.purpose} />
-              </dd>
-              <dt className="text-muted-foreground">{t('processors.data')}</dt>
-              <dd>
+              </TableCell>
+              <TableCell className="align-top">
                 <LegalText text={row.data} />
-              </dd>
-              <dt className="text-muted-foreground">{t('processors.location')}</dt>
-              <dd>
+              </TableCell>
+              <TableCell className="w-40 align-top text-muted-foreground">
                 <LegalText text={row.location} />
-              </dd>
-            </dl>
-          </li>
-        ))}
-      </ul>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </section>
   );
 }

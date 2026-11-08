@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { REGISTRATION_FIELD_CATALOGUE, type ShownDeclaration } from '@repo/schema/camps';
 import { formFields, type AnswerValue, type FormDefinition } from '@repo/schema/form-engine';
 
+import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import { DeclarationCheckbox, RegistrationField } from '@/core/registration-form';
 
 interface FormPreviewProps {
@@ -27,21 +28,27 @@ export function FormPreview({ definition, declarations }: FormPreviewProps) {
     ));
 
   return (
-    <div className="flex max-w-xl flex-col gap-6 rounded-lg border border-dashed border-border p-4">
-      <h3 className="font-medium">{t('registrationForm.previewChild')}</h3>
-      {section('participant')}
-      <h3 className="font-medium">{t('registrationForm.previewGuardian')}</h3>
-      {section('registration')}
-      {declarations.map((declaration) => (
-        <DeclarationCheckbox
-          key={declaration.id}
-          declaration={declaration}
-          checked={ticked.includes(declaration.id)}
-          onChange={(checked) =>
-            setTicked(checked ? [...ticked, declaration.id] : ticked.filter((id) => id !== declaration.id))
-          }
-        />
-      ))}
-    </div>
+    <Card aria-label={t('registrationForm.previewTitle')} className="border-dashed border-input">
+      <div className="flex flex-col gap-1">
+        <CardTitle>{t('registrationForm.previewTitle')}</CardTitle>
+        <CardDescription>{t('registrationForm.previewNote')}</CardDescription>
+      </div>
+      <div className="flex max-w-xl flex-col gap-5">
+        <h3 className="text-lg font-bold">{t('registrationForm.previewChild')}</h3>
+        {section('participant')}
+        <h3 className="text-lg font-bold">{t('registrationForm.previewGuardian')}</h3>
+        {section('registration')}
+        {declarations.map((declaration) => (
+          <DeclarationCheckbox
+            key={declaration.id}
+            declaration={declaration}
+            checked={ticked.includes(declaration.id)}
+            onChange={(checked) =>
+              setTicked(checked ? [...ticked, declaration.id] : ticked.filter((id) => id !== declaration.id))
+            }
+          />
+        ))}
+      </div>
+    </Card>
   );
 }

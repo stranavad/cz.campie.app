@@ -1,145 +1,65 @@
-import { Link, Navigate } from '@tanstack/react-router';
-import { useState } from 'react';
+import { Navigate } from '@tanstack/react-router';
+import { HistoryIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { AUDIT_ACTOR_KINDS, type AuditLogQuery } from '@repo/schema/organisations';
-import { czechDateTime } from '@repo/schema/shared';
-
+import { EmptyState } from '@/components/empty-state';
+import { PageHeader } from '@/components/page-header';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useCurrentMembership } from '@/core/account';
-import { useAuditLogQuery } from '@/features/organisation-settings/api/organisation-settings.queries';
-import { useDebouncedValue } from '@/lib/hooks/use-debounced-value.hook';
-
-const formatValue = (value: unknown) =>
-  value === null || value === undefined ? '-' : typeof value === 'string' ? value : JSON.stringify(value);
+import { Skeleton } from '@/components/ui/skeleton';
+import { AuditLogEntryRow } from '@/features/organisation-settings/components/audit-log/audit-log-entry-row';
+import { AuditLogFilters } from '@/features/organisation-settings/components/audit-log/audit-log-filters';
+import { useAuditLogPage } from '@/features/organisation-settings/components/audit-log/use-audit-log-page.hook';
 
 // The Organisation's whole audit log for its Owners: who did what to which record, with old and new values.
 export function AuditLogPage() {
   const { t } = useTranslation('organisationSettings');
-  const { membership, isLoading, isSignedOut } = useCurrentMembership();
-  const [actorKind, setActorKind] = useState('');
-  const [actor, setActor] = useState('');
-  const [action, setAction] = useState('');
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
-  const settledActor = useDebouncedValue(actor.trim(), 400);
-  const settledAction = useDebouncedValue(action.trim(), 400);
-  const isOwner = membership?.owner === true;
-  const filters: Omit<AuditLogQuery, 'after'> = {
-    ...(AUDIT_ACTOR_KINDS.find((kind) => kind === actorKind) === undefined
-      ? {}
-      : { actorKind: AUDIT_ACTOR_KINDS.find((kind) => kind === actorKind) }),
-    ...(settledActor === '' ? {} : { actor: settledActor }),
-    ...(settledAction === '' ? {} : { action: settledAction }),
-    ...(from === '' ? {} : { from: new Date(`${from}T00:00:00`).toISOString() }),
-    ...(to === '' ? {} : { to: new Date(`${to}T23:59:59`).toISOString() }),
-  };
-  const log = useAuditLogQuery(membership?.organisation.id ?? '', filters, isOwner);
+  const page = useAuditLogPage();
 
-  if (isSignedOut) {
+  if (page.isSignedOut) {
     return <Navigate to="/platform/prihlaseni" replace />;
   }
 
-  if (isLoading) {
+  if (page.isLoading) {
     return null;
   }
 
-  if (!isOwner) {
-    return <p className="py-12">{t('notOwner')}</p>;
+  if (!page.isOwner) {
+    return <Alert>{t('notOwner')}</Alert>;
   }
 
-  const entries = log.data?.pages.flatMap(({ entries: page }) => page) ?? [];
-
   return (
-    <div className="flex flex-col gap-6 py-8">
-      <Link to="/platform" className="text-sm text-muted-foreground underline">
-        {t('backHome')}
-      </Link>
-      <h1 className="text-2xl font-semibold">{t('auditLog.title')}</h1>
-      <div className="flex flex-wrap items-end gap-3 text-sm">
-        <label className="flex flex-col gap-1">
-          {t('auditLog.actorKind')}
-          <select
-            className="h-9 rounded-lg border border-input bg-transparent px-2"
-            value={actorKind}
-            onChange={(event) => setActorKind(event.target.value)}
-          >
-            <option value="">{t('auditLog.anyone')}</option>
-            {AUDIT_ACTOR_KINDS.map((kind) => (
-              <option key={kind} value={kind}>
-                {t(`auditLog.kinds.${kind}`)}
-              </option>
+    <>
+      <PageHeader title={t('auditLog.title')} description={t('auditLog.intro')} />
+      <AuditLogFilters filters={page.filters} />
+      {page.isError ? (
+        <Alert variant="danger" role="alert">
+          {t('auditLog.loadFailed')}
+        </Alert>
+      ) : null}
+      {page.isPending && !page.isError ? <Skeleton className="h-64 rounded-3xl" /> : null}
+      {page.isEmpty ? <EmptyState icon={<HistoryIcon />} title={t('auditLog.none')} /> : null}
+      {page.days.map((day) => (
+        <section key={day.date} className="flex flex-col gap-2">
+          <h2 className="px-1 text-sm font-bold text-muted-foreground">{day.label}</h2>
+          <ul className="overflow-hidden rounded-3xl border border-border bg-card">
+            {day.entries.map((entry) => (
+              <AuditLogEntryRow key={entry.id} entry={entry} />
             ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1">
-          {t('auditLog.actor')}
-          <Input value={actor} onChange={(event) => setActor(event.target.value)} />
-        </label>
-        <label className="flex flex-col gap-1">
-          {t('auditLog.action')}
-          <Input
-            value={action}
-            onChange={(event) => setAction(event.target.value)}
-            placeholder={t('auditLog.actionHint')}
-          />
-        </label>
-        <label className="flex flex-col gap-1">
-          {t('auditLog.from')}
-          <Input type="date" value={from} onChange={(event) => setFrom(event.target.value)} />
-        </label>
-        <label className="flex flex-col gap-1">
-          {t('auditLog.to')}
-          <Input type="date" value={to} onChange={(event) => setTo(event.target.value)} />
-        </label>
-      </div>
-      {log.isError ? <p className="text-destructive">{t('auditLog.loadFailed')}</p> : null}
-      <ul className="flex flex-col divide-y rounded-lg border text-sm">
-        {entries.map((entry) => (
-          <li key={entry.id} className="flex flex-col gap-1 p-3">
-            <div className="flex flex-wrap gap-3">
-              <span className="tabular-nums text-muted-foreground">{czechDateTime(entry.occurredAt)}</span>
-              <span className="font-medium">{entry.action}</span>
-              <span>
-                {t(`auditLog.kinds.${entry.actor.kind}`)}
-                {entry.actor.name === null ? null : `: ${entry.actor.name}`}
-              </span>
-              <span className="text-muted-foreground">
-                {entry.target.type} {entry.target.id}
-              </span>
-            </div>
-            {entry.changes === null ? null : (
-              <ul className="flex flex-col gap-0.5 text-muted-foreground">
-                {Object.entries(entry.changes).map(([field, change]) => (
-                  <li key={field} className="break-all">
-                    {t('auditLog.change', { field, old: formatValue(change.old), new: formatValue(change.new) })}
-                  </li>
-                ))}
-              </ul>
-            )}
-            {entry.encryptedFields.length === 0 ? null : (
-              <span className="text-muted-foreground">
-                {t('auditLog.encrypted', { fields: entry.encryptedFields.join(', ') })}
-              </span>
-            )}
-          </li>
-        ))}
-        {log.data !== undefined && entries.length === 0 ? (
-          <li className="p-3 text-muted-foreground">{t('auditLog.none')}</li>
-        ) : null}
-      </ul>
-      {log.hasNextPage ? (
+          </ul>
+        </section>
+      ))}
+      {page.hasMore ? (
         <Button
           type="button"
           variant="outline"
           className="self-start"
-          disabled={log.isFetchingNextPage}
-          onClick={() => void log.fetchNextPage()}
+          disabled={page.isFetchingMore}
+          onClick={page.loadMore}
         >
           {t('auditLog.more')}
         </Button>
       ) : null}
-    </div>
+    </>
   );
 }

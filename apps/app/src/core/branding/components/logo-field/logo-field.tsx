@@ -1,11 +1,14 @@
-import { useId } from 'react';
+import { ImageIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { FileLink } from '@repo/schema/files';
 import { LOGO_CONTENT_TYPES } from '@repo/schema/organisations';
 
+import { FileButton } from '@/components/file-button';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useLogoField, type LogoMutations } from '@/core/branding/components/logo-field/use-logo-field.hook';
+import { cn } from '@/lib/utils';
 
 interface LogoFieldProps extends LogoMutations {
   logo: FileLink | null;
@@ -14,57 +17,54 @@ interface LogoFieldProps extends LogoMutations {
   disabled?: boolean;
 }
 
-// A logo is uploaded as soon as it is chosen; the page shows it from a short-lived link.
+// A logo is uploaded as soon as it is chosen; the page shows it from a short-lived link. The preview box has
+// a fixed size, so nothing jumps while the image loads.
 export function LogoField({ logo, emptyText, disabled = false, ...mutations }: LogoFieldProps) {
   const { t } = useTranslation();
   const { upload, remove, failure, isBusy } = useLogoField(mutations);
-  const inputId = useId();
   const isLocked = disabled || isBusy;
 
   return (
-    <div className="flex max-w-xl flex-col gap-3">
-      <span className="text-sm font-medium">{t('logoField.title')}</span>
-      {logo === null ? (
-        <p className="text-sm text-muted-foreground">{emptyText}</p>
-      ) : (
-        <img
-          src={logo.url}
-          alt={t('logoField.current')}
-          className="h-16 w-auto self-start rounded border border-border p-1"
-        />
-      )}
-      {disabled ? null : (
-        <div className="flex flex-wrap items-center gap-3">
-          <label htmlFor={inputId} className="cursor-pointer text-sm font-medium underline">
-            {logo === null ? t('logoField.upload') : t('logoField.replace')}
-          </label>
-          <input
-            id={inputId}
-            type="file"
-            accept={LOGO_CONTENT_TYPES.join(',')}
-            className="sr-only"
-            disabled={isLocked}
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              event.target.value = '';
-
-              if (file !== undefined) {
-                upload(file);
-              }
-            }}
-          />
-          {logo === null ? null : (
-            <Button type="button" variant="outline" size="sm" disabled={isLocked} onClick={remove}>
-              {t('logoField.remove')}
-            </Button>
+    <div className="flex flex-col gap-2">
+      <span className="text-sm font-semibold">{t('logoField.title')}</span>
+      <div className="flex flex-wrap items-center gap-4">
+        <div
+          className={cn(
+            'flex h-20 w-36 shrink-0 items-center justify-center rounded-2xl border p-2',
+            logo === null ? 'border-dashed border-input text-subtle-foreground' : 'border-border bg-logo-plate',
+          )}
+        >
+          {logo === null ? (
+            <ImageIcon aria-hidden="true" className="size-6" />
+          ) : (
+            <img src={logo.url} alt={t('logoField.current')} className="max-h-full max-w-full object-contain" />
           )}
         </div>
-      )}
-      {disabled ? null : <p className="text-sm text-muted-foreground">{t('logoField.hint')}</p>}
+        <div className="flex min-w-0 flex-[1_1_12rem] flex-col gap-2">
+          {logo === null ? <p className="text-sm text-muted-foreground">{emptyText}</p> : null}
+          {disabled ? null : (
+            <div className="flex flex-wrap items-center gap-2">
+              <FileButton
+                label={logo === null ? t('logoField.upload') : t('logoField.replace')}
+                accept={LOGO_CONTENT_TYPES.join(',')}
+                size="sm"
+                disabled={isLocked}
+                onFile={upload}
+              />
+              {logo === null ? null : (
+                <Button type="button" variant="ghost" size="sm" disabled={isLocked} onClick={remove}>
+                  {t('logoField.remove')}
+                </Button>
+              )}
+            </div>
+          )}
+          {disabled ? null : <p className="text-[13px] text-muted-foreground">{t('logoField.hint')}</p>}
+        </div>
+      </div>
       {failure === null ? null : (
-        <p role="alert" className="text-sm text-destructive">
+        <Alert variant="danger" role="alert">
           {t(`logoField.failure.${failure}`)}
-        </p>
+        </Alert>
       )}
     </div>
   );

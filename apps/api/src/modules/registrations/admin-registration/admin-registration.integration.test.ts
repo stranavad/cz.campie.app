@@ -286,7 +286,7 @@ describe('admin registrations', () => {
     ).toEqual([
       {
         changes: {
-          turnusId: { old: turnusId, new: later },
+          turnus: { old: 'Turnus 1', new: 'Turnus 2' },
           depositDueDate: { old: '2027-04-24', new: '2027-04-17' },
           balanceDueDate: { old: null, new: '2027-06-01' },
         },

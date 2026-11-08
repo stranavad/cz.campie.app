@@ -1,10 +1,10 @@
 {
-  "title": "Uživatelé",
-  "intro": "Správci organizace a jejich oprávnění. Změna platí od jejich dalšího kroku v aplikaci.",
+  "title": "Tým",
+  "intro": "Kdo může s čím pracovat. Změna oprávnění platí od dalšího kroku správce v aplikaci.",
+  "inviteAction": "Pozvat člena",
   "loading": "Načítáme…",
   "error": "Uživatele se nepodařilo načíst. Zkuste stránku načíst znovu.",
-  "notOwner": "Uživatele spravují jen vlastníci organizace.",
-  "backHome": "Zpět na přehled",
+  "notOwner": "Tým spravují jen vlastníci organizace.",
   "areas": {
     "registrations": "Přihlášky",
     "campSettings": "Nastavení táborů",
@@ -20,6 +20,8 @@
   "members": {
     "title": "Správci",
     "owner": "Vlastník",
+    "edit": "Upravit",
+    "permission": "{{area}}: {{level}}",
     "ownerHasAll": "Vlastník má přístup ke všemu a spravuje uživatele.",
     "promote": "Udělat vlastníkem",
     "demote": "Odebrat roli vlastníka",

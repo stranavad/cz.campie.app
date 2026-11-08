@@ -1,7 +1,9 @@
+import { KeyRoundIcon, ShieldCheckIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAccountQuery } from '@/core/account';
+import { GateCard } from '@/core/two-step/components/gate-card';
 import { RecoveryCodes } from '@/core/two-step/components/recovery-codes';
 import { TotpCodeForm } from '@/core/two-step/components/totp-code-form/totp-code-form';
 import { TotpEnrolment } from '@/core/two-step/components/totp-enrolment/totp-enrolment';
@@ -21,9 +23,9 @@ export function TwoStepGate({ children }: TwoStepGateProps) {
       {recoveryCodes === null ? (
         <Gated>{children}</Gated>
       ) : (
-        <div className="py-12">
+        <GateCard icon={<KeyRoundIcon />}>
           <RecoveryCodes codes={recoveryCodes} onDone={() => setRecoveryCodes(null)} />
-        </div>
+        </GateCard>
       )}
     </RecoveryCodesContext>
   );
@@ -39,11 +41,13 @@ function Gated({ children }: TwoStepGateProps) {
 
   if (account.data.totpEnabled && !account.data.secondFactor) {
     return (
-      <section className="flex max-w-xl flex-col gap-4 py-12">
-        <h1 className="text-2xl font-semibold">{t('twoStep.verify.title')}</h1>
-        <p className="text-muted-foreground">{t('twoStep.verify.intro')}</p>
+      <GateCard icon={<ShieldCheckIcon />}>
+        <div className="flex flex-col gap-1">
+          <h1 className="text-heading">{t('twoStep.verify.title')}</h1>
+          <p className="text-muted-foreground">{t('twoStep.verify.intro')}</p>
+        </div>
         <TotpCodeForm purpose="verify" />
-      </section>
+      </GateCard>
     );
   }
 
@@ -54,9 +58,9 @@ function Gated({ children }: TwoStepGateProps) {
 
   if (!account.data.totpEnabled && requiring !== undefined) {
     return (
-      <div className="py-12">
+      <GateCard icon={<ShieldCheckIcon />}>
         <TotpEnrolment intro={t('twoStep.enrolment.required', { organisation: requiring.organisation.displayName })} />
-      </div>
+      </GateCard>
     );
   }
 

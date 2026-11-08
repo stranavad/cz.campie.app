@@ -64,6 +64,10 @@
     "./console": {
       "types": "./dist/console/index.d.ts",
       "default": "./dist/console/index.js"
+    },
+    "./audit": {
+      "types": "./dist/audit/index.d.ts",
+      "default": "./dist/audit/index.js"
     }
   },
   "scripts": {

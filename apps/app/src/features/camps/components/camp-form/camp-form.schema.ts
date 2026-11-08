@@ -1,3 +1,4 @@
+import { formOptions } from '@tanstack/react-form';
 import { z } from 'zod';
 
 import { campFieldsSchema, type Camp, type UpdateCampBody } from '@repo/schema/camps';
@@ -73,3 +74,31 @@ export function campFormValues(camp: Camp): CampFormValues {
     contactEditLockDate: camp.contactEditLockDate ?? '',
   };
 }
+
+// Blank values, only to type the form's parts (`withForm`); the form itself starts from the saved Camp.
+const CAMP_FORM_BLANK: CampFormValues = {
+  name: '',
+  slug: '',
+  websiteUrl: '',
+  contactName: '',
+  contactEmail: '',
+  contactPhone: '',
+  modules: {
+    consents: false,
+    documents: false,
+    generatedDocuments: false,
+    healthRecord: false,
+    campHealthLog: false,
+    oddily: false,
+    vedouci: false,
+  },
+  siblingDiscountAmount: '0',
+  siblingDiscountAppliesTo: 'every_child',
+  notificationEmails: '',
+  contactEditLockDate: '',
+};
+
+export const campFormOptions = formOptions({
+  defaultValues: CAMP_FORM_BLANK,
+  validators: { onChange: campFormSchema },
+});

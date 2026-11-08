@@ -46,6 +46,10 @@ export function useRegistrationFormBuilder(organisationId: string, campId: strin
   const [maxParticipants, setMaxParticipants] = useState(form.maxParticipants);
   const [declarations, setDeclarations] = useState<readonly ShownDeclaration[]>(form.declarations);
   const [status, setStatus] = useState<BuilderStatus>(null);
+  // The custom field open in the editor, by id.
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [newType, setNewType] = useState<CustomFieldType>('short_text');
+  const [isPreviewing, setPreviewing] = useState(false);
 
   const setCustom = (custom: CustomField[]) => setDefinition({ ...definition, custom });
 
@@ -83,6 +87,14 @@ export function useRegistrationFormBuilder(organisationId: string, campId: strin
 
   return {
     linkOf,
+    // The declarations as the preview shows them, each PDF with its current link.
+    previewDeclarations: declarations.map((declaration) => ({
+      ...declaration,
+      file:
+        declaration.file === null
+          ? null
+          : { ...declaration.file, link: { ...declaration.file.link, url: linkOf(declaration) ?? '' } },
+    })),
     definition,
     maxParticipants,
     declarations,
@@ -98,10 +110,25 @@ export function useRegistrationFormBuilder(organisationId: string, campId: strin
           ? definition.standard.map((field) => (field.key === key ? { key, ...entry } : field))
           : [...definition.standard, { key, ...entry }],
       }),
-    addField: (type: CustomFieldType, label: string) => setCustom([...definition.custom, newCustomField(type, label)]),
+    selected: definition.custom.find((field) => field.id === selectedId) ?? null,
+    select: (id: string | null) => setSelectedId(id),
+    newType,
+    setNewType,
+    isPreviewing,
+    togglePreview: () => setPreviewing(!isPreviewing),
+    // A new field opens in the editor at once.
+    addField: (label: string) => {
+      const field = newCustomField(newType, label);
+
+      setCustom([...definition.custom, field]);
+      setSelectedId(field.id);
+    },
     updateField: (field: CustomField) =>
       setCustom(definition.custom.map((current) => (current.id === field.id ? field : current))),
-    removeField: (id: string) => setCustom(definition.custom.filter((field) => field.id !== id)),
+    removeField: (id: string) => {
+      setCustom(definition.custom.filter((field) => field.id !== id));
+      setSelectedId(null);
+    },
     // Only custom fields move, and only among themselves.
     moveField: (id: string, by: -1 | 1) => {
       const from = definition.custom.findIndex((field) => field.id === id);

@@ -168,20 +168,17 @@ describe('reviewing documents', () => {
     expect(link.status).toBe(201);
     expect((await http().get(link.body.url)).body).toEqual(INTERNAL);
     await open();
-    // Each view names the document; its creation entry, kept for good, names the child.
+    // Each view is on the child's record, telling its documents apart by when they were uploaded.
     const views = () =>
       query(
-        `SELECT view.actor_kind, view.target_type, view.target_id, created.target_id AS participant
-           FROM audit_entries view
-           JOIN audit_entries created ON created.action = 'internal_document.create'
-            AND created.changes->'id'->>'new' = view.target_id::text
-          WHERE view.action = 'internal_document.view'`,
+        `SELECT actor_kind, target_type, target_id, changes->'uploadedAt'->>'new' AS uploaded_at
+           FROM audit_entries WHERE action = 'internal_document.view'`,
       );
     const view = {
       actor_kind: 'admin',
-      target_type: 'internal_document',
-      target_id: row?.id,
-      participant: participantId,
+      target_type: 'participant',
+      target_id: participantId,
+      uploaded_at: expect.any(String),
     };
     expect(await views()).toEqual([view, view]);
 

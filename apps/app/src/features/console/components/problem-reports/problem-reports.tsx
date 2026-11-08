@@ -1,50 +1,32 @@
 import { useTranslation } from 'react-i18next';
 
-import { czechDateTime } from '@repo/schema/shared';
-
-import { Button } from '@/components/ui/button';
-import { useProblemReportsQuery, useResolveProblemReportMutation } from '@/features/console/api/console.queries';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProblemReportItem } from '@/features/console/components/problem-reports/problem-report-item';
+import { useProblemReports } from '@/features/console/components/problem-reports/use-problem-reports.hook';
 
 // Feedback from admins and technical problems from guardians, open ones first.
 export function ProblemReports() {
   const { t } = useTranslation('console');
-  const reports = useProblemReportsQuery();
-  const resolve = useResolveProblemReportMutation();
+  const { reports, isEmpty, openCount, isResolving, resolve } = useProblemReports();
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">{t('reports.title')}</h2>
-      {reports.data?.length === 0 ? <p className="text-sm text-muted-foreground">{t('reports.none')}</p> : null}
-      <ul className="flex flex-col divide-y rounded-lg border text-sm">
-        {(reports.data ?? []).map((report) => (
-          <li
+    <Card className="gap-2">
+      <CardHeader className="items-center">
+        <CardTitle className="text-lg">{t('reports.title')}</CardTitle>
+        {openCount === 0 ? null : <Badge variant="warning">{t('reports.openCount', { count: openCount })}</Badge>}
+      </CardHeader>
+      {isEmpty ? <p className="text-sm text-muted-foreground">{t('reports.none')}</p> : null}
+      <ul className="flex flex-col text-sm">
+        {reports.map((report) => (
+          <ProblemReportItem
             key={report.id}
-            className={`flex flex-col gap-1 p-3 ${report.resolvedAt === null ? '' : 'text-muted-foreground'}`}
-          >
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-medium">{t(`reports.kinds.${report.kind}`)}</span>
-              <span>{report.organisation?.displayName ?? t('reports.noOrganisation')}</span>
-              <span>{report.from ?? t('reports.anonymous')}</span>
-              <span>{czechDateTime(report.sentAt)}</span>
-              {report.resolvedAt === null ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={resolve.isPending}
-                  onClick={() => resolve.mutate(report.id)}
-                >
-                  {t('reports.resolve')}
-                </Button>
-              ) : (
-                <span>{t('reports.resolved')}</span>
-              )}
-            </div>
-            <span className="break-all text-muted-foreground">{report.pageUrl}</span>
-            <p className="whitespace-pre-line">{report.text}</p>
-          </li>
+            report={report}
+            isResolving={isResolving}
+            onResolve={() => resolve(report.id)}
+          />
         ))}
       </ul>
-    </section>
+    </Card>
   );
 }

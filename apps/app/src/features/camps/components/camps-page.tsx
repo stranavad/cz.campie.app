@@ -1,24 +1,22 @@
-import { Link, Navigate } from '@tanstack/react-router';
+import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
-import { CampBrandingSection } from '@/features/camps/components/camp-branding-section/camp-branding-section';
-import { CampForm } from '@/features/camps/components/camp-form/camp-form';
-import { CampSwitcher } from '@/features/camps/components/camp-switcher';
-import { ConsentsSection } from '@/features/camps/components/consents-section/consents-section';
+import { Alert } from '@/components/ui/alert';
+import { CampSettingsHeader } from '@/features/camps/components/camp-settings/camp-settings-header';
+import { CampSettingsSection } from '@/features/camps/components/camp-settings/camp-settings-section';
+import type { CampSettingsSection as Section } from '@/features/camps/components/camp-settings/camp-settings-section.constants';
+import { CampSettingsTabs } from '@/features/camps/components/camp-settings/camp-settings-tabs';
 import { CreateCampForm } from '@/features/camps/components/create-camp-form/create-camp-form';
-import { DiscountCodeSection } from '@/features/camps/components/discount-code-section/discount-code-section';
-import { DocumentTypesSection } from '@/features/camps/components/document-types-section/document-types-section';
-import { EmailTextsSection } from '@/features/camps/components/email-texts-section/email-texts-section';
-import { RegistrationFormSection } from '@/features/camps/components/registration-form-section/registration-form-section';
-import { TurnusSection } from '@/features/camps/components/turnus-section/turnus-section';
 import { useCampsPage } from '@/features/camps/components/use-camps-page.hook';
 
 interface CampsPageProps {
   campId: string | undefined;
+  section: Section;
 }
 
-// The Camps' settings: identity, slug, contact, module switches and branding, one Camp at a time.
-export function CampsPage({ campId }: CampsPageProps) {
+// The Camps' settings, one Camp at a time, split into tabs: identity and modules, branding, Turnusy, the
+// registration form, e-mails, discounts, Consents and documents.
+export function CampsPage({ campId, section }: CampsPageProps) {
   const { t } = useTranslation('camps');
   const page = useCampsPage(campId);
 
@@ -31,80 +29,38 @@ export function CampsPage({ campId }: CampsPageProps) {
   }
 
   if (page.hasNoAccess) {
-    return <p className="py-12">{t('noAccess')}</p>;
+    return <Alert>{t('noAccess')}</Alert>;
   }
 
   if (page.isError || page.selected === undefined) {
-    return <p className="py-12 text-destructive">{t('error')}</p>;
+    return <Alert variant="danger">{t('error')}</Alert>;
   }
 
   return (
-    <div className="flex flex-col gap-10 py-12">
-      <header className="flex flex-col gap-2">
-        <Link to="/platform" className="text-sm text-muted-foreground underline">
-          {t('backHome')}
-        </Link>
-        <h1 className="text-2xl font-semibold">{t('title')}</h1>
-        {page.canWrite ? null : <p className="text-muted-foreground">{t('readOnly')}</p>}
-        <Link
-          to="/platform/tabory/nahled"
-          search={{ tabor: page.selected.id }}
-          className="self-start text-sm underline"
-        >
-          {t('preview.open')}
-        </Link>
-      </header>
-      {page.showsSwitcher ? <CampSwitcher camps={page.camps} selectedId={page.selected.id} /> : null}
-      {/* Keyed by the Camp, so switching Camps starts their forms afresh. */}
-      <CampForm
+    <>
+      <div className="flex flex-col gap-4">
+        <CampSettingsHeader
+          organisationId={page.organisationId}
+          camps={page.camps}
+          selected={page.selected}
+          section={section}
+          canWrite={page.canWrite}
+          isCreating={page.isCreating}
+          onCreate={page.startCreating}
+        />
+        <CampSettingsTabs campId={page.selected.id} section={section} />
+      </div>
+      {page.canWrite && page.isCreating ? (
+        <CreateCampForm organisationId={page.organisationId} onClose={page.stopCreating} />
+      ) : null}
+      {/* Keyed by the Camp, so switching Camps starts its forms afresh. */}
+      <CampSettingsSection
         key={page.selected.id}
+        section={section}
         organisationId={page.organisationId}
-        campId={page.selected.id}
+        camp={page.selected}
         canWrite={page.canWrite}
       />
-      <TurnusSection
-        key={`turnusy-${page.selected.id}`}
-        organisationId={page.organisationId}
-        campId={page.selected.id}
-        canWrite={page.canWrite}
-      />
-      <RegistrationFormSection
-        key={`form-${page.selected.id}`}
-        organisationId={page.organisationId}
-        campId={page.selected.id}
-        canWrite={page.canWrite}
-      />
-      <DiscountCodeSection
-        key={`codes-${page.selected.id}`}
-        organisationId={page.organisationId}
-        campId={page.selected.id}
-        canWrite={page.canWrite}
-      />
-      <ConsentsSection
-        key={`consents-${page.selected.id}`}
-        organisationId={page.organisationId}
-        campId={page.selected.id}
-        canWrite={page.canWrite}
-      />
-      <DocumentTypesSection
-        key={`documents-${page.selected.id}`}
-        organisationId={page.organisationId}
-        campId={page.selected.id}
-        canWrite={page.canWrite}
-      />
-      <EmailTextsSection
-        key={`emails-${page.selected.id}`}
-        organisationId={page.organisationId}
-        campId={page.selected.id}
-        canWrite={page.canWrite}
-      />
-      <CampBrandingSection
-        key={`branding-${page.selected.id}`}
-        organisationId={page.organisationId}
-        campId={page.selected.id}
-        canWrite={page.canWrite}
-      />
-      {page.canWrite ? <CreateCampForm organisationId={page.organisationId} /> : null}
-    </div>
+    </>
   );
 }

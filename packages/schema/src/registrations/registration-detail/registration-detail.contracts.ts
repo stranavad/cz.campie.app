@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { auditEntrySchema } from '@repo/schema/audit';
 import { priceLineSchema } from '@repo/schema/camps';
 import { fileLinkSchema } from '@repo/schema/files';
 import { answerValueSchema, formDefinitionShape } from '@repo/schema/form-engine';
@@ -103,19 +104,9 @@ export const getRegistrationDetailEndpoint = defineEndpoint({
   response: registrationDetailSchema,
 });
 
-export const historyEntrySchema = z.object({
-  id: z.uuid(),
-  occurredAt: z.iso.datetime(),
-  actor: z.object({
-    kind: z.enum(['admin', 'guardian', 'operator', 'system']),
-    // An admin's email, a guardian's email, or null for the system or an erased identity.
-    name: z.string().nullable(),
-  }),
-  action: z.string(),
-  // Old and new values of plain fields; encrypted fields by name only.
-  changes: z.record(z.string(), z.object({ old: z.unknown(), new: z.unknown() })).nullable(),
-  encryptedFields: z.array(z.string()),
-});
+// An entry of a Registration's history: as in the Organisation's audit log, without the IP address it was
+// made from, which only the Owners see.
+export const historyEntrySchema = auditEntrySchema.omit({ ipAddress: true });
 
 export type HistoryEntry = z.infer<typeof historyEntrySchema>;
 

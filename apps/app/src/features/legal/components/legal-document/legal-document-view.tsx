@@ -2,8 +2,11 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { DraftNotice } from '@/features/legal/components/legal-document/draft-notice';
+import { LegalNav } from '@/features/legal/components/legal-document/legal-nav';
 import { LegalSection } from '@/features/legal/components/legal-document/legal-section';
 import { LegalText } from '@/features/legal/components/legal-document/legal-text';
+import { LegalToc } from '@/features/legal/components/legal-document/legal-toc';
+import { sectionAnchor } from '@/features/legal/components/legal-document/section-anchor.helper';
 
 interface LegalDocumentViewProps {
   document: 'terms' | 'dataProcessingAgreement' | 'dataPage';
@@ -13,32 +16,43 @@ interface LegalDocumentViewProps {
   children?: ReactNode;
 }
 
-// A long legal or explanatory text from the legal namespace: title, introduction, sections of paragraphs.
+// A long legal or explanatory text from the legal namespace: title, introduction, sections of paragraphs,
+// with a table of contents beside it on a wide screen.
 export function LegalDocumentView({ document, numbered = false, children }: LegalDocumentViewProps) {
   const { t } = useTranslation('legal');
   const intro = t(`${document}.intro`, { returnObjects: true });
   const sections = t(`${document}.sections`, { returnObjects: true });
+  const headings = sections.map((section) => section.heading);
 
   return (
-    <article className="flex max-w-3xl flex-col gap-6 py-8">
-      <DraftNotice />
-      <header className="flex flex-col gap-3">
-        <h1 className="text-2xl font-semibold">{t(`${document}.title`)}</h1>
-        {intro.map((paragraph) => (
-          <p key={paragraph} className="text-muted-foreground">
-            <LegalText text={paragraph} />
-          </p>
-        ))}
-      </header>
-      {children}
-      {sections.map((section, index) => (
-        <LegalSection
-          key={section.heading}
-          number={numbered ? String(index + 1) : null}
-          heading={section.heading}
-          paragraphs={section.paragraphs}
-        />
-      ))}
-    </article>
+    <div className="flex flex-col gap-6 py-2 sm:gap-8 sm:py-4">
+      <LegalNav />
+      <div className="grid items-start gap-12 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <LegalToc headings={headings} numbered={numbered} />
+        <article className="flex max-w-3xl min-w-0 flex-col gap-7 text-base leading-[1.7] sm:text-[17px]">
+          <header className="flex flex-col gap-4">
+            <h1 className="font-display text-4xl leading-[1.05] font-extrabold tracking-[-0.03em] sm:text-5xl">
+              {t(`${document}.title`)}
+            </h1>
+            {intro.map((paragraph) => (
+              <p key={paragraph} className="text-nav-foreground">
+                <LegalText text={paragraph} />
+              </p>
+            ))}
+          </header>
+          <DraftNotice />
+          {children}
+          {sections.map((section, index) => (
+            <LegalSection
+              key={section.heading}
+              id={sectionAnchor(index)}
+              number={numbered ? String(index + 1) : null}
+              heading={section.heading}
+              paragraphs={section.paragraphs}
+            />
+          ))}
+        </article>
+      </div>
+    </div>
   );
 }

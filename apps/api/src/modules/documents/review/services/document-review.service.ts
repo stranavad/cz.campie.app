@@ -194,11 +194,11 @@ export class DocumentReviewService {
       throw new NotFoundException();
     }
 
-    // A view, so no change; the document's child stays known from its creation entry, which the
-    // append-only log keeps after the document is removed.
+    // On the child's record, so its history shows who looked; the upload time tells its documents apart.
     await this.audit.record(actor, {
       action: 'internal_document.view',
-      target: { type: 'internal_document', id: document.id },
+      target: { type: 'participant', id: document.participantId },
+      change: { before: null, after: { uploadedAt: document.uploadedAt } },
     });
 
     return this.files.link(document.fileId);

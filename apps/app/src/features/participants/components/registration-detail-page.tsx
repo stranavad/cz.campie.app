@@ -1,45 +1,32 @@
-import { Link, Navigate } from '@tanstack/react-router';
-import type { ReactNode } from 'react';
+import { Navigate } from '@tanstack/react-router';
+import { CircleAlertIcon, LockIcon, PencilIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { isRegistrationFieldKey, REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
-import type { AnswerValue } from '@repo/schema/form-engine';
-import type { AnswerRow } from '@repo/schema/registrations';
-import { czechDate, czechDateTime, czk } from '@repo/schema/shared';
+import { czechDateTime } from '@repo/schema/shared';
 
+import { EmptyState } from '@/components/empty-state';
+import { PageHeader } from '@/components/page-header';
+import { Alert } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AdminActions } from '@/features/participants/components/admin-actions';
+import { RegistrationDocuments } from '@/features/participants/components/documents/registration-documents';
+import { AdminActions } from '@/features/participants/components/editing/admin-actions';
 import { EraseRegistration } from '@/features/participants/components/erase-registration';
-import { LedgerForms } from '@/features/participants/components/ledger-forms';
+import { PaymentStatusBadge } from '@/features/participants/components/payment-status-badge';
 import { RegistrationConsents } from '@/features/participants/components/registration-consents';
 import { RegistrationControls } from '@/features/participants/components/registration-controls';
-import { RegistrationDocuments } from '@/features/participants/components/registration-documents';
-import { UndeliverableBadge } from '@/features/participants/components/undeliverable-badge';
+import { BackToList } from '@/features/participants/components/registration-detail/back-to-list';
+import { DeclarationsCard } from '@/features/participants/components/registration-detail/declarations-card';
+import { DetailSkeleton } from '@/features/participants/components/registration-detail/detail-skeleton';
+import { GuardiansCard } from '@/features/participants/components/registration-detail/guardians-card';
+import { HistoryCard } from '@/features/participants/components/registration-detail/history-card';
+import { ParticipantDetailCard } from '@/features/participants/components/registration-detail/participant-detail-card';
+import { PaymentsCard } from '@/features/participants/components/registration-detail/payments-card';
 import { useRegistrationDetailPage } from '@/features/participants/components/use-registration-detail-page.hook';
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-lg font-semibold">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between gap-3 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="text-right">{value}</span>
-    </div>
-  );
-}
 
 // Everything about one Registration for an admin answering a guardian; read access sees it all read-only.
 export function RegistrationDetailPage({ registrationId }: { registrationId: string }) {
   const { t } = useTranslation('participants');
-  const { t: tRegistration } = useTranslation('registration');
-  const { t: tCommon } = useTranslation();
   const page = useRegistrationDetailPage(registrationId);
 
   if (page.isSignedOut) {
@@ -47,226 +34,82 @@ export function RegistrationDetailPage({ registrationId }: { registrationId: str
   }
 
   if (page.isLoading) {
-    return <p className="py-12 text-muted-foreground">{t('loading')}</p>;
+    return <DetailSkeleton />;
   }
 
   if (page.hasNoAccess) {
-    return <p className="py-12">{t('noAccess')}</p>;
+    return <EmptyState icon={<LockIcon />} title={t('noAccess')} />;
   }
 
   if (page.isError || page.detail === undefined) {
-    return <p className="py-12 text-destructive">{t('detail.error')}</p>;
+    return (
+      <div className="flex flex-col gap-4">
+        <BackToList />
+        <Alert variant="danger" role="alert">
+          <CircleAlertIcon aria-hidden="true" />
+          {t('detail.error')}
+        </Alert>
+      </div>
+    );
   }
 
   const { detail } = page;
-  // A standard choice by its option's name: a boarding place's own, the platform's translated.
-  const answerText = (row: AnswerRow) =>
-    row.option === null
-      ? shown(row.value)
-      : (row.option.label ?? tCommon(row.option.labelKey ?? '', { defaultValue: String(row.value) }));
-  const shown = (value: AnswerValue) =>
-    value === null
-      ? t('detail.unanswered')
-      : typeof value === 'boolean'
-        ? t(value ? 'detail.yes' : 'detail.no')
-        : Array.isArray(value)
-          ? value.join(', ')
-          : String(value);
-  const answerLabel = (row: AnswerRow) => {
-    const label = row.label ?? (row.labelKey === null ? row.key : tCommon(row.labelKey, { defaultValue: row.key }));
-
-    return row.state === 'answered' ? label : t(`detail.state.${row.state}`, { label });
-  };
-  // An encrypted field the history names: a custom one by its label, a standard one by the platform's.
-  const fieldName = (key: string) => {
-    const custom = detail.latestDefinition.custom.find(({ id }) => id === key)?.label;
-    const standard = isRegistrationFieldKey(key) ? REGISTRATION_FIELD_CATALOGUE[key] : undefined;
-
-    return custom ?? (standard === undefined ? key : tCommon(standard.labelKey, { defaultValue: key }));
-  };
-  const nameAt = (position: number | null) => {
-    const participant = detail.participants.find((candidate) => candidate.position === position);
-
-    return participant === undefined ? null : t('name', { first: participant.firstName, last: participant.lastName });
-  };
+  const shared = { organisationId: page.organisationId, registrationId };
 
   return (
-    <div className="flex flex-col gap-8 py-8">
-      <header className="flex flex-col gap-1">
-        <Link to="/platform/prihlasky" className="text-sm text-muted-foreground underline">
-          {t('detail.back')}
-        </Link>
-        <h1 className="text-2xl font-semibold">{t('detail.title', { symbol: detail.variableSymbol })}</h1>
-        <p className="text-sm text-muted-foreground">
-          {t('detail.subtitle', {
-            camp: detail.camp.name,
-            turnus: detail.turnus.name,
-            date: czechDateTime(detail.submittedAt),
-            version: detail.formVersion,
-          })}
-        </p>
-      </header>
-      <Section title={t('detail.guardians')}>
-        {detail.guardians.map((guardian) => (
-          <p key={guardian.position} className="text-sm">
-            {t('detail.guardianLine', {
-              name: `${guardian.firstName} ${guardian.lastName}`,
-              email: guardian.email,
-              phone: guardian.phone ?? '',
-            })}
-            {guardian.undeliverable ? (
-              <UndeliverableBadge
-                organisationId={page.organisationId}
-                registrationId={registrationId}
-                email={guardian.email}
-                canClear={page.canWrite}
-              />
-            ) : null}
-          </p>
-        ))}
-        {detail.registrationAnswers.map((row) => (
-          <Row key={row.key} label={answerLabel(row)} value={answerText(row)} />
-        ))}
-      </Section>
-      {detail.participants.map((participant) => (
-        <Section
-          key={participant.id}
-          title={t(participant.status === 'cancelled' ? 'detail.participantCancelled' : 'name', {
-            first: participant.firstName,
-            last: participant.lastName,
-          })}
-        >
-          {participant.birthDate === null ? null : (
-            <Row label={t('detail.birthDate')} value={czechDate(participant.birthDate)} />
-          )}
-          {participant.ageOnStart === null ? null : (
-            <Row label={t('detail.ageOnStart')} value={String(participant.ageOnStart)} />
-          )}
-          {participant.answers.map((row) => (
-            <Row key={row.key} label={answerLabel(row)} value={answerText(row)} />
-          ))}
-          {participant.prihlaska === null ? null : (
-            <a href={participant.prihlaska.url} target="_blank" rel="noreferrer" className="text-sm underline">
-              {t('detail.prihlaska')}
-            </a>
-          )}
-          {detail.claimedDiscounts
-            .filter(({ participantId }) => participantId === participant.id)
-            .map((discount) => (
-              <div key={`${discount.fieldId}-${discount.optionId ?? ''}`} className="flex items-center gap-3 text-sm">
-                <span>{t('detail.claimed', { label: discount.label, amount: czk(discount.amount) })}</span>
-                {discount.verifiedAt !== null ? (
-                  <span className="text-muted-foreground">{t('detail.verified')}</span>
-                ) : page.canWrite ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={page.isVerifying}
-                    onClick={() => page.verify(participant.id, discount.fieldId, discount.optionId)}
-                  >
-                    {t('detail.verify')}
-                  </Button>
-                ) : (
-                  <span className="text-muted-foreground">{t('detail.unverified')}</span>
-                )}
-              </div>
-            ))}
-        </Section>
-      ))}
-      <Section title={t('detail.price')}>
-        {detail.priceLines.map((line, index) => {
-          const name = nameAt(line.participant);
-          const label = line.label ?? tRegistration(`price.kinds.${line.kind}`);
-
-          return (
-            <Row
-              key={index}
-              label={name === null ? label : t('detail.lineOf', { line: label, participant: name })}
-              value={czk(line.amount)}
-            />
-          );
+    <div className="flex min-w-0 flex-col gap-6">
+      <PageHeader
+        eyebrow={<BackToList turnus={detail.turnus.name} />}
+        title={page.title}
+        status={
+          <>
+            <PaymentStatusBadge status={detail.ledger.status} />
+            {detail.ledger.overdue ? <Badge variant="danger">{t('filters.overdue')}</Badge> : null}
+          </>
+        }
+        description={t('detail.subtitle', {
+          symbol: detail.variableSymbol,
+          camp: detail.camp.name,
+          turnus: detail.turnus.name,
+          date: czechDateTime(detail.submittedAt),
+          version: detail.formVersion,
         })}
-        {detail.ledger.adjustments.map((adjustment) => (
-          <Row
-            key={adjustment.id}
-            label={t('detail.adjustment', { note: adjustment.note })}
-            value={czk(adjustment.amount)}
-          />
-        ))}
-        <Row label={t('detail.total')} value={czk(detail.ledger.total)} />
-      </Section>
-      <Section title={t('detail.payments')}>
-        {detail.ledger.payments.map((payment) => (
-          <Row
-            key={payment.id}
-            label={t(`detail.source.${payment.source}`, { date: czechDate(payment.paidOn), note: payment.note })}
-            value={czk(payment.amount)}
-          />
-        ))}
-        <Row label={t('detail.paid')} value={czk(detail.ledger.paid)} />
-        <Row label={t('detail.balance')} value={czk(detail.ledger.balance)} />
-        <Row
-          label={t(`status.${detail.ledger.status}`)}
-          value={
-            detail.ledger.amountDue.amount === 0
-              ? ''
-              : t('detail.dueNow', {
-                  amount: czk(detail.ledger.amountDue.amount),
-                  date: detail.ledger.amountDue.dueDate === null ? '' : czechDate(detail.ledger.amountDue.dueDate),
-                })
-          }
-        />
-        {detail.ledger.overdue ? <p className="text-sm text-destructive">{t('detail.overdue')}</p> : null}
-        {page.canWrite ? <LedgerForms organisationId={page.organisationId} registrationId={registrationId} /> : null}
-      </Section>
-      <RegistrationConsents organisationId={page.organisationId} registrationId={registrationId} />
-      <RegistrationDocuments
-        organisationId={page.organisationId}
-        registrationId={registrationId}
-        canWrite={page.canWrite}
+        actions={
+          page.canWrite ? (
+            <Button type="button" variant="outline" aria-expanded={page.isEditing} onClick={page.toggleEditing}>
+              <PencilIcon aria-hidden="true" />
+              {t('detail.edit')}
+            </Button>
+          ) : undefined
+        }
       />
-      {page.canWrite ? (
-        <AdminActions organisationId={page.organisationId} detail={detail} canWriteHealth={page.canWriteHealth} />
-      ) : null}
-      {page.canWrite ? <RegistrationControls organisationId={page.organisationId} detail={detail} /> : null}
-      {page.isOwner && detail.guardians.length > 0 ? (
-        <EraseRegistration organisationId={page.organisationId} registrationId={registrationId} />
-      ) : null}
-      <Section title={t('detail.declarations')}>
-        {detail.declarations.map((declaration, index) => (
-          <p key={index} className="text-sm">
-            {t(declaration.accepted ? 'detail.accepted' : 'detail.notAccepted', { text: declaration.text })}
-          </p>
-        ))}
-      </Section>
-      <Section title={t('detail.history')}>
-        <ol className="flex flex-col gap-2">
-          {page.history.map((entry) => (
-            <li key={entry.id} className="text-sm">
-              <span className="mr-2 text-muted-foreground">{czechDateTime(entry.occurredAt)}</span>
-              {t('detail.historyLine', {
-                actor: entry.actor.name ?? t(`detail.actor.${entry.actor.kind}`),
-                action: t(`detail.action.${entry.action}`, { defaultValue: entry.action }),
-              })}
-              {entry.encryptedFields.length === 0 ? null : (
-                <span className="block text-muted-foreground">
-                  {t('detail.encryptedChanged', { fields: entry.encryptedFields.map(fieldName).join(', ') })}
-                </span>
-              )}
-              {entry.changes === null ? null : (
-                <span className="block text-muted-foreground">
-                  {Object.entries(entry.changes)
-                    .map(
-                      ([field, change]) => `${field}: ${JSON.stringify(change.old)} -> ${JSON.stringify(change.new)}`,
-                    )
-                    .join('; ')}
-                </span>
-              )}
-            </li>
+      <div className="grid items-start gap-4 lg:grid-cols-5">
+        <div className="flex min-w-0 flex-col gap-4 lg:col-span-3">
+          {page.canWrite && page.isEditing ? (
+            <AdminActions organisationId={page.organisationId} detail={detail} canWriteHealth={page.canWriteHealth} />
+          ) : null}
+          {detail.participants.map((participant) => (
+            <ParticipantDetailCard
+              key={participant.id}
+              participant={participant}
+              discounts={detail.claimedDiscounts.filter(({ participantId }) => participantId === participant.id)}
+              canWrite={page.canWrite}
+              onVerify={(fieldId, optionId) => page.verify(participant.id, fieldId, optionId)}
+              isVerifying={page.isVerifying}
+            />
           ))}
-        </ol>
-      </Section>
+          <GuardiansCard {...shared} detail={detail} canWrite={page.canWrite} />
+          <DeclarationsCard declarations={detail.declarations} />
+        </div>
+        <div className="flex min-w-0 flex-col gap-4 lg:col-span-2">
+          <PaymentsCard {...shared} detail={detail} canWrite={page.canWrite} />
+          <RegistrationConsents {...shared} />
+          <RegistrationDocuments {...shared} canWrite={page.canWrite} />
+          {page.canWrite ? <RegistrationControls organisationId={page.organisationId} detail={detail} /> : null}
+          {page.isOwner && detail.guardians.length > 0 ? <EraseRegistration {...shared} /> : null}
+          <HistoryCard history={page.history} />
+        </div>
+      </div>
     </div>
   );
 }

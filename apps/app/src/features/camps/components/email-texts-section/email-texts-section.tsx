@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { EmailType } from '@repo/schema/emails';
-
+import { Card } from '@/components/ui/card';
 import { EmailTextForm } from '@/features/camps/components/email-texts-section/email-text-form';
+import { EmailTextList } from '@/features/camps/components/email-texts-section/email-text-list';
 import { useEmailTextsSection } from '@/features/camps/components/email-texts-section/use-email-texts-section.hook';
 
 interface EmailTextsSectionProps {
@@ -12,37 +11,32 @@ interface EmailTextsSectionProps {
   canWrite: boolean;
 }
 
-// The Camp's emails, one opened at a time to edit.
+// The Camp's emails: the list beside the one opened to edit.
 export function EmailTextsSection({ organisationId, campId, canWrite }: EmailTextsSectionProps) {
   const { t } = useTranslation('camps');
-  const emails = useEmailTextsSection(organisationId, campId);
-  const [opened, setOpened] = useState<EmailType | null>(null);
+  const { emails, opened, editorRef, open } = useEmailTextsSection(organisationId, campId);
 
   return (
-    <section className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold">{t('emails.title')}</h2>
+    <div className="flex flex-col gap-4">
+      <p className="max-w-3xl text-muted-foreground">{t('emails.intro')}</p>
       {emails.isPending ? <p className="text-muted-foreground">{t('loading')}</p> : null}
       {emails.isError ? <p className="text-destructive">{t('error')}</p> : null}
-      <ul className="flex flex-col">
-        {(emails.data ?? []).map((email) => (
-          <li key={email.type} className="flex flex-col gap-3 border-b border-border py-3">
-            <button
-              type="button"
-              className="flex flex-wrap items-baseline gap-3 text-left"
-              aria-expanded={opened === email.type}
-              onClick={() => setOpened(opened === email.type ? null : email.type)}
-            >
-              <span className="font-medium">{t(`emails.types.${email.type}`)}</span>
-              <span className="text-sm text-muted-foreground">
-                {email.enabled ? (email.customised ? t('emails.own') : t('emails.default')) : t('emails.off')}
-              </span>
-            </button>
-            {opened === email.type ? (
-              <EmailTextForm organisationId={organisationId} campId={campId} email={email} canWrite={canWrite} />
-            ) : null}
-          </li>
-        ))}
-      </ul>
-    </section>
+      {emails.data === undefined ? null : (
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+          <EmailTextList emails={emails.data} opened={opened?.type ?? null} onOpen={open} />
+          {opened === undefined ? null : (
+            <Card ref={editorRef} className="scroll-mt-4">
+              <EmailTextForm
+                key={opened.type}
+                organisationId={organisationId}
+                campId={campId}
+                email={opened}
+                canWrite={canWrite}
+              />
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

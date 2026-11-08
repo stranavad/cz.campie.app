@@ -10,7 +10,7 @@ export function LegalText({ text }: LegalTextProps) {
   return splitPlaceholders(text).map((part, index) =>
     part.placeholder ? (
       // oxlint-disable-next-line react/no-array-index-key -- the parts of one fixed text never reorder
-      <mark key={index} className="rounded bg-amber-100 px-1 text-amber-950">
+      <mark key={index} className="rounded-md bg-warning px-1 text-warning-foreground">
         {part.text}
       </mark>
     ) : (

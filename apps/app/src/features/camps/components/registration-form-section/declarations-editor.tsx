@@ -1,9 +1,11 @@
+import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { ShownDeclaration } from '@repo/schema/camps';
 
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { DeclarationItem } from '@/features/camps/components/registration-form-section/declaration-item';
 import {
   useDeclarationsEditor,
   type DeclarationsUpdate,
@@ -32,92 +34,38 @@ export function DeclarationsEditor({
   const editor = useDeclarationsEditor(organisationId, campId, declarations, onChange);
 
   return (
-    <fieldset disabled={!canWrite} className="flex flex-col gap-3">
-      <legend className="mb-1 font-medium">{t('declarations.title')}</legend>
-      {declarations.map((declaration, index) => (
-        <div key={declaration.id} className="flex flex-col gap-2 rounded-lg border border-border p-3">
-          <textarea
-            aria-label={t('declarations.text')}
-            rows={2}
-            className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-base md:text-sm"
-            value={declaration.text}
-            onChange={(event) => editor.replace(index, { ...declaration, text: event.target.value })}
-          />
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={declaration.mandatory}
-              onChange={(event) => editor.replace(index, { ...declaration, mandatory: event.target.checked })}
+    <section className="rounded-3xl border border-border bg-card px-2 pt-1.5 pb-2">
+      <fieldset disabled={!canWrite} className="flex min-w-0 flex-col">
+        <legend className="float-left flex min-h-14 w-full flex-col justify-center px-3 leading-snug">
+          <span className="font-display text-lg font-bold">{t('declarations.title')}</span>
+          <span className="text-[13px] text-muted-foreground">{t('declarations.note')}</span>
+        </legend>
+        <div className="clear-left flex flex-col">
+          {declarations.map((declaration, index) => (
+            <DeclarationItem
+              key={declaration.id}
+              declaration={declaration}
+              canWrite={canWrite}
+              link={linkOf(declaration)}
+              onChange={(next) => editor.replace(index, next)}
+              onAttach={(file) => editor.attach(declaration.id, file)}
+              onMove={(by) => editor.move(index, by)}
+              onRemove={() => editor.remove(index)}
             />
-            {t('declarations.mandatory')}
-          </label>
-          {declaration.file === null ? (
-            <Input
-              aria-label={t('declarations.url')}
-              placeholder={t('declarations.url')}
-              value={declaration.url ?? ''}
-              onChange={(event) =>
-                editor.replace(index, { ...declaration, url: event.target.value === '' ? null : event.target.value })
-              }
-            />
-          ) : (
-            <a href={linkOf(declaration) ?? undefined} target="_blank" rel="noreferrer" className="text-sm underline">
-              {t('declarations.openFile')}
-            </a>
-          )}
-          {canWrite ? (
-            <div className="flex flex-wrap items-center gap-2">
-              {declaration.url === null && declaration.file === null ? (
-                <label className="cursor-pointer text-sm underline">
-                  {t('declarations.uploadFile')}
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    className="sr-only"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      event.target.value = '';
-
-                      if (file !== undefined) {
-                        editor.attach(declaration.id, file);
-                      }
-                    }}
-                  />
-                </label>
-              ) : null}
-              {declaration.file === null ? null : (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => editor.replace(index, { ...declaration, file: null })}
-                >
-                  {t('declarations.removeFile')}
-                </Button>
-              )}
-              <Button type="button" variant="ghost" size="sm" onClick={() => editor.move(index, -1)}>
-                {t('registrationForm.moveUp')}
-              </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={() => editor.move(index, 1)}>
-                {t('registrationForm.moveDown')}
-              </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={() => editor.remove(index)}>
-                {t('declarations.remove')}
-              </Button>
-            </div>
-          ) : null}
+          ))}
         </div>
-      ))}
-      {editor.uploadFailed ? (
-        <p role="alert" className="text-sm text-destructive">
-          {t('declarations.uploadFailed')}
-        </p>
-      ) : null}
-      {canWrite ? (
-        <Button type="button" variant="outline" className="self-start" onClick={editor.add}>
-          {t('declarations.add')}
-        </Button>
-      ) : null}
-    </fieldset>
+        {editor.uploadFailed ? (
+          <Alert variant="danger" role="alert" className="mx-1 mt-2">
+            {t('declarations.uploadFailed')}
+          </Alert>
+        ) : null}
+        {canWrite ? (
+          <Button type="button" variant="dashed" className="mx-1 mt-2 h-12 sm:h-11" onClick={editor.add}>
+            <PlusIcon aria-hidden="true" />
+            {t('declarations.add')}
+          </Button>
+        ) : null}
+      </fieldset>
+    </section>
   );
 }

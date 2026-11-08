@@ -1,31 +1,34 @@
 import { Link } from '@tanstack/react-router';
-import { useState } from 'react';
+import { CircleAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useTurnusConsentsQuery } from '@/features/participants/api/participants.queries';
+import { ConsentStateBadge } from '@/features/participants/components/consent-state-badge';
 
 interface TurnusConsentsProps {
   organisationId: string;
   turnusId: string;
 }
 
-// The Turnus's children against the Camp's Consents, shown on request.
+// The Turnus's children against the Camp's Consents.
 export function TurnusConsents({ organisationId, turnusId }: TurnusConsentsProps) {
   const { t } = useTranslation('participants');
-  const [isOpen, setOpen] = useState(false);
-  const matrix = useTurnusConsentsQuery(organisationId, turnusId, isOpen);
+  const matrix = useTurnusConsentsQuery(organisationId, turnusId, true);
 
-  if (!isOpen) {
+  if (matrix.isError) {
     return (
-      <Button type="button" size="sm" variant="outline" className="self-start" onClick={() => setOpen(true)}>
-        {t('consents.matrix')}
-      </Button>
+      <Alert variant="danger" role="alert">
+        <CircleAlertIcon aria-hidden="true" />
+        {t('error')}
+      </Alert>
     );
   }
 
   if (matrix.data === undefined) {
-    return matrix.isError ? <p className="text-sm text-destructive">{t('error')}</p> : null;
+    return <Skeleton className="h-40" />;
   }
 
   if (matrix.data.consents.length === 0) {
@@ -33,43 +36,35 @@ export function TurnusConsents({ organisationId, turnusId }: TurnusConsentsProps
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b text-left">
-            <th className="p-2 font-medium">{t('consents.child')}</th>
-            {matrix.data.consents.map((consent) => (
-              <th key={consent.id} className="p-2 font-medium">
-                {consent.title}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {matrix.data.participants.map((participant) => (
-            <tr key={participant.id} className="border-b last:border-0">
-              <td className="p-2">
-                <Link
-                  to="/platform/prihlasky/$registrationId"
-                  params={{ registrationId: participant.registrationId }}
-                  className="underline"
-                >
-                  {t('name', { first: participant.firstName, last: participant.lastName })}
-                </Link>
-              </td>
-              {matrix.data.consents.map((consent) => {
-                const state = participant.states[consent.id] ?? 'unsigned';
-
-                return (
-                  <td key={consent.id} className={`p-2 ${state === 'signed' ? '' : 'text-destructive'}`}>
-                    {t(`consents.states.${state}`)}
-                  </td>
-                );
-              })}
-            </tr>
+    <Table containerClassName="rounded-2xl">
+      <TableHeader>
+        <TableRow>
+          <TableHead>{t('consents.child')}</TableHead>
+          {matrix.data.consents.map((consent) => (
+            <TableHead key={consent.id}>{consent.title}</TableHead>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {matrix.data.participants.map((participant) => (
+          <TableRow key={participant.id} className="content-auto">
+            <TableCell className="font-semibold whitespace-nowrap">
+              <Link
+                to="/platform/prihlasky/$registrationId"
+                params={{ registrationId: participant.registrationId }}
+                className="underline-offset-4 hover:underline"
+              >
+                {t('name', { first: participant.firstName, last: participant.lastName })}
+              </Link>
+            </TableCell>
+            {matrix.data.consents.map((consent) => (
+              <TableCell key={consent.id}>
+                <ConsentStateBadge state={participant.states[consent.id] ?? 'unsigned'} />
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

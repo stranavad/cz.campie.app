@@ -5,6 +5,13 @@
   },
   "numberedHeading": "{{number}}. {{heading}}",
   "paragraphNumber": "{{article}}.{{paragraph}}",
+  "toc": "Obsah",
+  "nav": {
+    "label": "Právní dokumenty",
+    "terms": "Obchodní podmínky",
+    "dataProcessingAgreement": "Zpracovatelská smlouva",
+    "dataPage": "Zpracování dat"
+  },
   "terms": {
     "title": "Obchodní podmínky platformy {{productName}}",
     "intro": [
@@ -291,6 +298,7 @@
   },
   "processors": {
     "title": "Kde jsou data uložena a kdo je zpracovává",
+    "name": "Zpracovatel",
     "purpose": "Účel",
     "data": "Jaká data",
     "location": "Kde",

@@ -28,3 +28,11 @@ export function ageLimits(t: TFunction, min: number | null, max: number | null):
 
   return min === null ? t('campPage.agesTo', { max }) : t('campPage.agesFrom', { min });
 }
+
+/**
+ * List the places a Camp's Turnusy take place at, each once, in their order.
+ * @param turnusy the Camp's Turnusy
+ */
+export function placesOf(turnusy: readonly { place: string }[]): string[] {
+  return [...new Set(turnusy.map(({ place }) => place.trim()).filter((place) => place !== ''))];
+}

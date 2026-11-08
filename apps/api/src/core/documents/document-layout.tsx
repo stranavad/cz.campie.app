@@ -12,10 +12,11 @@ export interface Letterhead {
   readonly address: string;
 }
 
-// Layout and font are fixed by the platform; only the letterhead varies.
-const TEXT = '#1a1a1a';
-const MUTED = '#555555';
-const RULE = '#e5e5e5';
+// Layout and font are fixed by the platform; only the letterhead varies. The neutrals are the frontend's
+// warm stone ones, so a document reads as the same product as the pages.
+const TEXT = '#1c1917';
+const MUTED = '#57534e';
+const RULE = '#eceae7';
 
 // The page geometry lives here rather than in the renderer's options, so the template decides how it prints.
 const BASE_STYLES = `
@@ -33,7 +34,10 @@ const BASE_STYLES = `
   }
   h1, h2, p, dl, dd { margin: 0; }
   h1, h2 { break-after: avoid; }
-  tr, .keep-together { break-inside: avoid; }
+  tr, .keep-together, .fact { break-inside: avoid; }
+  .fact { display: flex; gap: 6pt; padding: 3pt 0; border-bottom: 0.5pt solid ${RULE}; }
+  .fact-label { flex: 0 0 40mm; color: ${MUTED}; }
+  .fact-value { min-width: 0; overflow-wrap: anywhere; }
 `;
 
 /**
@@ -91,13 +95,13 @@ export function DocumentLayout({
 
 /**
  * One fact as "label: value". Templates state camp data this way, after a label, so a name never has to
- * be declined to fit a Czech sentence.
+ * be declined to fit a Czech sentence. Its look is the layout's `.fact` classes, which a template may tune.
  */
 export function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div style={{ display: 'flex', gap: '6pt', padding: '3pt 0', borderBottom: `0.5pt solid ${RULE}` }}>
-      <span style={{ flex: '0 0 40mm', color: MUTED }}>{label}:</span>
-      <span>{children}</span>
+    <div className="fact">
+      <span className="fact-label">{label}:</span>
+      <span className="fact-value">{children}</span>
     </div>
   );
 }

@@ -1,6 +1,9 @@
-import { Link, Navigate } from '@tanstack/react-router';
+import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { PageHeader } from '@/components/page-header';
+import { SettingsSection } from '@/components/settings-section';
+import { Alert } from '@/components/ui/alert';
 import { LogoField } from '@/core/branding';
 import { BrandingForm } from '@/features/organisation-settings/components/branding-form/branding-form';
 import { IdentityForm } from '@/features/organisation-settings/components/identity-form/identity-form';
@@ -19,31 +22,22 @@ export function OrganisationSettingsPage() {
   }
 
   if (page.isLoading) {
-    return <p className="py-12 text-muted-foreground">{t('loading')}</p>;
+    return <p className="text-muted-foreground">{t('loading')}</p>;
   }
 
   if (page.isNotOwner) {
-    return <p className="py-12">{t('notOwner')}</p>;
+    return <Alert>{t('notOwner')}</Alert>;
   }
 
   if (page.isError || page.settings === undefined) {
-    return <p className="py-12 text-destructive">{t('error')}</p>;
+    return <Alert variant="danger">{t('error')}</Alert>;
   }
 
   return (
-    <div className="flex flex-col gap-10 py-12">
-      <header className="flex flex-col gap-2">
-        <Link to="/platform" className="text-sm text-muted-foreground underline">
-          {t('backHome')}
-        </Link>
-        <h1 className="text-2xl font-semibold">{t('title')}</h1>
-      </header>
+    <>
+      <PageHeader title={t('title')} description={t('intro')} />
       <IdentityForm organisationId={page.organisationId} settings={page.settings} />
-      <section className="flex flex-col gap-5">
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">{t('branding.title')}</h2>
-          <p className="text-sm text-muted-foreground">{t('branding.intro')}</p>
-        </div>
+      <SettingsSection title={t('branding.title')} description={t('branding.intro')}>
         <LogoField
           logo={page.settings.logo}
           emptyText={t('logoNone')}
@@ -51,10 +45,13 @@ export function OrganisationSettingsPage() {
           removeLogo={page.removeLogo}
         />
         <BrandingForm organisationId={page.organisationId} settings={page.settings} />
-      </section>
+      </SettingsSection>
       <PaymentGatewayForm organisationId={page.organisationId} />
-      <TwoStepSection organisationId={page.organisationId} required={page.settings.totpRequired} />
-      <SupportAccessSection organisationId={page.organisationId} />
-    </div>
+      <SettingsSection title={t('security.title')} description={t('security.intro')}>
+        <TwoStepSection organisationId={page.organisationId} required={page.settings.totpRequired} />
+        <hr className="border-border-subtle" />
+        <SupportAccessSection organisationId={page.organisationId} />
+      </SettingsSection>
+    </>
   );
 }

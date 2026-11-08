@@ -1,10 +1,25 @@
 {
-  "title": "Přihláška: {{camp}}",
+  "screenTitle": "Přihláška",
+  "lead": "Vyplňte údaje o dětech a o sobě. Cenu vidíte průběžně dole.",
   "back": "Zpět na {{camp}}",
+  "openPortal": "Otevřít můj portál",
+  "turnusOption": "{{name}} ({{start}} - {{end}})",
+  "questions": "Další údaje",
+  "health": {
+    "title": "Zdravotní údaje",
+    "note": "Ukládáme je šifrovaně, uvidí je jen ti, kdo se na táboře starají o zdraví dětí."
+  },
+  "bar": {
+    "total": "celková cena",
+    "deposit": "teď záloha {{amount}}",
+    "counting": "Počítáme cenu…",
+    "failing": "Cenu teď nelze spočítat"
+  },
   "noForm": "Tábor zatím nezveřejnil přihlášku.",
   "error": "Přihlášku se nepodařilo načíst. Zkuste stránku načíst znovu.",
   "turnus": "Turnus",
   "pickTurnus": "Vyberte turnus",
+  "turnusRequired": "Vyberte turnus, na který dítě přihlašujete.",
   "child": "Dítě {{number}}",
   "addChild": "Přidat další dítě",
   "removeChild": "Odebrat dítě",
@@ -12,6 +27,8 @@
   "addSecondGuardian": "Přidat druhého zákonného zástupce",
   "payment": {
     "title": "Platba",
+    "amount": "Kolik zaplatíte teď",
+    "method": "Jak zaplatíte",
     "full": "Zaplatím celou částku najednou",
     "deposit": "Zaplatím nejdřív zálohu",
     "bankTransfer": "Platí se bankovním převodem, platební údaje přijdou e-mailem.",
@@ -76,6 +93,12 @@
     "title": "Přihláška je odeslaná",
     "placed": "Místo na táboře {{camp}} je vaše.",
     "variableSymbol": "Variabilní symbol",
+    "paymentTitle": "Platební údaje",
+    "next": {
+      "title": "Co bude dál",
+      "payment": "Platební údaje vám přijdou e-mailem. Zaplaťte podle nich, s variabilním symbolem výše.",
+      "portal": "V portálu uvidíte stav přihlášky a platby a doplníte, co tábor ještě potřebuje."
+    },
     "depositFirst": "Nejdřív zaplatíte zálohu",
     "email": "Variabilní symbol si poznamenejte, budete ho potřebovat při platbě.",
     "cardRedirecting": "Přesměrováváme vás na platbu kartou…",

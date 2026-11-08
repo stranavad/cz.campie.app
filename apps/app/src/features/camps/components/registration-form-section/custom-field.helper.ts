@@ -37,3 +37,50 @@ export function nextOptionId(taken: readonly string[]): string {
 
   return `moznost-${index}`;
 }
+
+/**
+ * Mark a field as health data or not; health data carries no surcharge, so marking it drops them.
+ * @param field the field
+ * @param health whether it is health data
+ */
+export function asHealth(field: CustomField, health: boolean): CustomField {
+  if (!health) {
+    return { ...field, health };
+  }
+
+  switch (field.type) {
+    case 'yes_no':
+      return { ...field, health, surcharge: null, needsVerification: false };
+    case 'single_choice':
+    case 'multiple_choice':
+      return {
+        ...field,
+        health,
+        options: field.options.map((option) => ({ ...option, surcharge: null, needsVerification: false })),
+      };
+    case 'short_text':
+    case 'long_text':
+    case 'number':
+    case 'date':
+      return { ...field, health };
+  }
+}
+
+/**
+ * Tell whether any answer to a field changes the price.
+ * @param field the field
+ */
+export function hasSurcharge(field: CustomField): boolean {
+  switch (field.type) {
+    case 'yes_no':
+      return field.surcharge !== null;
+    case 'single_choice':
+    case 'multiple_choice':
+      return field.options.some((option) => option.surcharge !== null);
+    case 'short_text':
+    case 'long_text':
+    case 'number':
+    case 'date':
+      return false;
+  }
+}

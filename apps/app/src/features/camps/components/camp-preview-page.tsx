@@ -1,6 +1,9 @@
 import { Link, Navigate } from '@tanstack/react-router';
+import { ChevronLeftIcon, EyeIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { Alert, AlertContent } from '@/components/ui/alert';
+import { buttonVariants } from '@/components/ui/button';
 import { CampPageView } from '@/core/camp-page';
 import { useCampPreviewPage } from '@/features/camps/components/use-camp-preview-page.hook';
 
@@ -22,16 +25,28 @@ export function CampPreviewPage({ campId }: CampPreviewPageProps) {
   }
 
   if (page.preview === undefined) {
-    return <p className="py-12 text-destructive">{t('error')}</p>;
+    return <Alert variant="danger">{t('error')}</Alert>;
   }
 
   return (
-    <div className="flex flex-col gap-2 py-6">
-      <Link to="/platform/tabory" search={{ tabor: campId }} className="text-sm text-muted-foreground underline">
-        {t('preview.back')}
-      </Link>
-      <p className="rounded-lg bg-muted px-3 py-2 text-sm">{t('preview.notice')}</p>
-      <CampPageView camp={page.preview.camp} turnusy={page.preview.turnusy} />
-    </div>
+    <>
+      <div className="flex flex-col gap-3">
+        <Link
+          to="/platform/tabory"
+          search={{ tabor: campId }}
+          className={buttonVariants({ variant: 'ghost', size: 'sm', className: '-ml-2 self-start' })}
+        >
+          <ChevronLeftIcon aria-hidden="true" />
+          {t('preview.back')}
+        </Link>
+        <Alert variant="brand">
+          <EyeIcon aria-hidden="true" />
+          <AlertContent>{t('preview.notice')}</AlertContent>
+        </Alert>
+      </div>
+      <div className="overflow-hidden rounded-3xl border border-border bg-background px-4 sm:px-6">
+        <CampPageView camp={page.preview.camp} turnusy={page.preview.turnusy} />
+      </div>
+    </>
   );
 }

@@ -1,9 +1,11 @@
+import { ExternalLinkIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { PublicTurnus } from '@repo/schema/camps';
 import { czechDate, czk } from '@repo/schema/shared';
 
+import { AvailabilityPill } from '@/core/camp-page/components/availability-pill';
 import { OpeningCountdown } from '@/core/camp-page/components/opening-countdown';
 import { ageLimits } from '@/core/camp-page/helpers/camp-page.helper';
 
@@ -16,36 +18,42 @@ interface TurnusCardProps {
 export function TurnusCard({ turnus, action }: TurnusCardProps) {
   const { t } = useTranslation();
   const earlyBird = turnus.earlyBirdPrice !== null && turnus.priceNow === turnus.earlyBirdPrice;
+  const ages = turnus.minAge === null && turnus.maxAge === null ? null : ageLimits(t, turnus.minAge, turnus.maxAge);
+  const details = [turnus.name, turnus.place, ages].filter((detail) => detail !== null && detail !== '').join(' · ');
 
   return (
-    <li className="flex flex-col gap-2 rounded-lg border border-border p-4">
-      <h3 className="text-lg font-semibold">{turnus.name}</h3>
-      <p className="flex flex-wrap gap-x-3 text-sm">
-        <span>{t('campPage.dates', { start: czechDate(turnus.startDate), end: czechDate(turnus.endDate) })}</span>
-        <span>{turnus.place}</span>
-      </p>
-      {turnus.minAge === null && turnus.maxAge === null ? null : (
-        <p className="text-sm text-muted-foreground">{ageLimits(t, turnus.minAge, turnus.maxAge)}</p>
-      )}
-      <p className="font-medium">
-        {czk(turnus.priceNow)}
-        {earlyBird && turnus.earlyBirdLastDay !== null ? (
-          <span className="ml-2 text-sm font-normal text-muted-foreground">
-            {t('campPage.earlyBird', { date: czechDate(turnus.earlyBirdLastDay), base: czk(turnus.basePrice) })}
-          </span>
-        ) : null}
-      </p>
+    <li className="flex flex-col gap-3 rounded-3xl border border-border bg-card p-4 sm:p-5">
+      <div className="flex flex-col gap-0.5">
+        <h3 className="text-heading">
+          {t('campPage.dates', { start: czechDate(turnus.startDate), end: czechDate(turnus.endDate) })}
+        </h3>
+        <p className="text-sm text-muted-foreground">{details}</p>
+      </div>
       {turnus.availability === 'not_yet_open' && turnus.opensAt !== null ? (
         <OpeningCountdown opensAt={turnus.opensAt} />
       ) : (
-        <p className="text-sm font-medium text-ring">
-          {t(`campPage.availability.${turnus.availability}`, { count: turnus.remainingPlaces })}
-        </p>
+        <AvailabilityPill turnus={turnus} />
       )}
-      {action}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="flex flex-col leading-tight">
+          <span className="text-lg font-bold tabular-nums">{czk(turnus.priceNow)}</span>
+          {earlyBird && turnus.earlyBirdLastDay !== null ? (
+            <span className="text-[13px] text-muted-foreground">
+              {t('campPage.earlyBird', { date: czechDate(turnus.earlyBirdLastDay), base: czk(turnus.basePrice) })}
+            </span>
+          ) : null}
+        </p>
+        {action}
+      </div>
       {turnus.websiteUrl === null ? null : (
-        <a href={turnus.websiteUrl} className="text-sm underline" target="_blank" rel="noreferrer">
+        <a
+          href={turnus.websiteUrl}
+          className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-semibold underline underline-offset-4 transition-colors hover:text-brand-text"
+          target="_blank"
+          rel="noreferrer"
+        >
           {t('campPage.turnusWebsite')}
+          <ExternalLinkIcon aria-hidden="true" className="size-3.5" />
         </a>
       )}
     </li>

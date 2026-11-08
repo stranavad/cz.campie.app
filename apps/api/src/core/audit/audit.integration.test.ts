@@ -49,9 +49,10 @@ class NotesController {
       .where(eq(notes.id, id))
       .returning();
 
+    // A note stands in for a Camp: the audit log records only the catalogue's actions.
     await this.audit.record(actor, {
-      action: 'note.update',
-      target: { type: 'note', id },
+      action: 'camp.update',
+      target: { type: 'camp', id },
       change: { before, after: after ?? null },
     });
 
@@ -130,8 +131,8 @@ describe('audit log', () => {
         actor_kind: 'admin',
         actor_identity: admin.id,
         ip_address: expect.stringMatching(/127\.0\.0\.1$/),
-        action: 'note.update',
-        target_type: 'note',
+        action: 'camp.update',
+        target_type: 'camp',
         target_id: noteId,
         changes: { text: { old: 'packing list', new: 'packing list, with torch' } },
         encrypted_fields: [],
@@ -173,7 +174,7 @@ describe('audit log', () => {
     await expectDenied(() => unitOfWork.db.update(auditEntries).set({ action: 'note.forged' }));
     await expectDenied(() => unitOfWork.db.delete(auditEntries));
     await expectDenied(() => unitOfWork.db.execute(sql`truncate audit_entries`));
-    expect(await auditRows()).toEqual([expect.objectContaining({ action: 'note.update' })]);
+    expect(await auditRows()).toEqual([expect.objectContaining({ action: 'camp.update' })]);
   });
 
   it('shows an Organisation only its own entries', async () => {
@@ -184,7 +185,7 @@ describe('audit log', () => {
     const read = (id: string) =>
       unitOfWork.run(id, () => unitOfWork.db.select({ action: auditEntries.action }).from(auditEntries));
 
-    expect(await read(organisationId)).toEqual([{ action: 'note.update' }]);
+    expect(await read(organisationId)).toEqual([{ action: 'camp.update' }]);
     expect(await read(otherOrganisationId)).toEqual([]);
   });
 });

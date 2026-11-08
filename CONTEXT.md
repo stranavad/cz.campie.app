@@ -32,6 +32,10 @@ _Avoid_: Superadmin, root, platform admin
 One submission by guardians to one Turnus, holding one or more Participants who all attend it.
 _Avoid_: Application, přihláška (that is the PDF), order
 
+**Guardian**:
+A legal guardian (zákonný zástupce) who submits a Registration and reaches it through the guardian portal; a Registration has one or two.
+_Avoid_: Parent, rodič, user
+
 **Participant**:
 One child within a Registration; either Registered or Cancelled.
 _Avoid_: Child (in data), camper, attendee
@@ -91,3 +95,9 @@ _Avoid_: Signup period, deadline
 **Age on start**:
 A child's completed years on the Turnus start date, the age that limits, Oddíly and printouts use.
 _Avoid_: Current age, age at registration
+
+### Accountability
+
+**Audit entry**:
+An append-only record in an Organisation's audit log of one change, health-data view or sensitive export: who did it (admin, Guardian, Platform operator or system), what, to which record and when.
+_Avoid_: Log line, event, history item

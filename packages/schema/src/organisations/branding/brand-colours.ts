@@ -2,9 +2,11 @@ import { z } from 'zod';
 
 const BLACK = '#000000';
 const WHITE = '#ffffff';
+// The dark theme's card surface, the darkest place an accent sits on in the frontend.
+export const DARK_SURFACE = '#1f1c19';
 // WCAG 2 level AA for normal text.
 const READABLE_CONTRAST = 4.5;
-const DARKENING_STEPS = 20;
+const SHADE_STEPS = 20;
 
 // An accent colour as a lowercase six-digit hex colour; it is written into pages', emails' and documents'
 // CSS, so nothing else is accepted.
@@ -21,6 +23,11 @@ export type BrandColours = {
   readonly onAccent: string;
   // The accent as text or a link on the white page, darkened just enough to stay readable.
   readonly accentText: string;
+  // The dark theme's accent: lightened just enough to read as text on the dark surface, so it also serves
+  // as the dark theme's buttons, bars and borders.
+  readonly darkAccent: string;
+  // Text on the dark theme's accent.
+  readonly onDarkAccent: string;
 };
 
 /**
@@ -59,14 +66,15 @@ export function contrastRatio(first: string, second: string): number {
 }
 
 /**
- * Mix a colour with black.
+ * Mix a colour with black or white.
  * @param colour a six-digit hex colour
- * @param share how much black, from 0 to 1
+ * @param target the channel value mixed in: 0 for black, 255 for white
+ * @param share how much of it, from 0 to 1
  */
-function darken(colour: string, share: number): string {
+function mix(colour: string, target: number, share: number): string {
   return `#${channelsOf(colour)
     .map((channel) =>
-      Math.round(channel * (1 - share))
+      Math.round(channel * (1 - share) + target * share)
         .toString(16)
         .padStart(2, '0'),
     )
@@ -74,15 +82,41 @@ function darken(colour: string, share: number): string {
 }
 
 /**
+ * Mix a colour towards black or white in even steps until it reads on a background.
+ * @param colour a six-digit hex colour
+ * @param background the six-digit hex colour it must read on
+ * @param target the channel value mixed in: 0 for black, 255 for white
+ */
+function readableOn(colour: string, background: string, target: number): string {
+  const shades = Array.from({ length: SHADE_STEPS + 1 }, (_, step) => mix(colour, target, step / SHADE_STEPS));
+
+  return (
+    shades.find((shade) => contrastRatio(shade, background) >= READABLE_CONTRAST) ?? (target === 0 ? BLACK : WHITE)
+  );
+}
+
+/**
+ * Pick black or white text for a background, whichever contrasts more.
+ * @param background a six-digit hex colour
+ */
+function textOn(background: string): string {
+  return contrastRatio(WHITE, background) >= contrastRatio(BLACK, background) ? WHITE : BLACK;
+}
+
+/**
  * Derive the readable colours that go with an accent colour, so no accent makes a page illegible: black
- * or white text on it, whichever contrasts more (at least 4.58:1 for any colour), and the accent darkened
- * until it reads on white.
+ * or white text on it, whichever contrasts more (at least 4.58:1 for any colour), the accent darkened
+ * until it reads on white, and for the dark theme the accent lightened until it reads on the dark surface.
  * @param accent a six-digit hex colour
  */
 export function brandColours(accent: string): BrandColours {
-  const onAccent = contrastRatio(WHITE, accent) >= contrastRatio(BLACK, accent) ? WHITE : BLACK;
-  const shades = Array.from({ length: DARKENING_STEPS + 1 }, (_, step) => darken(accent, step / DARKENING_STEPS));
-  const accentText = shades.find((shade) => contrastRatio(shade, WHITE) >= READABLE_CONTRAST) ?? BLACK;
+  const darkAccent = readableOn(accent, DARK_SURFACE, 255);
 
-  return { accent, onAccent, accentText };
+  return {
+    accent,
+    onAccent: textOn(accent),
+    accentText: readableOn(accent, WHITE, 0),
+    darkAccent,
+    onDarkAccent: textOn(darkAccent),
+  };
 }

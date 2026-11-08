@@ -3,7 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { PAYMENT_STATUSES } from '@repo/schema/pricing';
 import { czk } from '@repo/schema/shared';
 
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { useTurnusOverviewQuery } from '@/features/participants/api/participants.queries';
+import { OverviewStat } from '@/features/participants/components/overview-stat';
+import { PAYMENT_STATUS_VARIANT } from '@/features/participants/components/payment-status.helper';
 
 // The Selected Turnus at a glance: places and money.
 export function TurnusOverview({ organisationId, turnusId }: { organisationId: string; turnusId: string }) {
@@ -14,44 +19,38 @@ export function TurnusOverview({ organisationId, turnusId }: { organisationId: s
     return null;
   }
 
-  const {
-    capacity,
-    registered,
-    expected,
-    received,
-    outstanding,
-    overpaid,
-    overdueRegistrations,
-    registrationsByPaymentStatus,
-  } = overview.data;
-  const facts = [
-    [t('overview.places'), t('overview.placesValue', { registered, capacity })],
-    [t('overview.expected'), czk(expected)],
-    [t('overview.received'), czk(received)],
-    [t('overview.outstanding'), czk(outstanding)],
-    ...(overpaid > 0 ? [[t('overview.overpaid'), czk(overpaid)]] : []),
-    [t('overview.overdue'), String(overdueRegistrations)],
-    [
-      t('overview.byStatus'),
-      PAYMENT_STATUSES.filter((status) => registrationsByPaymentStatus[status] > 0)
-        .map((status) =>
-          t('overview.statusCount', {
-            status: t(`status.${status}`),
-            registrations: registrationsByPaymentStatus[status],
-          }),
-        )
-        .join(', '),
-    ],
-  ];
+  const { capacity, registered, expected, received, outstanding, overpaid, overdueRegistrations } = overview.data;
+  const byStatus = PAYMENT_STATUSES.filter((status) => overview.data.registrationsByPaymentStatus[status] > 0);
 
   return (
-    <dl className="grid grid-cols-2 gap-x-6 gap-y-1 rounded-lg border p-3 text-sm sm:grid-cols-3">
-      {facts.map(([label, value]) => (
-        <div key={label} className="flex flex-col">
-          <dt className="text-muted-foreground">{label}</dt>
-          <dd className="font-medium tabular-nums">{value}</dd>
+    <Card className="gap-5">
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-6">
+        <OverviewStat label={t('overview.places')} value={t('overview.placesValue', { registered, capacity })}>
+          <Progress value={capacity === 0 ? 0 : registered / capacity} label={t('overview.places')} />
+        </OverviewStat>
+        <OverviewStat label={t('overview.expected')} value={czk(expected)} />
+        <OverviewStat label={t('overview.received')} value={czk(received)} />
+        <OverviewStat label={t('overview.outstanding')} value={czk(outstanding)} />
+        {overpaid > 0 ? <OverviewStat label={t('overview.overpaid')} value={czk(overpaid)} /> : null}
+        <OverviewStat
+          label={t('overview.overdue')}
+          value={String(overdueRegistrations)}
+          className={overdueRegistrations > 0 ? 'text-danger-foreground' : undefined}
+        />
+      </dl>
+      {byStatus.length === 0 ? null : (
+        <div className="flex flex-wrap items-center gap-2 border-t border-border-subtle pt-4">
+          <span className="mr-1 text-[13px] text-muted-foreground">{t('overview.byStatus')}</span>
+          {byStatus.map((status) => (
+            <Badge key={status} variant={PAYMENT_STATUS_VARIANT[status]} dot>
+              {t('overview.statusCount', {
+                status: t(`status.${status}`),
+                registrations: overview.data.registrationsByPaymentStatus[status],
+              })}
+            </Badge>
+          ))}
         </div>
-      ))}
-    </dl>
+      )}
+    </Card>
   );
 }

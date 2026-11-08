@@ -1,36 +1,273 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/figtree/wght.css';
+@import '@fontsource-variable/bricolage-grotesque/wght.css';
 
-/* Light theme only. Organisation branding (issue 23) overrides these values at runtime. */
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.21 0.02 260);
-  --muted: oklch(0.97 0.005 260);
-  --muted-foreground: oklch(0.5 0.02 260);
-  --border: oklch(0.92 0.01 260);
-  --primary: oklch(0.55 0.15 150);
-  --primary-foreground: oklch(0.99 0 0);
-  --input: oklch(0.88 0.01 260);
-  --ring: oklch(0.7 0.1 150);
-  --destructive: oklch(0.58 0.22 27);
-  --radius: 0.625rem;
+/*
+ * `dark` on <html> switches the theme; index.html sets it before the first paint (lib/theme). `light` on an
+ * element keeps its subtree light inside the dark theme (a preview of both).
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Theme tokens. Warm stone neutrals; the dark theme is a warm near-black, not an inverted light theme.
+ * Components use only the semantic utilities mapped in @theme below, never raw colours, so both themes
+ * and every Organisation's accent work everywhere.
+ */
+:root,
+.light {
+  color-scheme: light;
+
+  /* The page behind cards, and the text on it. */
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  /* Cards, the sidebar, dialogs. */
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  /* Chips, raised rows, tracks, hover fills. */
+  --muted: #f5f5f4;
+  --muted-foreground: #57534e;
+  /* Secondary text that still meets AA on cards: counts, hints, icons. */
+  --subtle-foreground: #736c66;
+  /* Inactive navigation text. */
+  --nav-foreground: #44403c;
+  --accent: #f5f5f4;
+  --accent-foreground: #1c1917;
+  --secondary: #f5f5f4;
+  --secondary-foreground: #1c1917;
+  /* Card edges, and the lighter rules between table rows. */
+  --border: #eceae7;
+  --border-subtle: #f5f5f4;
+  /* Outline buttons and pill controls. */
+  --control: #e7e5e4;
+  /* Form controls: their edge (3:1 against the page, as WCAG asks of a control's boundary) and fill. */
+  --input: #948d86;
+  --input-background: #ffffff;
+  /* The main action: near-black, so it reads beside any accent. */
+  --primary: #1c1917;
+  --primary-foreground: #ffffff;
+  /* Status pairs: a soft fill and the text that reads on it (and on cards). */
+  --success: #dcfce7;
+  --success-foreground: #14532d;
+  --warning: #fef3c7;
+  --warning-foreground: #78350f;
+  --danger: #fee2e2;
+  --danger-foreground: #991b1b;
+  --destructive: #b91c1c;
+  /* The platform's own brand, on the main host's public pages. */
+  --campie: #c2410c;
+  --campie-foreground: #ffffff;
+  --campie-soft: #ffedd5;
+  /* Behind an uploaded logo: logos are drawn for white paper, so they keep it in the dark theme too. */
+  --logo-plate: #ffffff;
+
+  --radius: 1rem;
+  --shadow-color: 28 25 23;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --background: #151311;
+  --foreground: #f5f1ea;
+  --card: #1f1c19;
+  --card-foreground: #f5f1ea;
+  --muted: #2a2622;
+  --muted-foreground: #b5ada3;
+  --subtle-foreground: #a39b91;
+  --nav-foreground: #d6d0c8;
+  --accent: #2a2622;
+  --accent-foreground: #f5f1ea;
+  --secondary: #2a2622;
+  --secondary-foreground: #f5f1ea;
+  --border: #2e2a26;
+  --border-subtle: #2a2622;
+  --control: #3a3530;
+  --input: #736a61;
+  --input-background: #1a1815;
+  --primary: #f5f1ea;
+  --primary-foreground: #1c1917;
+  --success: #143021;
+  --success-foreground: #86efac;
+  --warning: #3a2a0a;
+  --warning-foreground: #fcd34d;
+  --danger: #3b1515;
+  --danger-foreground: #fca5a5;
+  --destructive: #fca5a5;
+  --campie: #ea580c;
+  --campie-foreground: #ffffff;
+  --campie-soft: #3a2216;
+
+  --shadow-color: 0 0 0;
+}
+
+/*
+ * The Organisation's or Camp's accent. `brandAttributes` (core/branding) sets the --brand-light-* and
+ * --brand-dark-* inputs on an element marked [data-brand]; the tokens are derived here, on that element, so
+ * the right set follows the theme without a re-render. The fallbacks are the platform's default accent.
+ */
+:root,
+[data-brand] {
+  --brand: var(--brand-light, #2b8a4e);
+  --brand-foreground: var(--brand-light-foreground, #000000);
+  /* The accent as text or an icon on cards. */
+  --brand-text: var(--brand-light-text, #29834a);
+  /* A tint for selected navigation and chips; text on it is --foreground. */
+  --brand-soft: color-mix(in srgb, var(--brand) 16%, var(--card));
+  --brand-soft-foreground: var(--brand-text);
+  --ring: var(--brand-text);
+}
+
+.dark,
+.dark [data-brand] {
+  --brand: var(--brand-dark, #409660);
+  --brand-foreground: var(--brand-dark-foreground, #000000);
+  --brand-text: var(--brand-dark, #409660);
+  --brand-soft: color-mix(in srgb, var(--brand) 20%, var(--card));
+  --brand-soft-foreground: var(--brand);
+  --ring: var(--brand);
+}
+
+.light,
+.light[data-brand],
+.light [data-brand] {
+  --brand: var(--brand-light, #2b8a4e);
+  --brand-foreground: var(--brand-light-foreground, #000000);
+  --brand-text: var(--brand-light-text, #29834a);
+  --brand-soft: color-mix(in srgb, var(--brand) 16%, var(--card));
+  --brand-soft-foreground: var(--brand-text);
+  --ring: var(--brand-text);
 }
 
 @theme inline {
+  --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-nav-foreground: var(--nav-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-control: var(--control);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-text: var(--brand-text);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-soft-foreground: var(--brand-soft-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
   --color-destructive: var(--destructive);
+  --color-campie: var(--campie);
+  --color-campie-foreground: var(--campie-foreground);
+  --color-campie-soft: var(--campie-soft);
+  --color-logo-plate: var(--logo-plate);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.25);
+  --radius-2xl: calc(var(--radius) * 1.5);
+  --radius-3xl: calc(var(--radius) * 1.75);
+
+  /* One soft, cheap shadow for floating layers (menus, the mobile drawer); cards use a border instead. */
+  --shadow-float: 0 12px 32px -12px rgb(var(--shadow-color) / 0.28);
 }
 
 @layer base {
+  html {
+    /* Keeps a field focused from the keyboard clear of the admin's sticky top bar and the guardian's
+       sticky price bar. */
+    scroll-padding-block: 4.5rem 7rem;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background font-sans text-[15px] leading-normal text-foreground antialiased;
+    text-rendering: optimizeSpeed;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display text-balance;
+  }
+
+  *,
+  ::before,
+  ::after {
+    @apply border-border;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  ::selection {
+    @apply bg-brand-soft text-foreground;
+  }
+
+  /* An open modal (the admin's phone drawer) holds the page still behind it. */
+  html:has(dialog:modal) {
+    overflow: hidden;
+  }
+
+  /* Honour the system setting: no motion beyond what a state change needs. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* A page or section title: the display face, tight. */
+  .text-title {
+    @apply font-display text-3xl leading-[1.1] font-extrabold tracking-[-0.03em] sm:text-4xl;
+  }
+
+  /* The title of a centred card: login, a form's sent state. */
+  .text-card-title {
+    @apply font-display text-[28px] leading-tight font-extrabold tracking-[-0.02em];
+  }
+
+  .text-heading {
+    @apply font-display text-xl leading-tight font-bold tracking-[-0.02em];
+  }
+
+  /* Lets the browser skip layout and paint of long off-screen lists. */
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 72px;
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }

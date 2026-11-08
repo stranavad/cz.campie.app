@@ -57,6 +57,15 @@ export function draftOfStarter(starter: StarterConsent): ConsentDraft {
   };
 }
 
+/**
+ * Bring the editor into view when it opens: on a phone it sits under the list. Left alone when visible.
+ * Defined once, so React calls it only when the editor mounts.
+ * @param node the editor, or null when it unmounts
+ */
+function revealOnMount(node: HTMLElement | null) {
+  node?.scrollIntoView({ block: 'nearest' });
+}
+
 // Writing a Consent: each save publishes it as a new version, the earlier ones staying as signed.
 export function useConsentEditor(
   organisationId: string,
@@ -102,5 +111,6 @@ export function useConsentEditor(
     },
     saveFailed: save.isError,
     saved: save.isSuccess,
+    revealRef: revealOnMount,
   };
 }

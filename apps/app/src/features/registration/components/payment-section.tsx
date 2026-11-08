@@ -1,8 +1,12 @@
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { PAYMENT_CHOICES, type PaymentChoice } from '@repo/schema/pricing';
 
+import { Card, CardTitle } from '@/components/ui/card';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { ChoiceChips } from '@/core/registration-form';
 
 interface PaymentSectionProps {
   depositAvailable: boolean;
@@ -21,51 +25,56 @@ interface PaymentSectionProps {
 // card when the Organisation takes cards; and a Discount code.
 export function PaymentSection(props: PaymentSectionProps) {
   const { t } = useTranslation('registration');
+  const codeId = useId();
+  const methods = [
+    { id: 'transfer', byCard: false, label: t('payment.methodTransfer') },
+    { id: 'card', byCard: true, label: t('payment.methodCard') },
+  ];
 
   return (
-    <fieldset className="flex flex-col gap-4 rounded-lg border border-border p-4">
-      <legend className="px-1 font-medium">{t('payment.title')}</legend>
+    <Card>
+      <CardTitle>{t('payment.title')}</CardTitle>
       {props.depositAvailable ? (
-        <div className="flex flex-col gap-2 text-sm">
-          {PAYMENT_CHOICES.map((choice) => (
-            <label key={choice} className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="paymentChoice"
-                checked={props.paymentChoice === choice}
-                onChange={() => props.onPaymentChoice(choice)}
-              />
-              {t(`payment.${choice}`)}
-            </label>
-          ))}
-        </div>
+        <ChoiceChips
+          caption={t('payment.amount')}
+          multiple={false}
+          choices={PAYMENT_CHOICES.map((choice) => ({
+            id: choice,
+            label: t(`payment.${choice}`),
+            checked: props.paymentChoice === choice,
+            pick: () => props.onPaymentChoice(choice),
+            clear: null,
+          }))}
+        />
       ) : null}
       {props.cardOffered ? (
-        <div className="flex flex-col gap-2 text-sm">
-          <label className="flex items-center gap-2">
-            <input type="radio" name="paymentMethod" checked={!props.byCard} onChange={() => props.onByCard(false)} />
-            {t('payment.methodTransfer')}
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="radio" name="paymentMethod" checked={props.byCard} onChange={() => props.onByCard(true)} />
-            {t('payment.methodCard')}
-          </label>
-        </div>
+        <ChoiceChips
+          caption={t('payment.method')}
+          multiple={false}
+          choices={methods.map((method) => ({
+            id: method.id,
+            label: method.label,
+            checked: props.byCard === method.byCard,
+            pick: () => props.onByCard(method.byCard),
+            clear: null,
+          }))}
+        />
       ) : null}
       <p className="text-sm text-muted-foreground">
         {props.byCard ? t('payment.cardNote') : t('payment.bankTransfer')}
       </p>
-      <div className="flex flex-wrap items-end gap-2">
-        <label className="flex flex-col gap-1 text-sm">
-          {t('payment.code')}
-          <Input
-            value={props.codeInput}
-            onChange={(event) => props.onCodeInput(event.target.value)}
-            onBlur={props.onApplyCode}
-          />
-        </label>
-      </div>
-      {props.codeMessage === null ? null : <p className="text-sm">{props.codeMessage}</p>}
-    </fieldset>
+      <Field>
+        <FieldLabel htmlFor={codeId}>{t('payment.code')}</FieldLabel>
+        <Input
+          id={codeId}
+          value={props.codeInput}
+          onChange={(event) => props.onCodeInput(event.target.value)}
+          onBlur={props.onApplyCode}
+        />
+      </Field>
+      {props.codeMessage === null ? null : (
+        <output className="block rounded-[14px] bg-muted px-3 py-2.5 text-sm font-medium">{props.codeMessage}</output>
+      )}
+    </Card>
   );
 }

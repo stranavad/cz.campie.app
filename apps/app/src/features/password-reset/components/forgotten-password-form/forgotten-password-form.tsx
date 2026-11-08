@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { Alert } from '@/components/ui/alert';
 import { useForgottenPasswordForm } from '@/features/password-reset/components/forgotten-password-form/use-forgotten-password-form.hook';
 
 export function ForgottenPasswordForm() {
@@ -8,13 +9,17 @@ export function ForgottenPasswordForm() {
 
   // The same answer whether or not the email has an account.
   if (isSent) {
-    return <output className="block">{t('forgotten.sent')}</output>;
+    return (
+      <Alert variant="success" className="font-semibold">
+        <output className="block">{t('forgotten.sent')}</output>
+      </Alert>
+    );
   }
 
   return (
     <form
       noValidate
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
         void form.handleSubmit();
@@ -24,12 +29,12 @@ export function ForgottenPasswordForm() {
         {(field) => <field.TextField label={t('forgotten.email')} type="email" autoComplete="username" />}
       </form.AppField>
       {failure === null ? null : (
-        <p role="alert" className="text-sm text-destructive">
+        <Alert variant="danger" role="alert">
           {t(`forgotten.failure.${failure}`)}
-        </p>
+        </Alert>
       )}
       <form.AppForm>
-        <form.SubmitButton className="self-start">{t('forgotten.submit')}</form.SubmitButton>
+        <form.SubmitButton className="mt-1 w-full">{t('forgotten.submit')}</form.SubmitButton>
       </form.AppForm>
     </form>
   );

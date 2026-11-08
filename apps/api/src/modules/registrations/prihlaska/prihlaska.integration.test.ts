@@ -180,7 +180,7 @@ describe('Přihláška PDF', () => {
     expect(ema).toMatch(/Celkem.*13 300 Kč/s);
     expect(ema.match(/<svg/g)).toHaveLength(2);
     expect(ema).toMatch(/Záloha<\/figcaption>.*Vše najednou<\/figcaption>/s);
-    expect(ema).toContain('☑ Souhlasím s táborovým řádem.');
+    expect(ema).toContain('<span class="checkbox checked"></span><span>Souhlasím s táborovým řádem.</span>');
   });
 
   it('asks for the whole price when paying in full', async () => {

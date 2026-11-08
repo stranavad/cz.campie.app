@@ -1,16 +1,23 @@
-import { Link, Navigate } from '@tanstack/react-router';
+import { Navigate } from '@tanstack/react-router';
+import { FileTextIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { czechDate } from '@repo/schema/shared';
-
+import { EmptyState } from '@/components/empty-state';
+import { Alert } from '@/components/ui/alert';
 import { useGuardianDocumentsQuery } from '@/features/portal/api/portal.queries';
-import { RequirementUploads } from '@/features/portal/components/requirement-uploads';
+import { DownloadList } from '@/features/portal/components/documents/download-list';
+import { RequirementCard } from '@/features/portal/components/documents/requirement-card';
+import { ParticipantSwitch } from '@/features/portal/components/shared/participant-switch';
+import { PortalBackHeader } from '@/features/portal/components/shared/portal-back-header';
+import { PortalColumn } from '@/features/portal/components/shared/portal-column';
+import { useSelectedParticipant } from '@/features/portal/components/shared/use-selected-participant.hook';
 import { HttpError } from '@/lib/api';
 
-// A Registration's documents: what the camp publishes to download, and what each child hands in.
+// A Registration's documents: what each child hands in, and what the camp publishes to download.
 export function DocumentsPage({ registrationId }: { registrationId: string }) {
   const { t } = useTranslation('portal');
   const documents = useGuardianDocumentsQuery(registrationId);
+  const { selected, select } = useSelectedParticipant(documents.data?.participants ?? []);
 
   if (documents.error instanceof HttpError && documents.error.status === 401) {
     return <Navigate to="/organisation/portal/prihlaseni" replace />;
@@ -21,69 +28,55 @@ export function DocumentsPage({ registrationId }: { registrationId: string }) {
   }
 
   if (documents.isError) {
-    return <p className="py-12">{t('error')}</p>;
+    return (
+      <PortalColumn>
+        <PortalBackHeader title={t('documents.title')} />
+        <Alert variant="danger" role="alert">
+          {t('error')}
+        </Alert>
+      </PortalColumn>
+    );
   }
 
   const { downloads, requirements, participants } = documents.data;
 
   return (
-    <section className="flex flex-col gap-6 py-8">
-      <Link to="/organisation/portal" className="text-sm underline">
-        {t('edit.back')}
-      </Link>
-      <h1 className="text-2xl font-semibold">{t('documents.title')}</h1>
-      {downloads.length === 0 && requirements.length === 0 ? <p>{t('documents.none')}</p> : null}
+    <PortalColumn>
+      <PortalBackHeader
+        title={t('documents.title')}
+        subtitle={
+          selected === undefined || requirements.length === 0
+            ? undefined
+            : t('participant', { first: selected.firstName, last: selected.lastName })
+        }
+      />
+      {downloads.length === 0 && requirements.length === 0 ? (
+        <EmptyState icon={<FileTextIcon />} title={t('documents.none')} />
+      ) : null}
       {requirements.length === 0 ? null : (
-        <article className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">{t('documents.requirements')}</h2>
-          <ul className="flex flex-col divide-y rounded-lg border text-sm">
-            {requirements.map((requirement) => (
-              <li key={requirement.id} className="flex flex-col gap-1 p-3">
-                <span className="font-medium">{requirement.name}</span>
-                {requirement.description === '' ? null : (
-                  <p className="whitespace-pre-line">{requirement.description}</p>
-                )}
-                {requirement.dueDate === null ? null : (
-                  <span>{t('documents.dueBy', { date: czechDate(requirement.dueDate) })}</span>
-                )}
-                {requirement.blankForm === null ? null : (
-                  <a href={requirement.blankForm.url} target="_blank" rel="noreferrer" className="self-start underline">
-                    {t('documents.blankForm')}
-                  </a>
-                )}
-                {participants.map((participant) => (
-                  <div key={participant.id} className="mt-2 flex flex-col gap-1 border-t pt-2">
-                    <span className="font-medium">
-                      {t('participant', { first: participant.firstName, last: participant.lastName })}
-                    </span>
-                    <RequirementUploads
-                      registrationId={registrationId}
-                      participantId={participant.id}
-                      documentTypeId={requirement.id}
-                      uploads={participant.uploads[requirement.id] ?? []}
-                    />
-                  </div>
-                ))}
-              </li>
-            ))}
-          </ul>
-        </article>
+        <ParticipantSwitch
+          participants={participants.map((participant) => ({
+            id: participant.id,
+            firstName: participant.firstName,
+            count: requirements.filter(({ id }) => {
+              const status = participant.uploads[id]?.[0]?.status;
+
+              return status === undefined || status === 'returned';
+            }).length,
+          }))}
+          selectedId={selected?.id}
+          onSelect={select}
+        />
       )}
-      {downloads.length === 0 ? null : (
-        <article className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">{t('documents.downloads')}</h2>
-          <ul className="flex flex-col divide-y rounded-lg border text-sm">
-            {downloads.map((download) => (
-              <li key={download.id} className="flex flex-col gap-1 p-3">
-                <a href={download.file.url} target="_blank" rel="noreferrer" className="font-medium underline">
-                  {download.name}
-                </a>
-                {download.description === '' ? null : <p className="whitespace-pre-line">{download.description}</p>}
-              </li>
-            ))}
-          </ul>
-        </article>
-      )}
-    </section>
+      {requirements.map((requirement) => (
+        <RequirementCard
+          key={`${selected?.id ?? ''}-${requirement.id}`}
+          registrationId={registrationId}
+          requirement={requirement}
+          participant={selected}
+        />
+      ))}
+      <DownloadList downloads={downloads} />
+    </PortalColumn>
   );
 }

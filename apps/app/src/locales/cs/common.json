@@ -1,6 +1,7 @@
 {
   "organisationShell": {
     "poweredBy": "Přihlášky běží na {{productName}}",
+    "portal": "Můj portál",
     "suspended": {
       "title": "Stránky jsou pozastavené",
       "description": "Provozovatel {{productName}} stránky této organizace pozastavil. Přihlášky ani přístup pro rodiče teď nejsou k dispozici."
@@ -11,7 +12,6 @@
     }
   },
   "platformShell": {
-    "tagline": "Přihlášky na tábory",
     "logOut": "Odhlásit se",
     "supportReadOnly": "Režim podpory: jste v organizaci {{organisation}} jen pro čtení, do {{until}}.",
     "supportWrites": "Režim podpory: jste v organizaci {{organisation}} se svolením ke změnám, do {{until}}. Každá změna se zapisuje do historie.",
@@ -21,6 +21,26 @@
       "terms": "Obchodní podmínky",
       "dataProcessingAgreement": "Zpracovatelská smlouva",
       "dataPage": "Kde jsou data a kdo je zpracovává"
+    },
+    "menu": {
+      "open": "Otevřít menu",
+      "close": "Zavřít menu",
+      "label": "Menu administrace"
+    },
+    "nav": {
+      "label": "Hlavní navigace",
+      "home": "Přehled",
+      "registrations": "Přihlášky",
+      "camps": "Tábory",
+      "team": "Tým",
+      "organisation": "Organizace",
+      "auditLog": "Historie",
+      "console": "Konzole"
+    },
+    "role": {
+      "owner": "Vlastník",
+      "member": "Správce",
+      "support": "Režim podpory"
     }
   },
   "selectedTurnus": {
@@ -89,7 +109,10 @@
   },
   "accentPreview": {
     "button": "Odeslat přihlášku",
-    "link": "Odkaz v textu"
+    "link": "Odkaz v textu",
+    "nav": "Přihlášky",
+    "light": "Světlý režim",
+    "dark": "Tmavý režim"
   },
   "form": {
     "core": {
@@ -108,9 +131,14 @@
     "standard": {
       "gender": {
         "label": "Pohlaví",
-        "options": { "boy": "Chlapec", "girl": "Dívka" }
+        "options": {
+          "boy": "Chlapec",
+          "girl": "Dívka"
+        }
       },
-      "birthNumber": { "label": "Rodné číslo" },
+      "birthNumber": {
+        "label": "Rodné číslo"
+      },
       "insurer": {
         "label": "Zdravotní pojišťovna",
         "options": {
@@ -123,7 +151,9 @@
           "213": "213 - RBP, zdravotní pojišťovna"
         }
       },
-      "participantAddress": { "label": "Adresa dítěte" },
+      "participantAddress": {
+        "label": "Adresa dítěte"
+      },
       "tshirtSize": {
         "label": "Velikost trička",
         "options": {
@@ -140,12 +170,20 @@
           "xxl": "XXL"
         }
       },
-      "healthNote": { "label": "Zdravotní stav, alergie a léky" },
-      "campFriend": { "label": "Kamarád do oddílu" },
-      "guardianAddress": { "label": "Adresa zákonného zástupce" },
+      "healthNote": {
+        "label": "Zdravotní stav, alergie a léky"
+      },
+      "campFriend": {
+        "label": "Kamarád do oddílu"
+      },
+      "guardianAddress": {
+        "label": "Adresa zákonného zástupce"
+      },
       "transport": {
         "label": "Doprava na tábor",
-        "options": { "own": "Vlastní doprava" }
+        "options": {
+          "own": "Vlastní doprava"
+        }
       },
       "howDidYouHear": {
         "label": "Jak jste se o nás dozvěděli",
@@ -210,7 +248,12 @@
     "send": "Odeslat",
     "cancel": "Zrušit",
     "sent": "Děkujeme, zpráva odešla správcům aplikace.",
-    "failed": "Zprávu se nepodařilo odeslat. Zkuste to prosím později."
+    "failed": "Zprávu se nepodařilo odeslat. Zkuste to prosím později.",
+    "close": "Zavřít",
+    "adminTitle": "Zpětná vazba",
+    "adminDescription": "Zpráva odejde správcům aplikace i s adresou stránky, na které jste.",
+    "technicalTitle": "Technický problém s webem",
+    "technicalDescription": "Zpráva odejde správcům aplikace, ne pořadateli tábora. S přihláškou vám poradí pořadatel."
   },
   "twoStep": {
     "code": "Kód z aplikace",
@@ -252,7 +295,50 @@
     "loading": "Načítání…",
     "error": "Účet se nepodařilo načíst. Zkuste to prosím znovu.",
     "totpOn": "Dvoufázové přihlášení je zapnuté. Když přijdete o telefon i záložní kódy, požádejte vlastníka organizace, aby vám ho vypnul.",
+    "credentials": "Přihlašovací údaje",
+    "email": "E-mail",
+    "totpTitle": "Dvoufázové přihlášení",
+    "totpIntro": "Kromě hesla zadáte kód z ověřovací aplikace v telefonu.",
+    "totpStatusOn": "Zapnuto",
+    "organisations": "Organizace",
+    "organisationsIntro": "Kde jste správcem a s jakou rolí.",
     "newRecoveryCodes": "Nové záložní kódy",
     "newRecoveryCodesIntro": "Došly vám záložní kódy, nebo je mohl vidět někdo jiný? Zadejte kód z ověřovací aplikace a dostanete deset nových. Původní kódy tím přestanou platit a pošleme vám o tom e-mail."
+  },
+  "theme": {
+    "toDark": "Přepnout na tmavý režim",
+    "toLight": "Přepnout na světlý režim"
+  },
+  "datePicker": {
+    "placeholder": "Vyberte datum",
+    "previousMonth": "Předchozí měsíc",
+    "nextMonth": "Další měsíc",
+    "month": "Měsíc",
+    "year": "Rok",
+    "time": "Čas",
+    "timePlaceholder": "Čas",
+    "clear": "Vymazat datum"
+  },
+  "fileInput": {
+    "pick": "Vybrat soubor",
+    "none": "Žádný soubor nevybrán"
+  },
+  "accentPicker": {
+    "pick": "Vybrat vlastní barvu",
+    "swatches": {
+      "label": "Připravené barvy",
+      "sunny": "Slunečná",
+      "tangerine": "Mandarinková",
+      "coral": "Korálová",
+      "raspberry": "Malinová",
+      "lavender": "Levandulová",
+      "midnight": "Půlnoční",
+      "sky": "Nebeská",
+      "turquoise": "Tyrkysová",
+      "forest": "Lesní",
+      "grass": "Trávová",
+      "chestnut": "Kaštanová",
+      "graphite": "Grafitová"
+    }
   }
 }

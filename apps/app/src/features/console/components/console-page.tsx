@@ -1,6 +1,8 @@
 import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { PageHeader } from '@/components/page-header';
+import { Alert } from '@/components/ui/alert';
 import { TotpEnrolment } from '@/core/two-step';
 import { OrganisationList } from '@/features/console/components/organisation-list/organisation-list';
 import { ProblemReports } from '@/features/console/components/problem-reports/problem-reports';
@@ -16,28 +18,48 @@ export function ConsolePage() {
     return <Navigate to="/platform/prihlaseni" replace />;
   }
 
+  const header = <PageHeader title={t('title')} />;
+
   if (page.isLoading) {
-    return <p className="py-12 text-muted-foreground">{t('loading')}</p>;
+    return (
+      <>
+        {header}
+        <p className="text-muted-foreground">{t('loading')}</p>
+      </>
+    );
   }
 
   if (page.isNotOperator) {
-    return <p className="py-12">{t('notOperator')}</p>;
+    return (
+      <>
+        {header}
+        <Alert>{t('notOperator')}</Alert>
+      </>
+    );
   }
 
   if (page.isError) {
-    return <p className="py-12 text-destructive">{t('error')}</p>;
+    return (
+      <>
+        {header}
+        <Alert variant="danger">{t('error')}</Alert>
+      </>
+    );
   }
 
   return (
-    <div className="py-12">
+    <>
+      {header}
       {page.step === 'enrol' ? <TotpEnrolment intro={t('enrolmentIntro')} /> : null}
       {page.step === 'organisations' ? (
-        <div className="flex flex-col gap-10">
-          <SupportList />
-          <ProblemReports />
-          <OrganisationList organisations={page.organisations} />
+        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+          <OrganisationList organisations={page.organisations} pendingCount={page.pendingCount} />
+          <div className="flex min-w-0 flex-col gap-6">
+            <SupportList />
+            <ProblemReports />
+          </div>
         </div>
       ) : null}
-    </div>
+    </>
   );
 }

@@ -1,9 +1,17 @@
 import { Link } from '@tanstack/react-router';
+import { CheckIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { PublicCamp } from '@repo/schema/camps';
 import type { SubmittedRegistration } from '@repo/schema/registrations';
 import { czk } from '@repo/schema/shared';
+
+import { IconTile } from '@/components/icon-tile';
+import { Alert } from '@/components/ui/alert';
+import { buttonVariants } from '@/components/ui/button';
+import { Card, CardTitle } from '@/components/ui/card';
+import { DescriptionItem, DescriptionList } from '@/components/ui/description-list';
+import { NextSteps } from '@/features/registration/components/next-steps';
 
 interface SubmittedViewProps {
   camp: PublicCamp;
@@ -17,27 +25,46 @@ export function SubmittedView({ camp, submitted, cardStatus }: SubmittedViewProp
   const { t } = useTranslation('registration');
 
   return (
-    <section className="flex flex-col gap-4 py-12" aria-live="polite">
-      <h1 className="text-2xl font-semibold">{t('submitted.title')}</h1>
-      <p>{t('submitted.placed', { camp: camp.name })}</p>
-      {cardStatus === 'redirecting' ? <p className="font-medium">{t('submitted.cardRedirecting')}</p> : null}
-      {cardStatus === 'failed' ? <p className="text-destructive">{t('submitted.cardFailed')}</p> : null}
-      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1">
-        <dt className="text-muted-foreground">{t('submitted.variableSymbol')}</dt>
-        <dd className="font-medium tabular-nums">{submitted.variableSymbol}</dd>
-        <dt className="text-muted-foreground">{t('price.total')}</dt>
-        <dd className="font-medium tabular-nums">{czk(submitted.total)}</dd>
-        {submitted.depositTotal === null ? null : (
-          <>
-            <dt className="text-muted-foreground">{t('submitted.depositFirst')}</dt>
-            <dd className="font-medium tabular-nums">{czk(submitted.depositTotal)}</dd>
-          </>
-        )}
-      </dl>
-      <p className="text-sm text-muted-foreground">{t('submitted.email')}</p>
-      <Link to="/organisation/$campSlug" params={{ campSlug: camp.slug }} className="text-sm underline">
-        {t('back', { camp: camp.name })}
-      </Link>
-    </section>
+    <div className="flex flex-col gap-4 pt-6 pb-8" aria-live="polite">
+      <section className="flex flex-col items-center gap-3 px-2 text-center">
+        <IconTile tone="success" className="size-16 rounded-full [&>svg]:size-8">
+          <CheckIcon strokeWidth={3} />
+        </IconTile>
+        <h1 className="text-title">{t('submitted.title')}</h1>
+        <p className="text-muted-foreground">{t('submitted.placed', { camp: camp.name })}</p>
+      </section>
+      {cardStatus === 'redirecting' ? <Alert variant="brand">{t('submitted.cardRedirecting')}</Alert> : null}
+      {cardStatus === 'failed' ? <Alert variant="danger">{t('submitted.cardFailed')}</Alert> : null}
+      <Card>
+        <CardTitle>{t('submitted.paymentTitle')}</CardTitle>
+        <DescriptionList>
+          <DescriptionItem label={t('submitted.variableSymbol')}>
+            <span className="font-display text-xl font-extrabold tabular-nums">{submitted.variableSymbol}</span>
+          </DescriptionItem>
+          <DescriptionItem label={t('price.total')}>
+            <span className="tabular-nums">{czk(submitted.total)}</span>
+          </DescriptionItem>
+          {submitted.depositTotal === null ? null : (
+            <DescriptionItem label={t('submitted.depositFirst')}>
+              <span className="tabular-nums">{czk(submitted.depositTotal)}</span>
+            </DescriptionItem>
+          )}
+        </DescriptionList>
+        <p className="text-sm text-muted-foreground">{t('submitted.email')}</p>
+      </Card>
+      <NextSteps />
+      <div className="flex flex-col gap-2">
+        <Link to="/organisation/portal" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
+          {t('openPortal')}
+        </Link>
+        <Link
+          to="/organisation/$campSlug"
+          params={{ campSlug: camp.slug }}
+          className={buttonVariants({ variant: 'ghost', className: 'whitespace-normal' })}
+        >
+          {t('back', { camp: camp.name })}
+        </Link>
+      </div>
+    </div>
   );
 }

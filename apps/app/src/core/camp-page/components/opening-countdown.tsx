@@ -1,3 +1,4 @@
+import { ClockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { czechDateTime } from '@repo/schema/shared';
@@ -15,15 +16,18 @@ export function OpeningCountdown({ opensAt }: OpeningCountdownProps) {
   const millisecondsLeft = new Date(opensAt).getTime() - useNow();
   const left = countdownOf(millisecondsLeft);
 
-  // The page refetches the Turnusy each minute; until then the time up reads as opening, never as zeros.
-  if (millisecondsLeft <= 0) {
-    return <p className="text-sm font-medium">{t('campPage.openingNow')}</p>;
-  }
-
   return (
-    <p className="flex flex-wrap gap-x-2 text-sm">
-      <span>{t('campPage.opensAt', { date: czechDateTime(opensAt) })}</span>
-      <span className="font-medium tabular-nums">{t('campPage.countdown', left)}</span>
-    </p>
+    <div className="flex items-start gap-3 rounded-[20px] bg-brand-soft p-3 text-sm">
+      <ClockIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand-soft-foreground" />
+      {/* The page refetches the Turnusy each minute; until then the time up reads as opening, never as zeros. */}
+      {millisecondsLeft <= 0 ? (
+        <p className="font-semibold">{t('campPage.openingNow')}</p>
+      ) : (
+        <p className="flex flex-col">
+          <span>{t('campPage.opensAt', { date: czechDateTime(opensAt) })}</span>
+          <span className="font-display text-base font-bold tabular-nums">{t('campPage.countdown', left)}</span>
+        </p>
+      )}
+    </div>
   );
 }

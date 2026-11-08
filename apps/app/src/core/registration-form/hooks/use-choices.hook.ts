@@ -7,15 +7,31 @@ export interface Choice {
   readonly label: string;
   readonly checked: boolean;
   readonly pick: () => void;
+  // Takes an optional answer back when its checked option is picked again; null where it cannot be.
+  readonly clear: (() => void) | null;
 }
 
 // A choice field's options, or yes and no, with their surcharges, which are checked and what picking does.
+// A standard choice offers its platform and camp options; an optional one can be taken back.
 export function useChoices(field: FormField, value: AnswerValue | undefined, onChange: (value: AnswerValue) => void) {
   const { t } = useTranslation();
   const surcharge = (amount: number | null) =>
     amount === null || amount === 0
       ? ''
       : ` (${t(amount > 0 ? 'form.surchargeExtra' : 'form.surchargeDiscount', { amount: Math.abs(amount) })})`;
+
+  if (field.tier === 'standard') {
+    const choices: Choice[] = field.options.map((option) => ({
+      id: option.value,
+      label:
+        option.label ?? (option.labelKey === null ? option.value : t(option.labelKey, { defaultValue: option.value })),
+      checked: value === option.value,
+      pick: () => onChange(option.value),
+      clear: field.required ? null : () => onChange(null),
+    }));
+
+    return { choices, multiple: false, hint: null };
+  }
 
   if (field.tier !== 'custom') {
     return { choices: [], multiple: false, hint: null };
@@ -30,8 +46,9 @@ export function useChoices(field: FormField, value: AnswerValue | undefined, onC
         label: t('form.yes') + surcharge(custom.surcharge),
         checked: value === true,
         pick: () => onChange(true),
+        clear: null,
       },
-      { id: 'no', label: t('form.no'), checked: value === false, pick: () => onChange(false) },
+      { id: 'no', label: t('form.no'), checked: value === false, pick: () => onChange(false), clear: null },
     ];
 
     return { choices, multiple: false, hint: custom.hint };
@@ -52,6 +69,7 @@ export function useChoices(field: FormField, value: AnswerValue | undefined, onC
       checked,
       pick: () =>
         onChange(multiple ? (checked ? chosen.filter((id) => id !== option.id) : [...chosen, option.id]) : option.id),
+      clear: null,
     };
   });
 

@@ -14,10 +14,12 @@ export function RecoveryCodes({ codes, onDone }: RecoveryCodesProps) {
   const refreshAccount = useRefreshAccount();
 
   return (
-    <section className="flex max-w-xl flex-col gap-4">
-      <h2 className="text-xl font-semibold">{t('twoStep.recovery.title')}</h2>
-      <p className="text-muted-foreground">{t('twoStep.recovery.intro')}</p>
-      <ul className="grid grid-cols-2 gap-2 self-start rounded bg-muted px-4 py-3 font-mono text-lg">
+    <section className="flex flex-col gap-5">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-heading">{t('twoStep.recovery.title')}</h2>
+        <p className="text-muted-foreground">{t('twoStep.recovery.intro')}</p>
+      </div>
+      <ul className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-2xl bg-muted px-5 py-4 font-mono text-base tracking-wider tabular-nums sm:text-lg">
         {codes.map((code) => (
           <li key={code}>{code}</li>
         ))}

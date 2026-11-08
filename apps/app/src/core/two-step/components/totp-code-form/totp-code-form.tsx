@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { Alert } from '@/components/ui/alert';
 import {
   useTotpCodeForm,
   type TotpCodePurpose,
@@ -18,30 +19,39 @@ export function TotpCodeForm({ purpose, onConfirmed }: TotpCodeFormProps) {
   return (
     <form
       noValidate
-      className="flex max-w-xs flex-col gap-5"
+      className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
         void form.handleSubmit();
       }}
     >
-      <form.AppField name="code">
-        {(field) =>
-          purpose !== 'verify' ? (
-            <field.TextField label={t('twoStep.code')} inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
-          ) : (
-            <field.TextField
-              label={t('twoStep.codeOrRecovery')}
-              autoComplete="one-time-code"
-              autoCapitalize="none"
-              maxLength={9}
-            />
-          )
-        }
-      </form.AppField>
+      <div className="max-w-xs">
+        <form.AppField name="code">
+          {(field) =>
+            purpose !== 'verify' ? (
+              <field.TextField
+                label={t('twoStep.code')}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                className="font-mono tracking-[0.2em]"
+              />
+            ) : (
+              <field.TextField
+                label={t('twoStep.codeOrRecovery')}
+                autoComplete="one-time-code"
+                autoCapitalize="none"
+                maxLength={9}
+                className="font-mono tracking-[0.2em]"
+              />
+            )
+          }
+        </form.AppField>
+      </div>
       {failure === null ? null : (
-        <p role="alert" className="text-sm text-destructive">
+        <Alert variant="danger" role="alert">
           {t(`twoStep.failure.${failure}`)}
-        </p>
+        </Alert>
       )}
       <form.AppForm>
         <form.SubmitButton className="self-start">{t(`twoStep.submit.${purpose}`)}</form.SubmitButton>

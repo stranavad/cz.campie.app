@@ -25,5 +25,6 @@ export function useConsolePage() {
     isError: (account.isError && !isSignedOut) || organisations.isError,
     step,
     organisations: organisations.data ?? [],
+    pendingCount: (organisations.data ?? []).filter((organisation) => organisation.status === 'pending').length,
   };
 }

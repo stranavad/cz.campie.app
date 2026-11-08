@@ -13,14 +13,16 @@ export function AdminFeedback() {
   }
 
   return (
-    <footer className="mx-auto w-full max-w-5xl px-4 py-6 text-sm text-muted-foreground">
+    <div className="mx-auto w-full max-w-7xl px-4 pb-6 text-sm text-muted-foreground sm:px-6 lg:px-10">
       <ProblemForm
         label={t('feedback.adminLink')}
+        title={t('feedback.adminTitle')}
+        description={t('feedback.adminDescription')}
         askEmail={false}
         send={(text) =>
           feedbackService.send(membership.organisation.id, text, `${window.location.origin}${window.location.pathname}`)
         }
       />
-    </footer>
+    </div>
   );
 }

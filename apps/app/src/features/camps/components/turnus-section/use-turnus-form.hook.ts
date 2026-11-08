@@ -10,6 +10,15 @@ import {
   turnusFormValues,
 } from '@/features/camps/components/turnus-section/turnus-form.schema';
 
+/**
+ * Bring the editor into view when it opens: on a phone it sits under the list. Left alone when visible.
+ * Defined once, so React calls it only when the editor mounts.
+ * @param node the editor, or null when it unmounts
+ */
+function revealOnMount(node: HTMLElement | null) {
+  node?.scrollIntoView({ block: 'nearest' });
+}
+
 // The id is what the admin opened, not the list's copy: a Turnus removed meanwhile then fails to save
 // rather than being created anew.
 export function useTurnusForm(
@@ -36,5 +45,5 @@ export function useTurnusForm(
     },
   });
 
-  return { form, hasFailed };
+  return { form, hasFailed, revealRef: revealOnMount };
 }

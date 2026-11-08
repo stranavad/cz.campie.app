@@ -1,9 +1,13 @@
 import { useTranslation } from 'react-i18next';
 
-import { CAMP_MODULES, type Camp } from '@repo/schema/camps';
-import { SIBLING_DISCOUNT_MODES } from '@repo/schema/pricing';
+import type { Camp } from '@repo/schema/camps';
 
+import { CampContactCard } from '@/features/camps/components/camp-form/camp-contact-card';
+import { CampDetailsCard } from '@/features/camps/components/camp-form/camp-details-card';
+import { CampGuardiansCard } from '@/features/camps/components/camp-form/camp-guardians-card';
+import { CampModulesCard } from '@/features/camps/components/camp-form/camp-modules-card';
 import { useCampForm } from '@/features/camps/components/camp-form/use-camp-form.hook';
+import { SaveStatus } from '@/features/camps/components/save-status';
 
 interface CampFormFieldsProps {
   organisationId: string;
@@ -11,6 +15,7 @@ interface CampFormFieldsProps {
   canWrite: boolean;
 }
 
+// One form across the cards, saved whole: the Camp's identity and contact beside its modules and rules.
 export function CampFormFields({ organisationId, camp, canWrite }: CampFormFieldsProps) {
   const { t } = useTranslation('camps');
   const { form, status } = useCampForm(organisationId, camp);
@@ -18,88 +23,29 @@ export function CampFormFields({ organisationId, camp, canWrite }: CampFormField
   return (
     <form
       noValidate
-      className="flex max-w-xl flex-col gap-8"
+      className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
         void form.handleSubmit();
       }}
     >
-      <fieldset disabled={!canWrite} className="flex flex-col gap-5">
-        <legend className="mb-3 text-lg font-semibold">{t('camp.title')}</legend>
-        <form.AppField name="name">{(field) => <field.TextField label={t('camp.name')} />}</form.AppField>
-        <form.AppField name="slug">
-          {(field) => <field.TextField label={t('camp.slug')} description={t('camp.slugHint')} />}
-        </form.AppField>
-        <form.AppField name="websiteUrl">
-          {(field) => <field.TextField label={t('camp.websiteUrl')} type="url" />}
-        </form.AppField>
-        <form.AppField name="contactName">
-          {(field) => <field.TextField label={t('camp.contactName')} description={t('camp.contactHint')} />}
-        </form.AppField>
-        <form.AppField name="contactEmail">
-          {(field) => <field.TextField label={t('camp.contactEmail')} type="email" />}
-        </form.AppField>
-        <form.AppField name="contactPhone">
-          {(field) => <field.TextField label={t('camp.contactPhone')} type="tel" />}
-        </form.AppField>
-        <form.AppField name="notificationEmails">
-          {(field) => (
-            <field.TextAreaField label={t('camp.notificationEmails')} description={t('camp.notificationEmailsHint')} />
-          )}
-        </form.AppField>
-        <form.AppField name="contactEditLockDate">
-          {(field) => (
-            <field.TextField
-              label={t('camp.contactEditLockDate')}
-              description={t('camp.contactEditLockDateHint')}
-              type="date"
-            />
-          )}
-        </form.AppField>
-      </fieldset>
-      <fieldset disabled={!canWrite} className="flex flex-col gap-5">
-        <legend className="mb-3 text-lg font-semibold">{t('siblingDiscount.title')}</legend>
-        <form.AppField name="siblingDiscountAmount">
-          {(field) => (
-            <field.TextField
-              label={t('siblingDiscount.amount')}
-              description={t('siblingDiscount.amountHint')}
-              type="number"
-              inputMode="numeric"
-            />
-          )}
-        </form.AppField>
-        <form.AppField name="siblingDiscountAppliesTo">
-          {(field) => (
-            <field.SelectField
-              label={t('siblingDiscount.appliesTo')}
-              options={SIBLING_DISCOUNT_MODES.map((mode) => ({
-                value: mode,
-                label: t(`siblingDiscount.modes.${mode}`),
-              }))}
-            />
-          )}
-        </form.AppField>
-      </fieldset>
-      <fieldset disabled={!canWrite} className="flex flex-col gap-3">
-        <legend className="mb-2 text-lg font-semibold">{t('modules.title')}</legend>
-        <p className="text-sm text-muted-foreground">{t('modules.intro')}</p>
-        {CAMP_MODULES.map((module) => (
-          <form.AppField key={module} name={`modules.${module}`}>
-            {(field) => <field.CheckboxField label={t(`modules.${module}`)} />}
-          </form.AppField>
-        ))}
-      </fieldset>
-      {status === 'saved' ? <output className="block text-sm">{t('saved')}</output> : null}
-      {status === 'failed' ? (
-        <p role="alert" className="text-sm text-destructive">
-          {t('failure')}
-        </p>
-      ) : null}
+      <div className="grid items-start gap-4 lg:grid-cols-5">
+        <div className="flex min-w-0 flex-col gap-4 lg:col-span-3">
+          <CampDetailsCard form={form} canWrite={canWrite} />
+          <CampContactCard form={form} canWrite={canWrite} />
+        </div>
+        <div className="flex min-w-0 flex-col gap-4 lg:col-span-2">
+          <CampModulesCard form={form} canWrite={canWrite} />
+          <CampGuardiansCard form={form} canWrite={canWrite} />
+        </div>
+      </div>
       {canWrite ? (
-        <form.AppForm>
-          <form.SubmitButton className="self-start">{t('save')}</form.SubmitButton>
-        </form.AppForm>
+        <div className="flex flex-wrap items-center gap-3">
+          <form.AppForm>
+            <form.SubmitButton>{t('save')}</form.SubmitButton>
+          </form.AppForm>
+          <SaveStatus status={status} />
+        </div>
       ) : null}
     </form>
   );

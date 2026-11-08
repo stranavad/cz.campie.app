@@ -307,8 +307,8 @@ export class AdminRegistrationService {
       change: {
         before: {
           answers: loaded.registration.answers,
-          participants: loaded.participants.map(({ id, firstName, lastName, birthDate, answers }) => ({
-            id,
+          // In their order, without ids, which the log leaves out.
+          participants: loaded.participants.map(({ firstName, lastName, birthDate, answers }) => ({
             firstName,
             lastName,
             birthDate,
@@ -321,9 +321,8 @@ export class AdminRegistrationService {
             const child = storedParticipants.get(id);
 
             return child === undefined
-              ? { id, firstName, lastName, birthDate, answers }
+              ? { firstName, lastName, birthDate, answers }
               : {
-                  id,
                   firstName: child.firstName,
                   lastName: child.lastName,
                   birthDate: child.birthDate,
@@ -426,12 +425,13 @@ export class AdminRegistrationService {
         action: 'registration.move',
         target: { type: 'registration', id: registrationId },
         change: {
+          // By name, since the log leaves foreign keys out.
           before: {
-            turnusId: registration.turnusId,
+            turnus: turnus.name,
             depositDueDate: registration.depositDueDate,
             balanceDueDate: registration.balanceDueDate,
           },
-          after: { turnusId, ...dueDates },
+          after: { turnus: target.name, ...dueDates },
         },
       });
     }

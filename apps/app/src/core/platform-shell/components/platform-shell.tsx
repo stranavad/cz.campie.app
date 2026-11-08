@@ -1,36 +1,14 @@
-import { Outlet } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
+import { useAccountQuery, useCurrentMembership } from '@/core/account';
+import { AdminLayout } from '@/core/platform-shell/components/admin-layout';
+import { PublicLayout } from '@/core/platform-shell/components/public-layout';
 
-import { config } from '@/config';
-import { AdminFeedback } from '@/core/platform-shell/components/admin-feedback';
-import { LegalFooter } from '@/core/platform-shell/components/legal-footer';
-import { LogOutButton } from '@/core/platform-shell/components/log-out-button';
-import { SupportBanner } from '@/core/platform-shell/components/support-banner';
-import { TurnusSwitcher } from '@/core/selected-turnus';
-import { TwoStepGate } from '@/core/two-step';
-
-// Signup, the admin interface and the operator console on the main host.
+// Signup, the admin interface and the operator console on the main host: a signed-in admin works in the
+// admin layout with its navigation; everyone else (login, signup, password reset, legal pages) sees the
+// platform's public layout. A failed background refetch keeps the account's data, so it keeps the admin
+// layout too instead of unmounting the page being worked on; only a 401 means signed out.
 export function PlatformShell() {
-  const { t } = useTranslation();
+  const account = useAccountQuery();
+  const { isSignedOut } = useCurrentMembership();
 
-  return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="border-b border-border">
-        <div className="mx-auto flex min-h-14 w-full max-w-5xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
-          <span className="text-lg font-semibold">{config.productName}</span>
-          <span className="text-sm text-muted-foreground">{t('platformShell.tagline')}</span>
-          <TurnusSwitcher />
-          <LogOutButton />
-        </div>
-      </header>
-      <SupportBanner />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4">
-        <TwoStepGate>
-          <Outlet />
-        </TwoStepGate>
-      </main>
-      <AdminFeedback />
-      <LegalFooter />
-    </div>
-  );
+  return account.data !== undefined && !isSignedOut ? <AdminLayout /> : <PublicLayout />;
 }

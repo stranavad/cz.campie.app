@@ -76,3 +76,6 @@ export function useOrganisationRow(organisation: ConsoleOrganisation) {
     },
   };
 }
+
+// What a row's parts read and call.
+export type OrganisationRowState = ReturnType<typeof useOrganisationRow>;

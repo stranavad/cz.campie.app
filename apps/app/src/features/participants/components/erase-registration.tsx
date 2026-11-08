@@ -1,7 +1,11 @@
+import { CircleAlertIcon, CircleCheckIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card, CardDescription, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { useEraseRegistrationMutation } from '@/features/participants/api/participants.queries';
 
 interface EraseRegistrationProps {
@@ -18,38 +22,47 @@ export function EraseRegistration({ organisationId, registrationId }: EraseRegis
   const word = t('erase.word');
 
   return (
-    <section className="flex flex-col gap-2 rounded-lg border border-destructive/40 p-3 text-sm">
-      <h2 className="font-semibold">{t('erase.title')}</h2>
-      <p className="text-muted-foreground">{t('erase.intro')}</p>
+    <Card className="border-danger-foreground/40">
+      <CardTitle>{t('erase.title')}</CardTitle>
+      <CardDescription>{t('erase.intro')}</CardDescription>
       {isOpen ? (
-        <div className="flex flex-wrap items-end gap-2">
-          <label className="flex flex-col gap-1">
+        <div className="flex flex-col gap-3 text-sm">
+          <label className="flex flex-col gap-1.5 font-semibold">
             {t('erase.confirm', { word })}
-            <input
-              className="h-9 rounded-lg border border-input bg-transparent px-2"
-              value={confirmation}
-              onChange={(event) => setConfirmation(event.target.value)}
-            />
+            <Input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} />
           </label>
-          <Button
-            type="button"
-            variant="destructive"
-            disabled={confirmation.trim().toUpperCase() !== word.toUpperCase() || erase.isPending}
-            onClick={() => erase.mutate(undefined)}
-          >
-            {t('erase.do')}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-            {t('erase.cancel')}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={confirmation.trim().toUpperCase() !== word.toUpperCase() || erase.isPending}
+              onClick={() => erase.mutate(undefined)}
+            >
+              {t('erase.do')}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              {t('erase.cancel')}
+            </Button>
+          </div>
         </div>
       ) : (
         <Button type="button" variant="outline" className="self-start" onClick={() => setOpen(true)}>
+          <Trash2Icon aria-hidden="true" />
           {t('erase.open')}
         </Button>
       )}
-      {erase.isSuccess ? <output>{t('erase.done')}</output> : null}
-      {erase.isError ? <p className="text-destructive">{t('erase.failed')}</p> : null}
-    </section>
+      {erase.isSuccess ? (
+        <Alert variant="success">
+          <CircleCheckIcon aria-hidden="true" />
+          <output>{t('erase.done')}</output>
+        </Alert>
+      ) : null}
+      {erase.isError ? (
+        <Alert variant="danger" role="alert">
+          <CircleAlertIcon aria-hidden="true" />
+          {t('erase.failed')}
+        </Alert>
+      ) : null}
+    </Card>
   );
 }

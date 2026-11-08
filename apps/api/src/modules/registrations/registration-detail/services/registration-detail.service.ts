@@ -23,7 +23,6 @@ import { AuditService } from '../../../../core/audit/audit.service.ts';
 import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
 import { FileService } from '../../../../core/files/file.service.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
-import { AdminRepository } from '../../../../repositories/admins/admin/admin.repository.ts';
 import { AuditEntryRepository } from '../../../../repositories/audit/audit-entry/audit-entry.repository.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
@@ -34,6 +33,7 @@ import {
   RegistrationRepository,
   type StoredAnswers,
 } from '../../../../repositories/registrations/registration/registration.repository.ts';
+import { AuditEntryService } from '../../../organisations/audit-log/services/audit-entry.service.ts';
 import { answerOpener, withoutHealth } from '../../answers/sealed-answers.helper.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
 import { answeredDefinition, claimedDiscountsOf } from '../../payment/claimed-discounts.helper.ts';
@@ -52,7 +52,7 @@ export class RegistrationDetailService {
     private readonly ledgers: LedgerService,
     private readonly files: FileService,
     private readonly auditEntries: AuditEntryRepository,
-    private readonly admins: AdminRepository,
+    private readonly readable: AuditEntryService,
     private readonly audit: AuditService,
     private readonly encryption: EncryptionService,
     private readonly clock: Clock,
@@ -157,46 +157,20 @@ export class RegistrationDetailService {
   }
 
   /**
-   * List the audit entries of a Registration and its Participants, newest first, admins named by email.
+   * List the audit entries of a Registration and its Participants, newest first, each record named as it is
+   * now; without the IP addresses, which only Owners see.
    * @param registrationId Registration id
    * @param healthRead whether the admin may read health data, and so its entries
    */
   public async history(registrationId: string, healthRead: boolean): Promise<HistoryEntry[]> {
     const registration = await this.registrations.getByIdOrThrow(registrationId);
-    const participants = await this.registrations.listParticipants(registrationId);
-    const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
-    const sensitive = sensitiveKeys(
-      (await this.forms.listPublished(turnus.campId)).map(({ definition }) => definition),
-      REGISTRATION_FIELD_CATALOGUE,
+    const participants = await this.registrations.listParticipants(registration.id);
+    const entries = await this.readable.present(
+      await this.auditEntries.listByTargets([registrationId, ...participants.map(({ id }) => id)]),
+      healthRead,
     );
-    // Who viewed or changed health data is itself health data: shown only with Health read, as are the
-    // names of the health fields a change touched.
-    const entries = (
-      await this.auditEntries.listByTargets([registrationId, ...participants.map(({ id }) => id)])
-    ).filter(({ action }) => healthRead || !action.startsWith('health'));
-    const named = (fields: readonly string[]) =>
-      healthRead ? [...fields] : fields.filter((field) => sensitive.get(field) !== 'health');
-    const adminIds = entries.flatMap(({ actorKind, actorIdentity }) =>
-      (actorKind === 'admin' || actorKind === 'operator') && actorIdentity !== null ? [actorIdentity] : [],
-    );
-    const emails = await this.admins.listEmailsByIds([...new Set(adminIds)]);
 
-    return entries.map((entry) => ({
-      id: entry.id,
-      occurredAt: entry.occurredAt.toISOString(),
-      actor: {
-        kind: entry.actorKind,
-        name:
-          entry.actorIdentity === null
-            ? null
-            : entry.actorKind === 'guardian'
-              ? entry.actorIdentity
-              : (emails.get(entry.actorIdentity) ?? null),
-      },
-      action: entry.action,
-      changes: entry.changes,
-      encryptedFields: named(entry.encryptedFields),
-    }));
+    return entries.map(({ ipAddress: _ipAddress, ...entry }) => entry);
   }
 
   /**

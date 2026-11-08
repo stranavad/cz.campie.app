@@ -24,8 +24,8 @@
     "name": "Název tábora",
     "nameHint": "Pod tímto názvem uvidí tábor rodiče. Další tábory přidáte později.",
     "subdomain": "Adresa přihlášek",
-    "subdomainHint": "Přihlášky budou na adrese {{subdomain}}.{{platformDomain}}. Po schválení organizace ji už nelze změnit.",
-    "subdomainSample": "nazev-organizace"
+    "subdomainHint": "Na této adrese budou přihlášky na vaše tábory. Po schválení organizace ji už nelze změnit.",
+    "subdomainSuffix": ".{{platformDomain}}"
   },
   "account": {
     "legend": "Váš účet",
@@ -47,5 +47,15 @@
     "requests_throttled": "Pokusů o založení organizace bylo v poslední době příliš mnoho. Zkuste to prosím později.",
     "unexpected": "Organizaci se nepodařilo založit. Zkuste to prosím znovu."
   },
-  "submit": "Založit organizaci"
+  "submit": "Založit organizaci",
+  "logIn": "Už máte účet? <a>Přihlaste se</a>.",
+  "pitch": {
+    "title": "Přihlášky na tábor bez papírů",
+    "lead": "Rodiče přihlásí děti online, zaplatí přes QR kód a podepíšou souhlasy v telefonu. Vy máte vše na jednom místě.",
+    "points": {
+      "address": "Vlastní adresa a stránky v barvách tábora",
+      "payments": "Platby převodem s QR kódem i kartou, přehled, kdo zaplatil",
+      "consents": "Souhlasy a dokumenty od rodičů online"
+    }
+  }
 }

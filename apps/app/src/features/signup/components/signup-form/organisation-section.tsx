@@ -16,12 +16,14 @@ export const OrganisationSection = withForm({
         <form.AppField name="legalName">
           {(field) => <field.TextField label={t('organisation.legalName')} autoComplete="organization" />}
         </form.AppField>
-        <form.AppField name="ico">
-          {(field) => <field.TextField label={t('organisation.ico')} inputMode="numeric" />}
-        </form.AppField>
-        <form.AppField name="vatId">
-          {(field) => <field.TextField label={t('organisation.vatId')} description={t('organisation.vatIdHint')} />}
-        </form.AppField>
+        <div className="grid items-start gap-4 sm:grid-cols-2 sm:gap-3">
+          <form.AppField name="ico">
+            {(field) => <field.TextField label={t('organisation.ico')} inputMode="numeric" />}
+          </form.AppField>
+          <form.AppField name="vatId">
+            {(field) => <field.TextField label={t('organisation.vatId')} description={t('organisation.vatIdHint')} />}
+          </form.AppField>
+        </div>
         <form.AppField name="address">
           {(field) => <field.TextField label={t('organisation.address')} description={t('organisation.addressHint')} />}
         </form.AppField>

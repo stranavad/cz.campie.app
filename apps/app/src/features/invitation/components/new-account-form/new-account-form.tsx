@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import { PASSWORD_MIN_LENGTH } from '@repo/schema/shared';
 
+import { Alert } from '@/components/ui/alert';
 import { useNewAccountForm } from '@/features/invitation/components/new-account-form/use-new-account-form.hook';
 
 interface NewAccountFormProps {
@@ -17,7 +18,7 @@ export function NewAccountForm({ token, email }: NewAccountFormProps) {
   return (
     <form
       noValidate
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
         void form.handleSubmit();
@@ -35,12 +36,12 @@ export function NewAccountForm({ token, email }: NewAccountFormProps) {
         )}
       </form.AppField>
       {failure === null ? null : (
-        <p role="alert" className="text-sm text-destructive">
+        <Alert variant="danger" role="alert">
           {t(`failure.${failure}`)}
-        </p>
+        </Alert>
       )}
       <form.AppForm>
-        <form.SubmitButton className="self-start">{t('accept')}</form.SubmitButton>
+        <form.SubmitButton className="mt-1 w-full">{t('accept')}</form.SubmitButton>
       </form.AppForm>
     </form>
   );

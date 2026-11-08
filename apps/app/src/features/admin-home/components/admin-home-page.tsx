@@ -1,31 +1,23 @@
 import { Link, Navigate } from '@tanstack/react-router';
+import { PlusIcon, UserRoundXIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { EmptyState } from '@/components/empty-state';
+import { PageHeader } from '@/components/page-header';
+import { Alert } from '@/components/ui/alert';
 import { buttonVariants } from '@/components/ui/button';
+import { TurnusSwitcher } from '@/core/selected-turnus';
 import { OrganisationStatusNotice } from '@/features/admin-home/components/organisation-status-notice';
+import { QuickLinks } from '@/features/admin-home/components/quick-links';
 import { useAdminHome } from '@/features/admin-home/components/use-admin-home.hook';
 
 export function AdminHomePage() {
   const { t } = useTranslation('adminHome');
-  const {
-    isLoading,
-    isSignedOut,
-    isError,
-    hasNoMembership,
-    organisation,
-    isOwner,
-    canSeeCamps,
-    canSeeRegistrations,
-    isOperator,
-  } = useAdminHome();
-  const consoleLink = isOperator ? (
-    <Link to="/platform/konzole" className={buttonVariants({ variant: 'outline' })}>
-      {t('openConsole')}
-    </Link>
-  ) : null;
+  const { isLoading, isSignedOut, isError, hasNoMembership, organisation, canCreateRegistration, links, isOperator } =
+    useAdminHome();
 
   if (isLoading) {
-    return <p className="py-12 text-muted-foreground">{t('loading')}</p>;
+    return <p className="text-muted-foreground">{t('loading')}</p>;
   }
 
   if (isSignedOut) {
@@ -35,44 +27,37 @@ export function AdminHomePage() {
   // The Platform operator usually belongs to no Organisation; the console is their home.
   if (hasNoMembership) {
     return (
-      <div className="flex flex-col items-start gap-4 py-12">
-        {isOperator ? null : <p>{t('noMembership')}</p>}
-        {consoleLink}
-      </div>
+      <>
+        <PageHeader title={t('title')} />
+        {isOperator ? null : <EmptyState icon={<UserRoundXIcon />} title={t('noMembership')} />}
+        <QuickLinks links={links} />
+      </>
     );
   }
 
   if (isError || organisation === undefined) {
-    return <p className="py-12 text-destructive">{t('error')}</p>;
+    return <Alert variant="danger">{t('error')}</Alert>;
   }
 
   return (
-    <div className="flex flex-col items-start gap-2">
+    <>
+      <PageHeader
+        title={t('title')}
+        description={organisation.displayName}
+        actions={
+          <>
+            <TurnusSwitcher />
+            {canCreateRegistration ? (
+              <Link to="/platform/prihlasky/nova" className={buttonVariants()}>
+                <PlusIcon aria-hidden="true" />
+                {t('newRegistration')}
+              </Link>
+            ) : null}
+          </>
+        }
+      />
       <OrganisationStatusNotice organisation={organisation} />
-      {canSeeRegistrations ? (
-        <Link to="/platform/prihlasky" className={buttonVariants({ variant: 'outline' })}>
-          {t('registrations')}
-        </Link>
-      ) : null}
-      {canSeeCamps ? (
-        <Link to="/platform/tabory" className={buttonVariants({ variant: 'outline' })}>
-          {t('campSettings')}
-        </Link>
-      ) : null}
-      {isOwner ? (
-        <div className="flex flex-wrap gap-2">
-          <Link to="/platform/uzivatele" className={buttonVariants({ variant: 'outline' })}>
-            {t('manageUsers')}
-          </Link>
-          <Link to="/platform/nastaveni" className={buttonVariants({ variant: 'outline' })}>
-            {t('organisationSettings')}
-          </Link>
-          <Link to="/platform/historie" className={buttonVariants({ variant: 'outline' })}>
-            {t('auditLog')}
-          </Link>
-        </div>
-      ) : null}
-      {consoleLink}
-    </div>
+      <QuickLinks links={links} />
+    </>
   );
 }

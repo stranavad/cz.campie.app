@@ -5,11 +5,19 @@
   "error": "Přihlášky se nepodařilo načíst. Zkuste stránku načíst znovu.",
   "registrationTitle": "{{camp}} - {{turnus}}",
   "variableSymbol": "Variabilní symbol {{symbol}}",
+  "participantSwitch": "Dítě",
+  "datesAt": "{{dates}}, {{place}}",
+  "paidOf": "Zaplaceno {{paid}} z {{total}}",
+  "breakdown": "Rozpis ceny a plateb",
+  "qrFor": "{{label}}: {{amount}}",
+  "links": "Přihláška",
+  "prihlaskaOf": "Přihláška (PDF) - {{participant}}",
   "login": {
     "title": "Přihlášení do portálu",
     "intro": "Zadejte e-mail, který jste uvedli v přihlášce. Pošleme vám odkaz pro přihlášení.",
     "email": "E-mail",
     "submit": "Poslat odkaz",
+    "sentTitle": "Mrkněte do e-mailu",
     "sent": "Pokud k tomuto e-mailu patří přihláška, poslali jsme na něj odkaz pro přihlášení. Odkaz platí 30 minut.",
     "linkInvalid": "Odkaz už neplatí: byl použit, nebo vypršel. Požádejte o nový.",
     "failure": {
@@ -78,7 +86,6 @@
     "yes": "Ano",
     "no": "Ne",
     "removed": "Otázky, které přihláška už nemá",
-    "removedAnswer": "{{label}}: {{answer}}",
     "failure": {
       "registration_locked": "Údaje už měnit nelze. S případnou změnou se obraťte na tábor.",
       "guardian_second_exists": "Přihláška už má dva zákonné zástupce.",
@@ -93,7 +100,9 @@
   "confirmEmail": {
     "title": "Potvrzení e-mailu",
     "confirm": "Potvrdit novou adresu",
+    "doneTitle": "Nový e-mail je potvrzený",
     "done": "Adresa je potvrzená. Přihláška teď patří k nové adrese.",
+    "continue": "Pokračovat do portálu",
     "invalid": "Odkaz už neplatí: byl použit, nebo vypršel."
   },
   "card": {
@@ -112,6 +121,7 @@
     "open": "Zobrazit",
     "readAndSign": "Přečíst a podepsat",
     "readPdf": "Přečíst přiložený dokument",
+    "itemNumber": "{{number}}.",
     "agree": "Souhlasím",
     "yes": "Ano",
     "no": "Ne",
@@ -141,7 +151,6 @@
     "link": "Dokumenty",
     "title": "Dokumenty",
     "none": "Tábor zatím žádné dokumenty nezveřejnil.",
-    "requirements": "K odevzdání",
     "downloads": "Ke stažení",
     "dueBy": "Odevzdat do {{date}}",
     "blankForm": "Stáhnout formulář",
@@ -171,6 +180,12 @@
   },
   "checklist": {
     "title": "Co ještě zbývá",
+    "count_one": "{{count}} úkol",
+    "count_few": "{{count}} úkoly",
+    "count_other": "{{count}} úkolů",
+    "allDone": "Vše hotovo",
+    "done": "Hotovo",
+    "doneOf": "{{item}} · {{participant}}",
     "kinds": {
       "payment": "Platba",
       "missing_answers": "Doplnit údaje",

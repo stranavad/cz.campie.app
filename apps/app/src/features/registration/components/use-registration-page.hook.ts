@@ -220,6 +220,17 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
     send: () => {
       setChecking(true);
 
+      if (!isComplete) {
+        // The send button sits in the bar pinned to the bottom of the phone, far from what is wrong: once
+        // the errors render, take the guardian to the first one.
+        requestAnimationFrame(() => {
+          const first = document.querySelector<HTMLElement>('main [aria-invalid="true"], main [role="alert"]');
+
+          first?.scrollIntoView({ block: 'center' });
+          first?.focus({ preventScroll: true });
+        });
+      }
+
       if (isComplete && turnus !== undefined && !sending.isPending) {
         const body = {
           turnusId: turnus.id,

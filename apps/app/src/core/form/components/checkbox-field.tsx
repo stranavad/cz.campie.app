@@ -24,7 +24,7 @@ export function CheckboxField({ label }: CheckboxFieldProps) {
         aria-invalid={isInvalid}
       />
       <div className="flex flex-col gap-1">
-        <FieldLabel htmlFor={id} className="block font-normal">
+        <FieldLabel htmlFor={id} className="block leading-snug font-normal">
           {label}
         </FieldLabel>
         {isInvalid && <FieldError errors={errors} />}

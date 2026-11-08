@@ -16,22 +16,17 @@ export const CampSection = withForm({
         <form.AppField name="campName">
           {(field) => <field.TextField label={t('camp.name')} description={t('camp.nameHint')} />}
         </form.AppField>
-        <form.Subscribe selector={(state) => state.values.subdomain.trim().toLowerCase()}>
-          {(subdomain) => (
-            <form.AppField name="subdomain">
-              {(field) => (
-                <field.TextField
-                  label={t('camp.subdomain')}
-                  description={t('camp.subdomainHint', {
-                    subdomain: subdomain === '' ? t('camp.subdomainSample') : subdomain,
-                  })}
-                  autoCapitalize="none"
-                  spellCheck={false}
-                />
-              )}
-            </form.AppField>
+        <form.AppField name="subdomain">
+          {(field) => (
+            <field.TextField
+              label={t('camp.subdomain')}
+              suffix={t('camp.subdomainSuffix')}
+              description={t('camp.subdomainHint')}
+              autoCapitalize="none"
+              spellCheck={false}
+            />
           )}
-        </form.Subscribe>
+        </form.AppField>
       </FieldSet>
     );
   },

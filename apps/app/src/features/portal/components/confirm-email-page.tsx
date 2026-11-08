@@ -1,7 +1,13 @@
+import { Link } from '@tanstack/react-router';
+import { CheckIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { useConfirmEmailChangeMutation } from '@/features/portal/api/portal.queries';
+import { NoticeCard } from '@/features/portal/components/shared/notice-card';
+import { PortalColumn } from '@/features/portal/components/shared/portal-column';
+import { StatusMessage } from '@/features/portal/components/shared/status-message';
 
 // Makes a new guardian email theirs, on a click, so a mail scanner opening the link changes nothing.
 export function ConfirmEmailPage({ token }: { token: string }) {
@@ -9,19 +15,34 @@ export function ConfirmEmailPage({ token }: { token: string }) {
   const confirm = useConfirmEmailChangeMutation();
 
   return (
-    <section className="flex max-w-sm flex-col gap-6 py-12">
-      <h1 className="text-2xl font-semibold">{t('confirmEmail.title')}</h1>
+    <PortalColumn className="max-w-md gap-5 pt-8 sm:pt-14">
+      <h1 className="text-title px-1">{t('confirmEmail.title')}</h1>
       {confirm.isSuccess ? (
-        <output>{t('confirmEmail.done')}</output>
+        <NoticeCard icon={<CheckIcon strokeWidth={3} />} tone="success" title={t('confirmEmail.doneTitle')}>
+          <p className="text-muted-foreground">{t('confirmEmail.done')}</p>
+          <Link
+            to="/organisation/portal"
+            className={buttonVariants({ variant: 'outline', size: 'lg', className: 'mt-2 w-full' })}
+          >
+            {t('confirmEmail.continue')}
+          </Link>
+        </NoticeCard>
       ) : confirm.isError || token === '' ? (
-        <p role="alert" className="text-sm text-destructive">
-          {t('confirmEmail.invalid')}
-        </p>
+        <StatusMessage tone="danger">{t('confirmEmail.invalid')}</StatusMessage>
       ) : (
-        <Button type="button" className="self-start" disabled={confirm.isPending} onClick={() => confirm.mutate(token)}>
-          {t('confirmEmail.confirm')}
-        </Button>
+        <Card>
+          <Button
+            type="button"
+            variant="brand"
+            size="lg"
+            className="w-full"
+            disabled={confirm.isPending}
+            onClick={() => confirm.mutate(token)}
+          >
+            {t('confirmEmail.confirm')}
+          </Button>
+        </Card>
       )}
-    </section>
+    </PortalColumn>
   );
 }

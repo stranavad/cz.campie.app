@@ -1,8 +1,10 @@
+import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { SECOND_GUARDIAN_FIELDS, type Answers, type AnswerValue, type FormField } from '@repo/schema/form-engine';
 
 import { Button } from '@/components/ui/button';
+import { Card, CardTitle } from '@/components/ui/card';
 import { RegistrationField } from '@/core/registration-form';
 
 interface GuardianSectionProps {
@@ -17,7 +19,7 @@ interface GuardianSectionProps {
 const isSecondGuardian = (key: string) => (SECOND_GUARDIAN_FIELDS as readonly string[]).includes(key);
 
 // What is asked once per Registration: the guardian, an optional second one, and the Registration's own
-// questions.
+// questions in a card of their own.
 export function GuardianSection({
   fields,
   answers,
@@ -36,19 +38,28 @@ export function GuardianSection({
       message={messageAt(['registration', shown.key])}
     />
   );
+  const questions = fields.filter(({ tier }) => tier !== 'core');
 
   return (
-    <fieldset className="flex flex-col gap-4 rounded-lg border border-border p-4">
-      <legend className="px-1 font-medium">{t('guardian')}</legend>
-      {fields.filter(({ key, tier }) => tier === 'core' && !isSecondGuardian(key)).map(field)}
-      {hasSecondGuardian ? (
-        fields.filter(({ key }) => isSecondGuardian(key)).map(field)
-      ) : (
-        <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => onSecondGuardian(true)}>
-          {t('addSecondGuardian')}
-        </Button>
+    <>
+      <Card>
+        <CardTitle>{t('guardian')}</CardTitle>
+        {fields.filter(({ key, tier }) => tier === 'core' && !isSecondGuardian(key)).map(field)}
+        {hasSecondGuardian ? (
+          fields.filter(({ key }) => isSecondGuardian(key)).map(field)
+        ) : (
+          <Button type="button" variant="dashed" onClick={() => onSecondGuardian(true)}>
+            <PlusIcon aria-hidden="true" />
+            {t('addSecondGuardian')}
+          </Button>
+        )}
+      </Card>
+      {questions.length === 0 ? null : (
+        <Card>
+          <CardTitle>{t('questions')}</CardTitle>
+          {questions.map(field)}
+        </Card>
       )}
-      {fields.filter(({ tier }) => tier !== 'core').map(field)}
-    </fieldset>
+    </>
   );
 }

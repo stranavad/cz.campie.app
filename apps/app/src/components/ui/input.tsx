@@ -3,18 +3,19 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
+// 16px text on phones keeps iOS from zooming in on focus; 48px tall is a comfortable thumb target.
+const controlClassName =
+  'w-full min-w-0 rounded-2xl border border-input bg-input-background px-4 text-base text-foreground transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-subtle-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60 aria-invalid:border-2 aria-invalid:border-danger-foreground aria-invalid:px-[15px]';
+
 function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (
     <InputPrimitive
       type={type}
       data-slot="input"
-      className={cn(
-        'h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
-        className,
-      )}
+      className={cn(controlClassName, 'h-12 sm:h-11', className)}
       {...props}
     />
   );
 }
 
-export { Input };
+export { controlClassName, Input };

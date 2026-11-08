@@ -2,7 +2,8 @@
   "title": "Pozvánka do správy organizace",
   "loading": "Načítáme pozvánku…",
   "error": "Pozvánku se nepodařilo načíst. Zkuste stránku načíst znovu.",
-  "intro": "Organizace: {{organisation}}. Pozvánka platí pro e-mail {{email}}.",
+  "organisation": "Organizace",
+  "forEmail": "Pozvánka platí pro e-mail {{email}}.",
   "accept": "Přijmout pozvánku",
   "newAccount": {
     "intro": "Nastavte si heslo, kterým se budete přihlašovat.",

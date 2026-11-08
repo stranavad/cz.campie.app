@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { DEFAULT_ACCENT_COLOUR } from '@repo/schema/organisations';
 import { ACCESS_HEADERS } from '@repo/schema/shared';
 
 import { createAdmin, createOrganisation, mainHost } from '../../../testing/fixtures.ts';
@@ -37,6 +38,7 @@ describe('account', () => {
             subdomain: 'tabor-a',
             status: 'pending',
             totpRequired: false,
+            accentColour: DEFAULT_ACCENT_COLOUR,
           },
           support: null,
         },

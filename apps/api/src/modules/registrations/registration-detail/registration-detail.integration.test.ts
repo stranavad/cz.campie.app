@@ -172,9 +172,17 @@ describe('registration detail', () => {
     ]);
     expect(body[0]).toMatchObject({
       actor: { kind: 'admin', name: ownerEmail },
+      target: {
+        type: 'registration',
+        id: registrationId,
+        label: expect.stringContaining('Testovací'),
+        state: 'present',
+        link: { page: 'registration', registrationId },
+      },
       changes: { amount: { old: null, new: 1000 } },
       encryptedFields: [],
     });
+    expect(body[0]).not.toHaveProperty('ipAddress');
     expect(body[2]).toMatchObject({ actor: { kind: 'guardian', name: 'jana.testovaci@example.com' } });
     // The guardian's address stays in the audit log, never in what the history shows.
     expect(JSON.stringify(body)).not.toContain('203.0.113.7');

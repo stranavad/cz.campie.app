@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { AdminsModule } from '../admins/admins.module.ts';
 import { CampsModule } from '../camps/camps.module.ts';
 import { AuditLogController } from './audit-log/audit-log.controller.ts';
+import { AuditEntryService } from './audit-log/services/audit-entry.service.ts';
 import { AuditLogService } from './audit-log/services/audit-log.service.ts';
 import { PublicLogoController } from './logo/public-logo.controller.ts';
 import { LogoService } from './logo/services/logo.service.ts';
@@ -34,9 +35,10 @@ import { SupportAccessController } from './support-access/support-access.control
     PaymentGatewayService,
     SupportAccessService,
     AuditLogService,
+    AuditEntryService,
     LogoService,
     OrganisationSignedUpHandler,
   ],
-  exports: [OrganisationService, PaymentGatewayService],
+  exports: [OrganisationService, PaymentGatewayService, AuditEntryService],
 })
 export class OrganisationsModule {}

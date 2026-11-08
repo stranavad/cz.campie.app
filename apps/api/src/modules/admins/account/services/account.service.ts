@@ -42,6 +42,7 @@ export class AccountService {
           subdomain: organisations.subdomain,
           status: organisations.status,
           totpRequired: organisations.totpRequired,
+          accentColour: organisations.accentColour,
         },
       })
       .from(memberships)
@@ -84,6 +85,7 @@ export class AccountService {
               subdomain: organisations.subdomain,
               status: organisations.status,
               totpRequired: organisations.totpRequired,
+              accentColour: organisations.accentColour,
             })
             .from(organisations)
             .where(

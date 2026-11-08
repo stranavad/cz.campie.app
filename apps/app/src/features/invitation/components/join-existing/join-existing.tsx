@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { Alert } from '@/components/ui/alert';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useJoinExisting } from '@/features/invitation/components/join-existing/use-join-existing.hook';
 
@@ -16,14 +17,16 @@ export function JoinExisting({ token, email }: JoinExistingProps) {
 
   if (isDone) {
     return (
-      <div className="flex flex-col items-start gap-4">
-        <output className="block">{t('existingAccount.done')}</output>
+      <div className="flex flex-col gap-4">
+        <Alert variant="success" className="font-semibold">
+          <output className="block">{t('existingAccount.done')}</output>
+        </Alert>
         {isSignedIn ? (
-          <Link to="/platform" className={buttonVariants()}>
+          <Link to="/platform" className={buttonVariants({ className: 'w-full' })}>
             {t('existingAccount.continue')}
           </Link>
         ) : (
-          <Link to="/platform/prihlaseni" className={buttonVariants()}>
+          <Link to="/platform/prihlaseni" className={buttonVariants({ className: 'w-full' })}>
             {t('existingAccount.logIn')}
           </Link>
         )}
@@ -32,14 +35,14 @@ export function JoinExisting({ token, email }: JoinExistingProps) {
   }
 
   return (
-    <div className="flex flex-col items-start gap-4">
+    <div className="flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">{t('existingAccount.intro')}</p>
       {failure === null ? null : (
-        <p role="alert" className="text-sm text-destructive">
+        <Alert variant="danger" role="alert">
           {t(`failure.${failure}`)}
-        </p>
+        </Alert>
       )}
-      <Button disabled={isPending} onClick={join}>
+      <Button disabled={isPending} onClick={join} className="w-full">
         {t('accept')}
       </Button>
     </div>

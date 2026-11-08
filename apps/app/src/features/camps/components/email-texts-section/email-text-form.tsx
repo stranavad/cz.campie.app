@@ -1,8 +1,14 @@
+import { EyeIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { CampEmailText } from '@repo/schema/emails';
 
+import { Alert } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmailPlaceholders } from '@/features/camps/components/email-texts-section/email-placeholders';
+import { EmailPreview } from '@/features/camps/components/email-texts-section/email-preview';
 import { useEmailTextForm } from '@/features/camps/components/email-texts-section/use-email-text-form.hook';
 
 interface EmailTextFormProps {
@@ -15,65 +21,57 @@ interface EmailTextFormProps {
 // One email type's subject and text, whether it is sent, and a preview with made-up data.
 export function EmailTextForm({ organisationId, campId, email, canWrite }: EmailTextFormProps) {
   const { t } = useTranslation('camps');
-  const { form, status, preview, showPreview, reset } = useEmailTextForm(organisationId, campId, email);
+  const { form, status, placeholders, preview, showPreview, reset } = useEmailTextForm(organisationId, campId, email);
 
   return (
     <form
       noValidate
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-5"
       onSubmit={(event) => {
         event.preventDefault();
         void form.handleSubmit();
       }}
     >
-      <fieldset disabled={!canWrite} className="flex flex-col gap-4">
+      <CardHeader className="items-center">
+        <CardTitle>{t(`emails.types.${email.type}`)}</CardTitle>
+        <Badge variant={email.enabled ? (email.customised ? 'brand' : 'neutral') : 'warning'}>
+          {email.enabled ? (email.customised ? t('emails.own') : t('emails.default')) : t('emails.off')}
+        </Badge>
+        <Button type="button" variant="outline" size="sm" onClick={showPreview}>
+          <EyeIcon aria-hidden="true" />
+          {t('emails.preview')}
+        </Button>
+      </CardHeader>
+      <fieldset disabled={!canWrite} className="flex min-w-0 flex-col gap-5">
         <form.AppField name="subject">{(field) => <field.TextField label={t('emails.subject')} />}</form.AppField>
         <form.AppField name="text">
           {(field) => <field.TextAreaField label={t('emails.text')} rows={8} />}
         </form.AppField>
-        <p className="text-sm text-muted-foreground">
-          {t('emails.placeholders', { names: email.placeholders.map((name) => `{{${name}}}`).join(', ') })}
-        </p>
+        <EmailPlaceholders placeholders={placeholders} />
         {email.canSwitchOff ? (
           <form.AppField name="enabled">{(field) => <field.CheckboxField label={t('emails.enabled')} />}</form.AppField>
         ) : (
-          <p className="text-sm text-muted-foreground">{t('emails.alwaysSent')}</p>
+          <p className="text-[13px] text-muted-foreground">{t('emails.alwaysSent')}</p>
         )}
       </fieldset>
       {status === null ? null : (
-        <p role={status === 'saved' ? 'status' : 'alert'} className="text-sm">
+        <Alert variant={status === 'saved' ? 'success' : 'danger'} role={status === 'saved' ? 'status' : 'alert'}>
           {t(status === 'saved' ? 'saved' : 'failure')}
-        </p>
+        </Alert>
       )}
-      <div className="flex flex-wrap gap-2">
-        {canWrite ? (
-          <>
-            <form.AppForm>
-              <form.SubmitButton>{t('save')}</form.SubmitButton>
-            </form.AppForm>
-            {email.customised ? (
-              <Button type="button" variant="ghost" onClick={reset}>
-                {t('emails.reset')}
-              </Button>
-            ) : null}
-          </>
-        ) : null}
-        <Button type="button" variant="outline" onClick={showPreview}>
-          {t('emails.preview')}
-        </Button>
-      </div>
-      {preview === null ? null : (
-        <div className="flex flex-col gap-2">
-          <p className="text-sm">{t('emails.previewSubject', { subject: preview.subject })}</p>
-          {/* Sandboxed: the preview is HTML, rendered without scripts or a way out. */}
-          <iframe
-            title={t('emails.preview')}
-            sandbox=""
-            srcDoc={preview.html}
-            className="h-96 w-full rounded-lg border border-border"
-          />
-        </div>
-      )}
+      {canWrite ? (
+        <CardFooter className="justify-end">
+          {email.customised ? (
+            <Button type="button" variant="ghost" onClick={reset}>
+              {t('emails.reset')}
+            </Button>
+          ) : null}
+          <form.AppForm>
+            <form.SubmitButton>{t('save')}</form.SubmitButton>
+          </form.AppForm>
+        </CardFooter>
+      ) : null}
+      {preview === null ? null : <EmailPreview subject={preview.subject} html={preview.html} />}
     </form>
   );
 }

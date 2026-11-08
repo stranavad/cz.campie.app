@@ -1,13 +1,14 @@
+import { CircleAlertIcon, ExternalLinkIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { czechDateTime } from '@repo/schema/shared';
-
-import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
+import { Card, CardTitle } from '@/components/ui/card';
 import {
   useDownloadSignedConsentMutation,
   useRegistrationConsentsQuery,
 } from '@/features/participants/api/participants.queries';
+import { ConsentItem } from '@/features/participants/components/consent-item';
 
 interface RegistrationConsentsProps {
   organisationId: string;
@@ -22,9 +23,28 @@ export function RegistrationConsents({ organisationId, registrationId }: Registr
   // A link to open by hand when the browser blocked the new tab.
   const [blocked, setBlocked] = useState<string | null>(null);
   const participants = consents.data?.participants ?? [];
+  const openPdf = (signatureId: string) => {
+    // Opened at the click, where browsers allow it, and pointed at the link once it comes. A noopener tab
+    // would come back as null, so the tab is cut from this page by hand.
+    const tab = window.open('', '_blank');
+
+    if (tab !== null) {
+      tab.opener = null;
+    }
+
+    download.mutate(signatureId, {
+      onSuccess: ({ url }) => (tab === null ? setBlocked(url) : tab.location.assign(url)),
+      onError: () => tab?.close(),
+    });
+  };
 
   if (consents.isError) {
-    return <p className="text-sm text-destructive">{t('consents.loadFailed')}</p>;
+    return (
+      <Alert variant="danger" role="alert">
+        <CircleAlertIcon aria-hidden="true" />
+        {t('consents.loadFailed')}
+      </Alert>
+    );
   }
 
   if (participants.every((participant) => participant.consents.length === 0)) {
@@ -32,75 +52,39 @@ export function RegistrationConsents({ organisationId, registrationId }: Registr
   }
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">{t('consents.title')}</h2>
+    <Card>
+      <CardTitle>{t('consents.title')}</CardTitle>
       {participants.map((participant) => (
         <div key={participant.id} className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">
-            {t('name', { first: participant.firstName, last: participant.lastName })}
-          </h3>
-          <ul className="flex flex-col divide-y rounded-lg border text-sm">
+          {participants.length > 1 ? (
+            <h3 className="text-[13px] font-medium text-muted-foreground">
+              {t('name', { first: participant.firstName, last: participant.lastName })}
+            </h3>
+          ) : null}
+          <ul className="flex flex-col divide-y divide-border-subtle text-sm">
             {participant.consents.map((consent) => (
-              <li key={consent.consentId} className="flex flex-col gap-1 p-3">
-                <div className="flex flex-wrap gap-3">
-                  <span className="font-medium">{consent.title}</span>
-                  <span className={consent.state === 'signed' ? '' : 'text-destructive'}>
-                    {t(`consents.states.${consent.state}`)}
-                  </span>
-                </div>
-                {consent.declinedItems.length === 0 ? null : (
-                  <p>{t('consents.declined', { items: consent.declinedItems.join('; ') })}</p>
-                )}
-                {consent.signatures.map((signature) => (
-                  <div key={signature.id} className="flex flex-wrap items-center gap-3 text-muted-foreground">
-                    <span>
-                      {t('consents.signature', {
-                        version: signature.version,
-                        name: signature.signerName,
-                        date: czechDateTime(signature.signedAt),
-                      })}
-                    </span>
-                    {signature.superseded ? <span>{t('consents.superseded')}</span> : null}
-                    {signature.withdrawnAt === null ? null : (
-                      <span>{t('consents.withdrawnAt', { date: czechDateTime(signature.withdrawnAt) })}</span>
-                    )}
-                    {signature.hasPdf ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        disabled={download.isPending}
-                        onClick={() => {
-                          // Opened at the click, where browsers allow it, and pointed at the link once it comes.
-                          // A noopener tab would come back as null, so the tab is cut from this page by hand.
-                          const tab = window.open('', '_blank');
-
-                          if (tab !== null) {
-                            tab.opener = null;
-                          }
-
-                          download.mutate(signature.id, {
-                            onSuccess: ({ url }) => (tab === null ? setBlocked(url) : tab.location.assign(url)),
-                            onError: () => tab?.close(),
-                          });
-                        }}
-                      >
-                        {t('consents.pdf')}
-                      </Button>
-                    ) : null}
-                  </div>
-                ))}
-              </li>
+              <ConsentItem
+                key={consent.consentId}
+                consent={consent}
+                onOpenPdf={openPdf}
+                isOpening={download.isPending}
+              />
             ))}
           </ul>
         </div>
       ))}
       {download.isError ? <p className="text-sm text-destructive">{t('consents.downloadFailed')}</p> : null}
       {blocked === null ? null : (
-        <a href={blocked} target="_blank" rel="noreferrer" className="self-start text-sm underline">
+        <a
+          href={blocked}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 self-start text-sm font-semibold underline"
+        >
+          <ExternalLinkIcon aria-hidden="true" className="size-4" />
           {t('consents.openPdf')}
         </a>
       )}
-    </section>
+    </Card>
   );
 }

@@ -1,10 +1,15 @@
 {
+  "title": "Konzole provozovatele",
   "loading": "Načítáme…",
   "error": "Konzoli se nepodařilo načíst. Zkuste stránku načíst znovu.",
   "notOperator": "Konzole je jen pro provozovatele platformy.",
   "organisations": {
     "title": "Organizace",
-    "empty": "Zatím se nezaregistrovala žádná organizace."
+    "empty": "Zatím se nezaregistrovala žádná organizace.",
+    "pendingCount_one": "{{count}} čeká na schválení",
+    "pendingCount_few": "{{count}} čekají na schválení",
+    "pendingCount_many": "{{count}} čeká na schválení",
+    "pendingCount_other": "{{count}} čeká na schválení"
   },
   "status": {
     "pending": "Čeká na schválení",
@@ -30,6 +35,7 @@
   },
   "preview": {
     "back": "Zpět do konzole",
+    "title": "Náhled organizace",
     "notice": "Náhled veřejných stránek organizace, která čeká na schválení: takto je uvidí rodiče. Jen veřejné údaje; k datům organizace je dál potřeba její zpřístupnění podpoře.",
     "error": "Náhled se nepodařilo načíst. Organizace možná už nečeká na schválení.",
     "noCamps": "Organizace zatím nemá žádný tábor."
@@ -68,6 +74,11 @@
       "admin": "Od správce",
       "guardian": "Od rodiče"
     },
+    "meta": "{{organisation}} · {{from}} · {{sentAt}}",
+    "openCount_one": "{{count}} otevřené",
+    "openCount_few": "{{count}} otevřená",
+    "openCount_many": "{{count}} otevřených",
+    "openCount_other": "{{count}} otevřených",
     "noOrganisation": "bez organizace",
     "anonymous": "bez kontaktu",
     "resolve": "Vyřízeno",

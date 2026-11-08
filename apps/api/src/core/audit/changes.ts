@@ -22,6 +22,32 @@ function isEncrypted(value: unknown): boolean {
   return Buffer.isBuffer(value);
 }
 
+// Fields that say nothing to a reader of the log: the record's id and Organisation, when its row was
+// written, and how a signature's browser identified itself or a file is checked. The entry has its own
+// time and IP address.
+const INTERNAL_FIELDS = new Set([
+  'id',
+  'organisationId',
+  'createdAt',
+  'updatedAt',
+  'ipAddress',
+  'userAgent',
+  'sha256',
+  'fileSha256',
+]);
+
+// Identifiers an outside service gave, which end like a foreign key but name what the Organisation sees there.
+const OUTSIDE_IDS = new Set(['merchantId', 'gatewayTransactionId']);
+
+/**
+ * Tell whether a field is noise in the log: internal, or a foreign key to another record (`campId`), which
+ * the entry's target already names.
+ * @param field the field's name
+ */
+function isNoise(field: string): boolean {
+  return INTERNAL_FIELDS.has(field) || (/[a-z]Id$/.test(field) && !OUTSIDE_IDS.has(field));
+}
+
 // The value as JSON stores it: instants as ISO strings.
 function toJson(value: unknown): unknown {
   if (value instanceof Date) {
@@ -32,15 +58,15 @@ function toJson(value: unknown): unknown {
 }
 
 /**
- * Compare a row before and after a change, field by field. A created row has no before, a removed one
- * no after.
+ * Compare a row before and after a change, field by field, leaving out ids, foreign keys and other noise. A
+ * created row has no before, a removed one no after.
  * @param before the row before the change, or null when it was created
  * @param after the row after the change, or null when it was removed
  */
 export function changesBetween(before: AuditedRow | null, after: AuditedRow | null): Changes {
   const old = new Map<string, unknown>(Object.entries(before ?? {}));
   const current = new Map<string, unknown>(Object.entries(after ?? {}));
-  const fields = new Set([...old.keys(), ...current.keys()]);
+  const fields = new Set([...old.keys(), ...current.keys()].filter((field) => !isNoise(field)));
   const values: Record<string, ValueChange> = {};
   const encryptedFields: string[] = [];
 

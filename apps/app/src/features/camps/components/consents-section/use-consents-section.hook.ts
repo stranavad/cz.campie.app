@@ -26,5 +26,8 @@ export function useConsentsSection(organisationId: string, campId: string) {
     newDraft: () => (starter === null ? draftOf(null) : draftOfStarter(starter)),
     opened,
     newest,
+    // The version the next save publishes.
+    nextVersion: (newest?.version ?? 0) + 1,
+    hasNone: consents.data?.length === 0,
   };
 }

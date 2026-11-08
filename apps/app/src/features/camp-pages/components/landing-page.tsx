@@ -1,6 +1,10 @@
-import { Link, Navigate } from '@tanstack/react-router';
+import { Navigate } from '@tanstack/react-router';
+import { TentIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { EmptyState } from '@/components/empty-state';
+import { Alert } from '@/components/ui/alert';
+import { CampCard } from '@/features/camp-pages/components/camp-card';
 import { useLandingPage } from '@/features/camp-pages/components/use-landing-page.hook';
 
 // The Organisation's landing: its Camps as cards, or straight to its only one.
@@ -13,7 +17,11 @@ export function LandingPage() {
   }
 
   if (page.isError) {
-    return <p className="py-12 text-destructive">{t('error')}</p>;
+    return (
+      <Alert variant="danger" role="alert" className="my-8">
+        {t('error')}
+      </Alert>
+    );
   }
 
   if (page.onlyCamp !== undefined) {
@@ -21,23 +29,20 @@ export function LandingPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 py-8">
-      <h1 className="text-2xl font-semibold">{t('title')}</h1>
-      {page.camps.length === 0 ? <p className="text-muted-foreground">{t('empty')}</p> : null}
-      <ul className="grid gap-4 sm:grid-cols-2">
-        {page.camps.map((camp) => (
-          <li key={camp.id}>
-            <Link
-              to="/organisation/$campSlug"
-              params={{ campSlug: camp.slug }}
-              className="flex items-center gap-3 rounded-lg border border-border p-4 hover:border-primary"
-            >
-              {camp.logoUrl === null ? null : <img src={camp.logoUrl} alt="" className="h-10 w-auto" />}
-              <span className="font-medium">{camp.name}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+    <div className="flex flex-col gap-6 pt-4 pb-8">
+      <section className="flex flex-col gap-2 px-1">
+        <h1 className="text-title">{page.organisation?.displayName ?? t('title')}</h1>
+        <p className="text-muted-foreground">{t('lead')}</p>
+      </section>
+      <section className="flex flex-col gap-3">
+        <h2 className="text-heading px-1">{t('title')}</h2>
+        {page.camps.length === 0 ? <EmptyState icon={<TentIcon />} title={t('empty')} /> : null}
+        <ul className="grid gap-3.5 sm:grid-cols-2">
+          {page.camps.map((camp) => (
+            <CampCard key={camp.id} camp={camp} />
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

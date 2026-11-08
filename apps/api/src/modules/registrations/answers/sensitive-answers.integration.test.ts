@@ -196,14 +196,25 @@ describe('encrypted answers and health data', () => {
     ]);
   });
 
-  it('names changed health fields in the history only to an admin with Health read', async () => {
+  it('labels changed encrypted fields in both views, health ones only for an admin with Health read', async () => {
+    const submitted = ({ action }: { action: string }) => action === 'registration.submit';
     const history = async (headers: RequestHeaders) =>
-      (await http().get(`/api/registrations/${registrationId}/history`).set(headers)).body.find(
-        ({ action }: { action: string }) => action === 'registration.submit',
-      ).encryptedFields;
+      (await http().get(`/api/registrations/${registrationId}/history`).set(headers)).body.find(submitted)
+        .encryptedFields;
+    const log = (await http().get('/api/audit-log').query({ area: 'registrations' }).set(owner)).body.entries.find(
+      submitted,
+    ).encryptedFields;
+    const birthNumber = { field: 'birthNumber', label: null, labelKey: 'form.standard.birthNumber.label' };
+    const all = [
+      { field: ALLERGY, label: 'Nesnášenlivost potravin', labelKey: null },
+      birthNumber,
+      { field: 'healthNote', label: null, labelKey: 'form.standard.healthNote.label' },
+    ];
+    const byField = (fields: { field: string }[]) => fields.toSorted((a, b) => a.field.localeCompare(b.field));
 
-    expect(await history(await adminWith('read', 'none'))).toEqual(['birthNumber']);
-    expect((await history(owner)).toSorted()).toEqual([ALLERGY, 'birthNumber', 'healthNote']);
+    expect(await history(await adminWith('read', 'none'))).toEqual([birthNumber]);
+    expect(byField(await history(owner))).toEqual(byField(all));
+    expect(byField(log)).toEqual(byField(all));
   });
 
   it('needs Health write for an admin to change health data', async () => {

@@ -59,5 +59,5 @@ The spec has no frontend seam in v1: no component tests, no browser tests, no mo
 - **No hostname checks in features.** The host mode comes from `core/host`.
 - **No `fetch` outside `src/lib/api/`**, and no `apiClient` outside `*.service.ts`.
 - **No API data copied into state or context.**
-- **No dark mode.** Light theme only, mobile-first.
+- **No raw colours.** Light and dark theme, mobile-first: style through the semantic tokens only ([docs/styling.md](docs/styling.md)).
 - **No `any`.**

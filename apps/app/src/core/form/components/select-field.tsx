@@ -1,38 +1,35 @@
 import { useId } from 'react';
 
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field';
+import { Select, type SelectOption } from '@/components/ui/select';
 import { useFieldErrors } from '@/core/form/hooks/use-field-errors.hook';
 
 interface SelectFieldProps {
   label: string;
   description?: string;
   // Each choice's value and its label, in order.
-  options: readonly { readonly value: string; readonly label: string }[];
+  options: readonly SelectOption<string>[];
+  placeholder?: string;
 }
 
-// A native select, so phones show their own picker.
-export function SelectField({ label, description, options }: SelectFieldProps) {
+export function SelectField({ label, description, options, placeholder }: SelectFieldProps) {
   const { field, errors, isInvalid } = useFieldErrors();
   const id = useId();
+  const value = typeof field.state.value === 'string' && field.state.value !== '' ? field.state.value : null;
 
   return (
     <Field data-invalid={isInvalid}>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <select
+      <Select
         id={id}
         name={field.name}
-        value={typeof field.state.value === 'string' ? field.state.value : ''}
+        value={value}
+        placeholder={placeholder}
         onBlur={field.handleBlur}
-        onChange={(event) => field.handleChange(event.target.value)}
+        onValueChange={(next) => field.handleChange(next)}
+        options={options}
         aria-invalid={isInvalid}
-        className="h-8 w-full rounded-lg border border-input bg-transparent px-2 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 md:text-sm"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      />
       {description === undefined ? null : <FieldDescription>{description}</FieldDescription>}
       {isInvalid && <FieldError errors={errors} />}
     </Field>

@@ -24,6 +24,8 @@ export const accountSchema = z.object({
         status: z.enum(ORGANISATION_STATUSES),
         // Whether its admins must log in with a TOTP code.
         totpRequired: z.boolean(),
+        // Brands the admin interface while the admin works in it.
+        accentColour: z.string(),
       }),
       // For the Platform operator only: an Organisation entered under its support grant, not a membership.
       support: z.object({ allowWrites: z.boolean(), expiresAt: z.iso.datetime() }).nullable(),

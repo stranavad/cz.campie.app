@@ -33,6 +33,8 @@ export function useEmailTextForm(organisationId: string, campId: string, email: 
   return {
     form,
     status,
+    // As they are written into the subject or text.
+    placeholders: email.placeholders.map((name) => `{{${name}}}`),
     preview: preview.data ?? null,
     showPreview: () => {
       const { subject, text } = form.state.values;

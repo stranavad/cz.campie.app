@@ -5,7 +5,6 @@ import {
   eq,
   gte,
   inArray,
-  like,
   lte,
   sql,
   type InferInsertModel,
@@ -18,11 +17,11 @@ import { auditEntries } from '../../../db/schema.ts';
 
 export type AuditEntryRow = InferSelectModel<typeof auditEntries>;
 
-// What the audit log is filtered by; an actor is matched by identity, and an action by its start.
+// What the audit log is filtered by; an actor is matched by identity.
 export interface AuditFilter {
   readonly actorKind?: AuditEntryRow['actorKind'];
   readonly actorIdentities?: readonly string[];
-  readonly actionPrefix?: string;
+  readonly actions?: readonly string[];
   readonly targetType?: string;
   readonly targetId?: string;
   readonly from?: Date;
@@ -69,9 +68,7 @@ export class AuditEntryRepository {
       filter.actorIdentities === undefined
         ? undefined
         : inArray(auditEntries.actorIdentity, [...filter.actorIdentities]),
-      filter.actionPrefix === undefined
-        ? undefined
-        : like(auditEntries.action, `${filter.actionPrefix.replaceAll(/[\\%_]/g, (character) => `\\${character}`)}%`),
+      filter.actions === undefined ? undefined : inArray(auditEntries.action, [...filter.actions]),
       filter.targetType === undefined ? undefined : eq(auditEntries.targetType, filter.targetType),
       filter.targetId === undefined ? undefined : eq(auditEntries.targetId, filter.targetId),
       filter.from === undefined ? undefined : gte(auditEntries.occurredAt, filter.from),

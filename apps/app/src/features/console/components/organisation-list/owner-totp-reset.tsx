@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useResetOwnerTotpMutation } from '@/features/console/api/console.queries';
@@ -16,18 +17,21 @@ export function OwnerTotpReset({ organisationId }: { organisationId: string }) {
 
   return (
     <details className="text-sm">
-      <summary className="cursor-pointer text-muted-foreground">{t('ownerTotpReset.title')}</summary>
+      <summary className="flex min-h-11 cursor-pointer items-center font-semibold text-muted-foreground transition-colors hover:text-foreground">
+        {t('ownerTotpReset.title')}
+      </summary>
       <form
-        className="mt-2 flex max-w-md flex-col gap-2"
+        className="mt-1 flex max-w-lg flex-col gap-3"
         onSubmit={(event) => {
           event.preventDefault();
           reset.mutate(email.trim());
         }}
       >
         <p className="text-muted-foreground">{t('ownerTotpReset.intro')}</p>
-        <div className="flex items-end gap-2">
+        <div className="flex flex-wrap gap-2">
           <Input
             type="email"
+            className="flex-[1_1_12rem]"
             aria-label={t('ownerTotpReset.email')}
             placeholder={t('ownerTotpReset.email')}
             value={email}
@@ -37,15 +41,19 @@ export function OwnerTotpReset({ organisationId }: { organisationId: string }) {
             }}
             disabled={reset.isPending}
           />
-          <Button type="submit" variant="destructive" size="sm" disabled={reset.isPending || email.trim() === ''}>
+          <Button type="submit" variant="destructive" disabled={reset.isPending || email.trim() === ''}>
             {t('ownerTotpReset.submit')}
           </Button>
         </div>
-        {reset.isSuccess ? <output>{t('ownerTotpReset.done')}</output> : null}
+        {reset.isSuccess ? (
+          <Alert variant="success">
+            <output>{t('ownerTotpReset.done')}</output>
+          </Alert>
+        ) : null}
         {reset.isError ? (
-          <p role="alert" className="text-destructive">
+          <Alert variant="danger" role="alert">
             {t(isUnknown ? 'ownerTotpReset.unknown' : 'ownerTotpReset.failure')}
-          </p>
+          </Alert>
         ) : null}
       </form>
     </details>

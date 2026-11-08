@@ -1,53 +1,64 @@
-import { useState } from 'react';
+import { XIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCreateCampForm } from '@/features/camps/components/create-camp-form/use-create-camp-form.hook';
 
 interface CreateCampFormProps {
   organisationId: string;
+  onClose: () => void;
 }
 
-export function CreateCampForm({ organisationId }: CreateCampFormProps) {
+export function CreateCampForm({ organisationId, onClose }: CreateCampFormProps) {
   const { t } = useTranslation('camps');
-  const [isOpen, setOpen] = useState(false);
-  const { form, hasFailed } = useCreateCampForm(organisationId, () => setOpen(false));
-
-  if (!isOpen) {
-    return (
-      <Button type="button" variant="outline" className="self-start" onClick={() => setOpen(true)}>
-        {t('create.open')}
-      </Button>
-    );
-  }
+  const { form, hasFailed } = useCreateCampForm(organisationId, onClose);
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">{t('create.title')}</h2>
+    <Card>
+      <CardHeader>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <CardTitle>{t('create.title')}</CardTitle>
+          <CardDescription>{t('create.intro')}</CardDescription>
+        </div>
+        <Button variant="ghost" size="icon" aria-label={t('create.close')} onClick={onClose}>
+          <XIcon aria-hidden="true" />
+        </Button>
+      </CardHeader>
       <form
         noValidate
-        className="flex max-w-xl flex-col gap-5"
+        className="flex flex-col gap-5"
         onSubmit={(event) => {
           event.preventDefault();
           void form.handleSubmit();
         }}
       >
-        <form.AppField name="name">{(field) => <field.TextField label={t('camp.name')} />}</form.AppField>
-        <form.AppField name="slug">
-          {(field) => <field.TextField label={t('camp.slug')} description={t('camp.slugHint')} />}
-        </form.AppField>
-        <form.AppField name="contactEmail">
-          {(field) => <field.TextField label={t('camp.contactEmail')} type="email" />}
-        </form.AppField>
+        <div className="grid gap-5 md:grid-cols-2">
+          <form.AppField name="name">{(field) => <field.TextField label={t('camp.name')} />}</form.AppField>
+          <form.AppField name="contactEmail">
+            {(field) => <field.TextField label={t('camp.contactEmail')} type="email" />}
+          </form.AppField>
+          <div className="md:col-span-2">
+            <form.AppField name="slug">
+              {(field) => <field.TextField label={t('camp.slug')} description={t('camp.slugHint')} />}
+            </form.AppField>
+          </div>
+        </div>
         {hasFailed ? (
-          <p role="alert" className="text-sm text-destructive">
+          <Alert variant="danger" role="alert">
             {t('create.failure')}
-          </p>
+          </Alert>
         ) : null}
-        <form.AppForm>
-          <form.SubmitButton className="self-start">{t('create.submit')}</form.SubmitButton>
-        </form.AppForm>
+        <CardFooter>
+          <form.AppForm>
+            <form.SubmitButton>{t('create.submit')}</form.SubmitButton>
+          </form.AppForm>
+          <Button type="button" variant="ghost" onClick={onClose}>
+            {t('turnus.cancel')}
+          </Button>
+        </CardFooter>
       </form>
-    </section>
+    </Card>
   );
 }

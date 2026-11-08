@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { membershipAllows, useCurrentMembership } from '@/core/account';
 import { useCampsQuery } from '@/features/camps/api/camps.queries';
 
@@ -7,6 +9,7 @@ export function useCampsPage(selectedId: string | undefined) {
   const canRead = membershipAllows(membership, 'campSettings', 'read');
   const canWrite = membershipAllows(membership, 'campSettings', 'write');
   const camps = useCampsQuery(organisationId, canRead);
+  const [isCreating, setCreating] = useState(false);
   const list = camps.data ?? [];
   // A Camp named in the address, else the first; a removed or foreign one falls back to the first too.
   const selected = list.find((camp) => camp.id === selectedId) ?? list[0];
@@ -20,7 +23,8 @@ export function useCampsPage(selectedId: string | undefined) {
     canWrite,
     camps: list,
     selected,
-    // With one Camp there is nothing to pick from.
-    showsSwitcher: list.length > 1,
+    isCreating,
+    startCreating: () => setCreating(true),
+    stopCreating: () => setCreating(false),
   };
 }

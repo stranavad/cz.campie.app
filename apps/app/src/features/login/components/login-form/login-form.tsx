@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { Alert } from '@/components/ui/alert';
 import { useLoginForm } from '@/features/login/components/login-form/use-login-form.hook';
 
 export function LoginForm() {
@@ -10,7 +11,7 @@ export function LoginForm() {
   return (
     <form
       noValidate
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
         void form.handleSubmit();
@@ -23,18 +24,19 @@ export function LoginForm() {
         {(field) => <field.TextField label={t('password')} type="password" autoComplete="current-password" />}
       </form.AppField>
       {failure === null ? null : (
-        <p role="alert" className="text-sm text-destructive">
+        <Alert variant="danger" role="alert">
           {t(`failure.${failure}`)}
-        </p>
+        </Alert>
       )}
-      <div className="flex flex-wrap items-center gap-4">
-        <form.AppForm>
-          <form.SubmitButton>{t('submit')}</form.SubmitButton>
-        </form.AppForm>
-        <Link to="/platform/zapomenute-heslo" className="text-sm underline underline-offset-4">
-          {t('forgottenPassword')}
-        </Link>
-      </div>
+      <form.AppForm>
+        <form.SubmitButton className="mt-1 w-full">{t('submit')}</form.SubmitButton>
+      </form.AppForm>
+      <Link
+        to="/platform/zapomenute-heslo"
+        className="flex min-h-11 items-center self-center text-sm font-semibold underline underline-offset-4"
+      >
+        {t('forgottenPassword')}
+      </Link>
     </form>
   );
 }

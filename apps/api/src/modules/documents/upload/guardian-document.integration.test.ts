@@ -124,15 +124,13 @@ describe('handing in documents', () => {
     expect((await http().get(shown?.file?.url ?? '')).body).toEqual(PNG);
     expect(
       await query(
-        `SELECT actor_kind, actor_identity, target_id, changes ? 'fileId' AS file_changed FROM audit_entries
-          WHERE action = 'document_upload.replace'`,
+        `SELECT actor_kind, actor_identity, target_id FROM audit_entries WHERE action = 'document_upload.replace'`,
       ),
     ).toEqual([
       {
         actor_kind: 'guardian',
         actor_identity: 'jana.testovaci@example.com',
         target_id: participantId,
-        file_changed: true,
       },
     ]);
   });

@@ -5,20 +5,36 @@ import { changesBetween } from './changes.ts';
 describe('changesBetween', () => {
   it('records a created row as every set field going from nothing to its value', () => {
     const created = {
-      id: '01900000-0000-7000-8000-0000000000a1',
       text: 'packing list',
       secret: Buffer.from([1, 2, 3]),
       note: null,
-      createdAt: new Date('2027-02-01T09:30:00Z'),
+      stamp: new Date('2027-02-01T09:30:00Z'),
     };
 
     expect(changesBetween(null, created)).toEqual({
       values: {
-        id: { old: null, new: '01900000-0000-7000-8000-0000000000a1' },
         text: { old: null, new: 'packing list' },
-        createdAt: { old: null, new: '2027-02-01T09:30:00.000Z' },
+        stamp: { old: null, new: '2027-02-01T09:30:00.000Z' },
       },
       encryptedFields: ['secret'],
+    });
+  });
+
+  it('leaves out ids, foreign keys, the Organisation, timestamps and internal fields', () => {
+    const created = {
+      id: '01900000-0000-7000-8000-0000000000a1',
+      organisationId: '01900000-0000-7000-8000-0000000000a2',
+      campId: '01900000-0000-7000-8000-0000000000a3',
+      createdAt: new Date('2027-02-01T09:30:00Z'),
+      updatedAt: new Date('2027-02-01T09:30:00Z'),
+      userAgent: 'Mozilla/5.0',
+      merchantId: '123456',
+      name: 'Letní tábor',
+    };
+
+    expect(changesBetween(null, created).values).toEqual({
+      merchantId: { old: null, new: '123456' },
+      name: { old: null, new: 'Letní tábor' },
     });
   });
 

@@ -106,7 +106,6 @@ describe('registration form', () => {
       {
         action: 'registration_form_version.create',
         changes: {
-          campId: { old: null, new: campId },
           version: { old: null, new: 1 },
           maxParticipants: { old: null, new: 4 },
         },

@@ -10,18 +10,37 @@ export function useTurnusSection(organisationId: string, campId: string) {
   const remove = useRemoveTurnusMutation(organisationId, campId);
   const [editing, setEditing] = useState<Editing>(null);
   const [confirmingRemoval, setConfirmingRemoval] = useState<string | null>(null);
+  const list = turnusy.data ?? [];
+  const open = (turnusId: string | null) => {
+    setConfirmingRemoval(null);
+    setEditing({ turnusId });
+  };
 
   return {
     turnusy,
+    list,
     editing,
-    edit: (turnusId: string) => setEditing({ turnusId }),
-    add: () => setEditing({ turnusId: null }),
+    edited: list.find((turnus) => turnus.id === editing?.turnusId) ?? null,
+    edit: (turnusId: string) => open(turnusId),
+    add: () => open(null),
     close: () => setEditing(null),
-    confirmingRemoval,
-    askToRemove: (turnusId: string) => setConfirmingRemoval(turnusId),
-    cancelRemoval: () => setConfirmingRemoval(null),
-    remove: (turnusId: string) => remove.mutate(turnusId, { onSuccess: () => setConfirmingRemoval(null) }),
-    isRemoving: remove.isPending,
+    // The removal of the Turnus being edited; a new one has none.
+    removalOf: (turnusId: string | null) =>
+      turnusId === null
+        ? null
+        : {
+            isConfirming: confirmingRemoval === turnusId,
+            isRemoving: remove.isPending,
+            onAsk: () => setConfirmingRemoval(turnusId),
+            onCancel: () => setConfirmingRemoval(null),
+            onConfirm: () =>
+              remove.mutate(turnusId, {
+                onSuccess: () => {
+                  setConfirmingRemoval(null);
+                  setEditing(null);
+                },
+              }),
+          },
     removalFailed: remove.isError,
   };
 }

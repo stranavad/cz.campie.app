@@ -1,6 +1,9 @@
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { VerificationCheckbox } from '@/features/camps/components/registration-form-section/verification-checkbox';
 
 interface SurchargeInputsProps {
   surcharge: number | null;
@@ -8,32 +11,28 @@ interface SurchargeInputsProps {
   onChange: (surcharge: number | null, needsVerification: boolean) => void;
 }
 
-// What an answer adds per child (negative for a discount), and whether the camp checks a discount.
+// What a yes adds per child (negative for a discount), and whether the camp checks a discount.
 export function SurchargeInputs({ surcharge, needsVerification, onChange }: SurchargeInputsProps) {
   const { t } = useTranslation('camps');
+  const id = useId();
 
   return (
-    <div className="flex flex-wrap items-end gap-3 text-sm">
-      <label className="flex flex-col gap-1">
-        {t('registrationForm.surcharge')}
+    <div className="flex flex-col gap-1.5">
+      <Field>
+        <FieldLabel htmlFor={id}>{t('registrationForm.surchargeYes')}</FieldLabel>
         <Input
+          id={id}
           type="number"
-          className="w-28"
+          className="sm:max-w-36"
           value={surcharge === null ? '' : String(surcharge)}
           onChange={(event) =>
             onChange(event.target.value === '' ? null : Number(event.target.value), needsVerification)
           }
         />
-      </label>
+        <FieldDescription>{t('registrationForm.surchargeHint')}</FieldDescription>
+      </Field>
       {surcharge !== null && surcharge < 0 ? (
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={needsVerification}
-            onChange={(event) => onChange(surcharge, event.target.checked)}
-          />
-          {t('registrationForm.needsVerification')}
-        </label>
+        <VerificationCheckbox checked={needsVerification} onChange={(checked) => onChange(surcharge, checked)} />
       ) : null}
     </div>
   );

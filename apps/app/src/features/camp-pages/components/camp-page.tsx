@@ -1,6 +1,9 @@
 import { Link, Navigate } from '@tanstack/react-router';
+import { ArrowRightIcon, SearchXIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { EmptyState } from '@/components/empty-state';
+import { Alert } from '@/components/ui/alert';
 import { buttonVariants } from '@/components/ui/button';
 import { CampPageView } from '@/core/camp-page';
 import { useCampPage } from '@/features/camp-pages/components/use-camp-page.hook';
@@ -22,11 +25,15 @@ export function CampPage({ campSlug }: CampPageProps) {
   }
 
   if (page.isNotFound) {
-    return <p className="py-12">{t('notFound')}</p>;
+    return <EmptyState className="my-8" icon={<SearchXIcon />} title={t('notFound')} />;
   }
 
   if (page.isError || page.camp === undefined) {
-    return <p className="py-12 text-destructive">{t('error')}</p>;
+    return (
+      <Alert variant="danger" role="alert" className="my-8">
+        {t('error')}
+      </Alert>
+    );
   }
 
   return (
@@ -39,9 +46,10 @@ export function CampPage({ campSlug }: CampPageProps) {
             to="/organisation/$campSlug/prihlaska"
             params={{ campSlug: page.camp?.slug ?? campSlug }}
             search={{ turnus: turnus.id }}
-            className={buttonVariants({ className: 'self-start' })}
+            className={buttonVariants({ variant: 'brand', size: 'lg' })}
           >
             {t('register')}
+            <ArrowRightIcon aria-hidden="true" />
           </Link>
         ) : null
       }

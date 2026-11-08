@@ -7,6 +7,7 @@ import { subdomainProblem, type OrganisationStatus, type SubdomainErrorCode } fr
 import { OrganisationHostCache } from '../../../../core/access/organisation-host-cache.ts';
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
+import type { PlatformAuditAction } from '../../../../core/audit/platform-actions.ts';
 import type { Env } from '../../../../core/config/env.schema.ts';
 import { violatedConstraint } from '../../../../core/database/constraint-violation.ts';
 import { AdminRepository } from '../../../../repositories/admins/admin/admin.repository.ts';
@@ -157,7 +158,7 @@ export class ConsoleOrganisationService {
     id: string,
     status: OrganisationStatus,
     change: ConsoleChange,
-    action: string,
+    action: PlatformAuditAction,
   ): Promise<OrganisationEntity> {
     // Locked, so a simultaneous console action waits and the audit entry's old values are the true ones.
     const before = await this.organisations.getByIdForUpdate(id);

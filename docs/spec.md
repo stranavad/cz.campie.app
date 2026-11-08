@@ -484,7 +484,7 @@ One engine serves both the registration form and the Health record.
 ### Other
 
 - Modules are switched per Camp: Consents, Documents, generated documents, Health record, Camp health log, Oddíly, Vedoucí. Switching one off hides it and keeps its data.
-- Branding is a logo, one accent colour and a display name per Camp with the Organisation's as default. Layout and font are fixed, light theme only.
+- Branding is a logo, one accent colour and a display name per Camp with the Organisation's as default. Layout and font are fixed; light and dark theme, following the visitor's system setting unless they choose one.
 - All interface strings go through a translation layer. Czech is the only language. Camp-authored content is single-language.
 - Signup records the accepted terms and data processing agreement version with time and user.
 - The repository is public from the first commit under AGPL-3.0, with no secrets and no Domino-specific names or texts.

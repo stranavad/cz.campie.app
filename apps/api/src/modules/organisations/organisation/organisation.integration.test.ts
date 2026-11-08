@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
-import { CURRENT_LEGAL_VERSIONS, type SignUpOrganisationBody } from '@repo/schema/organisations';
+import { CURRENT_LEGAL_VERSIONS, DEFAULT_ACCENT_COLOUR, type SignUpOrganisationBody } from '@repo/schema/organisations';
 import { ACCESS_HEADERS } from '@repo/schema/shared';
 
 import { createOrganisation, mainHost } from '../../../testing/fixtures.ts';
@@ -103,6 +103,7 @@ describe('organisation signup', () => {
             subdomain: 'pokusnik',
             status: 'pending',
             totpRequired: false,
+            accentColour: DEFAULT_ACCENT_COLOUR,
           },
           support: null,
         },

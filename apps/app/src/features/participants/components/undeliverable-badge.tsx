@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useClearUndeliverableMutation } from '@/features/participants/api/participants.queries';
 
@@ -17,22 +18,25 @@ export function UndeliverableBadge({ organisationId, registrationId, email, canC
   const clear = useClearUndeliverableMutation(organisationId, registrationId);
 
   return (
-    <span className="ml-2 inline-flex flex-wrap items-center gap-2">
-      <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-950">
-        {t('detail.emailUndeliverable')}
-      </span>
+    <span className="mt-1 flex flex-col items-start gap-1">
+      <Badge variant="danger">{t('emailUndeliverable')}</Badge>
+      <span className="text-[13px] leading-snug text-muted-foreground">{t('detail.emailUndeliverable')}</span>
       {canClear ? (
         <Button
           type="button"
-          size="sm"
-          variant="outline"
+          variant="link"
+          className="min-h-9 text-sm"
           disabled={clear.isPending}
           onClick={() => clear.mutate(email)}
         >
           {t('detail.clearUndeliverable')}
         </Button>
       ) : null}
-      {clear.isError ? <span className="text-xs text-destructive">{t('detail.clearUndeliverableFailed')}</span> : null}
+      {clear.isError ? (
+        <span role="alert" className="text-[13px] text-destructive">
+          {t('detail.clearUndeliverableFailed')}
+        </span>
+      ) : null}
     </span>
   );
 }

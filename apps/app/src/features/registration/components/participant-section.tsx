@@ -1,9 +1,12 @@
+import { Trash2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import type { Answers, AnswerValue, FormField } from '@repo/schema/form-engine';
+import { fieldSensitivity, type Answers, type AnswerValue, type FormField } from '@repo/schema/form-engine';
 
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { RegistrationField } from '@/core/registration-form';
+import { HealthPanel } from '@/features/registration/components/health-panel';
 
 interface ParticipantSectionProps {
   index: number;
@@ -15,7 +18,8 @@ interface ParticipantSectionProps {
   ageNote: string | null;
 }
 
-// One child's answers; the age outside the Turnus's limits is told at the birth date.
+// One child's answers, the health ones together in their own panel; the age outside the Turnus's limits is
+// told at the birth date.
 export function ParticipantSection({
   index,
   fields,
@@ -26,25 +30,31 @@ export function ParticipantSection({
   ageNote,
 }: ParticipantSectionProps) {
   const { t } = useTranslation('registration');
+  const field = (shown: FormField) => (
+    <RegistrationField
+      key={shown.key}
+      field={shown}
+      value={answers[shown.key]}
+      onChange={(value) => onChange(shown.key, value)}
+      message={messageAt(['participants', index, shown.key])}
+      note={shown.key === 'birthDate' ? ageNote : null}
+    />
+  );
+  const health = fields.filter((shown) => fieldSensitivity(shown) === 'health');
 
   return (
-    <fieldset className="flex flex-col gap-4 rounded-lg border border-border p-4">
-      <legend className="px-1 font-medium">{t('child', { number: index + 1 })}</legend>
-      {fields.map((field) => (
-        <RegistrationField
-          key={field.key}
-          field={field}
-          value={answers[field.key]}
-          onChange={(value) => onChange(field.key, value)}
-          message={messageAt(['participants', index, field.key])}
-          note={field.key === 'birthDate' ? ageNote : null}
-        />
-      ))}
-      {onRemove === null ? null : (
-        <Button type="button" variant="ghost" size="sm" className="self-start" onClick={onRemove}>
-          {t('removeChild')}
-        </Button>
-      )}
-    </fieldset>
+    <Card>
+      <CardHeader className="items-center">
+        <CardTitle>{t('child', { number: index + 1 })}</CardTitle>
+        {onRemove === null ? null : (
+          <Button type="button" variant="ghost" onClick={onRemove}>
+            <Trash2Icon aria-hidden="true" />
+            {t('removeChild')}
+          </Button>
+        )}
+      </CardHeader>
+      {fields.filter((shown) => fieldSensitivity(shown) !== 'health').map(field)}
+      {health.length === 0 ? null : <HealthPanel>{health.map(field)}</HealthPanel>}
+    </Card>
   );
 }

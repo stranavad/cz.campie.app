@@ -1,22 +1,12 @@
-import { Trans, useTranslation } from 'react-i18next';
-
-import { TextLink } from '@/components/text-link';
 import { SignupForm } from '@/features/signup/components/signup-form/signup-form';
-import { SIGNUP_LINKS } from '@/features/signup/signup.constant';
+import { SignupPitch } from '@/features/signup/components/signup-pitch/signup-pitch';
 
+// What the platform gives and the form beside it on a wide screen; on a phone the pitch comes first.
 export function SignupPage() {
-  const { t } = useTranslation('signup');
-
   return (
-    <section className="flex max-w-xl flex-col gap-6 py-8">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">{t('title')}</h1>
-        <p className="text-muted-foreground">{t('intro')}</p>
-        <p className="text-sm text-muted-foreground">
-          <Trans t={t} i18nKey="dataPage" components={{ a: <TextLink href={SIGNUP_LINKS.dataPage} /> }} />
-        </p>
-      </header>
+    <div className="grid items-start gap-6 py-2 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:py-4">
+      <SignupPitch />
       <SignupForm />
-    </section>
+    </div>
   );
 }

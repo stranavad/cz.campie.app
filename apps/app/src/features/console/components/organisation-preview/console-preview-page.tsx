@@ -1,6 +1,10 @@
 import { Link } from '@tanstack/react-router';
+import { ChevronLeftIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { PageHeader } from '@/components/page-header';
+import { Alert } from '@/components/ui/alert';
+import { Card } from '@/components/ui/card';
 import { CampPageView } from '@/core/camp-page';
 import { useOrganisationPreviewQuery } from '@/features/console/api/console.queries';
 
@@ -15,40 +19,49 @@ export function ConsolePreviewPage({ organisationId }: ConsolePreviewPageProps) 
 
   const header = (
     <>
-      <Link to="/platform/konzole" className="text-sm text-muted-foreground underline">
-        {t('preview.back')}
-      </Link>
-      <p className="rounded-lg bg-muted px-3 py-2 text-sm">{t('preview.notice')}</p>
+      <PageHeader
+        eyebrow={
+          <Link
+            to="/platform/konzole"
+            className="-ml-1 inline-flex min-h-11 w-fit items-center gap-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ChevronLeftIcon className="size-4" aria-hidden="true" />
+            {t('preview.back')}
+          </Link>
+        }
+        title={t('preview.title')}
+      />
+      <Alert>{t('preview.notice')}</Alert>
     </>
   );
 
   if (organisationId === '' || preview.isError) {
     return (
-      <div className="flex flex-col gap-4 py-6">
+      <>
         {header}
-        <p className="py-12 text-destructive">{t('preview.error')}</p>
-      </div>
+        <Alert variant="danger">{t('preview.error')}</Alert>
+      </>
     );
   }
 
   if (preview.data === undefined) {
     return (
-      <div className="flex flex-col gap-4 py-6">
+      <>
         {header}
-        <p className="py-12 text-muted-foreground">{t('loading')}</p>
-      </div>
+        <p className="text-muted-foreground">{t('loading')}</p>
+      </>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4 py-6">
+    <>
       {header}
-      {preview.data.camps.length === 0 ? <p className="py-12">{t('preview.noCamps')}</p> : null}
+      {preview.data.camps.length === 0 ? <p className="text-muted-foreground">{t('preview.noCamps')}</p> : null}
       {preview.data.camps.map(({ camp, turnusy }) => (
-        <section key={camp.slug} className="border-t border-border pt-4">
+        <Card key={camp.slug} className="py-0 sm:py-0">
           <CampPageView camp={camp} turnusy={turnusy} />
-        </section>
+        </Card>
       ))}
-    </div>
+    </>
   );
 }

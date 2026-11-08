@@ -4,6 +4,7 @@ import pg from 'pg';
 
 import { emailSchema } from '@repo/schema/shared';
 
+import type { PlatformAuditAction } from '../core/audit/platform-actions.ts';
 import { admins, adminSessions, operators, platformAuditEntries, totpCredentials } from '../db/schema.ts';
 
 export const OPERATOR_USAGE = `Usage: operator <command> <email>
@@ -136,7 +137,7 @@ async function adminIdOrThrow(tx: Transaction, email: string): Promise<string> {
  * @param action what happened
  * @param adminId the admin it happened to
  */
-async function record(tx: Transaction, action: string, adminId: string): Promise<void> {
+async function record(tx: Transaction, action: PlatformAuditAction, adminId: string): Promise<void> {
   await tx.insert(platformAuditEntries).values({
     occurredAt: sql`now()`,
     actorKind: 'system',

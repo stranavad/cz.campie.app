@@ -1,6 +1,10 @@
+import { MailIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { Card } from '@/components/ui/card';
 import { useLoginForm } from '@/features/portal/components/login-form/use-login-form.hook';
+import { NoticeCard } from '@/features/portal/components/shared/notice-card';
+import { StatusMessage } from '@/features/portal/components/shared/status-message';
 
 export function LoginForm() {
   const { t } = useTranslation('portal');
@@ -8,29 +12,33 @@ export function LoginForm() {
 
   // The same answer whether or not the email is on a Registration.
   if (isSent) {
-    return <output className="block">{t('login.sent')}</output>;
+    return (
+      <NoticeCard icon={<MailIcon />} tone="brand" title={t('login.sentTitle')}>
+        <p className="text-muted-foreground">{t('login.sent')}</p>
+      </NoticeCard>
+    );
   }
 
   return (
-    <form
-      noValidate
-      className="flex flex-col gap-5"
-      onSubmit={(event) => {
-        event.preventDefault();
-        void form.handleSubmit();
-      }}
-    >
-      <form.AppField name="email">
-        {(field) => <field.TextField label={t('login.email')} type="email" autoComplete="email" />}
-      </form.AppField>
-      {failure === null ? null : (
-        <p role="alert" className="text-sm text-destructive">
-          {t(`login.failure.${failure}`)}
-        </p>
-      )}
-      <form.AppForm>
-        <form.SubmitButton className="self-start">{t('login.submit')}</form.SubmitButton>
-      </form.AppForm>
-    </form>
+    <Card>
+      <form
+        noValidate
+        className="flex flex-col gap-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void form.handleSubmit();
+        }}
+      >
+        <form.AppField name="email">
+          {(field) => <field.TextField label={t('login.email')} type="email" autoComplete="email" />}
+        </form.AppField>
+        {failure === null ? null : <StatusMessage tone="danger">{t(`login.failure.${failure}`)}</StatusMessage>}
+        <form.AppForm>
+          <form.SubmitButton variant="brand" size="lg" className="w-full">
+            {t('login.submit')}
+          </form.SubmitButton>
+        </form.AppForm>
+      </form>
+    </Card>
   );
 }

@@ -1,9 +1,13 @@
 {
   "title": "Nastavení organizace",
+  "intro": "Údaje, vzhled, platby a bezpečnost pro všechny tábory organizace.",
   "loading": "Načítáme…",
   "error": "Nastavení se nepodařilo načíst. Zkuste stránku načíst znovu.",
   "notOwner": "Nastavení organizace upravují jen vlastníci.",
-  "backHome": "Zpět na přehled",
+  "security": {
+    "title": "Bezpečnost",
+    "intro": "Chrání osobní a zdravotní údaje dětí."
+  },
   "save": "Uložit",
   "saved": "Uloženo.",
   "failure": "Změny se nepodařilo uložit. Zkuste to prosím znovu.",
@@ -30,8 +34,7 @@
     "displayName": "Zobrazovaný název",
     "displayNameHint": "Pod tímto názvem uvidí organizaci rodiče.",
     "accentColour": "Barva",
-    "accentColourHint": "Barvu textu k ní zvolíme sami, aby byl vždy čitelný.",
-    "accentPicker": "Vybrat barvu"
+    "accentColourHint": "Barvu textu k ní zvolíme sami, aby byl vždy čitelný."
   },
   "logoNone": "Organizace zatím nemá logo.",
   "paymentGateway": {
@@ -60,35 +63,34 @@
     "activeReadOnly": "Podpora má přístup jen pro čtení do {{until}}.",
     "activeWrites": "Podpora má přístup se změnami do {{until}}.",
     "revoke": "Ukončit přístup",
+    "activeBadge": "Aktivní",
+    "historyTitle": "Dosavadní přístupy",
     "history": "{{from}} až {{until}}, {{kind}}",
     "kindReadOnly": "jen čtení",
     "kindWrites": "se změnami"
   },
   "auditLog": {
     "title": "Historie změn",
+    "intro": "Kdo co změnil a kdy. Záznamy nejde upravit ani smazat.",
+    "today": "Dnes",
+    "yesterday": "Včera",
     "actorKind": "Kdo",
     "anyone": "Kdokoli",
-    "kinds": {
-      "admin": "Správce",
-      "guardian": "Rodič",
-      "operator": "Podpora platformy",
-      "system": "Systém"
-    },
     "actor": "E-mail",
-    "action": "Akce (nebo její začátek)",
+    "area": "Oblast",
+    "anyArea": "Všechny oblasti",
     "from": "Od",
     "to": "Do",
     "loadFailed": "Historii se nepodařilo načíst.",
     "none": "Nic neodpovídá.",
-    "more": "Načíst další",
-    "change": "{{field}}: {{old}} → {{new}}",
-    "encrypted": "Změněné šifrované údaje: {{fields}}",
-    "actionHint": "např. consent."
+    "more": "Načíst další"
   },
   "twoStep": {
     "title": "Dvoufázové přihlášení",
     "intro": "Můžete vyžadovat, aby se všichni správci organizace přihlašovali i kódem z ověřovací aplikace v telefonu. Kdo ho ještě nemá, nastaví si ho při příštím přihlášení dřív, než se dostane k čemukoli jinému - pokud ho nemáte vy, hned teď.",
     "on": "Všichni správci organizace se přihlašují i kódem z ověřovací aplikace.",
+    "required": "Vyžadováno",
+    "notRequired": "Nevyžadováno",
     "require": "Vyžadovat dvoufázové přihlášení",
     "stopRequiring": "Přestat vyžadovat",
     "failure": "Změnu se nepodařilo uložit. Zkuste to prosím znovu."

@@ -1,12 +1,15 @@
 import { useTranslation } from 'react-i18next';
 
-import { accentColourSchema, brandColours } from '@repo/schema/organisations';
+import { accentColourSchema } from '@repo/schema/organisations';
+
+import { AccentSample } from '@/core/branding/components/accent-sample';
 
 interface AccentPreviewProps {
   accentColour: string;
 }
 
-// How the accent will look on the public pages, with the text colours derived for it.
+// How the accent will look in the light and the dark theme, side by side, with the colours derived for
+// each. Each sample sits under a `light` or `dark` class, which fixes the theme tokens for its subtree.
 export function AccentPreview({ accentColour }: AccentPreviewProps) {
   const { t } = useTranslation();
   const parsed = accentColourSchema.safeParse(accentColour);
@@ -15,16 +18,14 @@ export function AccentPreview({ accentColour }: AccentPreviewProps) {
     return null;
   }
 
-  const { accent, onAccent, accentText } = brandColours(parsed.data);
-
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border p-4">
-      <span className="rounded-lg px-3 py-2 text-sm font-medium" style={{ backgroundColor: accent, color: onAccent }}>
-        {t('accentPreview.button')}
-      </span>
-      <span className="text-sm font-medium underline" style={{ color: accentText }}>
-        {t('accentPreview.link')}
-      </span>
+    <div className="grid gap-3 min-[440px]:grid-cols-2">
+      <div className="light rounded-2xl">
+        <AccentSample accentColour={parsed.data} label={t('accentPreview.light')} />
+      </div>
+      <div className="dark rounded-2xl">
+        <AccentSample accentColour={parsed.data} label={t('accentPreview.dark')} />
+      </div>
     </div>
   );
 }

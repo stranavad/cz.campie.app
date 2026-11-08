@@ -1,4 +1,5 @@
 import adminHome from '@/locales/cs/admin-home.json';
+import audit from '@/locales/cs/audit.json';
 import campPages from '@/locales/cs/camp-pages.json';
 import camps from '@/locales/cs/camps.json';
 import common from '@/locales/cs/common.json';
@@ -31,6 +32,7 @@ export const resources = {
     registration,
     portal,
     participants,
+    audit,
     legal,
     console: consoleTexts,
   },
