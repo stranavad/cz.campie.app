@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq, type InferInsertModel } from 'drizzle-orm';
+import { eq, lt, type InferInsertModel } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { adminSessions } from '../../../db/schema.ts';
@@ -63,5 +63,19 @@ export class AdminSessionRepository {
    */
   public async removeByAdmin(adminId: string): Promise<void> {
     await this.unitOfWork.db.delete(adminSessions).where(eq(adminSessions.adminId, adminId));
+  }
+
+  /**
+   * Remove every admin session that expired before an instant.
+   * @param before the instant
+   * @returns how many were removed
+   */
+  public async removeExpired(before: Date): Promise<number> {
+    const removed = await this.unitOfWork.db
+      .delete(adminSessions)
+      .where(lt(adminSessions.expiresAt, before))
+      .returning({ id: adminSessions.id });
+
+    return removed.length;
   }
 }

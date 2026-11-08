@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, lt } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { passwordResets } from '../../../db/schema.ts';
@@ -54,5 +54,19 @@ export class PasswordResetRepository {
    */
   public async removeByAdmin(adminId: string): Promise<void> {
     await this.unitOfWork.db.delete(passwordResets).where(eq(passwordResets.adminId, adminId));
+  }
+
+  /**
+   * Remove every password reset that expired before an instant.
+   * @param before the instant
+   * @returns how many were removed
+   */
+  public async removeExpired(before: Date): Promise<number> {
+    const removed = await this.unitOfWork.db
+      .delete(passwordResets)
+      .where(lt(passwordResets.expiresAt, before))
+      .returning({ id: passwordResets.id });
+
+    return removed.length;
   }
 }

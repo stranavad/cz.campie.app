@@ -13,9 +13,28 @@ export interface JobDefinition<Payload extends z.ZodType = z.ZodType> {
   readonly name: string;
   readonly scope: JobScope;
   readonly payload: Payload;
+  // Whether the Platform operator is emailed once the job fails for good, for work nobody else would notice
+  // missing, such as a generated PDF.
+  readonly alertWhenFailed?: boolean;
+}
+
+const noPayload = z.object({});
+
+// A platform job the queue runs on its own every so often, such as removing what expired.
+export interface RecurringJobDefinition extends JobDefinition<typeof noPayload> {
+  readonly scope: 'platform';
+  readonly everyMs: number;
 }
 
 export type JobPayload<Job extends JobDefinition> = z.output<Job['payload']>;
+
+/**
+ * Tell a recurring job from any other.
+ * @param job the definition
+ */
+export function isRecurring(job: JobDefinition): job is RecurringJobDefinition {
+  return 'everyMs' in job;
+}
 
 /**
  * Declare a job: its name in the queue, its scope and the schema of its payload.
@@ -23,6 +42,14 @@ export type JobPayload<Job extends JobDefinition> = z.output<Job['payload']>;
  */
 export function defineJob<Payload extends z.ZodType>(job: JobDefinition<Payload>): JobDefinition<Payload> {
   return job;
+}
+
+/**
+ * Declare a recurring platform job: its name in the queue and how often it runs.
+ * @param job the name and the interval
+ */
+export function defineRecurringJob(job: { name: string; everyMs: number }): RecurringJobDefinition {
+  return { ...job, scope: 'platform', payload: noPayload };
 }
 
 // Runs one job. A provider extending this class handles its job; the runner finds it when the app starts.

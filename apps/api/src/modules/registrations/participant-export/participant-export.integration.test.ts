@@ -5,17 +5,19 @@ import {
   createAdmin,
   createCamp,
   createOrganisation,
+  signIn,
   submitRegistration,
   type RequestHeaders,
 } from '../../../testing/fixtures.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
+import { housekeepingJob } from '../../housekeeping/housekeeping.jobs.ts';
 
 const SHIRT = '0190a2b4-0000-7000-8000-0000000000a7';
 const DIET = '0190a2b4-0000-7000-8000-0000000000a8';
 
 describe('participant export', () => {
-  const { app, http, clock, database, jobs, expectIsolated, expectPermission } = useTestApp();
+  const { app, http, clock, database, jobs, files, expectIsolated, expectPermission } = useTestApp();
 
   let organisationId: string;
   let campId: string;
@@ -231,13 +233,36 @@ describe('participant export', () => {
     expect(await query('SELECT FROM participant_exports')).toEqual([]);
   });
 
-  it('removes an export and its file a day later', async () => {
+  it('expires an export a day after it started and removes its file, from the housekeeping', async () => {
     await exportSheet();
-    expect(await query('SELECT FROM participant_exports')).toHaveLength(1);
+    const [started] = await query<{ id: string; file_id: string; admin_id: string }>(
+      'SELECT id, file_id, admin_id FROM participant_exports',
+    );
+    const stored = () => [...files().objects.keys()].filter((key) => key.endsWith(started?.file_id ?? '-'));
+    // The admin's session ended meanwhile; they signed in again.
+    const shown = async () =>
+      (
+        await http()
+          .get(`/api/exports/${started?.id}`)
+          .set({ ...owner, Cookie: (await signIn(app(), started?.admin_id ?? '')).Cookie })
+      ).body;
 
-    await jobs().drain({ later: true });
+    clock().advance(24 * 60 * 60 * 1000);
+    await jobs().due(housekeepingJob);
+    await jobs().drain();
+    expect(await shown()).toMatchObject({ status: 'ready' });
+    expect(stored()).toHaveLength(1);
 
-    expect(await query('SELECT FROM participant_exports')).toEqual([]);
+    clock().advance(1);
+    await jobs().due(housekeepingJob);
+    await jobs().drain();
+
+    expect(await shown()).toEqual({
+      id: started?.id,
+      status: 'expired',
+      file: null,
+    });
     expect(await query(`SELECT FROM files WHERE content_type LIKE '%spreadsheet%'`)).toEqual([]);
+    expect(stored()).toEqual([]);
   });
 });

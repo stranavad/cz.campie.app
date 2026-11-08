@@ -1,0 +1,1 @@
+ALTER TYPE "export_status" ADD VALUE 'expired';

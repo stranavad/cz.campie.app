@@ -49,7 +49,7 @@ const TURNUS = {
 };
 
 describe('Přihláška PDF', () => {
-  const { app, http, clock, database, jobs, pdfs, files } = useTestApp();
+  const { app, http, clock, database, jobs, mail, pdfs, files } = useTestApp();
 
   let organisationId: string;
   let campId: string;
@@ -231,5 +231,30 @@ describe('Přihláška PDF', () => {
     const otherId = await createOrganisation(app());
 
     await expect(regenerate(otherId, await firstParticipantId())).rejects.toThrow(NotFoundException);
+  });
+
+  it('alerts the Platform operator once an hour, by ids only, when the Přihlášky cannot be made', async () => {
+    const alerts = () => mail().sent.filter(({ to }) => to.includes('operator@example.com'));
+    pdfs().failing = true;
+
+    const { variableSymbol } = await submit();
+    await jobs().drain();
+    await submit();
+    await jobs().drain();
+
+    expect(alerts().map(({ subject }) => subject)).toEqual(['Úloha selhala: registrations.generate-prihlasky']);
+    expect(alerts()[0]?.text).toContain(organisationId);
+    expect(alerts()[0]?.text).not.toContain('Testovací');
+    expect(alerts()[0]?.text).not.toContain(variableSymbol);
+    expect(await jobs().failed()).toEqual([
+      expect.objectContaining({ job: 'registrations.generate-prihlasky', attemptsMade: 8 }),
+      expect.objectContaining({ job: 'registrations.generate-prihlasky', attemptsMade: 8 }),
+    ]);
+
+    clock().advance(60 * 60 * 1000);
+    await submit();
+    await jobs().drain();
+
+    expect(alerts()).toHaveLength(2);
   });
 });

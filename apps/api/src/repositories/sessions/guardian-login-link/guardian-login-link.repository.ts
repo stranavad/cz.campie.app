@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq, gt, isNull } from 'drizzle-orm';
+import { and, eq, gt, isNull, lt, sql } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { guardianLoginLinks, guardianLoginRequests } from '../../../db/schema.ts';
@@ -83,5 +83,34 @@ export class GuardianLoginLinkRepository {
       .returning({ id: guardianLoginLinks.id, email: guardianLoginLinks.email });
 
     return row ?? null;
+  }
+
+  /**
+   * Remove the current Organisation's login links that expired before an instant, used or not.
+   * @param before the instant
+   * @returns how many were removed
+   */
+  public async removeExpired(before: Date): Promise<number> {
+    const removed = await this.unitOfWork.db
+      .delete(guardianLoginLinks)
+      .where(lt(guardianLoginLinks.expiresAt, before))
+      .returning({ id: guardianLoginLinks.id });
+
+    return removed.length;
+  }
+
+  /**
+   * Remove the current Organisation's requests for a login link made before an instant, which their job
+   * never took. A request's id is a UUIDv7, which holds when it was made.
+   * @param before the instant
+   * @returns how many were removed
+   */
+  public async removeRequestsBefore(before: Date): Promise<number> {
+    const removed = await this.unitOfWork.db
+      .delete(guardianLoginRequests)
+      .where(sql`uuid_extract_timestamp(${guardianLoginRequests.id}) < ${before}`)
+      .returning({ id: guardianLoginRequests.id });
+
+    return removed.length;
   }
 }

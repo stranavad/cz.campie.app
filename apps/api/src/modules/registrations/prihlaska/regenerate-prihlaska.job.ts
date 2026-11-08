@@ -7,4 +7,5 @@ export const regeneratePrihlaskaJob = defineJob({
   name: 'registrations.regenerate-prihlaska',
   scope: 'organisation',
   payload: z.object({ participantId: z.uuid() }),
+  alertWhenFailed: true,
 });

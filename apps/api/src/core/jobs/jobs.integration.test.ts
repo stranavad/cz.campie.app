@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
 import { organisations } from '../../db/schema.ts';
+import { housekeepingJob } from '../../modules/housekeeping/housekeeping.jobs.ts';
 import { createOrganisation } from '../../testing/fixtures.ts';
 import { createNotesTable, notes } from '../../testing/tenant-table.ts';
 import { useTestApp } from '../../testing/test-app.ts';
@@ -211,6 +212,26 @@ describe('background jobs with the worker running', () => {
       },
       { timeout: 5000 },
     );
+  });
+
+  it('schedules each recurring job once, however many times the app starts', async () => {
+    const config: ConfigService<Env, true> = app().get(ConfigService);
+    const queue = new Queue(JOB_QUEUE, { connection: { url: config.get('REDIS_URL', { infer: true }) } });
+
+    try {
+      await app().get(JobQueue).schedule(housekeepingJob);
+
+      await vi.waitFor(
+        async () => {
+          expect(await queue.getJobSchedulers()).toEqual([
+            expect.objectContaining({ key: housekeepingJob.name, every: housekeepingJob.everyMs }),
+          ]);
+        },
+        { timeout: 5000 },
+      );
+    } finally {
+      await queue.close();
+    }
   });
 });
 

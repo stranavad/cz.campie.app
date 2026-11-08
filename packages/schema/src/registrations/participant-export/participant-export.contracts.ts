@@ -5,8 +5,9 @@ import { calendarDateSchema, defineEndpoint } from '@repo/schema/shared';
 
 import { participantListParamsSchema } from '../participant-list/participant-list.contracts.ts';
 
-// An export is made by a job: waiting until its file is stored.
-export const EXPORT_STATUSES = ['pending', 'ready'] as const;
+// An export is made by a job: waiting until its file is stored. Its file holds personal data, so a day
+// after the start the export expires and its file is removed.
+export const EXPORT_STATUSES = ['pending', 'ready', 'expired'] as const;
 
 export const participantExportSchema = z.object({
   id: z.uuid(),

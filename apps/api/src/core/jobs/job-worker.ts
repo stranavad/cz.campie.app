@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Worker } from 'bullmq';
 
 import type { Env } from '../config/env.schema.ts';
+import { JobQueue } from './job-queue.ts';
 import { JobRunner, type QueuedJob } from './job-runner.ts';
 import { JOB_QUEUE } from './job.ts';
 
@@ -20,6 +21,7 @@ export class JobWorker implements OnApplicationBootstrap, OnModuleDestroy {
   constructor(
     private readonly config: ConfigService<Env, true>,
     private readonly runner: JobRunner,
+    private readonly queue: JobQueue,
   ) {}
 
   public onApplicationBootstrap(): void {
@@ -30,6 +32,16 @@ export class JobWorker implements OnApplicationBootstrap, OnModuleDestroy {
     const connection = { url: this.config.get('REDIS_URL', { infer: true }) };
     this.worker = new Worker(JOB_QUEUE, (job) => this.run(job), { connection, concurrency: CONCURRENCY });
     this.worker.on('error', (error) => this.logger.error(`Job worker: ${error.message}`));
+
+    // Not awaited: while Redis is unreachable the schedule waits for it, and the app starts meanwhile.
+    for (const job of this.runner.recurringJobs()) {
+      this.queue.schedule(job).catch((error: unknown) => {
+        this.logger.error(
+          `Recurring job ${job.name} was not scheduled: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      });
+    }
+
     this.worker.on('failed', (job, error) => {
       // Ids and the error only; the job's data stays in the queue. A job is finished only when it failed
       // for good, so an attempt that will be retried is a warning.

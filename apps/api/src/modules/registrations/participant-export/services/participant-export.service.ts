@@ -47,7 +47,7 @@ import {
   type GuardianFields,
 } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
-import { exportParticipantsJob, removeExportJob } from '../export-participants.job.ts';
+import { exportParticipantsJob } from '../export-participants.job.ts';
 
 type Cell = string | number | null;
 
@@ -307,7 +307,7 @@ export class ParticipantExportService {
   public async build(exportId: string): Promise<void> {
     const found = await this.exports.getByIdForUpdate(exportId);
 
-    if (found === null || found.status === 'ready') {
+    if (found === null || found.status !== 'pending') {
       return;
     }
 
@@ -500,24 +500,21 @@ export class ParticipantExportService {
     );
 
     await this.exports.complete(exportId, fileId);
-    this.jobs.enqueue(removeExportJob, { exportId }, { delayMs: EXPORT_KEPT_MS });
   }
 
   /**
-   * Remove an export and its file.
-   * @param exportId export id
+   * Expire the current Organisation's exports started a day ago or earlier and remove their files; an
+   * export never built expires too. The record stays, so its admin learns it expired.
    */
-  public async remove(exportId: string): Promise<void> {
-    const found = await this.exports.getByIdForUpdate(exportId);
+  public async expireOld(): Promise<void> {
+    const old = await this.exports.lockUnexpiredBefore(new Date(this.clock.now().getTime() - EXPORT_KEPT_MS));
 
-    if (found === null) {
-      return;
-    }
+    await this.exports.expire(old.map(({ id }) => id));
 
-    await this.exports.remove(found.id);
-
-    if (found.fileId !== null) {
-      await this.files.remove(found.fileId);
+    for (const { fileId } of old) {
+      if (fileId !== null) {
+        await this.files.remove(fileId);
+      }
     }
   }
 }

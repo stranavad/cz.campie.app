@@ -200,6 +200,11 @@ export const useParticipantExportQuery = (organisationId: string, exportId: stri
         return 4 * 60_000;
       }
 
+      // Its file is gone for good; only a new export makes another.
+      if (state.data?.status === 'expired') {
+        return false;
+      }
+
       return state.dataUpdateCount < EXPORT_POLLS ? 1500 : false;
     },
   });

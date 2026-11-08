@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { AdminsModule } from '../admins/admins.module.ts';
 import { CampsModule } from '../camps/camps.module.ts';
+import { JobFailedHandler } from './job-failure/job-failed.handler.ts';
 import { OrganisationPreviewController } from './organisation-preview/organisation-preview.controller.ts';
 import { ConsoleOrganisationController } from './organisation/console-organisation.controller.ts';
 import { ConsoleOrganisationService } from './organisation/services/console-organisation.service.ts';
@@ -20,6 +21,6 @@ import { ProblemReportService } from './problem-report/services/problem-report.s
     FeedbackController,
     PublicProblemReportController,
   ],
-  providers: [ConsoleOrganisationService, ProblemReportService, ProblemReportedHandler],
+  providers: [ConsoleOrganisationService, ProblemReportService, ProblemReportedHandler, JobFailedHandler],
 })
 export class ConsoleModule {}

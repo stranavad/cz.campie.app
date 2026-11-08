@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { eq, type InferInsertModel } from 'drizzle-orm';
+import { eq, lt, type InferInsertModel } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { guardianSessions } from '../../../db/schema.ts';
@@ -48,5 +48,19 @@ export class GuardianSessionRepository {
    */
   public async removeByTokenHash(tokenHash: Buffer): Promise<void> {
     await this.unitOfWork.db.delete(guardianSessions).where(eq(guardianSessions.tokenHash, tokenHash));
+  }
+
+  /**
+   * Remove the current Organisation's guardian sessions that expired before an instant.
+   * @param before the instant
+   * @returns how many were removed
+   */
+  public async removeExpired(before: Date): Promise<number> {
+    const removed = await this.unitOfWork.db
+      .delete(guardianSessions)
+      .where(lt(guardianSessions.expiresAt, before))
+      .returning({ id: guardianSessions.id });
+
+    return removed.length;
   }
 }

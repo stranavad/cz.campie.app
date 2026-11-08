@@ -7,6 +7,7 @@ export const generateSignedConsentJob = defineJob({
   name: 'consents.generate-signed-consent',
   scope: 'organisation',
   payload: z.object({ signatureId: z.uuid() }),
+  alertWhenFailed: true,
 });
 
 // Emails the signed PDF to one guardian of the Participant's Registration.

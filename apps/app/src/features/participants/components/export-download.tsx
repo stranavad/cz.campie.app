@@ -22,7 +22,9 @@ export function ExportDownload({ organisationId, request, label, disabled = fals
   const [exportId, setExportId] = useState<string | null>(null);
   const current = useParticipantExportQuery(organisationId, exportId);
   const file = current.data?.file ?? null;
-  const isWorking = start.isPending || (exportId !== null && file === null && !current.isError && !current.gaveUp);
+  const expired = current.data?.status === 'expired';
+  const isWorking =
+    start.isPending || (exportId !== null && file === null && !expired && !current.isError && !current.gaveUp);
 
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -42,6 +44,7 @@ export function ExportDownload({ organisationId, request, label, disabled = fals
       )}
       {start.isError || current.isError ? <span className="text-destructive">{t('export.error')}</span> : null}
       {current.gaveUp ? <span className="text-muted-foreground">{t('export.slow')}</span> : null}
+      {expired ? <span className="text-muted-foreground">{t('export.expired')}</span> : null}
     </div>
   );
 }

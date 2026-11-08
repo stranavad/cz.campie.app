@@ -2,7 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { Queue, Worker } from 'bullmq';
 
 import { JobRunner } from '../core/jobs/job-runner.ts';
-import { JOB_QUEUE } from '../core/jobs/job.ts';
+import { JOB_QUEUE, type JobEnvelope, type RecurringJobDefinition } from '../core/jobs/job.ts';
 
 // Identifies the drain as the holder of the lock on the job it runs.
 const TOKEN = 'test-drain';
@@ -79,6 +79,17 @@ export function testJobs(app: INestApplication, redisUrl: string) {
             );
           }
         }
+      }),
+
+    /**
+     * Add a recurring job to the queue as its schedule does when it is due; drain() then runs it.
+     * @param job the recurring job
+     */
+    due: (job: RecurringJobDefinition) =>
+      withQueue(redisUrl, async (queue) => {
+        const envelope: JobEnvelope = { organisationId: null, payload: {} };
+
+        await queue.add(job.name, envelope);
       }),
 
     /**

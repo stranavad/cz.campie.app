@@ -6,7 +6,7 @@ import type { z } from 'zod';
 
 import type { Env } from '../config/env.schema.ts';
 import { UnitOfWork } from '../database/unit-of-work.ts';
-import { JOB_QUEUE, type JobDefinition, type JobEnvelope } from './job.ts';
+import { JOB_QUEUE, type JobDefinition, type JobEnvelope, type RecurringJobDefinition } from './job.ts';
 
 const ATTEMPTS = 8;
 // Doubles from the first retry: 30 s, 1 min, 2 min, ... about an hour in all, to outlast a provider outage.
@@ -63,6 +63,47 @@ export class JobQueue implements OnModuleDestroy {
     this.unitOfWork.gatherAfterCommit(this, { name: job.name, data: envelope, delayMs: options.delayMs }, (jobs) =>
       this.send(jobs),
     );
+  }
+
+  /**
+   * Enqueue an Organisation job once for each of several Organisations, for when the current platform unit
+   * of work commits; each runs in its own Organisation's unit of work.
+   * @param job the job's definition
+   * @param organisationIds the Organisations, never from client input
+   * @param payload ids the job works on, never personal data
+   * @throws {Error} for a platform job, or from an Organisation's unit of work, which must not reach others
+   */
+  public enqueueForEach<Payload extends z.ZodType>(
+    job: JobDefinition<Payload>,
+    organisationIds: readonly string[],
+    payload: z.input<Payload>,
+  ): void {
+    if (job.scope !== 'organisation' || this.unitOfWork.inOrganisation) {
+      throw new Error(
+        `Job ${job.name} is enqueued for each Organisation only as an Organisation job, from the platform`,
+      );
+    }
+
+    job.payload.parse(payload);
+
+    for (const organisationId of organisationIds) {
+      const envelope: JobEnvelope = { organisationId, payload };
+
+      this.unitOfWork.gatherAfterCommit(this, { name: job.name, data: envelope, delayMs: undefined }, (jobs) =>
+        this.send(jobs),
+      );
+    }
+  }
+
+  /**
+   * Have the queue add a recurring job on its own, every interval, from now on; the same job scheduled by
+   * several API instances is one schedule.
+   * @param job the recurring job's definition
+   */
+  public async schedule(job: RecurringJobDefinition): Promise<void> {
+    const envelope: JobEnvelope = { organisationId: null, payload: {} };
+
+    await this.queue.upsertJobScheduler(job.name, { every: job.everyMs }, { name: job.name, data: envelope });
   }
 
   public async onModuleDestroy(): Promise<void> {

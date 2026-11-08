@@ -24,7 +24,7 @@ import { LedgerService } from './ledger/services/ledger.service.ts';
 import { OpenItemsReminderController } from './open-items-reminder/open-items-reminder.controller.ts';
 import { SendOpenItemsReminderHandler } from './open-items-reminder/send-open-items-reminder.handler.ts';
 import { OpenItemsReminderService } from './open-items-reminder/services/open-items-reminder.service.ts';
-import { ExportParticipantsHandler, RemoveExportHandler } from './participant-export/export-participants.handler.ts';
+import { ExportParticipantsHandler } from './participant-export/export-participants.handler.ts';
 import { ParticipantExportController } from './participant-export/participant-export.controller.ts';
 import { ParticipantExportService } from './participant-export/services/participant-export.service.ts';
 import { ParticipantListController } from './participant-list/participant-list.controller.ts';
@@ -78,7 +78,6 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     SendOpenItemsReminderHandler,
     SendPaymentReminderHandler,
     ExportParticipantsHandler,
-    RemoveExportHandler,
     SendCancellationHandler,
     RegeneratePrihlaskaHandler,
     EmailChangeConfirmedHandler,
@@ -87,6 +86,6 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     SendConfirmationHandler,
     SendPaymentReceivedHandler,
   ],
-  exports: [RegistrationService, PrihlaskaService, LedgerService, CardPaymentService],
+  exports: [RegistrationService, PrihlaskaService, LedgerService, CardPaymentService, ParticipantExportService],
 })
 export class RegistrationsModule {}

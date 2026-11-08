@@ -38,3 +38,5 @@ Build one rendering pipeline for every generated document: a React template rend
   - The letterhead appears once, at the top of the first page. No running header or footer, and no page numbers yet.
 - Open for later: a job renders inside its unit of work, so the transaction stays open during the Gotenberg round trip. Revisit if batch rendering (printouts, archives) strains the connection pool.
 - Local setup: the migration adds NOT NULL columns to `organisations`, so a local database that already holds Organisations needs a reset.
+
+2026-11-08 - **Project lead follow-up.** The PDF jobs (`registrations.generate-prihlasky`, `registrations.regenerate-prihlaska`, `consents.generate-signed-consent`) alert the Platform operator when they give up (see issue 11); no fallback mail to the guardian. `FakePdfRenderer.failing` makes renders fail in tests.

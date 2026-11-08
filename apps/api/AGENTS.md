@@ -101,6 +101,8 @@ The layer rules are lint-enforced (`oxlint/boundaries.ts`): controllers import n
 - The runner re-enters a unit of work from the job: its Organisation's, or a platform one. A job without an Organisation and a malformed payload fail at once, without retries; a job no handler knows is retried, since another version of the app may know it.
 - The handler runs inside that unit of work and commits with it; a throw rolls back and retries: 8 attempts, the delay doubling from 30 s. The last failure stays in the queue's failed set for 30 days and is logged as an error, earlier ones as warnings. Effects outside the database (a sent mail) repeat on a retry, so make them safe to repeat.
 - Payloads are ids in JSON, never personal data: Redis is outside the encryption and erasure.
+- A recurring platform job is `defineRecurringJob({ name, everyMs })`; the worker schedules each one when it starts, and a test adds a due run with `jobs().due(job)`. To reach every Organisation it enqueues an Organisation job per Organisation (`JobQueue.enqueueForEach`), each running in its own context, as the hourly housekeeping (`modules/housekeeping/`) does.
+- A job whose failure nobody else would notice (a generated PDF) declares `alertWhenFailed: true`: when its last attempt fails, the Platform operator is emailed its name and ids, at most once per job kind an hour.
 - `JOB_WORKER=auto` runs jobs in the API process (production requires it); `manual` leaves them queued for a test to drain.
 
 ## Files

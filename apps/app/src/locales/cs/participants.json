@@ -177,6 +177,7 @@
     "download": "Stáhnout export",
     "error": "Export se nepodařilo připravit. Zkuste to znovu.",
     "slow": "Export trvá déle než obvykle. Zkuste ho spustit znovu později.",
+    "expired": "Platnost exportu vypršela, soubor jsme smazali. Spusťte export znovu.",
     "pick": "Vybrat sloupce",
     "payments": "Export plateb pro účetní",
     "paidFrom": "Platby od",

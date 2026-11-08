@@ -1,5 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { and, asc, eq, gt, isNull, type InferInsertModel, type InferSelectModel, type SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  eq,
+  gt,
+  inArray,
+  isNull,
+  lt,
+  ne,
+  type InferInsertModel,
+  type InferSelectModel,
+  type SQL,
+} from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
@@ -112,14 +124,6 @@ export class ParticipantExportRepository {
   }
 
   /**
-   * Remove an export record.
-   * @param id export id
-   */
-  public async remove(id: string): Promise<void> {
-    await this.unitOfWork.db.delete(participantExports).where(eq(participantExports.id, id));
-  }
-
-  /**
    * List a Camp's export presets by name.
    * @param campId Camp id
    */
@@ -191,5 +195,33 @@ export class ParticipantExportRepository {
         target: [exportSelections.organisationId, exportSelections.adminId, exportSelections.campId],
         set: { columns: input.columns, updatedAt: input.updatedAt },
       });
+  }
+
+  /**
+   * List the current Organisation's exports started before an instant that have not expired yet, locked
+   * until the unit of work ends, so a job still building one waits or is waited for.
+   * @param before the instant
+   */
+  public async lockUnexpiredBefore(before: Date): Promise<ParticipantExportRow[]> {
+    return this.unitOfWork.db
+      .select()
+      .from(participantExports)
+      .where(and(ne(participantExports.status, 'expired'), lt(participantExports.createdAt, before)))
+      .for('update');
+  }
+
+  /**
+   * Mark exports expired, without their files.
+   * @param ids export ids
+   */
+  public async expire(ids: readonly string[]): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    await this.unitOfWork.db
+      .update(participantExports)
+      .set({ status: 'expired', fileId: null })
+      .where(inArray(participantExports.id, [...ids]));
   }
 }

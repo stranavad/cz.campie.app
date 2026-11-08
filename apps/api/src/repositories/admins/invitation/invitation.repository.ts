@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, lt } from 'drizzle-orm';
 
 import type { Permissions } from '@repo/schema/admins';
 
@@ -141,5 +141,19 @@ export class InvitationRepository {
    */
   private inOrganisation(id: string) {
     return and(eq(invitations.id, id), eq(invitations.organisationId, this.unitOfWork.organisationId));
+  }
+
+  /**
+   * Remove the invitations of every Organisation that expired before an instant, for housekeeping.
+   * @param before the instant
+   * @returns how many were removed
+   */
+  public async removeAllExpired(before: Date): Promise<number> {
+    const removed = await this.unitOfWork.db
+      .delete(invitations)
+      .where(lt(invitations.expiresAt, before))
+      .returning({ id: invitations.id });
+
+    return removed.length;
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq, gt, isNotNull, isNull } from 'drizzle-orm';
+import { and, eq, gt, isNotNull, isNull, lt } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { guardianEmailChanges } from '../../../db/schema.ts';
@@ -160,5 +160,19 @@ export class GuardianEmailChangeRepository {
       });
 
     return row === undefined || row.previousEmail === null ? null : { ...row, previousEmail: row.previousEmail };
+  }
+
+  /**
+   * Remove the current Organisation's email changes whose links expired before an instant.
+   * @param before the instant
+   * @returns how many were removed
+   */
+  public async removeExpired(before: Date): Promise<number> {
+    const removed = await this.unitOfWork.db
+      .delete(guardianEmailChanges)
+      .where(lt(guardianEmailChanges.expiresAt, before))
+      .returning({ id: guardianEmailChanges.id });
+
+    return removed.length;
   }
 }

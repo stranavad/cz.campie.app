@@ -8,4 +8,5 @@ export const generatePrihlaskyJob = defineJob({
   name: 'registrations.generate-prihlasky',
   scope: 'organisation',
   payload: z.object({ registrationId: z.uuid(), sendConfirmation: z.boolean() }),
+  alertWhenFailed: true,
 });
