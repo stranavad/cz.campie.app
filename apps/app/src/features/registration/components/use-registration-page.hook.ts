@@ -93,6 +93,8 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
     hasNoForm: form.error instanceof HttpError && form.error.status === 404,
     isError: camp.isError || turnusy.isError || (form.isError && !(form.error instanceof HttpError)),
     camp: camp.data,
+    // Per child, shown on the way to add a sibling.
+    siblingDiscount: camp.data?.siblingDiscount?.amount ?? null,
     form: form.data,
     step,
     stepCount: REGISTRATION_STEPS.length,

@@ -24,8 +24,12 @@ export function useOrganisationShell() {
           ? 'none'
           : 'plain';
 
+  // Pages of a Camp name its own contact; those without one name the Organisation's in the footer.
+  const showsContact = routeId === '/organisation/' || routeId === '/organisation/portal/prihlaseni';
+
   return {
     organisation: organisation.data,
+    footerContact: showsContact ? organisation.data : undefined,
     isPending: organisation.isPending,
     isSuspended: code === 'organisation_suspended',
     isUnknown: code === 'organisation_unknown',

@@ -19,6 +19,7 @@ export function ChildrenStep({ page }: ChildrenStepProps) {
         onSelect={page.setActiveChild}
         invalid={page.invalidChildren}
         onAdd={page.canAddParticipant ? page.addParticipant : null}
+        siblingDiscount={page.siblingDiscount}
       />
       <ParticipantSection
         key={index}

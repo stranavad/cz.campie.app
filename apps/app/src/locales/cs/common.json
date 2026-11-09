@@ -258,6 +258,7 @@
     "lastPlaces_many": "Posledních {{count}} místa",
     "lastPlaces_other": "Posledních {{count}} míst",
     "earlyBird": "při přihlášení do {{date}}, potom {{base}}",
+    "deposit": "záloha {{amount}}",
     "opensAt": "Přihlašování začne {{date}}.",
     "countdown": "Zbývá {{days}} d {{hours}} h {{minutes}} min {{seconds}} s",
     "availability": {

@@ -68,6 +68,8 @@ export class OrganisationEntity {
       displayName: this.displayName,
       accentColour: this.accentColour,
       logoUrl: this.logoFileId === null ? null : publicLogoUrl(this.logoFileId),
+      contactEmail: this.contactEmail,
+      contactPhone: this.contactPhone,
     };
   }
 

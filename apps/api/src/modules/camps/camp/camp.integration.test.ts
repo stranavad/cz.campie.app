@@ -241,6 +241,7 @@ describe('camps', () => {
         logoUrl: null,
         photoUrl: null,
         cardPayments: false,
+        siblingDiscount: null,
       });
     }
 

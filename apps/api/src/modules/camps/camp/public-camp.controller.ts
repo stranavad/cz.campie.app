@@ -5,6 +5,7 @@ import {
   listPublicCampsEndpoint,
   listPublicTurnusyEndpoint,
   type PublicCamp,
+  type PublicCampCard,
   type PublicCampParams,
   type PublicTurnus,
 } from '@repo/schema/camps';
@@ -24,7 +25,7 @@ export class PublicCampController {
   }
 
   @Endpoint(listPublicCampsEndpoint)
-  public list(): Promise<PublicCamp[]> {
+  public list(): Promise<PublicCampCard[]> {
     return this.camps.listPublic();
   }
 

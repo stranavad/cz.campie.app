@@ -44,7 +44,7 @@ export function OrganisationShell({ portalAction }: OrganisationShellProps) {
           <Outlet />
         )}
       </main>
-      <OrganisationFooter name={shell.organisation?.displayName} />
+      <OrganisationFooter name={shell.organisation?.displayName} contact={shell.footerContact} />
     </div>
   );
 }

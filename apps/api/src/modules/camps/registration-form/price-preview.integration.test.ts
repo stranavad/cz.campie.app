@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import type { PreviewPriceResponse } from '@repo/schema/camps';
+
 import {
   createAdmin,
   createCamp,
@@ -212,6 +214,32 @@ describe('price preview', () => {
       contactEmail: 'leto@tabor.example.com',
       contactPhone: null,
     });
+  });
+
+  it('shows on the public Camp the Sibling discount the price preview gives two children, in either mode', async () => {
+    const siblingLines = async () =>
+      ((await preview()).body as PreviewPriceResponse).lines.filter(({ kind }) => kind === 'sibling_discount');
+    const publicDiscount = async () =>
+      (await http().get('/api/public-camps/letni-tabor').set(state.host)).body.siblingDiscount;
+
+    expect(await publicDiscount()).toEqual({ amount: 400, appliesTo: 'from_second_child' });
+    expect(await siblingLines()).toEqual([{ kind: 'sibling_discount', participant: 1, label: null, amount: -400 }]);
+
+    await http()
+      .patch(`/api/camps/${state.campId}`)
+      .set(state.owner)
+      .send({ siblingDiscountAmount: 500, siblingDiscountAppliesTo: 'every_child' });
+
+    expect(await publicDiscount()).toEqual({ amount: 500, appliesTo: 'every_child' });
+    expect(await siblingLines()).toEqual([
+      { kind: 'sibling_discount', participant: 0, label: null, amount: -500 },
+      { kind: 'sibling_discount', participant: 1, label: null, amount: -500 },
+    ]);
+
+    await http().patch(`/api/camps/${state.campId}`).set(state.owner).send({ siblingDiscountAmount: 0 });
+
+    expect(await publicDiscount()).toBeNull();
+    expect(await siblingLines()).toEqual([]);
   });
 });
 

@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import type { PublicCampCard, TurnusBody } from '@repo/schema/camps';
+
 import {
   createAdmin,
   createCamp,
@@ -65,6 +67,61 @@ describe('public camp pages', () => {
     ]);
   });
 
+  it("sums up each Camp's Turnusy not yet over on its card: their dates and the lowest price open now", async () => {
+    const addTurnus = (fields: Partial<TurnusBody>) =>
+      http()
+        .post(`/api/camps/${campId}/turnusy`)
+        .set(owner.headers(organisationId))
+        .send({ ...TURNUS, opensAt: null, closesAt: null, earlyBirdPrice: null, earlyBirdLastDay: null, ...fields });
+    await addTurnus({ name: 'Srpen', startDate: '2027-08-01', endDate: '2027-08-14', basePrice: 6000 });
+    // Over, though its window never closed: neither its dates nor its price count.
+    await addTurnus({ name: 'Loni', startDate: '2026-07-01', endDate: '2026-07-14', basePrice: 3000 });
+    // Closed by hand: its dates count, its price does not.
+    await addTurnus({
+      name: 'Září',
+      startDate: '2027-09-01',
+      endDate: '2027-09-10',
+      basePrice: 4000,
+      closedManually: true,
+    });
+    await createCamp(app(), organisationId, 'Zimní tábor', 'zimni-tabor');
+    const cards = async (instant: string) => {
+      clock().set(new Date(instant));
+
+      return (await http().get('/api/public-camps').set(host)).body.map(
+        ({ slug, dates, lowestPrice }: PublicCampCard) => ({
+          slug,
+          dates,
+          lowestPrice,
+        }),
+      );
+    };
+
+    // The Early bird price of the Turnus not yet open is in force and the lowest.
+    expect(await cards('2027-03-31T21:59:59Z')).toEqual([
+      { slug: 'letni-tabor', dates: { startDate: '2027-07-04', endDate: '2027-09-10' }, lowestPrice: 5900 },
+      { slug: 'zimni-tabor', dates: null, lowestPrice: null },
+    ]);
+    expect(await cards('2027-03-31T22:00:00Z')).toMatchObject([{ lowestPrice: 6000 }, {}]);
+    // On the last day of the only Turnus left, closed by hand, it still counts until midnight in Prague.
+    expect(await cards('2027-09-10T21:59:59Z')).toMatchObject([
+      { dates: { startDate: '2027-09-01', endDate: '2027-09-10' }, lowestPrice: null },
+      {},
+    ]);
+    expect(await cards('2027-09-10T22:00:00Z')).toMatchObject([{ dates: null, lowestPrice: null }, {}]);
+  });
+
+  it('shows the public Camp and its card with exactly the fields guardians may see', async () => {
+    const fields = ['id', 'name', 'slug', 'websiteUrl', 'description', 'contactName', 'contactEmail', 'contactPhone'];
+    const appearance = ['accentColour', 'logoUrl', 'photoUrl', 'cardPayments', 'siblingDiscount'];
+
+    const camp = (await http().get('/api/public-camps/letni-tabor').set(host)).body;
+    const [card] = (await http().get('/api/public-camps').set(host)).body;
+
+    expect(Object.keys(camp).toSorted()).toEqual([...fields, ...appearance].toSorted());
+    expect(Object.keys(card).toSorted()).toEqual([...fields, ...appearance, 'dates', 'lowestPrice'].toSorted());
+  });
+
   it('shows a Turnus with the places left and the price in force, never its capacity internals', async () => {
     const turnus = await turnusAt('2027-03-31T21:59:59Z');
 
@@ -81,12 +138,27 @@ describe('public camp pages', () => {
       earlyBirdPrice: 5900,
       earlyBirdLastDay: '2027-03-31',
       priceNow: 5900,
+      deposit: 2000,
       opensAt: '2027-02-01T17:00:00.000Z',
       closesAt: '2027-05-31T22:00:00.000Z',
       availability: 'open',
       remainingPlaces: 40,
     });
     expect((await turnusAt('2027-03-31T22:00:00Z')).priceNow).toBe(6500);
+  });
+
+  it('shows a Turnus without a Deposit with none', async () => {
+    await http()
+      .post(`/api/camps/${campId}/turnusy`)
+      .set(owner.headers(organisationId))
+      .send({ ...TURNUS, name: 'Turnus 2', startDate: '2027-08-01', endDate: '2027-08-14', deposit: 0 });
+
+    const turnusy = (await http().get('/api/public-camps/letni-tabor/turnusy').set(host)).body;
+
+    expect(turnusy).toMatchObject([
+      { name: 'Turnus 1', deposit: 2000 },
+      { name: 'Turnus 2', deposit: null },
+    ]);
   });
 
   it('marks a Turnus not yet open, with its opening instant for the countdown, and closed after its window', async () => {
@@ -137,7 +209,10 @@ describe('public camp pages', () => {
     await createCamp(app(), otherId, 'Cizí tábor', 'cizi-tabor');
     const otherHost = { Host: await organisationHost(app(), otherId) };
 
-    expect((await http().get('/api/public-camps').set(otherHost)).body).toMatchObject([{ slug: 'cizi-tabor' }]);
+    // This Organisation's Turnus counts on none of the other's cards.
+    expect((await http().get('/api/public-camps').set(otherHost)).body).toMatchObject([
+      { slug: 'cizi-tabor', dates: null, lowestPrice: null },
+    ]);
     await expectIsolated(() => http().get('/api/public-camps/letni-tabor/turnusy').set(otherHost));
   });
 

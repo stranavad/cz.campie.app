@@ -8,6 +8,10 @@ export const publicOrganisationSchema = z.object({
   accentColour: z.string(),
   // Served on the Organisation's own subdomain; a new logo gets a new address.
   logoUrl: z.string().nullable(),
+  // The contact the Owner keeps in the settings for guardians, shown on pages without a Camp; never the
+  // billing address.
+  contactEmail: z.string(),
+  contactPhone: z.string(),
 });
 
 export type PublicOrganisation = z.infer<typeof publicOrganisationSchema>;

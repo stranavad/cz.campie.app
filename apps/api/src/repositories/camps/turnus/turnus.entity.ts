@@ -95,6 +95,7 @@ export class TurnusEntity {
       earlyBirdPrice: this.earlyBirdPrice,
       earlyBirdLastDay: this.earlyBirdLastDay,
       priceNow: priceInForce(this, now).amount,
+      deposit: this.deposit,
       opensAt: this.opensAt === null ? null : this.opensAt.toISOString(),
       closesAt: this.closesAt === null ? null : this.closesAt.toISOString(),
       availability,

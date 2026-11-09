@@ -2,13 +2,15 @@ import { ConflictException, Injectable } from '@nestjs/common';
 
 import {
   turnusAvailability,
+  type PublicCampCard,
   type PublicTurnus,
   type RemoveTurnusErrorCode,
   type Turnus,
   type TurnusAvailability,
   type TurnusBody,
 } from '@repo/schema/camps';
-import { instantFromPragueLocal } from '@repo/schema/shared';
+import { priceInForce } from '@repo/schema/pricing';
+import { instantFromPragueLocal, pragueDateOf } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
@@ -18,6 +20,12 @@ import { CampRepository } from '../../../../repositories/camps/camp/camp.reposit
 import type { TurnusEntity } from '../../../../repositories/camps/turnus/turnus.entity.ts';
 import { TurnusRepository, type TurnusFields } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
+
+// What a Camp's card on the landing page tells of its Turnusy.
+export type TurnusySummary = Pick<PublicCampCard, 'dates' | 'lowestPrice'>;
+
+// A Camp without Turnusy not yet over.
+export const NO_TURNUSY: TurnusySummary = { dates: null, lowestPrice: null };
 
 // The Turnusy of the current Organisation's Camps. Permission (Camp settings) is the route's.
 @Injectable()
@@ -53,6 +61,35 @@ export class TurnusService {
     return (await this.availabilityOf(await this.turnusy.listByCamp(campId))).map(
       ({ turnus, registered, availability }) => turnus.toPublicDto(registered, availability, now),
     );
+  }
+
+  /**
+   * Sum up each of the current Organisation's Camps' Turnusy not yet over (ending today in Prague or
+   * later): their first start and last end, and the lowest price in force now among those open or not yet
+   * open. A Camp without any is missing from the map, its summary `NO_TURNUSY`.
+   */
+  public async summariseByCamp(): Promise<Map<string, TurnusySummary>> {
+    const now = this.clock.now();
+    const today = pragueDateOf(now);
+    const summaries = new Map<string, TurnusySummary>();
+
+    const notOver = (await this.turnusy.list()).filter(({ endDate }) => endDate >= today);
+
+    for (const { turnus, availability } of await this.availabilityOf(notOver)) {
+      const { dates, lowestPrice } = summaries.get(turnus.campId) ?? NO_TURNUSY;
+      const price =
+        availability === 'open' || availability === 'not_yet_open' ? priceInForce(turnus, now).amount : null;
+
+      summaries.set(turnus.campId, {
+        dates: {
+          startDate: dates === null || turnus.startDate < dates.startDate ? turnus.startDate : dates.startDate,
+          endDate: dates === null || turnus.endDate > dates.endDate ? turnus.endDate : dates.endDate,
+        },
+        lowestPrice: price === null ? lowestPrice : Math.min(price, lowestPrice ?? price),
+      });
+    }
+
+    return summaries;
   }
 
   /**

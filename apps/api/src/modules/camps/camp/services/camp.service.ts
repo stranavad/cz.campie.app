@@ -8,6 +8,7 @@ import {
   type CampSlugErrorCode,
   type CreateCampBody,
   type PublicCamp,
+  type PublicCampCard,
   type PublicTurnus,
   type UpdateCampBody,
 } from '@repo/schema/camps';
@@ -27,7 +28,7 @@ import { OrganisationRepository } from '../../../../repositories/organisations/o
 import { PaymentGatewayAccountRepository } from '../../../../repositories/organisations/payment-gateway-account/payment-gateway-account.repository.ts';
 import { UndeliverableEmailService } from '../../../emails/undeliverable-email/services/undeliverable-email.service.ts';
 import { effectiveBranding } from '../../camp-branding/services/camp-branding.service.ts';
-import { TurnusService } from '../../turnus/services/turnus.service.ts';
+import { NO_TURNUSY, TurnusService } from '../../turnus/services/turnus.service.ts';
 import { campContactOf } from '../camp-contact.ts';
 
 // The slug of a name with nothing a slug can hold, or with a reserved one.
@@ -71,13 +72,18 @@ export class CampService {
   }
 
   /**
-   * List the current Organisation's Camps by name as its landing page shows them.
+   * List the current Organisation's Camps by name as its landing page shows them, each summed up from its
+   * Turnusy.
    */
-  public async listPublic(): Promise<PublicCamp[]> {
+  public async listPublic(): Promise<PublicCampCard[]> {
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
     const cardPayments = (await this.gatewayAccounts.get()) !== null;
+    const summaries = await this.turnusy.summariseByCamp();
 
-    return (await this.camps.list()).map((camp) => publicOf(camp, organisation, cardPayments));
+    return (await this.camps.list()).map((camp) => ({
+      ...publicOf(camp, organisation, cardPayments),
+      ...(summaries.get(camp.id) ?? NO_TURNUSY),
+    }));
   }
 
   /**

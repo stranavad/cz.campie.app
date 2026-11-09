@@ -18,6 +18,8 @@ export const publicTurnusSchema = z.object({
   earlyBirdLastDay: z.iso.date().nullable(),
   // The Early bird price while it is in force, else the Base price.
   priceNow: z.number().int(),
+  // Per child; null when the Turnus has none.
+  deposit: z.number().int().nullable(),
   // Instants, for the countdown to the opening.
   opensAt: z.iso.datetime().nullable(),
   closesAt: z.iso.datetime().nullable(),

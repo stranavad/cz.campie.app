@@ -101,6 +101,7 @@ export class CampEntity {
       ...contact,
       ...appearance,
       cardPayments,
+      siblingDiscount: this.toSiblingDiscount(),
     };
   }
 

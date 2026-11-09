@@ -2,18 +2,19 @@ import { Link } from '@tanstack/react-router';
 import { ArrowRightIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import type { PublicCamp } from '@repo/schema/camps';
+import type { PublicCampCard } from '@repo/schema/camps';
 
 import { buttonVariants } from '@/components/ui/button';
 import { brandAttributes } from '@/core/branding';
 import { CampCardPicture } from '@/features/camp-pages/components/camp-card-picture';
+import { CampCardSummary } from '@/features/camp-pages/components/camp-card-summary';
 
 interface CampCardProps {
-  camp: PublicCamp;
+  camp: PublicCampCard;
 }
 
-// A Camp on the landing as one large tappable card in its own accent, with its photo and the start of its
-// description, leading to its page.
+// A Camp on the landing as one large tappable card in its own accent, with its photo, when its Turnusy not
+// yet over run and from what price, and the start of its description, leading to its page.
 export function CampCard({ camp }: CampCardProps) {
   const { t } = useTranslation('campPages');
 
@@ -29,6 +30,7 @@ export function CampCard({ camp }: CampCardProps) {
           <span className="font-display text-2xl leading-tight font-extrabold tracking-[-0.02em] break-words">
             {camp.name}
           </span>
+          <CampCardSummary camp={camp} />
           {camp.description === null ? null : (
             // Plain text: its line breaks are kept, nothing in it is read as markup.
             <span className="line-clamp-3 text-sm whitespace-pre-line text-muted-foreground">{camp.description}</span>

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { SIBLING_DISCOUNT_MODES } from '@repo/schema/pricing';
 import { defineEndpoint } from '@repo/schema/shared';
 
 export const publicCampParamsSchema = z.object({ slug: z.string().max(100) });
@@ -25,6 +26,9 @@ export const publicCampSchema = z.object({
   photoUrl: z.string().nullable(),
   // Whether the Organisation takes card payments, so the form offers the choice.
   cardPayments: z.boolean(),
+  // Per child in whole CZK, null when the Camp has none; the form shows it before a sibling is added, the
+  // price preview gives the lines.
+  siblingDiscount: z.object({ amount: z.number().int(), appliesTo: z.enum(SIBLING_DISCOUNT_MODES) }).nullable(),
 });
 
 export type PublicCamp = z.infer<typeof publicCampSchema>;

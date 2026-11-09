@@ -1,6 +1,6 @@
 # 77 - Public pages: Camp summaries, Deposit, contact and Sibling discount
 
-Status: ready-for-agent
+Status: in-progress
 Stage: 1b
 Episode: E3 Public registration
 Blocked by: 27, 33, 34
@@ -29,3 +29,11 @@ The redesigned public pages need a few read-only fields the public contracts lac
 
 - Spec sections: Pricing; Other (branding).
 - Design: canvas "Campie - návrhy designu", artboards `M-Organizace` (Camp cards, footer), `M-Tabor` (Turnus Deposit), `M-Prihlaska` (Sibling discount), `M-PortalLogin` (footer). Consumed by the public landing and Camp pages, the form wizard (issue 34's comment of 2026-11-09) and the guardian footer.
+
+## Comments
+
+2026-11-09 - **Implemented, awaiting review.** `GET /public-camps` returns each Camp as a `PublicCampCard`: the public Camp plus `dates` (first start and last end of its Turnusy ending today in Prague or later) and `lowestPrice` (the lowest price in force now among those of them open or not yet open), each null without any; computed by `TurnusService.summariseByCamp` from the same availability rules as the Camp page, in two queries for the whole Organisation. `PublicTurnus` gains `deposit` (null for none), `PublicCamp` gains `siblingDiscount` (`{ amount, appliesTo }`, null for none, from the Camp's pricing settings), and `GET /organisation` gains `contactEmail` and `contactPhone` from the Organisation settings (never the billing address). No new endpoints, so no new rate limits.
+
+- Tests pin the exact key sets of the public Organisation, Camp, Camp card and Turnus, the contact per subdomain and its absence for a suspended or pending Organisation, the summary across finished, closed and Early bird Turnusy and the Prague midnight edge, and that the public Sibling discount matches the price preview's lines for two children in both modes.
+- UI: date and "od {price}" chips on the landing's Camp cards, "záloha {amount}" on the Camp page's Turnus cards, the Organisation's email and phone in the footer of the landing and the portal login, and the per-child Sibling discount on the form's "Sourozenec" button.
+- Open: not checked in a browser (the local stack's port 80 is taken on this machine).

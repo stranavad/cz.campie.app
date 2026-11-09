@@ -42,6 +42,11 @@ export function TurnusCard({ turnus, action }: TurnusCardProps) {
               {t('campPage.earlyBird', { date: czechDate(turnus.earlyBirdLastDay), base: czk(turnus.basePrice) })}
             </span>
           ) : null}
+          {turnus.deposit === null ? null : (
+            <span className="text-[13px] text-muted-foreground">
+              {t('campPage.deposit', { amount: czk(turnus.deposit) })}
+            </span>
+          )}
         </p>
         {action}
       </div>

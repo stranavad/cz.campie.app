@@ -2,6 +2,7 @@ import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { Answers } from '@repo/schema/form-engine';
+import { czk } from '@repo/schema/shared';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -14,10 +15,12 @@ interface ChildChipsProps {
   // the focus goes to the field itself).
   invalid: readonly number[];
   onAdd: (() => void) | null;
+  // The Camp's Sibling discount per child, shown on the way to add one; the price preview gives the lines.
+  siblingDiscount: number | null;
 }
 
 // The children of the Registration as chips, one filled in at a time, and a sibling to add.
-export function ChildChips({ participants, active, onSelect, invalid, onAdd }: ChildChipsProps) {
+export function ChildChips({ participants, active, onSelect, invalid, onAdd, siblingDiscount }: ChildChipsProps) {
   const { t } = useTranslation('registration');
 
   return (
@@ -43,6 +46,9 @@ export function ChildChips({ participants, active, onSelect, invalid, onAdd }: C
         <Button type="button" variant="dashed" onClick={onAdd}>
           <PlusIcon aria-hidden="true" />
           {t('addSibling')}
+          {siblingDiscount === null ? null : (
+            <span className="font-semibold text-success-foreground tabular-nums">{czk(-siblingDiscount)}</span>
+          )}
         </Button>
       )}
     </div>
