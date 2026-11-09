@@ -208,6 +208,13 @@ const requestLimits = z
         ),
         // Per Organisation well above a popular Camp's opening rush, which may bring hundreds within minutes.
         submission: limitOf('submission', env.SUBMISSION_LIMIT_PER_IP, env.SUBMISSION_LIMIT_PER_ORGANISATION),
+        // The Přihlášky right after a submission, as often as submissions, counted apart, so the submitted
+        // page asking for them never uses up the submissions.
+        submittedPrihlasky: limitOf(
+          'submitted-prihlasky',
+          env.SUBMISSION_LIMIT_PER_IP,
+          env.SUBMISSION_LIMIT_PER_ORGANISATION,
+        ),
         loginLink: limitOf('login-link', env.LOGIN_LINK_LIMIT_PER_IP, env.LOGIN_LINK_LIMIT_PER_EMAIL),
         // Each notification makes a call to Comgate. Comgate notifies every Organisation from a few
         // addresses, so the address's limit is far above the Organisation's.

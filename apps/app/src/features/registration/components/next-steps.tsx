@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import type { SubmittedRegistration } from '@repo/schema/registrations';
-import { czk } from '@repo/schema/shared';
+import { czechDate, czk } from '@repo/schema/shared';
 
 import { Card, CardTitle } from '@/components/ui/card';
 
@@ -12,14 +12,22 @@ interface NextStepsProps {
 // What follows the submission: the payment, the portal, and the rest of the price after a Deposit.
 export function NextSteps({ submitted }: NextStepsProps) {
   const { t } = useTranslation('registration');
+  const { payment } = submitted;
   const steps = [
-    t(submitted.depositTotal === null ? 'submitted.next.payTotal' : 'submitted.next.payDeposit', {
+    t(payment.phase === 'deposit' ? 'submitted.next.payDeposit' : 'submitted.next.payTotal', {
       variableSymbol: submitted.variableSymbol,
     }),
     t('submitted.next.portal'),
-    ...(submitted.depositTotal === null
+    ...(payment.balance === null
       ? []
-      : [t('submitted.next.balance', { amount: czk(submitted.total - submitted.depositTotal) })]),
+      : [
+          payment.balance.dueDate === null
+            ? t('submitted.next.balance', { amount: czk(payment.balance.amount) })
+            : t('submitted.next.balanceBy', {
+                amount: czk(payment.balance.amount),
+                date: czechDate(payment.balance.dueDate),
+              }),
+        ]),
   ];
 
   return (

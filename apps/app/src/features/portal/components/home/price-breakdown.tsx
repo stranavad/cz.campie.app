@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { GuardianRegistration } from '@repo/schema/portal';
 import { czechDate, czk } from '@repo/schema/shared';
 
-import { PaymentRow } from '@/features/portal/components/home/payment-row';
+import { PaymentRow } from '@/components/payment-row';
 
 interface PriceBreakdownProps {
   registration: GuardianRegistration;

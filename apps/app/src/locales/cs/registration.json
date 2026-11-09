@@ -117,18 +117,22 @@
     "confirmation": "Potvrzení přihlášky pošleme na {{email}}.",
     "payDeposit": "Zaplaťte zálohu",
     "payTotal": "Zaplaťte přihlášku",
-    "amount": "Částka",
-    "variableSymbol": "Variabilní symbol",
-    "email": "Číslo účtu a další platební údaje vám přijdou e-mailem. Variabilní symbol si poznamenejte.",
     "next": {
       "title": "Co bude dál",
       "payDeposit": "Zaplaťte zálohu s variabilním symbolem {{variableSymbol}}. Jakmile platba dorazí, uvidíte ji v portálu.",
       "payTotal": "Zaplaťte přihlášku s variabilním symbolem {{variableSymbol}}. Jakmile platba dorazí, uvidíte ji v portálu.",
       "portal": "V portálu uvidíte stav přihlášky a platby a doplníte, co tábor ještě potřebuje.",
-      "balance": "Doplatek {{amount}} zaplatíte později, termín najdete v portálu."
+      "balance": "Doplatek {{amount}} zaplatíte později, termín najdete v portálu.",
+      "balanceBy": "Doplatek {{amount}} zaplaťte do {{date}}. Termín najdete i v portálu."
     },
     "cardRedirecting": "Přesměrováváme vás na platbu kartou…",
-    "cardFailed": "Platbu kartou se teď nepodařilo spustit. Zaplaťte prosím převodem podle údajů v e-mailu, nebo kartou později v portálu."
+    "cardFailed": "Platbu kartou se teď nepodařilo spustit. Zaplaťte prosím převodem podle údajů níže, nebo kartou později v portálu.",
+    "prihlaska": {
+      "title": "Přihláška",
+      "download": "Stáhnout přihlášku (PDF)",
+      "downloadFor": "Stáhnout přihlášku - {{name}} (PDF)",
+      "preparing": "{{name}}: přihlášku připravujeme, za chvíli ji tu stáhnete."
+    }
   },
   "cardResult": {
     "loading": "Ověřujeme platbu…",
@@ -146,8 +150,9 @@
     },
     "failed": {
       "title": "Platba neprošla",
-      "text": "Platba kartou za přihlášku na {{camp}} nebyla dokončena. Zkuste to znovu v portálu, nebo tam zaplaťte převodem přes QR kód."
-    }
+      "text": "Platba kartou za přihlášku na {{camp}} nebyla dokončena. Zkuste to znovu v portálu, nebo zaplaťte převodem podle údajů níže."
+    },
+    "summary": "{{amount}} za {{participants}}, variabilní symbol {{variableSymbol}}"
   },
   "addSibling": "Sourozenec",
   "next": "Pokračovat",

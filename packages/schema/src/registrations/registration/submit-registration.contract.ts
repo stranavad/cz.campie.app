@@ -5,6 +5,8 @@ import { answerValueSchema } from '@repo/schema/form-engine';
 import { PAYMENT_CHOICES } from '@repo/schema/pricing';
 import { defineEndpoint } from '@repo/schema/shared';
 
+import { registrationPaymentSchema } from '../registration-payment/registration-payment.resource.ts';
+
 const answersSchema = z.record(z.string().max(100), answerValueSchema);
 
 export const submitRegistrationBodySchema = z.object({
@@ -27,6 +29,8 @@ export const submittedRegistrationSchema = z.object({
   total: z.number().int(),
   // Owed first when the Deposit was chosen; null when paying in full.
   depositTotal: z.number().int().nullable(),
+  // How to pay, as the portal shows it, so the guardian can pay before the email arrives.
+  payment: registrationPaymentSchema,
 });
 
 export type SubmittedRegistration = z.infer<typeof submittedRegistrationSchema>;

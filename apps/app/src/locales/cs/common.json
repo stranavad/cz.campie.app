@@ -473,5 +473,19 @@
       "read": "číst",
       "write": "upravit"
     }
+  },
+  "transfer": {
+    "howToPay": "Jak zaplatit",
+    "depositNow": "Záloha k úhradě",
+    "amountNow": "Částka k úhradě",
+    "dueDate": "Splatnost",
+    "rest": "Doplatek",
+    "restBy": "{{amount}} do {{date}}",
+    "allAtOnce": "Nebo vše najednou",
+    "account": "Číslo účtu",
+    "variableSymbolLabel": "Variabilní symbol",
+    "noAccount": "Číslo účtu pro platbu pošle pořadatel tábora.",
+    "qrFor": "{{label}}: {{amount}}",
+    "qr": "QR platba"
   }
 }

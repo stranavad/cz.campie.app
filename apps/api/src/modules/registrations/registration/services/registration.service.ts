@@ -29,11 +29,13 @@ import { dueDatesOf, priceRegistration, type DueDates, type RegistrationPrice } 
 import type {
   AdminRegistrationErrorCode,
   CreateRegistrationBody,
+  GetSubmittedPrihlaskyBody,
   NewRegistrationPrice,
   RegistrationSource,
   SubmissionErrorCode,
   SubmissionFieldErrorCode,
   SubmitRegistrationBody,
+  SubmittedPrihlasky,
   SubmittedRegistration,
 } from '@repo/schema/registrations';
 import { pragueDateOf, type FieldError } from '@repo/schema/shared';
@@ -45,6 +47,7 @@ import type { Env } from '../../../../core/config/env.schema.ts';
 import { lockTimedOut } from '../../../../core/database/lock-timeout.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
 import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
+import { FileService } from '../../../../core/files/file.service.ts';
 import { JobQueue } from '../../../../core/jobs/job-queue.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { RateLimiter, type RequestLimit } from '../../../../core/rate-limits/rate-limiter.ts';
@@ -68,6 +71,7 @@ import { changedSensitive, ensureHealthWritable, sealAnswers } from '../../answe
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
 import { generatePrihlaskyJob } from '../../prihlaska/generate-prihlasky.job.ts';
 import { notifyTeamJob } from '../notify-team.job.ts';
+import { openedBySubmittedKey } from '../submitted-key.ts';
 import { VariableSymbols } from './variable-symbols.ts';
 
 // A clash of eight random digits among an Organisation's Registrations is rare; this many in a row means
@@ -114,6 +118,7 @@ function invalid(errors: readonly FieldError[]): BadRequestException {
 export class RegistrationService {
   private readonly logger = new Logger(RegistrationService.name);
   private readonly limit: RequestLimit;
+  private readonly prihlaskyLimit: RequestLimit;
 
   constructor(
     private readonly registrations: RegistrationRepository,
@@ -129,10 +134,14 @@ export class RegistrationService {
     private readonly jobs: JobQueue,
     private readonly audit: AuditService,
     private readonly encryption: EncryptionService,
+    private readonly files: FileService,
     private readonly clock: Clock,
     config: ConfigService<Env, true>,
   ) {
-    this.limit = config.get('requestLimits', { infer: true }).submission;
+    const limits = config.get('requestLimits', { infer: true });
+
+    this.limit = limits.submission;
+    this.prihlaskyLimit = limits.submittedPrihlasky;
   }
 
   /**
@@ -204,6 +213,44 @@ export class RegistrationService {
   }
 
   /**
+   * Give the Přihlášky of a Registration straight after its submission, found by the submission's key, as
+   * short-lived download links, null for a Participant whose Přihláška is not generated yet. Counts against
+   * its own limit of the address and of the Organisation.
+   * @param slug the Camp's slug or a former one
+   * @param body the submission's key
+   * @param ipAddress where the request comes from
+   * @throws {NotFoundException} when no Registration of the Camp, not Erased, was submitted with the key in
+   * the last day
+   */
+  public async submittedPrihlasky(
+    slug: string,
+    { idempotencyKey }: GetSubmittedPrihlaskyBody,
+    ipAddress: string,
+  ): Promise<SubmittedPrihlasky> {
+    await this.rateLimiter.admit(this.prihlaskyLimit, { ipAddress, target: this.unitOfWork.organisationId });
+    const registration = await this.registrations.getByIdempotencyKey(idempotencyKey);
+    const camp = await this.camps.getBySlug(slug.toLowerCase());
+
+    if (
+      !openedBySubmittedKey(registration, this.clock.now()) ||
+      camp === null ||
+      (await this.turnusy.getByIdOrThrow(registration.turnusId)).campId !== camp.id
+    ) {
+      throw new NotFoundException();
+    }
+
+    const participants = await this.registrations.listParticipants(registration.id);
+    const links = await this.files.links(participants.flatMap(({ prihlaskaFileId: id }) => (id === null ? [] : [id])));
+
+    return {
+      participants: participants.map(({ position, prihlaskaFileId }) => ({
+        position,
+        prihlaska: prihlaskaFileId === null ? null : (links.get(prihlaskaFileId) ?? null),
+      })),
+    };
+  }
+
+  /**
    * Create a Registration for an admin, from a phone call or a paper form: under the Camp's latest form, but
    * outside the Registration window, over capacity and outside age limits, without mandatory declarations,
    * and with a Discount code past its limit or expiry, still counted as a use. The same idempotency key
@@ -272,16 +319,19 @@ export class RegistrationService {
       sendConfirmation: body.sendConfirmation,
     });
 
-    if (cashDeposit !== null) {
-      await this.ledger.recordPayment(actor, created.id, {
-        kind: 'payment',
-        amount: cashDeposit,
-        paidOn: pragueDateOf(now),
-        note: CASH_DEPOSIT_NOTE,
-      });
+    if (cashDeposit === null) {
+      return created;
     }
 
-    return created;
+    await this.ledger.recordPayment(actor, created.id, {
+      kind: 'payment',
+      amount: cashDeposit,
+      paidOn: pragueDateOf(now),
+      note: CASH_DEPOSIT_NOTE,
+    });
+
+    // How to pay the rest once the Deposit is in, as a replay of the same key tells it.
+    return { ...created, payment: await this.ledger.paymentInstructionsOf(created.id) };
   }
 
   /**
@@ -341,6 +391,7 @@ export class RegistrationService {
       variableSymbol: earlier.variableSymbol,
       total: await this.registrations.totalOf(earlier.id),
       depositTotal: earlier.depositTotal,
+      payment: await this.ledger.paymentInstructionsOf(earlier.id),
     };
   }
 
@@ -646,6 +697,7 @@ export class RegistrationService {
       variableSymbol: registration.variableSymbol,
       total: price.total,
       depositTotal: registration.depositTotal,
+      payment: await this.ledger.paymentInstructionsOf(registration.id),
     };
   }
 

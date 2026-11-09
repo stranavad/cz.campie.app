@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 import { priceLineSchema } from '@repo/schema/camps';
 import { fileLinkSchema } from '@repo/schema/files';
-import { AMOUNT_DUE_PHASES, PAYMENT_STATUSES } from '@repo/schema/pricing';
-import { PARTICIPANT_STATUSES } from '@repo/schema/registrations';
+import { PAYMENT_STATUSES } from '@repo/schema/pricing';
+import { PARTICIPANT_STATUSES, registrationPaymentSchema } from '@repo/schema/registrations';
 import { calendarDateSchema } from '@repo/schema/shared';
 
 const amount = z.number().int();
@@ -55,20 +55,7 @@ export const guardianRegistrationSchema = z.object({
   balance: amount,
   status: z.enum(PAYMENT_STATUSES),
   overdue: z.boolean(),
-  // How to pay: the amount due now and, while Deposits are owed, everything at once; each with its QR
-  // platba payload, null without the Organisation's account or anything to pay.
-  payment: z.object({
-    account: z.string().nullable(),
-    // Whether the Organisation takes card payments.
-    card: z.boolean(),
-    phase: z.enum(AMOUNT_DUE_PHASES),
-    amount,
-    dueDate: calendarDateSchema.nullable(),
-    qrPlatba: z.string().nullable(),
-    balance: z
-      .object({ amount, dueDate: calendarDateSchema.nullable(), outstanding: amount, qrPlatba: z.string().nullable() })
-      .nullable(),
-  }),
+  payment: registrationPaymentSchema,
 });
 
 export type GuardianRegistration = z.infer<typeof guardianRegistrationSchema>;

@@ -1,20 +1,20 @@
 import { useTranslation } from 'react-i18next';
 
-import type { GuardianRegistration } from '@repo/schema/portal';
+import type { RegistrationPayment } from '@repo/schema/registrations';
 import { czechDate, czk } from '@repo/schema/shared';
 
-import { PaymentRow } from '@/features/portal/components/home/payment-row';
-import { QrPlatba } from '@/features/portal/components/home/qr-platba';
+import { PaymentRow } from '@/components/payment-row';
+import { QrPlatba } from '@/core/transfer-details/components/qr-platba';
 
 interface TransferDetailsProps {
-  registration: GuardianRegistration;
+  payment: RegistrationPayment;
+  variableSymbol: string;
 }
 
 // Paying by transfer: what to pay now and by when, the account and variable symbol, and the QR platby to
 // scan, for the amount due now and, while Deposits are owed, everything at once.
-export function TransferDetails({ registration }: TransferDetailsProps) {
-  const { t } = useTranslation('portal');
-  const { payment } = registration;
+export function TransferDetails({ payment, variableSymbol }: TransferDetailsProps) {
+  const { t } = useTranslation('common', { keyPrefix: 'transfer' });
   const nowLabel = t(payment.phase === 'deposit' ? 'depositNow' : 'amountNow');
 
   return (
@@ -37,7 +37,7 @@ export function TransferDetails({ registration }: TransferDetailsProps) {
           </>
         )}
         {payment.account === null ? null : <PaymentRow label={t('account')} value={payment.account} />}
-        <PaymentRow label={t('variableSymbolLabel')} value={registration.variableSymbol} />
+        <PaymentRow label={t('variableSymbolLabel')} value={variableSymbol} />
       </div>
       {payment.account === null ? <p className="text-sm text-muted-foreground">{t('noAccount')}</p> : null}
       <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">

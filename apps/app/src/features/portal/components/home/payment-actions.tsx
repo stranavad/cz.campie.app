@@ -6,7 +6,7 @@ import { czk } from '@repo/schema/shared';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { TransferDetails } from '@/features/portal/components/home/transfer-details';
+import { TransferDetails } from '@/core/transfer-details';
 import { usePaymentActions } from '@/features/portal/components/home/use-payment-actions.hook';
 import { cn } from '@/lib/utils';
 
@@ -18,12 +18,13 @@ interface PaymentActionsProps {
 // side. Without card payments the transfer details show at once.
 export function PaymentActions({ registration }: PaymentActionsProps) {
   const { t } = useTranslation('portal');
+  const { t: tTransfer } = useTranslation('common', { keyPrefix: 'transfer' });
   const { payment } = registration;
   const { transferId, isTransferOpen, toggleTransfer, isStarting, hasFailed, canTransfer, payDue, payAll } =
     usePaymentActions(registration);
 
   if (!payment.card) {
-    return <TransferDetails registration={registration} />;
+    return <TransferDetails payment={payment} variableSymbol={registration.variableSymbol} />;
   }
 
   return (
@@ -43,7 +44,7 @@ export function PaymentActions({ registration }: PaymentActionsProps) {
             onClick={toggleTransfer}
           >
             <QrCodeIcon aria-hidden="true" />
-            {t('qr')}
+            {tTransfer('qr')}
           </Button>
         ) : null}
       </div>
@@ -65,10 +66,10 @@ export function PaymentActions({ registration }: PaymentActionsProps) {
       ) : null}
       {canTransfer ? (
         <div id={transferId} hidden={!isTransferOpen}>
-          <TransferDetails registration={registration} />
+          <TransferDetails payment={payment} variableSymbol={registration.variableSymbol} />
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">{t('noAccount')}</p>
+        <p className="text-sm text-muted-foreground">{tTransfer('noAccount')}</p>
       )}
     </div>
   );

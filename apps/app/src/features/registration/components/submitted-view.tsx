@@ -9,8 +9,10 @@ import { czechDate } from '@repo/schema/shared';
 
 import { IconTile } from '@/components/icon-tile';
 import { buttonVariants } from '@/components/ui/button';
+import { joinNames } from '@/features/registration/components/names.helper';
 import { NextSteps } from '@/features/registration/components/next-steps';
 import { SubmittedPaymentCard } from '@/features/registration/components/submitted-payment-card';
+import { SubmittedPrihlasky } from '@/features/registration/components/submitted-prihlasky';
 
 interface SubmittedViewProps {
   camp: PublicCamp;
@@ -18,14 +20,21 @@ interface SubmittedViewProps {
   participants: readonly Answers[];
   registration: Answers;
   submitted: SubmittedRegistration;
+  submittedKey: string;
   cardStatus: 'redirecting' | 'failed' | null;
 }
 
-const names = new Intl.ListFormat('cs', { type: 'conjunction' });
-
-// What a guardian sees once the Registration is in: who has a place where, what to pay with which Variable
-// symbol, and what follows; the payment details follow by email.
-export function SubmittedView({ camp, turnus, participants, registration, submitted, cardStatus }: SubmittedViewProps) {
+// What a guardian sees once the Registration is in: who has a place where, how to pay right away, the
+// Přihlášky to download, and what follows.
+export function SubmittedView({
+  camp,
+  turnus,
+  participants,
+  registration,
+  submitted,
+  submittedKey,
+  cardStatus,
+}: SubmittedViewProps) {
   const { t } = useTranslation('registration');
   const children = participants.map((answers) => (typeof answers.firstName === 'string' ? answers.firstName : ''));
 
@@ -39,7 +48,7 @@ export function SubmittedView({ camp, turnus, participants, registration, submit
         <p className="text-muted-foreground">
           {t('submitted.placed', {
             count: children.length,
-            children: names.format(children),
+            children: joinNames(children),
             camp: camp.name,
             turnus: t('turnusOption', {
               name: turnus.name,
@@ -55,6 +64,7 @@ export function SubmittedView({ camp, turnus, participants, registration, submit
         ) : null}
       </section>
       <SubmittedPaymentCard submitted={submitted} cardStatus={cardStatus} />
+      <SubmittedPrihlasky slug={camp.slug} submittedKey={submittedKey} firstNames={children} />
       <NextSteps submitted={submitted} />
       <Link to="/organisation/portal" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
         {t('openPortal')}

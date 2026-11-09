@@ -2,8 +2,11 @@ import { Controller, Ip } from '@nestjs/common';
 
 import type { PublicCampParams } from '@repo/schema/camps';
 import {
+  getSubmittedPrihlaskyEndpoint,
   submitRegistrationEndpoint,
+  type GetSubmittedPrihlaskyBody,
   type SubmitRegistrationBody,
+  type SubmittedPrihlasky,
   type SubmittedRegistration,
 } from '@repo/schema/registrations';
 
@@ -23,5 +26,14 @@ export class PublicRegistrationController {
     @Ip() ipAddress: string,
   ): Promise<SubmittedRegistration> {
     return this.registrations.submit(slug, body, ipAddress);
+  }
+
+  @Endpoint(getSubmittedPrihlaskyEndpoint)
+  public prihlasky(
+    @EndpointParams(getSubmittedPrihlaskyEndpoint) { slug }: PublicCampParams,
+    @EndpointBody(getSubmittedPrihlaskyEndpoint) body: GetSubmittedPrihlaskyBody,
+    @Ip() ipAddress: string,
+  ): Promise<SubmittedPrihlasky> {
+    return this.registrations.submittedPrihlasky(slug, body, ipAddress);
   }
 }

@@ -9,6 +9,7 @@ import type {
   PriceAdjustmentErrorCode,
   RecordPaymentBody,
   RecordPaymentErrorCode,
+  RegistrationPayment,
 } from '@repo/schema/registrations';
 import { czechDate, czk, pragueDateOf } from '@repo/schema/shared';
 
@@ -22,6 +23,7 @@ import { CampRepository } from '../../../../repositories/camps/camp/camp.reposit
 import type { TurnusEntity } from '../../../../repositories/camps/turnus/turnus.entity.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
+import { PaymentGatewayAccountRepository } from '../../../../repositories/organisations/payment-gateway-account/payment-gateway-account.repository.ts';
 import type { PaymentEntity } from '../../../../repositories/registrations/payment/payment.entity.ts';
 import { PaymentRepository } from '../../../../repositories/registrations/payment/payment.repository.ts';
 import type { PriceAdjustmentEntity } from '../../../../repositories/registrations/price-adjustment/price-adjustment.entity.ts';
@@ -53,6 +55,7 @@ export class LedgerService {
     private readonly turnusy: TurnusRepository,
     private readonly camps: CampRepository,
     private readonly organisations: OrganisationRepository,
+    private readonly gatewayAccounts: PaymentGatewayAccountRepository,
     private readonly campEmails: CampEmailService,
     private readonly audit: AuditService,
     private readonly jobs: JobQueue,
@@ -74,6 +77,35 @@ export class LedgerService {
    */
   public async balanceOf(registrationId: string): Promise<Balance> {
     return (await this.booksOf(registrationId)).balance;
+  }
+
+  /**
+   * Tell a guardian how to pay a Registration now, the one way the portal, the submitted page and a card
+   * payment that did not go through show it: the amount due now with its date and QR platba, the rest after
+   * the Deposits, and whether a card may pay.
+   * @param registrationId Registration id
+   */
+  public async paymentInstructionsOf(registrationId: string): Promise<RegistrationPayment> {
+    const books = await this.booksOf(registrationId);
+    const camp = await this.camps.getByIdOrThrow(books.turnus.campId);
+    const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
+    const instructions = registrationPaymentOf({
+      registration: books.registration,
+      camp,
+      organisation,
+      total: books.balance.total,
+      paid: books.balance.paid,
+    });
+
+    return {
+      account: instructions.account,
+      card: (await this.gatewayAccounts.get()) !== null,
+      phase: books.balance.amountDue.phase,
+      amount: instructions.amount,
+      dueDate: instructions.dueDate,
+      qrPlatba: instructions.qrPlatba,
+      balance: instructions.balance,
+    };
   }
 
   /**

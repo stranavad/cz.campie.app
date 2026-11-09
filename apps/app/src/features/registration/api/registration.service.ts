@@ -7,6 +7,7 @@ import {
 } from '@repo/schema/camps';
 import {
   getCardPaymentResultEndpoint,
+  getSubmittedPrihlaskyEndpoint,
   startSubmittedCardPaymentEndpoint,
   submitRegistrationEndpoint,
   type SubmitRegistrationBody,
@@ -24,6 +25,8 @@ export const registrationService = {
     apiClient.request(previewPriceEndpoint, { params: { slug }, body, signal }),
   submit: (slug: string, body: SubmitRegistrationBody) =>
     apiClient.request(submitRegistrationEndpoint, { params: { slug }, body }),
+  submittedPrihlasky: (slug: string, idempotencyKey: string, signal?: AbortSignal) =>
+    apiClient.request(getSubmittedPrihlaskyEndpoint, { params: { slug }, body: { idempotencyKey }, signal }),
   cardPaymentResult: (transactionId: string, signal?: AbortSignal) =>
     apiClient.request(getCardPaymentResultEndpoint, { params: { transactionId }, signal }),
   startCardPayment: (idempotencyKey: string) =>

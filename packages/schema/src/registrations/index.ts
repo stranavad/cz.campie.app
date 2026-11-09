@@ -15,3 +15,5 @@ export * from './payment-reminder/payment-reminder.contracts.ts';
 export * from './turnus-overview/turnus-overview.contracts.ts';
 export * from './recent-registrations/recent-registrations.contracts.ts';
 export * from './erasure/erasure.contracts.ts';
+export * from './registration-payment/registration-payment.resource.ts';
+export * from './prihlaska/submitted-prihlasky.contract.ts';

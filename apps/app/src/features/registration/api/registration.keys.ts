@@ -5,6 +5,8 @@ export const registrationKeys = {
   form: (slug: string) => [...registrationKeys.camp(slug), 'form'] as const,
   turnusy: (slug: string) => [...registrationKeys.camp(slug), 'turnusy'] as const,
   price: (slug: string, body: unknown) => [...registrationKeys.camp(slug), 'price', body] as const,
+  prihlasky: (slug: string, idempotencyKey: string) =>
+    [...registrationKeys.camp(slug), 'prihlasky', idempotencyKey] as const,
   // Apart from the Camps, so no slug can share it.
   cardPayment: (transactionId: string) => ['card-payment', transactionId] as const,
 };

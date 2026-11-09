@@ -21,12 +21,9 @@ import { RegistrationRepository } from '../../../../repositories/registrations/r
 import { effectiveBranding } from '../../../camps/camp-branding/services/camp-branding.service.ts';
 import { PaymentGatewayService } from '../../../organisations/payment-gateway/services/payment-gateway.service.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
+import { openedBySubmittedKey } from '../../registration/submitted-key.ts';
 
 const registrationIdSchema = z.uuid();
-
-// The submission's key starts a card payment only this long after it, while the guardian is still on the
-// page; later, the portal does.
-const SUBMITTED_PAYMENT_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Refuse a card payment with a code the frontend translates.
@@ -75,16 +72,13 @@ export class CardPaymentService {
    * Start a card payment of the amount due now, straight after a submission, found by its key.
    * @param idempotencyKey the submission's key
    * @param ipAddress where the request came from
-   * @throws {NotFoundException} when no Registration was submitted with the key in the last day
+   * @throws {NotFoundException} when no Registration not Erased was submitted with the key in the last day
    */
   public async startAfterSubmission(idempotencyKey: string, ipAddress: string): Promise<CardPaymentRedirect> {
     await this.rateLimiter.admit(this.paymentLimit, { ipAddress, target: this.unitOfWork.organisationId });
     const registration = await this.registrations.getByIdempotencyKey(idempotencyKey);
 
-    if (
-      registration === null ||
-      this.clock.now().getTime() - registration.submittedAt.getTime() > SUBMITTED_PAYMENT_WINDOW_MS
-    ) {
+    if (!openedBySubmittedKey(registration, this.clock.now())) {
       throw new NotFoundException();
     }
 
@@ -118,12 +112,15 @@ export class CardPaymentService {
   }
 
   /**
-   * Show how a card payment ended, with the Camp's branding and website. Comgate may send the guardian
+   * Show how a card payment ended, with the Camp's branding and website: its amount, the Registration's
+   * Variable symbol and children by first name, and how to pay by transfer while it has not gone through,
+   * all from the payment the transaction id names, never from what the caller sends. Comgate may send the guardian
    * back before it notifies, or its notification may be lost, so a transaction it reports paid is recorded
    * here as a notification would.
    * @param transactionId Comgate's transaction id
    * @param ipAddress where the request came from
-   * @throws {NotFoundException} when no card payment of the Organisation has the transaction id
+   * @throws {NotFoundException} when no card payment of the Organisation has the transaction id, or its
+   * Registration was Erased
    */
   public async result(transactionId: string, ipAddress: string): Promise<CardPaymentResult> {
     await this.rateLimiter.admit(this.resultLimit, { ipAddress, target: this.unitOfWork.organisationId });
@@ -134,6 +131,11 @@ export class CardPaymentService {
     }
 
     const registration = await this.registrations.getByIdOrThrow(payment.registrationId);
+
+    if (registration.erasedAt !== null) {
+      throw new NotFoundException();
+    }
+
     const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
     const camp = await this.camps.getByIdOrThrow(turnus.campId);
     const { accentColour, logoFileId } = effectiveBranding(
@@ -141,8 +143,16 @@ export class CardPaymentService {
       await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId),
     );
 
+    const state = await this.stateOf(registration.id, transactionId);
+    const participants = await this.registrations.listParticipants(registration.id);
+
     return {
-      state: await this.stateOf(payment.registrationId, transactionId),
+      state,
+      amount: payment.amount,
+      registrationId: registration.id,
+      variableSymbol: registration.variableSymbol,
+      firstNames: participants.map(({ firstName }) => firstName),
+      payment: state === 'paid' ? null : await this.ledger.paymentInstructionsOf(registration.id),
       campName: camp.name,
       accentColour,
       logoUrl: logoFileId === null ? null : publicLogoUrl(logoFileId),

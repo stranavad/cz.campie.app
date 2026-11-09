@@ -10,12 +10,10 @@ import { CampRepository } from '../../../../repositories/camps/camp/camp.reposit
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { UndeliverableEmailRepository } from '../../../../repositories/emails/undeliverable-email/undeliverable-email.repository.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
-import { PaymentGatewayAccountRepository } from '../../../../repositories/organisations/payment-gateway-account/payment-gateway-account.repository.ts';
 import type { RegistrationEntity } from '../../../../repositories/registrations/registration/registration.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { campContactOf } from '../../../camps/camp/camp-contact.ts';
 import { LedgerService } from '../../../registrations/ledger/services/ledger.service.ts';
-import { registrationPaymentOf } from '../../../registrations/payment/payment-instructions.helper.ts';
 
 // A guardian's Registrations in the portal. Access follows the guardian emails on each Registration at the
 // time of the request, so removing an email takes access away at once.
@@ -31,7 +29,6 @@ export class GuardianRegistrationService {
     private readonly organisations: OrganisationRepository,
     private readonly ledgers: LedgerService,
     private readonly files: FileService,
-    private readonly gatewayAccounts: PaymentGatewayAccountRepository,
     private readonly unitOfWork: UnitOfWork,
     config: ConfigService<Env, true>,
   ) {
@@ -45,11 +42,10 @@ export class GuardianRegistrationService {
    */
   public async list(email: string): Promise<GuardianPortal> {
     const registrations = await this.registrations.listByGuardian(email);
-    const card = await this.takesCards();
     const shown: GuardianRegistration[] = [];
 
     for (const registration of registrations) {
-      shown.push(await this.show(registration, card));
+      shown.push(await this.show(registration));
     }
 
     const guardians = await this.registrations.listGuardiansOf(registrations.map(({ id }) => id));
@@ -76,23 +72,15 @@ export class GuardianRegistrationService {
       throw new NotFoundException();
     }
 
-    return this.show(registration, await this.takesCards());
-  }
-
-  /**
-   * Tell whether the current Organisation takes card payments.
-   */
-  private async takesCards(): Promise<boolean> {
-    return (await this.gatewayAccounts.get()) !== null;
+    return this.show(registration);
   }
 
   /**
    * Show a Registration as the portal does: its Participants with their Přihláška links, its price, its
    * ledger and how to pay the rest.
    * @param registration the Registration
-   * @param card whether the Organisation takes card payments
    */
-  private async show(registration: RegistrationEntity, card: boolean): Promise<GuardianRegistration> {
+  private async show(registration: RegistrationEntity): Promise<GuardianRegistration> {
     const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
     const camp = await this.camps.getByIdOrThrow(turnus.campId);
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
@@ -104,13 +92,6 @@ export class GuardianRegistrationService {
     const undeliverable = await this.undeliverable.listMarked(
       (await this.registrations.listGuardians(registration.id)).map(({ email }) => email),
     );
-    const payment = registrationPaymentOf({
-      registration,
-      camp,
-      organisation,
-      total: ledger.total,
-      paid: ledger.paid,
-    });
 
     return {
       id: registration.id,
@@ -148,15 +129,7 @@ export class GuardianRegistrationService {
       balance: ledger.balance,
       status: ledger.status,
       overdue: ledger.overdue,
-      payment: {
-        account: payment.account,
-        card,
-        phase: ledger.amountDue.phase,
-        amount: payment.amount,
-        dueDate: payment.dueDate,
-        qrPlatba: payment.qrPlatba,
-        balance: payment.balance,
-      },
+      payment: await this.ledgers.paymentInstructionsOf(registration.id),
     };
   }
 }

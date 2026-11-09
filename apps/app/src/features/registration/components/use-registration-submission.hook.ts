@@ -62,6 +62,8 @@ export function useRegistrationSubmission(slug: string, cardOffered: boolean, co
     hasFieldRefusal: refusal.fields.length > 0,
     isSending: sending.isPending,
     submitted: sending.data,
+    // The key the Registration was submitted with, which alone opens its Přihlášky right after.
+    submittedKey: lastSent?.key ?? null,
     byCard: cardOffered && byCard,
     setByCard,
     // Once the Registration is in, a card payment is on its way to Comgate, or failed and leaves bank transfer.

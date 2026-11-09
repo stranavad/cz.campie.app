@@ -46,6 +46,23 @@ export const useSubmitRegistrationMutation = (slug: string) => {
   });
 };
 
+// Přihlášky the job has not made yet are asked for again for a minute; once all are there, before their
+// links run out.
+const PRIHLASKA_POLLS = 20;
+const PRIHLASKA_POLL_MS = 3000;
+
+export const useSubmittedPrihlaskyQuery = (slug: string, idempotencyKey: string) =>
+  useQuery({
+    queryKey: registrationKeys.prihlasky(slug, idempotencyKey),
+    queryFn: ({ signal }) => registrationService.submittedPrihlasky(slug, idempotencyKey, signal),
+    retry: false,
+    refetchInterval: ({ state }) =>
+      state.data?.participants.some(({ prihlaska }) => prihlaska === null) === true &&
+      state.dataUpdateCount < PRIHLASKA_POLLS
+        ? PRIHLASKA_POLL_MS
+        : LINK_REFRESH_MS,
+  });
+
 // Sends the guardian to Comgate once a card payment starts; a refusal leaves bank transfer.
 export const useStartCardPaymentMutation = () =>
   useMutation({

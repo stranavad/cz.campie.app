@@ -1,6 +1,6 @@
 # 78 - Payment details and Přihláška after submission
 
-Status: ready-for-agent
+Status: in-progress
 Stage: 1b
 Episode: E3 Public registration
 Blocked by: 36, 40, 49
@@ -28,3 +28,11 @@ The redesigned "Odesláno" page shows how to pay right away (QR platba, bank acc
 
 - Spec sections: Payments; Registration, placement and declarations.
 - Design: canvas "Campie - návrhy designu", artboards `M-Odeslano`, `M-Platba`. Consumed by the public submitted page and the card payment result page.
+
+## Comments
+
+2026-11-09 - **Implemented, awaiting review.** The submit response (public and admin) gains `payment` in the portal's shape (`registrationPaymentSchema`), built by `LedgerService.paymentInstructionsOf`, which the portal now uses too. `POST /public-camps/:slug/registrations/prihlasky` with the submission's `idempotencyKey` returns per Participant (by position) a 5-minute download link or null; it answers 404 for an unknown key, another Camp or Organisation, an Erased Registration or more than a day after the submission, and is rate limited with the submission's numbers under its own counter. The card payment result gains `amount` (of the transaction), `registrationId`, `variableSymbol`, `firstNames` and `payment` (null once paid), all from the stored card payment; an Erased Registration's transaction answers 404, as does starting a card payment for one.
+
+- Tests: payment details equal the portal's with and without a Deposit and without an account, and on a replay; Přihlášky null before the job and downloadable after, links expiring after 5 minutes, refusals per case and across Organisations, the limit; card result fields, payment only while not paid, the transaction's own amount, query params ignored, other Organisation and Erased refused.
+- UI: the submitted page shows the transfer details with QR (shared `core/transfer-details`), the Přihláška download per child and the balance due date; the card result page shows amount, children and VS, and the QR on failure (not while pending, to avoid paying twice).
+- Open: not checked in a browser (the local stack's port 80 is taken on this machine).

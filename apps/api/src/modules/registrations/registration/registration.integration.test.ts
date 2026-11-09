@@ -201,6 +201,7 @@ describe('registration submission', () => {
       variableSymbol: expect.stringMatching(/^27\d{6}$/),
       total: 12_700,
       depositTotal: 4000,
+      payment: expect.objectContaining({ phase: 'deposit', amount: 4000 }),
     });
     expect(preview.body).toMatchObject({ total: 12_700, depositTotal: 4000 });
 

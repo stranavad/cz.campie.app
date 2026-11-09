@@ -9,7 +9,7 @@ interface QrPlatbaProps {
 // A QR platba a banking app reads, drawn in the browser from its payload. Its box is sized up front, so
 // nothing moves when the image arrives.
 export function QrPlatba({ payload }: QrPlatbaProps) {
-  const { t } = useTranslation('portal');
+  const { t } = useTranslation('common', { keyPrefix: 'transfer' });
   const [image, setImage] = useState<string | null>(null);
 
   useEffect(() => {

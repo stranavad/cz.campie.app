@@ -24,6 +24,7 @@ describe('card payments through Comgate', () => {
   let organisationB: string;
   let hostA: { Host: string };
   let registrationId: string;
+  let variableSymbol: string;
   let idempotencyKey: string;
   let guardianEmail: string;
 
@@ -60,9 +61,10 @@ describe('card payments through Comgate', () => {
       .set(await ownerOf(organisationB))
       .send(KEYS_B);
     const campId = await createCamp(app(), organisationA, 'Letní tábor', 'letni-tabor');
-    registrationId = (
-      await submitRegistration(app(), organisationA, campId, { turnus: WITH_DEPOSIT, paymentChoice: 'deposit' })
-    ).id;
+    ({ id: registrationId, variableSymbol } = await submitRegistration(app(), organisationA, campId, {
+      turnus: WITH_DEPOSIT,
+      paymentChoice: 'deposit',
+    }));
     const [row] = await query<{ idempotency_key: string; email: string }>(
       `SELECT r.idempotency_key, g.email FROM registrations r
        JOIN registration_guardians g ON g.registration_id = r.id AND g.position = 1 WHERE r.id = $1`,
@@ -229,11 +231,61 @@ describe('card payments through Comgate', () => {
       expect((await result(cancelled)).body.state).toBe('failed');
     });
 
-    it('knows no transaction of another Organisation', async () => {
+    it('tells what was paid for whom, and how to pay by transfer only while it has not gone through', async () => {
+      const guardian = (await createGuardianSession(app(), organisationA, guardianEmail)).headers;
+      const portalPayment = async () =>
+        (await http().get(`/api/portal/registrations/${registrationId}`).set(guardian)).body.payment;
+      const pending = await startedTransaction();
+      const cancelled = await startedTransaction();
+      const shown = (await result(pending)).body;
+
+      expect(shown).toMatchObject({
+        state: 'pending',
+        amount: 2000,
+        registrationId,
+        variableSymbol,
+        firstNames: ['Ema'],
+        payment: { phase: 'deposit', amount: 2000, card: true },
+      });
+      expect(shown.payment).toEqual(await portalPayment());
+      expect(JSON.stringify(shown)).not.toContain('Testovací');
+      expect(JSON.stringify(shown)).not.toContain(guardianEmail);
+
+      payments().settle(cancelled, 'cancelled');
+      expect((await result(cancelled)).body).toMatchObject({ state: 'failed', amount: 2000 });
+      expect((await result(cancelled)).body.payment).toEqual(await portalPayment());
+
+      payments().settle(pending, 'paid');
+      expect((await result(pending)).body).toMatchObject({ state: 'paid', amount: 2000, payment: null });
+    });
+
+    it('shows the amount the transaction was started for, whatever is due now', async () => {
+      const guardian = (await createGuardianSession(app(), organisationA, guardianEmail)).headers;
+      await http()
+        .post(`/api/portal/registrations/${registrationId}/card-payment`)
+        .set(guardian)
+        .send({ amount: 'balance' });
+      const transactionId = payments().created.at(-1)?.transactionId ?? '';
+
+      expect((await result(transactionId)).body).toMatchObject({ amount: 6500, payment: { amount: 2000 } });
+      expect((await result(`${transactionId}0`)).status).toBe(404);
+      expect(
+        (await http().get(`/api/card-payments/${transactionId}?registrationId=x&amount=1`).set(hostA)).body,
+      ).toMatchObject({ amount: 6500, registrationId });
+    });
+
+    it('knows no transaction of another Organisation, nor of an Erased Registration', async () => {
       const transactionId = await startedTransaction();
       const hostB = { Host: await organisationHost(app(), organisationB) };
+      const onB = await http().get(`/api/card-payments/${transactionId}`).set(hostB);
 
-      expect((await http().get(`/api/card-payments/${transactionId}`).set(hostB)).status).toBe(404);
+      expect(onB.status).toBe(404);
+      expect(JSON.stringify(onB.body)).not.toContain(registrationId);
+
+      await http()
+        .post(`/api/registrations/${registrationId}/erase`)
+        .set(await ownerOf(organisationA));
+      expect((await result(transactionId)).status).toBe(404);
     });
   });
 });

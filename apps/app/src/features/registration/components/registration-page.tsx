@@ -38,7 +38,7 @@ export function RegistrationPage({ campSlug, turnusId, step }: RegistrationPageP
     );
   }
 
-  if (page.submitted !== undefined && page.turnus !== undefined) {
+  if (page.submitted !== undefined && page.submittedKey !== null && page.turnus !== undefined) {
     return (
       <SubmittedView
         camp={page.camp}
@@ -46,6 +46,7 @@ export function RegistrationPage({ campSlug, turnusId, step }: RegistrationPageP
         participants={page.participants}
         registration={page.registration}
         submitted={page.submitted}
+        submittedKey={page.submittedKey}
         cardStatus={page.cardStatus}
       />
     );
