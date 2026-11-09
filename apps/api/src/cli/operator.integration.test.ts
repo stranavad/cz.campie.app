@@ -34,14 +34,14 @@ describe('operator command line', () => {
     expect(await account(headers)).toMatchObject({ operator: false });
   });
 
-  it('creates a missing account without a password, which the operator sets through a password reset', async () => {
+  it('creates a missing account with the name given and without a password, set through a password reset', async () => {
     const post = (path: string, body: object) =>
       http()
         .post(`/api/${path}`)
         .set({ Host: mainHost(app()), [ACCESS_HEADERS.csrf]: '1' })
         .send(body);
 
-    await runOperatorCommand(database().ownerUrl, ['grant', 'provozovatel@example.com']);
+    await runOperatorCommand(database().ownerUrl, ['grant', 'provozovatel@example.com', ' Petra ', 'Provozní']);
 
     expect((await post('password-resets', { email: 'provozovatel@example.com' })).status).toBe(204);
     await jobs().drain();
@@ -51,9 +51,25 @@ describe('operator command line', () => {
     const login = await post('sessions', { email: 'provozovatel@example.com', password: 'letni tabor u rybnika' });
     expect(login.status).toBe(204);
     expect(await account(signInFromCookie(login.headers['set-cookie']))).toMatchObject({
+      firstName: 'Petra',
+      lastName: 'Provozní',
       operator: true,
       totpEnabled: false,
     });
+  });
+
+  it('refuses a name with only one part or with control characters, creating nothing', async () => {
+    for (const name of [['Petra'], ['Petra', 'Pro\u0007vozní']]) {
+      await expect(
+        runOperatorCommand(database().ownerUrl, ['grant', 'provozovatel@example.com', ...name]),
+      ).rejects.toThrow(OperatorCommandError);
+    }
+
+    const admins = await withClient(
+      database().ownerUrl,
+      async (client) => (await client.query('SELECT id FROM admins')).rows,
+    );
+    expect(admins).toEqual([]);
   });
 
   it('resets the TOTP of an operator who lost their app, ending their sessions', async () => {

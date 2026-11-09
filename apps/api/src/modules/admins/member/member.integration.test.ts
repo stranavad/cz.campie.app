@@ -43,7 +43,7 @@ describe('members', () => {
   beforeEach(async () => {
     organisationId = await createOrganisation(app(), { displayName: 'Tábor Testov' });
     owner = await createAdmin(app(), { memberOf: [organisationId], owner: true });
-    member = await createAdmin(app(), { memberOf: [organisationId] });
+    member = await createAdmin(app(), { memberOf: [organisationId], name: { firstName: 'Eva', lastName: 'Členová' } });
   });
 
   const memberIdOf = async (admin: Admin): Promise<string> => {
@@ -71,6 +71,15 @@ describe('members', () => {
   const readRegistrations = async (admin: Admin) =>
     (await http().get('/api/test-members/registrations').set(admin.headers(organisationId))).status;
 
+  it('names each member, and gives null for one who has not given a name', async () => {
+    const response = await http().get('/api/members').set(owner.headers(organisationId));
+
+    expect(response.body).toEqual([
+      expect.objectContaining({ email: owner.email, firstName: null, lastName: null }),
+      expect.objectContaining({ email: member.email, firstName: 'Eva', lastName: 'Členová' }),
+    ]);
+  });
+
   it("changes a member's levels from their next request", async () => {
     expect(await readRegistrations(member)).toBe(403);
 
@@ -82,6 +91,8 @@ describe('members', () => {
     expect(granted.body).toEqual({
       id: expect.any(String),
       email: member.email,
+      firstName: 'Eva',
+      lastName: 'Členová',
       owner: false,
       permissions: { ...NONE, registrations: 'read' },
       totpEnabled: false,
@@ -217,5 +228,29 @@ describe('members', () => {
     expect((await http().get('/api/members').set(otherOwner.headers(otherOrganisation))).body).toEqual([
       expect.objectContaining({ email: otherOwner.email }),
     ]);
+  });
+
+  it('names in each Organisation only its own members, an admin of both in both', async () => {
+    const otherOrganisation = await createOrganisation(app());
+    const otherOwner = await createAdmin(app(), {
+      memberOf: [otherOrganisation],
+      owner: true,
+      name: { firstName: 'Ota', lastName: 'Jinde' },
+    });
+    const both = await createAdmin(app(), {
+      memberOf: [organisationId, otherOrganisation],
+      name: { firstName: 'Běla', lastName: 'Obojí' },
+    });
+
+    const here = JSON.stringify((await http().get('/api/members').set(owner.headers(organisationId))).body);
+    const there = JSON.stringify((await http().get('/api/members').set(otherOwner.headers(otherOrganisation))).body);
+
+    expect(here).toContain('Členová');
+    expect(here).toContain(both.email);
+    expect(here).not.toContain('Jinde');
+    expect(there).toContain('Jinde');
+    expect(there).toContain('Obojí');
+    expect(there).not.toContain('Členová');
+    expect(there).not.toContain(member.email);
   });
 });

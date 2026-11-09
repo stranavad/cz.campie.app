@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
+import type { FullName, Person } from '@repo/schema/shared';
+
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { SessionService } from '../../../../core/sessions/session.service.ts';
 import type { AdminEntity } from '../../../../repositories/admins/admin/admin.entity.ts';
@@ -40,19 +42,39 @@ export class AdminService {
   }
 
   /**
+   * List admins by their email and name.
+   * @param ids admin ids
+   * @returns each admin by id; an unknown id is missing
+   */
+  public listPeopleByIds(ids: readonly string[]): Promise<Map<string, Person>> {
+    return this.admins.listPeopleByIds(ids);
+  }
+
+  /**
+   * Get an admin by their email and name.
+   * @param id admin id
+   * @returns the admin, or null when their account is gone
+   */
+  public async getPersonById(id: string): Promise<Person | null> {
+    return (await this.admins.listPeopleByIds([id])).get(id) ?? null;
+  }
+
+  /**
    * Create an admin identity, in any unit of work: it belongs to no Organisation.
-   * @param input the admin's email, their password's hash unless they set one later, and whether the email
-   * is proven theirs already, as by the invitation that creates the account
+   * @param input the admin's email, their name unless they give it later, their password's hash unless they
+   * set one later, and whether the email is proven theirs already, as by the invitation that creates the account
    */
   public create({
     emailVerified = false,
+    name,
     ...input
   }: {
     email: string;
     passwordHash?: string;
     emailVerified?: boolean;
+    name?: FullName;
   }): Promise<AdminEntity> {
-    return this.admins.create({ ...input, emailVerifiedAt: emailVerified ? this.clock.now() : null });
+    return this.admins.create({ ...input, ...name, emailVerifiedAt: emailVerified ? this.clock.now() : null });
   }
 
   /**
@@ -61,12 +83,18 @@ export class AdminService {
    * else under it, so its TOTP goes too: a second factor they enrolled must not keep the owner out.
    * @param id admin id
    * @param passwordHash the new password's hash
+   * @param name the name the owner gives, replacing one given by whoever made the account, if any
    */
-  public async setPassword(id: string, passwordHash: string): Promise<{ before: AdminEntity; after: AdminEntity }> {
+  public async setPassword(
+    id: string,
+    passwordHash: string,
+    name?: FullName,
+  ): Promise<{ before: AdminEntity; after: AdminEntity }> {
     const before = await this.admins.getByIdOrThrow(id);
     const after = await this.admins.update(id, {
       passwordHash,
       emailVerifiedAt: before.emailVerifiedAt ?? this.clock.now(),
+      ...name,
     });
 
     if (before.emailVerifiedAt === null) {

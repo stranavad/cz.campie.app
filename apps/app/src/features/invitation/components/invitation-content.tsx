@@ -13,7 +13,7 @@ interface InvitationContentProps {
 // Who is invited where, and the way in: a password for a new account, a button for an existing one.
 export function InvitationContent({ token }: InvitationContentProps) {
   const { t } = useTranslation('invitation');
-  const { isInvalid, isLoading, isError, preview } = useInvitationPage(token);
+  const { isInvalid, isLoading, isError, preview, inviter, permissions } = useInvitationPage(token);
 
   const title = <h1 className="text-card-title">{t('title')}</h1>;
 
@@ -51,9 +51,12 @@ export function InvitationContent({ token }: InvitationContentProps) {
       <Avatar name={preview.organisation.displayName} className="size-13 bg-campie-soft text-base" />
       <header className="flex flex-col gap-2">
         <h1 className="text-card-title break-words">
-          {t('titleFor', { organisation: preview.organisation.displayName })}
+          {inviter === null
+            ? t('titleFor', { organisation: preview.organisation.displayName })
+            : t('invitedBy', { name: inviter, organisation: preview.organisation.displayName })}
         </h1>
         <p className="text-muted-foreground">{t('forEmail', { email: preview.email })}</p>
+        <p className="text-sm text-muted-foreground">{t('grants', { permissions })}</p>
       </header>
       {preview.hasAccount ? (
         <JoinExisting token={token} email={preview.email} />

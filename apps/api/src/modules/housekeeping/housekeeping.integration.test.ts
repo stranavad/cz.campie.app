@@ -54,11 +54,10 @@ describe('housekeeping', () => {
       ['stara@example.com', at(-30 * DAY - 1)],
       ['nedavna@example.com', at(-30 * DAY + 1)],
     ]) {
-      await query('INSERT INTO invitations (organisation_id, email, expires_at) VALUES ($1, $2, $3)', [
-        organisations[0],
-        email,
-        expiresAt,
-      ]);
+      await query(
+        "INSERT INTO invitations (organisation_id, email, sent_at, expires_at) VALUES ($1, $2, $3::timestamptz - interval '7 days', $3)",
+        [organisations[0], email, expiresAt],
+      );
     }
 
     for (const organisationId of organisations) {

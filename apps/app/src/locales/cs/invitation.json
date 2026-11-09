@@ -1,12 +1,16 @@
 {
   "title": "Pozvánka do správy organizace",
   "titleFor": "Pozvánka do týmu {{organisation}}",
+  "invitedBy": "{{name}} vás zve do týmu {{organisation}}",
   "loading": "Načítáme pozvánku…",
   "error": "Pozvánku se nepodařilo načíst. Zkuste stránku načíst znovu.",
   "forEmail": "Pozvánka platí pro e-mail {{email}}.",
   "accept": "Přijmout pozvánku",
+  "grants": "Oprávnění: {{permissions}}",
   "newAccount": {
-    "intro": "Nastavte si heslo, kterým se budete přihlašovat.",
+    "intro": "Vyplňte své jméno a nastavte si heslo, kterým se budete přihlašovat.",
+    "firstName": "Jméno",
+    "lastName": "Příjmení",
     "password": "Heslo",
     "passwordHint_one": "Alespoň {{count}} znak. Heslo nesmí obsahovat váš e-mail.",
     "passwordHint_few": "Alespoň {{count}} znaky. Heslo nesmí obsahovat váš e-mail.",

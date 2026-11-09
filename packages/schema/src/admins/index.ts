@@ -1,4 +1,5 @@
 export * from './membership/membership.resource.ts';
+export * from './vocative/vocative.ts';
 export * from './member/member.resource.ts';
 export * from './member/list-members.contract.ts';
 export * from './member/update-member.contract.ts';

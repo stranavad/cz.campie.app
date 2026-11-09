@@ -88,6 +88,9 @@
     "subdomain_taken": "Tuto adresu už používá jiná organizace.",
     "email_taken": "S tímto e-mailem už účet existuje.",
     "consent_required": "Bez souhlasu nelze organizaci založit.",
+    "name_required": "Vyplňte jméno.",
+    "name_too_long": "Jméno může mít nejvýše 100 znaků.",
+    "name_invalid": "Jméno nesmí obsahovat řídicí ani neviditelné znaky.",
     "already_member": "Tento e-mail už patří správci organizace.",
     "totp_code_malformed": "Zadejte šest číslic z ověřovací aplikace.",
     "second_step_code_malformed": "Zadejte šest číslic z ověřovací aplikace, nebo záložní kód ve tvaru abcd-ef23.",
@@ -332,20 +335,6 @@
     "totpStatusOn": "Zapnuto",
     "organisations": "Organizace",
     "organisationsIntro": "Kde jste v týmu a s jakým přístupem.",
-    "permission": "{{area}}: {{level}}",
-    "noAccess": "Bez přístupu",
-    "areas": {
-      "registrations": "Přihlášky",
-      "campSettings": "Nastavení táborů",
-      "health": "Zdravotní údaje",
-      "oddily": "Oddíly",
-      "vedouci": "Vedoucí"
-    },
-    "levels": {
-      "none": "bez přístupu",
-      "read": "číst",
-      "write": "upravit"
-    },
     "newRecoveryCodes": "Nové záložní kódy",
     "newRecoveryCodesIntro": "Došly vám záložní kódy, nebo je mohl vidět někdo jiný? Zadejte kód z ověřovací aplikace a dostanete deset nových. Původní kódy tím přestanou platit a pošleme vám o tom e-mail."
   },
@@ -422,6 +411,22 @@
       "grass": "Trávová",
       "chestnut": "Kaštanová",
       "graphite": "Grafitová"
+    }
+  },
+  "permissions": {
+    "summary": "{{area}}: {{level}}",
+    "noAccess": "Bez přístupu",
+    "areas": {
+      "registrations": "Přihlášky",
+      "campSettings": "Nastavení táborů",
+      "health": "Zdravotní údaje",
+      "oddily": "Oddíly",
+      "vedouci": "Vedoucí"
+    },
+    "levels": {
+      "none": "bez přístupu",
+      "read": "číst",
+      "write": "upravit"
     }
   }
 }

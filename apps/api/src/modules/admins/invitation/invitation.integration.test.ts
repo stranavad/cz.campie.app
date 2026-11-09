@@ -16,6 +16,9 @@ import { enrolTotp } from '../../../testing/totp.ts';
 
 const PASSWORD = 'nove heslo pro letni tabor';
 
+// The invitee's name, as the invitation page asks it with a password.
+const NAME = { firstName: 'Klára', lastName: 'Pozvaná' };
+
 const LEVELS: Permissions = {
   registrations: 'write',
   campSettings: 'read',
@@ -32,7 +35,11 @@ describe('invitations', () => {
 
   beforeEach(async () => {
     organisationId = await createOrganisation(app(), { displayName: 'Tábor Testov' });
-    owner = await createAdmin(app(), { memberOf: [organisationId], owner: true });
+    owner = await createAdmin(app(), {
+      memberOf: [organisationId],
+      owner: true,
+      name: { firstName: 'Jana', lastName: 'Zkušební' },
+    });
   });
 
   const platform = (path: string, body: object) =>
@@ -74,10 +81,12 @@ describe('invitations', () => {
     expect(preview.body).toEqual({
       email: 'nova-vedouci@example.com',
       organisation: { displayName: 'Tábor Testov' },
+      invitedBy: { firstName: 'Jana', lastName: 'Zkušební' },
+      permissions: LEVELS,
       hasAccount: false,
     });
 
-    const accepted = await platform('invitations/accept', { token, password: PASSWORD });
+    const accepted = await platform('invitations/accept', { token, password: PASSWORD, ...NAME });
     expect(accepted.status).toBe(204);
 
     const [cookie] = String(accepted.headers['set-cookie']).split(';');
@@ -86,11 +95,13 @@ describe('invitations', () => {
       .set({ Host: mainHost(app()), Cookie: cookie });
     expect(account.body).toMatchObject({
       email: 'nova-vedouci@example.com',
+      ...NAME,
       memberships: [{ owner: false, organisation: { id: organisationId } }],
     });
     expect(await members()).toContainEqual({
       id: expect.any(String),
       email: 'nova-vedouci@example.com',
+      ...NAME,
       owner: false,
       permissions: LEVELS,
       totpEnabled: false,
@@ -100,17 +111,23 @@ describe('invitations', () => {
 
   it('lets an admin who already has an account join without a new password', async () => {
     const elsewhere = await createOrganisation(app());
-    const existing = await createAdmin(app(), { memberOf: [elsewhere], password: 'puvodni heslo z jineho taboru' });
+    const existing = await createAdmin(app(), {
+      memberOf: [elsewhere],
+      password: 'puvodni heslo z jineho taboru',
+      name: { firstName: 'Petr', lastName: 'Stávající' },
+    });
     const token = await inviteAndReadLink(existing.email);
 
     expect((await platform('invitations/lookup', { token })).body).toMatchObject({ hasAccount: true });
 
-    const accepted = await platform('invitations/accept', { token });
+    const accepted = await platform('invitations/accept', { token, ...NAME });
     expect(accepted.status).toBe(204);
     expect(accepted.headers['set-cookie']).toBeUndefined();
 
     expect((await http().get('/api/members').set(existing.headers(organisationId))).status).toBe(403);
-    expect(await members()).toContainEqual(expect.objectContaining({ email: existing.email, permissions: LEVELS }));
+    expect(await members()).toContainEqual(
+      expect.objectContaining({ email: existing.email, firstName: 'Petr', lastName: 'Stávající', permissions: LEVELS }),
+    );
     expect(
       (await platform('sessions', { email: existing.email, password: 'puvodni heslo z jineho taboru' })).status,
     ).toBe(204);
@@ -126,8 +143,11 @@ describe('invitations', () => {
 
     expect((await platform('invitations/lookup', { token })).body).toMatchObject({ hasAccount: false });
     expect((await platform('invitations/accept', { token })).body).toMatchObject({ code: 'password_required' });
+    expect((await platform('invitations/accept', { token, password: PASSWORD })).body).toMatchObject({
+      code: 'name_required',
+    });
 
-    const accepted = await platform('invitations/accept', { token, password: PASSWORD });
+    const accepted = await platform('invitations/accept', { token, password: PASSWORD, ...NAME });
     expect(accepted.status).toBe(204);
     expect(accepted.headers['set-cookie']).toBeDefined();
 
@@ -141,6 +161,7 @@ describe('invitations', () => {
     expect(loggedIn.status).toBe(204);
     const invitee = { Host: mainHost(app()), Cookie: String(loggedIn.headers['set-cookie']).split(';')[0] ?? '' };
     expect((await http().get('/api/account').set(invitee)).body).toMatchObject({
+      ...NAME,
       totpEnabled: false,
       memberships: expect.arrayContaining([
         expect.objectContaining({ owner: true, organisation: expect.objectContaining({ id: planted.organisationId }) }),
@@ -161,7 +182,7 @@ describe('invitations', () => {
     }
     expect((await platform('sessions', { email: 'nova-vedouci@example.com', password: PASSWORD })).status).toBe(429);
 
-    await platform('invitations/accept', { token, password: PASSWORD });
+    await platform('invitations/accept', { token, password: PASSWORD, ...NAME });
 
     expect((await platform('sessions', { email: 'nova-vedouci@example.com', password: PASSWORD })).status).toBe(204);
   });
@@ -169,7 +190,7 @@ describe('invitations', () => {
   it('audits a takeover in the inviting Organisation as the invitee', async () => {
     await signUpOrganisation(app(), { email: 'nova-vedouci@example.com', password: 'heslo toho kdo ucet zalozil' });
     const token = await inviteAndReadLink('nova-vedouci@example.com');
-    await platform('invitations/accept', { token, password: PASSWORD });
+    await platform('invitations/accept', { token, password: PASSWORD, ...NAME });
 
     const [entries, admins] = await withClient(database().ownerUrl, async (client) => [
       (
@@ -185,16 +206,51 @@ describe('invitations', () => {
         organisation_id: organisationId,
         actor_identity: admins[0]?.id,
         target_id: admins[0]?.id,
-        changes: { emailVerifiedAt: { old: null, new: clock().now().toISOString() } },
+        changes: {
+          emailVerifiedAt: { old: null, new: clock().now().toISOString() },
+          firstName: { old: null, new: 'Klára' },
+          lastName: { old: null, new: 'Pozvaná' },
+        },
       },
     ]);
   });
 
+  it('names an inviting Owner who has not given a name by email to Owners, and not at all to the invitee', async () => {
+    const unnamed = await createAdmin(app(), { memberOf: [organisationId], owner: true });
+    clock().advance(5 * 60 * 1000);
+    const sentAt = clock().now().toISOString();
+
+    await invite(unnamed.headers(organisationId), 'nova-vedouci@example.com');
+
+    expect((await http().get('/api/invitations').set(owner.headers(organisationId))).body).toEqual([
+      expect.objectContaining({
+        sentAt,
+        invitedBy: { email: unnamed.email, firstName: null, lastName: null },
+      }),
+    ]);
+    await jobs().drain();
+    const token = /pozvanka\?token=([\w-]+)/.exec(mail().sent.at(-1)?.text ?? '')?.[1];
+    expect((await platform('invitations/lookup', { token })).body).toMatchObject({ invitedBy: null });
+  });
+
+  it('asks a new account for a valid name, and keeps the link usable', async () => {
+    const token = await inviteAndReadLink('nova-vedouci@example.com');
+
+    const missing = await platform('invitations/accept', { token, password: PASSWORD, firstName: 'Klára' });
+    const blank = await platform('invitations/accept', { token, password: PASSWORD, ...NAME, lastName: ' ' });
+    const hidden = await platform('invitations/accept', { token, password: PASSWORD, ...NAME, firstName: 'K\u200Bá' });
+
+    expect(missing.body).toMatchObject({ statusCode: 400, code: 'name_required' });
+    expect(blank.body).toMatchObject({ statusCode: 400, fields: [{ path: ['lastName'], code: 'name_required' }] });
+    expect(hidden.body).toMatchObject({ statusCode: 400, fields: [{ path: ['firstName'], code: 'name_invalid' }] });
+    expect((await platform('invitations/accept', { token, password: PASSWORD, ...NAME })).status).toBe(204);
+  });
+
   it('accepts a link once', async () => {
     const token = await inviteAndReadLink('nova-vedouci@example.com');
-    await platform('invitations/accept', { token, password: PASSWORD });
+    await platform('invitations/accept', { token, password: PASSWORD, ...NAME });
 
-    const again = await platform('invitations/accept', { token, password: PASSWORD });
+    const again = await platform('invitations/accept', { token, password: PASSWORD, ...NAME });
 
     expect(again.body).toMatchObject({ statusCode: 400, code: 'invitation_invalid' });
     expect((await platform('invitations/lookup', { token })).body).toMatchObject({ code: 'invitation_invalid' });
@@ -204,15 +260,28 @@ describe('invitations', () => {
     const token = await inviteAndReadLink('nova-vedouci@example.com');
 
     clock().advance(7 * 24 * 60 * 60 * 1000);
-    const response = await platform('invitations/accept', { token, password: PASSWORD });
+    const response = await platform('invitations/accept', { token, password: PASSWORD, ...NAME });
 
     expect(response.body).toMatchObject({ statusCode: 400, code: 'invitation_invalid' });
     expect(response.headers['set-cookie']).toBeUndefined();
   });
 
-  it('replaces an earlier invitation of the same address, its levels and its link', async () => {
+  it('replaces an earlier invitation of the same address, its levels, its link and when it was sent', async () => {
     const earlier = await inviteAndReadLink('nova-vedouci@example.com');
-    const newer = await inviteAndReadLink('nova-vedouci@example.com', { ...LEVELS, health: 'read' });
+    const secondOwner = await createAdmin(app(), {
+      memberOf: [organisationId],
+      owner: true,
+      name: { firstName: 'Tomáš', lastName: 'Druhý' },
+    });
+    clock().advance(60 * 60 * 1000);
+    const resentAt = clock().now().toISOString();
+    expect(
+      (await invite(secondOwner.headers(organisationId), 'nova-vedouci@example.com', { ...LEVELS, health: 'read' }))
+        .status,
+    ).toBe(201);
+    await jobs().drain();
+    const newer = /pozvanka\?token=([\w-]+)/.exec(mail().sent.at(-1)?.text ?? '')?.[1];
+    expect(mail().sent).toHaveLength(2);
 
     const listed = await http().get('/api/invitations').set(owner.headers(organisationId));
     expect(listed.body).toEqual([
@@ -220,12 +289,14 @@ describe('invitations', () => {
         id: expect.any(String),
         email: 'nova-vedouci@example.com',
         permissions: { ...LEVELS, health: 'read' },
+        sentAt: resentAt,
         expiresAt: expect.any(String),
+        invitedBy: { email: secondOwner.email, firstName: 'Tomáš', lastName: 'Druhý' },
       },
     ]);
 
-    expect((await platform('invitations/accept', { token: earlier, password: PASSWORD })).status).toBe(400);
-    expect((await platform('invitations/accept', { token: newer, password: PASSWORD })).status).toBe(204);
+    expect((await platform('invitations/accept', { token: earlier, password: PASSWORD, ...NAME })).status).toBe(400);
+    expect((await platform('invitations/accept', { token: newer, password: PASSWORD, ...NAME })).status).toBe(204);
     expect(await members()).toContainEqual(
       expect.objectContaining({ email: 'nova-vedouci@example.com', permissions: { ...LEVELS, health: 'read' } }),
     );
@@ -239,7 +310,7 @@ describe('invitations', () => {
     expect((await http().delete(`/api/invitations/${invitation.id}`).set(owner.headers(organisationId))).status).toBe(
       204,
     );
-    expect((await platform('invitations/accept', { token, password: PASSWORD })).status).toBe(400);
+    expect((await platform('invitations/accept', { token, password: PASSWORD, ...NAME })).status).toBe(400);
 
     const unsent = await invite(owner.headers(organisationId), 'jina-vedouci@example.com');
     await http().delete(`/api/invitations/${unsent.body.id}`).set(owner.headers(organisationId));
@@ -259,7 +330,7 @@ describe('invitations', () => {
     expect(missing.body).toMatchObject({ statusCode: 400, code: 'password_required' });
     expect(simple.body).toMatchObject({ statusCode: 400, code: 'password_too_simple' });
     expect(guessable.body).toMatchObject({ statusCode: 400, code: 'password_guessable' });
-    expect((await platform('invitations/accept', { token, password: PASSWORD })).status).toBe(204);
+    expect((await platform('invitations/accept', { token, password: PASSWORD, ...NAME })).status).toBe(204);
   });
 
   it('refuses to invite an address that is already a member', async () => {
@@ -300,7 +371,7 @@ describe('invitations', () => {
   it('audits the invitation as the Owner, and the acceptance as the new admin', async () => {
     await inviteAndReadLink('nova-vedouci@example.com');
     const token = await inviteAndReadLink('nova-vedouci@example.com', { ...LEVELS, health: 'read' });
-    await platform('invitations/accept', { token, password: PASSWORD });
+    await platform('invitations/accept', { token, password: PASSWORD, ...NAME });
 
     const entries = await withClient(database().ownerUrl, async (client) =>
       (

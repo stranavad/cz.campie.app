@@ -25,6 +25,8 @@ describe('account', () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       email: expect.stringMatching(/@example\.com$/),
+      firstName: null,
+      lastName: null,
       emailVerified: true,
       operator: false,
       totpEnabled: false,

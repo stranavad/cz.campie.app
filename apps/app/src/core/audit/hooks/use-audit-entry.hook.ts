@@ -11,6 +11,8 @@ import {
   type AuditTexts,
 } from '@repo/schema/audit';
 
+import { personName, personNameWithEmail } from '@/core/account';
+
 // An entry as either view has it; the Registration history leaves the IP address out.
 export type ShownAuditEntry = Omit<AuditEntry, 'ipAddress'> & { ipAddress?: AuditEntry['ipAddress'] };
 
@@ -46,13 +48,19 @@ export function useAuditEntry(entry: ShownAuditEntry) {
     };
   });
   const kind = t(`actors.${entry.actor.kind}`);
+  const { email, firstName, lastName } = entry.actor;
+  const actor = email === null ? null : { email, firstName, lastName };
+  const actorName = actor === null ? null : personName(actor);
   const type = isAuditTargetType(entry.target.type) ? t(`targets.${entry.target.type}`) : entry.target.type;
 
   return {
     action: action === null ? t('unknownAction') : t(`actions.${action}`),
     // Where the Owner filters for it; null for an action the catalogue no longer knows.
     area: action === null ? null : AUDIT_ACTIONS[action].area,
-    actor: entry.actor.name === null ? kind : t('actorWithName', { name: entry.actor.name, kind }),
+    // With the email, which is unique, since anyone invited may give themselves an Owner's name.
+    actor: actor === null ? kind : t('actorWithName', { name: personNameWithEmail(actor), kind }),
+    // Who did it, for their initials: by name, else by their kind.
+    actorName: actorName ?? kind,
     target: {
       name:
         entry.target.state === 'erased'

@@ -22,6 +22,8 @@ const SIGNUP: Omit<SignUpOrganisationBody, 'vatId'> & { vatId: string } = {
   subdomain: 'pokusnik',
   email: 'Jana.Testovaci@Example.com',
   password: 'dlouhe heslo pro letni tabor',
+  firstName: '  Jana ',
+  lastName: 'Testovací',
   acceptedVersions: { ...CURRENT_LEGAL_VERSIONS },
 };
 
@@ -73,6 +75,8 @@ describe('organisation signup', () => {
         email: 'jana.testovaci@example.com',
         password_hash: expect.stringMatching(/^\$argon2id\$/),
         email_verified_at: null,
+        first_name: 'Jana',
+        last_name: 'Testovací',
       },
     ]);
     expect(admins[0]?.password_hash).not.toContain(SIGNUP.password);
@@ -91,6 +95,8 @@ describe('organisation signup', () => {
     expect(account.status).toBe(200);
     expect(account.body).toEqual({
       email: 'jana.testovaci@example.com',
+      firstName: 'Jana',
+      lastName: 'Testovací',
       emailVerified: false,
       operator: false,
       totpEnabled: false,
@@ -251,6 +257,20 @@ describe('organisation signup', () => {
       await expectNothingCreated();
     },
   );
+
+  it.each([
+    { body: { firstName: undefined }, path: 'firstName', code: 'name_required' },
+    { body: { lastName: '   ' }, path: 'lastName', code: 'name_required' },
+    { body: { lastName: 'N'.repeat(101) }, path: 'lastName', code: 'name_too_long' },
+    { body: { firstName: 'Jana\u202Enaj' }, path: 'firstName', code: 'name_invalid' },
+    { body: { firstName: 'Jana\nZkušební' }, path: 'firstName', code: 'name_invalid' },
+  ])('refuses the Owner’s name $path with $code before anything is created', async ({ body, path, code }) => {
+    const response = await signUp(body);
+
+    expect(response.status).toBe(400);
+    expect(response.body.fields).toEqual([{ path: [path], code }]);
+    await expectNothingCreated();
+  });
 
   async function expectNothingCreated(): Promise<void> {
     expect(await query("SELECT subdomain FROM organisations WHERE subdomain <> 'zabrany'")).toEqual([]);

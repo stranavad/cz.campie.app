@@ -5,6 +5,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { Env } from './core/config/env.schema.ts';
 import { HttpErrorFilter } from './core/http/http-error.filter.ts';
 import { requireProxySecret } from './core/http/proxy-secret.ts';
+import { validationError } from './core/http/validation-error.ts';
 
 export function setupApp<T extends NestExpressApplication>(app: T): T {
   const config = app.get<ConfigService<Env, true>>(ConfigService);
@@ -24,7 +25,7 @@ export function setupApp<T extends NestExpressApplication>(app: T): T {
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new HttpErrorFilter());
   // Every body, query and param declared with a schema arrives parsed: unknown keys stripped, defaults set.
-  app.useGlobalPipes(new StandardSchemaValidationPipe());
+  app.useGlobalPipes(new StandardSchemaValidationPipe({ exceptionFactory: validationError }));
 
   return app;
 }

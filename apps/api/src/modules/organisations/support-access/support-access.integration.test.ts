@@ -116,6 +116,37 @@ describe('support access', () => {
     ]);
   });
 
+  it('lists each grant, newest first, with the Owner who granted it, and none of another Organisation', async () => {
+    const named = await createAdmin(app(), {
+      memberOf: [organisationId],
+      owner: true,
+      name: { firstName: 'Jana', lastName: 'Zkušební' },
+    });
+    await grant({ hours: 1 });
+    clock().advance(60 * 1000);
+    await http().post('/api/support-access').set(named.headers(organisationId)).send({ hours: 2 });
+    const otherOrganisation = await createOrganisation(app());
+    const otherOwner = await createAdmin(app(), {
+      memberOf: [otherOrganisation],
+      owner: true,
+      name: { firstName: 'Ota', lastName: 'Jinde' },
+    });
+
+    const listed = await http().get('/api/support-access').set(owner);
+
+    expect(listed.body).toEqual([
+      expect.objectContaining({
+        active: true,
+        grantedBy: { email: named.email, firstName: 'Jana', lastName: 'Zkušební' },
+      }),
+      expect.objectContaining({
+        active: false,
+        grantedBy: { email: expect.stringMatching(/@example\.com$/), firstName: null, lastName: null },
+      }),
+    ]);
+    expect((await http().get('/api/support-access').set(otherOwner.headers(otherOrganisation))).body).toEqual([]);
+  });
+
   it('lets only Owners grant', async () => {
     await expectPermission(['owner'], organisationId, (headers) =>
       http().post('/api/support-access').set(headers).send({ hours: 1 }),

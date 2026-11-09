@@ -1,6 +1,13 @@
 import { z } from 'zod';
 
-import { defineEndpoint, emailSchema, passwordSchema, phoneSchema, requiredText } from '@repo/schema/shared';
+import {
+  defineEndpoint,
+  emailSchema,
+  fullNameSchema,
+  passwordSchema,
+  phoneSchema,
+  requiredText,
+} from '@repo/schema/shared';
 
 import { icoSchema } from '../ico/ico.ts';
 import { vatIdSchema } from '../vat-id/vat-id.ts';
@@ -20,7 +27,8 @@ export const signUpOrganisationBodySchema = z.object({
   campName: requiredText(120),
   // Checked against the format, the reserved names and the taken ones by the API, with a code each.
   subdomain: z.string().trim().toLowerCase(),
-  // The first Owner's sign-in.
+  // The first Owner's name and sign-in.
+  ...fullNameSchema.shape,
   email: emailSchema,
   password: passwordSchema,
   // The versions of the terms and the data processing agreement the Owner saw and accepted.

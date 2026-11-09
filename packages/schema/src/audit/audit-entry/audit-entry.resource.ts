@@ -42,7 +42,10 @@ export const auditEntrySchema = z.object({
   actor: z.object({
     kind: z.enum(AUDIT_ACTOR_KINDS),
     // An admin's or the operator's email, a guardian's email, or null for the system or an erased identity.
-    name: z.string().nullable(),
+    email: z.string().nullable(),
+    // An admin's or the operator's name as it is now, null until they give it; a guardian is named by email.
+    firstName: z.string().nullable(),
+    lastName: z.string().nullable(),
   }),
   ipAddress: z.string().nullable(),
   action: z.string(),

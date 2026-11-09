@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import type { SupportGrant } from '@repo/schema/organisations';
 import { czechDateTime } from '@repo/schema/shared';
 
+import { personNameWithEmail } from '@/core/account';
+
 interface SupportGrantHistoryProps {
   grants: SupportGrant[];
 }
@@ -26,6 +28,11 @@ export function SupportGrantHistory({ grants }: SupportGrantHistoryProps) {
               until: czechDateTime(grant.revokedAt ?? grant.expiresAt),
               kind: t(grant.allowWrites ? 'supportAccess.kindWrites' : 'supportAccess.kindReadOnly'),
             })}
+            {grant.grantedBy === null ? null : (
+              <span className="block text-[13px] break-words text-muted-foreground">
+                {t('supportAccess.grantedBy', { name: personNameWithEmail(grant.grantedBy) })}
+              </span>
+            )}
           </li>
         ))}
       </ul>

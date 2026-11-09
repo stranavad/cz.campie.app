@@ -171,7 +171,7 @@ describe('registration detail', () => {
       'registration.submit',
     ]);
     expect(body[0]).toMatchObject({
-      actor: { kind: 'admin', name: ownerEmail },
+      actor: { kind: 'admin', email: ownerEmail, firstName: null, lastName: null },
       target: {
         type: 'registration',
         id: registrationId,
@@ -183,7 +183,9 @@ describe('registration detail', () => {
       encryptedFields: [],
     });
     expect(body[0]).not.toHaveProperty('ipAddress');
-    expect(body[2]).toMatchObject({ actor: { kind: 'guardian', name: 'jana.testovaci@example.com' } });
+    expect(body[2]).toMatchObject({
+      actor: { kind: 'guardian', email: 'jana.testovaci@example.com', firstName: null, lastName: null },
+    });
     // The guardian's address stays in the audit log, never in what the history shows.
     expect(JSON.stringify(body)).not.toContain('203.0.113.7');
   });

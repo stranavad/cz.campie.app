@@ -53,6 +53,8 @@ const signUpBody = (subdomain: string, email: string) => ({
   billingEmail: 'fakturace@spolek.example.com',
   campName: 'Letní tábor Pokusník',
   subdomain,
+  firstName: 'Jana',
+  lastName: 'Testovací',
   email,
   password: 'dlouhe heslo pro letni tabor',
   acceptedVersions: { ...CURRENT_LEGAL_VERSIONS },

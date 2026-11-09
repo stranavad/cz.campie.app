@@ -9,7 +9,7 @@ import {
   type SignUpOrganisationBody,
   type SubdomainErrorCode,
 } from '@repo/schema/organisations';
-import { passwordProblem, type PasswordErrorCode } from '@repo/schema/shared';
+import { passwordProblem, type FullName, type PasswordErrorCode } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
@@ -113,7 +113,7 @@ export class OrganisationService {
       throw signUpError(ConflictException, 'legal_versions_outdated');
     }
 
-    const { campName, email, password, acceptedVersions, ...identity } = body;
+    const { campName, email, password, firstName, lastName, acceptedVersions, ...identity } = body;
     const weakness = passwordProblem(password, { email, productName: this.productName });
 
     if (weakness !== null) {
@@ -131,7 +131,7 @@ export class OrganisationService {
 
     const { organisation, admin } = await this.createOrganisationAndAdmin(
       { ...identity, displayName: campName },
-      { email, passwordHash },
+      { email, passwordHash, name: { firstName, lastName } },
     );
     const acceptedAt = this.clock.now();
     const acceptances = await this.legalAcceptances.createMany(
@@ -179,12 +179,12 @@ export class OrganisationService {
    * Create the Organisation and its first Owner's admin identity. A simultaneous signup that took the
    * subdomain or the email after the checks is refused with its code, not as a server error.
    * @param organisation the Organisation
-   * @param admin the admin's email and password hash
+   * @param admin the admin's email, password hash and name
    * @throws {ConflictException} when the subdomain or the email was taken meanwhile
    */
   private async createOrganisationAndAdmin(
     organisation: CreateOrganisation,
-    admin: { email: string; passwordHash: string },
+    admin: { email: string; passwordHash: string; name: FullName },
   ): Promise<{ organisation: OrganisationEntity; admin: AdminEntity }> {
     try {
       return { organisation: await this.create(organisation), admin: await this.admins.create(admin) };

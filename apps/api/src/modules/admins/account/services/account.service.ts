@@ -54,6 +54,8 @@ export class AccountService {
 
     return {
       email: admin.email,
+      firstName: admin.firstName,
+      lastName: admin.lastName,
       emailVerified: admin.emailVerifiedAt !== null,
       operator,
       totpEnabled: await this.totp.isEnabled(adminId),

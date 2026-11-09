@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
 import type { GrantSupportAccessBody, SupportGrant } from '@repo/schema/organisations';
+import type { Person } from '@repo/schema/shared';
 
 import type { MemberAccess } from '../../../../core/access/permission.ts';
 import type { Actor } from '../../../../core/audit/actor.ts';
@@ -12,6 +13,7 @@ import {
   SupportGrantRepository,
   type SupportGrantRow,
 } from '../../../../repositories/organisations/support-grant/support-grant.repository.ts';
+import { AdminService } from '../../../admins/admin/services/admin.service.ts';
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -24,17 +26,16 @@ export class SupportAccessService {
     private readonly grants: SupportGrantRepository,
     private readonly organisations: OrganisationRepository,
     private readonly audit: AuditService,
+    private readonly admins: AdminService,
     private readonly unitOfWork: UnitOfWork,
     private readonly clock: Clock,
   ) {}
 
   /**
-   * List the current Organisation's grants, newest first.
+   * List the current Organisation's grants, newest first, each with the Owner who granted it.
    */
   public async list(): Promise<SupportGrant[]> {
-    const now = this.clock.now();
-
-    return (await this.grants.listOfCurrent()).map((grant) => this.show(grant, now));
+    return this.show(await this.grants.listOfCurrent(), this.clock.now());
   }
 
   /**
@@ -65,7 +66,7 @@ export class SupportAccessService {
       change: { before: null, after: grant },
     });
 
-    return this.show(grant, now);
+    return this.showOne(grant, now);
   }
 
   /**
@@ -93,7 +94,7 @@ export class SupportAccessService {
       });
     }
 
-    return this.show(grant, now);
+    return this.showOne(grant, now);
   }
 
   /**
@@ -132,18 +133,42 @@ export class SupportAccessService {
   }
 
   /**
-   * Show a grant as Owners see it.
+   * Show grants as Owners see them, each with the Owner who granted it as they are named now.
+   * @param grants the grants
+   * @param now the time now
+   */
+  private async show(grants: readonly SupportGrantRow[], now: Date): Promise<SupportGrant[]> {
+    const people = await this.admins.listPeopleByIds([
+      ...new Set(grants.map(({ grantedByAdminId }) => grantedByAdminId)),
+    ]);
+
+    return grants.map((grant) => present(grant, now, people.get(grant.grantedByAdminId) ?? null));
+  }
+
+  /**
+   * Show one grant as Owners see it.
    * @param grant the grant
    * @param now the time now
    */
-  private show(grant: SupportGrantRow, now: Date): SupportGrant {
-    return {
-      id: grant.id,
-      allowWrites: grant.allowWrites,
-      grantedAt: grant.grantedAt.toISOString(),
-      expiresAt: grant.expiresAt.toISOString(),
-      revokedAt: grant.revokedAt?.toISOString() ?? null,
-      active: grant.revokedAt === null && grant.expiresAt > now,
-    };
+  private async showOne(grant: SupportGrantRow, now: Date): Promise<SupportGrant> {
+    return present(grant, now, await this.admins.getPersonById(grant.grantedByAdminId));
   }
+}
+
+/**
+ * Shape a grant for Owners.
+ * @param grant the grant
+ * @param now the time now
+ * @param grantedBy the Owner who granted it, if their account is still there
+ */
+function present(grant: SupportGrantRow, now: Date, grantedBy: Person | null): SupportGrant {
+  return {
+    id: grant.id,
+    allowWrites: grant.allowWrites,
+    grantedAt: grant.grantedAt.toISOString(),
+    expiresAt: grant.expiresAt.toISOString(),
+    revokedAt: grant.revokedAt?.toISOString() ?? null,
+    active: grant.revokedAt === null && grant.expiresAt > now,
+    grantedBy,
+  };
 }

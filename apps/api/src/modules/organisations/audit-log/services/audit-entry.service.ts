@@ -4,6 +4,7 @@ import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 import type { AuditEncryptedField, AuditEntry, AuditTarget } from '@repo/schema/audit';
 import { isRegistrationFieldKey, REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
 import { sensitiveKeys, type FormDefinition } from '@repo/schema/form-engine';
+import type { Person } from '@repo/schema/shared';
 
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
 import {
@@ -45,7 +46,7 @@ export class AuditEntryService {
   ) {}
 
   /**
-   * Shape audit entries for reading: actors by email, records by name, encrypted fields by label, and
+   * Shape audit entries for reading: actors by email and name, records by name, encrypted fields by label, and
    * nothing about health data for an admin without Health read.
    * @param rows the entries, in the order to show them
    * @param healthRead whether the admin may read health data
@@ -53,7 +54,8 @@ export class AuditEntryService {
   public async present(rows: readonly AuditEntryRow[], healthRead: boolean): Promise<AuditEntry[]> {
     // Who viewed or changed health data is itself health data, and so are the names of its fields.
     const shown = rows.filter(({ action }) => healthRead || !action.startsWith('health'));
-    const emails = await this.admins.listEmailsByIds([
+    // Admins as they are named now: the log keeps their id only, so a rename shows on their past entries.
+    const people = await this.admins.listPeopleByIds([
       ...new Set(
         shown.flatMap(({ actorKind, actorIdentity }) =>
           (actorKind === 'admin' || actorKind === 'operator') && actorIdentity !== null ? [actorIdentity] : [],
@@ -66,15 +68,7 @@ export class AuditEntryService {
     return shown.map((entry) => ({
       id: entry.id,
       occurredAt: entry.occurredAt.toISOString(),
-      actor: {
-        kind: entry.actorKind,
-        name:
-          entry.actorIdentity === null
-            ? null
-            : entry.actorKind === 'guardian'
-              ? entry.actorIdentity
-              : (emails.get(entry.actorIdentity) ?? null),
-      },
+      actor: { kind: entry.actorKind, ...this.actorOf(entry, people) },
       ipAddress: entry.ipAddress,
       action: entry.action,
       target: {
@@ -85,6 +79,26 @@ export class AuditEntryService {
       changes: entry.changes,
       encryptedFields: fieldsOf(entry),
     }));
+  }
+
+  /**
+   * Name an entry's actor: an admin or the operator by their email and name now, a guardian by the email
+   * recorded, the system or an erased identity by nothing.
+   * @param entry the entry
+   * @param people admins by id
+   */
+  private actorOf(entry: AuditEntryRow, people: ReadonlyMap<string, Person>): Omit<AuditEntry['actor'], 'kind'> {
+    const nobody = { email: null, firstName: null, lastName: null };
+
+    if (entry.actorIdentity === null) {
+      return nobody;
+    }
+
+    if (entry.actorKind === 'guardian') {
+      return { ...nobody, email: entry.actorIdentity };
+    }
+
+    return people.get(entry.actorIdentity) ?? nobody;
   }
 
   /**

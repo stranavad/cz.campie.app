@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useAccountQuery, useLogOutMutation } from '@/core/account';
+import { personName, useAccountQuery, useLogOutMutation } from '@/core/account';
 
 // The signed-in admin at the bottom of the sidebar: their account page, the theme and logging out.
 export function SidebarAccount() {
@@ -18,15 +18,17 @@ export function SidebarAccount() {
     return null;
   }
 
+  const name = personName(account.data);
+
   return (
     <div className="mt-auto flex items-center gap-1 border-t border-border-subtle pt-4">
       <Link
         to="/platform/ucet"
         className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl p-2 transition-colors hover:bg-muted data-[status=active]:bg-brand-soft"
       >
-        <Avatar name={account.data.email} className="size-8.5" />
+        <Avatar name={name} className="size-8.5" />
         <span className="flex min-w-0 flex-col text-sm leading-tight">
-          <span className="truncate font-semibold">{account.data.email}</span>
+          <span className="truncate font-semibold">{name}</span>
           <span className="text-xs text-muted-foreground">{t('platformShell.account')}</span>
         </span>
       </Link>

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { defineEndpoint } from '@repo/schema/shared';
+import { defineEndpoint, personSchema } from '@repo/schema/shared';
 
 // A time-limited grant letting the Platform operator into the Organisation for support.
 export const supportGrantSchema = z.object({
@@ -11,6 +11,8 @@ export const supportGrantSchema = z.object({
   revokedAt: z.iso.datetime().nullable(),
   // In force now: neither expired nor revoked.
   active: z.boolean(),
+  // The Owner who granted it; null once their account is gone.
+  grantedBy: personSchema.nullable(),
 });
 
 export type SupportGrant = z.infer<typeof supportGrantSchema>;

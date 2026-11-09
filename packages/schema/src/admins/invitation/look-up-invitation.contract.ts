@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { defineEndpoint } from '@repo/schema/shared';
 
+import { permissionsSchema } from '../membership/membership.resource.ts';
+
 export const invitationTokenSchema = z.string().min(1).max(100);
 
 export const lookUpInvitationBodySchema = z.object({
@@ -11,11 +13,14 @@ export const lookUpInvitationBodySchema = z.object({
 
 export type LookUpInvitationBody = z.infer<typeof lookUpInvitationBodySchema>;
 
-// What the invitee sees before accepting. With an account whose email is verified they join as they are;
-// otherwise they choose a password.
+// What the invitee sees before accepting: who invites them where, with which levels. With an account whose
+// email is verified they join as they are; otherwise they give their name and choose a password.
 export const invitationPreviewSchema = z.object({
   email: z.string(),
   organisation: z.object({ displayName: z.string() }),
+  // The inviting Owner by name only; null when they have none or are gone.
+  invitedBy: z.object({ firstName: z.string(), lastName: z.string() }).nullable(),
+  permissions: permissionsSchema,
   hasAccount: z.boolean(),
 });
 

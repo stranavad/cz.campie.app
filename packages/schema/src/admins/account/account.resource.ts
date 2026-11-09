@@ -1,12 +1,14 @@
 import { z } from 'zod';
 
 import { ORGANISATION_STATUSES } from '@repo/schema/organisations';
+import { personSchema } from '@repo/schema/shared';
 
 import { permissionsSchema } from '../membership/membership.resource.ts';
 
 // The signed-in admin's own identity, their second factor and the Organisations they are a member of.
 export const accountSchema = z.object({
-  email: z.string(),
+  // The name is null until the admin gives it; the admin interface names them by email meanwhile.
+  ...personSchema.shape,
   // Whether the admin proved the email theirs; until then the admin interface asks them to.
   emailVerified: z.boolean(),
   // Whether the admin is the Platform operator, whose console needs TOTP.

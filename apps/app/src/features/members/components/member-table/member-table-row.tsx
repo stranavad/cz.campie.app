@@ -5,6 +5,7 @@ import { PERMISSION_AREAS, type Member } from '@repo/schema/admins';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { personName } from '@/core/account';
 import { LevelChip } from '@/features/members/components/member-table/level-chip';
 import { MemberEditDialog } from '@/features/members/components/member-table/member-edit-dialog';
 import { cn } from '@/lib/utils';
@@ -17,19 +18,25 @@ interface MemberTableRowProps {
 // One member: who, their level in each area (an Owner holds changes in all), two-step login, and the edit.
 export function MemberTableRow({ organisationId, member }: MemberTableRowProps) {
   const { t } = useTranslation('members');
+  const name = personName(member);
+  // Under the name, once the member gave one.
+  const email = name === member.email ? null : member.email;
 
   return (
     <TableRow>
       <TableCell className="py-3.5">
         <span className="flex items-center gap-3">
-          <Avatar name={member.email} />
-          <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="font-semibold break-all">{member.email}</span>
-            {member.owner ? (
-              <Badge variant="brand" className="h-5.5 px-2 text-xs font-bold">
-                {t('members.owner')}
-              </Badge>
-            ) : null}
+          <Avatar name={name} />
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="font-semibold break-all">{name}</span>
+              {member.owner ? (
+                <Badge variant="brand" className="h-5.5 px-2 text-xs font-bold">
+                  {t('members.owner')}
+                </Badge>
+              ) : null}
+            </span>
+            {email === null ? null : <span className="text-[13px] break-all text-muted-foreground">{email}</span>}
           </span>
         </span>
       </TableCell>

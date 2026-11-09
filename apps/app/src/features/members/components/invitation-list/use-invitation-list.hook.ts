@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { PERMISSION_AREAS, type Invitation } from '@repo/schema/admins';
+import type { Invitation } from '@repo/schema/admins';
 
+import { personNameWithEmail, usePermissionSummary } from '@/core/account';
 import { useInviteMutation, useRevokeInvitationMutation } from '@/features/members/api/members.queries';
 
 export function useInvitationList(organisationId: string, invitations: Invitation[]) {
@@ -11,18 +12,20 @@ export function useInvitationList(organisationId: string, invitations: Invitatio
   // Inviting the same address again replaces the invitation with a new link and validity.
   const resend = useInviteMutation(organisationId);
   const [renderedAt] = useState(() => Date.now());
+  const permissionsOf = usePermissionSummary();
 
   const rows = invitations.map((invitation) => {
-    const granted = PERMISSION_AREAS.filter((area) => invitation.permissions[area] !== 'none').map((area) =>
-      t('members.permission', { area: t(`areas.${area}`), level: t(`levels.${invitation.permissions[area]}`) }),
-    );
-
     const expiresAt = new Date(invitation.expiresAt);
+    const sentOn = new Date(invitation.sentAt).toLocaleDateString(i18n.language);
 
     return {
       id: invitation.id,
       email: invitation.email,
-      permissions: granted.length === 0 ? t('levels.none') : granted.join(', '),
+      sent:
+        invitation.invitedBy === null
+          ? t('invitations.sent', { date: sentOn })
+          : t('invitations.sentBy', { name: personNameWithEmail(invitation.invitedBy), date: sentOn }),
+      permissions: permissionsOf(invitation.permissions),
       validity:
         expiresAt.getTime() <= renderedAt
           ? t('invitations.expired')

@@ -1,6 +1,6 @@
 # 71 - Admin names
 
-Status: ready-for-agent
+Status: in-progress
 Stage: 1b
 Episode: E1 Organisations and identity
 Blocked by: 20, 63, 69, 70
@@ -35,3 +35,16 @@ Admins are known only by their email today. Give every admin a first and last na
 - Spec sections: Identity, permissions and audit.
 - Design: canvas "Campie - návrhy designu", artboards `B3-Prehled` (greeting), `Sidebar`, `B3-Tym`, `B3-Prihlaseni` (invitation), `B3-Organizace` (support access), `B3-Historie`, `B3-RegistraceOrg` (signup). Consumed by the admin shell's sidebar and Přehled, the Tým and support access pages, the invitation page, the audit log and the signup form.
 - No new resend endpoint: `POST /invitations` for the same address already replaces the invitation and sends a fresh link.
+
+## Comments
+
+2026-11-09 - **Implemented, awaiting merge.** Admins have nullable `first_name` and `last_name`; signup (`firstName`, `lastName` in the body), accepting an invitation with a password (a new account or a takeover, which also replaces the name the planted account had; a verified account ignores any name sent) and `pnpm operator grant <email> [<first name> <last name>]` (new accounts only) set them. Names are trimmed, at most 100 characters, and refuse control and invisible formatting characters (`\p{C}`, line and paragraph separators), so a bidi override cannot disguise a name. `personSchema` / `fullNameSchema` live in `@repo/schema/shared`, `vocativeOf` in `@repo/schema/admins`.
+
+- The global validation pipe now answers each custom check's message (an i18n key) as a field code at its path (`fields`), so signup and acceptance name errors arrive as `name_required`, `name_too_long`, `name_invalid`. Accepting without a name where one is needed answers the code `name_required`.
+- `GET /account` and `GET /members` return the names; `GET /invitations` returns `sentAt` and `invitedBy` (email and names of the Owner who last sent the link); `GET /support-access` returns `grantedBy`; audit entries name their actor as `{ email, firstName, lastName }`, read when the log is, so a rename shows on past entries without touching them. The invitation preview returns the inviter's first and last name only (null when they have none), never their email, and the invited levels.
+- `sentAt` moves with `expiresAt`: set on inviting and again when the job makes the link. Migrations: the name columns are nullable; `invitations` gains `sent_at` (added nullable, backfilled as `expires_at - 7 days`, the link's fixed validity, then made NOT NULL) and `invited_by_admin_id` (nullable, `ON DELETE SET NULL`; unknown for existing invitations). Rolling back means dropping the three columns; nothing else reads them.
+- The admin and membership audit fields gain the names, the invitation's gain `sentAt`. A takeover records only the name the invitee gave: the one it replaces was typed by whoever made the account, perhaps in another Organisation.
+- UI: the sidebar and Tým rows name members (email beside the name, email alone without one), Přehled greets "Dobrý den, Jano" (plain "Dobrý den" without a first name rather than greeting an email), the invitation page says who invites and with which levels and asks the name with the password, the invitation list shows when and by whom it was sent, support grants say who granted them, and the audit log and history name actors. Gendered verbs use the existing "(a)" form ("Povolil(a)", "Odeslal(a)"). Where a reader must tell people apart (the audit actor, who invited, who let support in, the member dialog) the email stands beside the name, since anyone invited chooses their own name and could choose an Owner's.
+- `vocativeOf` keeps a short list of women's names ending in a consonant (Dagmar, Nikol, Carmen, ...) as they are, and answers a name typed in capitals in capitals.
+- Names in audit changes: the creation of an admin and the removal of a member record the name as they record the email, since a removed record has no other name in the log; the actor of an entry is never recorded, only resolved.
+- Open: a password reset that takes back an account never verified keeps the name its maker gave. Clearing it there would also clear the name `pnpm operator grant` gives a new operator account, which is set up through a reset; the admin sees the name at once and changes it through `PATCH /account` (issue 72).

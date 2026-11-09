@@ -11,6 +11,7 @@
     "description": "Stránky organizace {{name}} jsou nedostupné a neodcházejí z ní žádné e-maily. Ozvěte se prosím provozovateli {{productName}}."
   },
   "title": "Dobrý den",
+  "greeting": "Dobrý den, {{name}}",
   "newRegistration": "Nová přihláška",
   "noMembership": "Nejste správcem žádné organizace. Pokud vás má některá pozvat, ozvěte se jejímu vlastníkovi.",
   "operator": "Nejste správcem žádné organizace. Organizace na platformě spravujete v konzoli.",

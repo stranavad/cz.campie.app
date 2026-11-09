@@ -27,7 +27,12 @@ const list = <L extends string>(label: L, values?: string) =>
 // The fields the audit log names, per subject, since a field such as `status` means different things on
 // different records. A recorded field missing here is shown only among an entry's details.
 export const AUDIT_FIELDS = {
-  admin: { email: email('email'), emailVerifiedAt: datetime('emailVerifiedAt') },
+  admin: {
+    email: email('email'),
+    emailVerifiedAt: datetime('emailVerifiedAt'),
+    firstName: text('firstName'),
+    lastName: text('lastName'),
+  },
   camp: {
     name: text('name'),
     slug: text('slug'),
@@ -91,13 +96,19 @@ export const AUDIT_FIELDS = {
     paidTo: date('paidTo'),
   },
   export_preset: { name: text('name'), columns: list('columns') },
-  invitation: { email: email('email'), expiresAt: datetime('expiresAt') },
+  invitation: { email: email('email'), sentAt: datetime('sentAt'), expiresAt: datetime('expiresAt') },
   legal_acceptance: {
     document: oneOf('legalDocument', 'legalDocument'),
     version: text('version'),
     acceptedAt: datetime('acceptedAt'),
   },
-  membership: { email: email('email'), owner: yesNo('owner'), totpEnabled: yesNo('totpEnabled') },
+  membership: {
+    email: email('email'),
+    firstName: text('firstName'),
+    lastName: text('lastName'),
+    owner: yesNo('owner'),
+    totpEnabled: yesNo('totpEnabled'),
+  },
   open_items_reminder: { reminded: text('reminded') },
   organisation: {
     subdomain: text('subdomain'),

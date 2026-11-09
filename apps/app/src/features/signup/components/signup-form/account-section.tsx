@@ -6,7 +6,7 @@ import { FieldLegend, FieldSet } from '@/components/ui/field';
 import { withForm } from '@/core/form';
 import { signupFormOptions } from '@/features/signup/components/signup-form/signup-form.schema';
 
-// The first Owner's sign-in.
+// The first Owner's name and sign-in.
 export const AccountSection = withForm({
   ...signupFormOptions,
   render: function AccountSection({ form }) {
@@ -15,6 +15,14 @@ export const AccountSection = withForm({
     return (
       <FieldSet>
         <FieldLegend>{t('account.legend')}</FieldLegend>
+        <div className="grid items-start gap-4 sm:grid-cols-2 sm:gap-3">
+          <form.AppField name="firstName">
+            {(field) => <field.TextField label={t('account.firstName')} autoComplete="given-name" />}
+          </form.AppField>
+          <form.AppField name="lastName">
+            {(field) => <field.TextField label={t('account.lastName')} autoComplete="family-name" />}
+          </form.AppField>
+        </div>
         <form.AppField name="email">
           {(field) => (
             <field.TextField

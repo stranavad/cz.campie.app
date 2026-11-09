@@ -1,6 +1,7 @@
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
 import type { Invitation, Permissions } from '@repo/schema/admins';
+import type { Person } from '@repo/schema/shared';
 
 import type { invitations } from '../../../db/schema.ts';
 import { permissionsOf } from '../membership/membership.entity.ts';
@@ -16,7 +17,9 @@ export class InvitationEntity {
   public readonly permissions: Permissions;
   // Whether the emailed link exists yet; until the job makes it, no token opens the invitation.
   public readonly sent: boolean;
+  public readonly sentAt: Date;
   public readonly expiresAt: Date;
+  public readonly invitedByAdminId: string | null;
 
   constructor(row: InvitationSelectModel) {
     this.id = row.id;
@@ -24,15 +27,20 @@ export class InvitationEntity {
     this.email = row.email;
     this.permissions = permissionsOf(row);
     this.sent = row.tokenHash !== null;
+    this.sentAt = row.sentAt;
     this.expiresAt = row.expiresAt;
+    this.invitedByAdminId = row.invitedByAdminId;
   }
 
-  toDto(): Invitation {
+  // The inviting Owner is another record, read beside the invitation, so the audit log never holds their name.
+  toDto(invitedBy: Person | null): Invitation {
     return {
       id: this.id,
       email: this.email,
       permissions: this.permissions,
+      sentAt: this.sentAt.toISOString(),
       expiresAt: this.expiresAt.toISOString(),
+      invitedBy,
     };
   }
 }

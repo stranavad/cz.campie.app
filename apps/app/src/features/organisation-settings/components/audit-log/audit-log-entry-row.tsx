@@ -26,10 +26,7 @@ export function AuditLogEntryRow({ entry }: AuditLogEntryRowProps) {
       >
         {time}
       </time>
-      <Avatar
-        name={entry.actor.name ?? tAudit(`actors.${entry.actor.kind}`)}
-        className="hidden size-8 text-xs min-[400px]:flex"
-      />
+      <Avatar name={shown.actorName} className="hidden size-8 text-xs min-[400px]:flex" />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-1 text-sm">
         <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
           <p className="flex min-w-0 flex-[1_1_14rem] flex-wrap gap-x-1.5 leading-snug">

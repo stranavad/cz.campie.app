@@ -4,6 +4,7 @@ import type { Member } from '@repo/schema/admins';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { personName, personNameWithEmail } from '@/core/account';
 import { MemberEditor } from '@/features/members/components/member-table/member-editor';
 
 interface MemberEditDialogProps {
@@ -14,19 +15,17 @@ interface MemberEditDialogProps {
 // The row's "Upravit": the member's levels, Owner role, two-step login and removal in a dialog.
 export function MemberEditDialog({ organisationId, member }: MemberEditDialogProps) {
   const { t } = useTranslation('members');
+  const name = personName(member);
 
   return (
     <Dialog>
-      <DialogTrigger
-        render={<Button variant="outline" size="sm" />}
-        aria-label={t('members.editMember', { email: member.email })}
-      >
+      <DialogTrigger render={<Button variant="outline" size="sm" />} aria-label={t('members.editMember', { name })}>
         {t('members.edit')}
       </DialogTrigger>
       <DialogContent>
         <div className="flex flex-col gap-1">
           <DialogTitle>{t('members.editTitle')}</DialogTitle>
-          <DialogDescription className="break-all">{member.email}</DialogDescription>
+          <DialogDescription className="break-all">{personNameWithEmail(member)}</DialogDescription>
         </div>
         <MemberEditor organisationId={organisationId} member={member} />
       </DialogContent>

@@ -68,6 +68,7 @@
     "grant": "Povolit přístup",
     "activeReadOnly": "Aktivní do {{until}}, jen pro čtení.",
     "activeWrites": "Aktivní do {{until}}, se změnami.",
+    "grantedBy": "Povolil(a) {{name}}.",
     "revoke": "Ukončit přístup",
     "historyTitle": "Dosavadní přístupy",
     "history": "{{from}} až {{until}}, {{kind}}",

@@ -25,6 +25,14 @@ export function NewAccountForm({ token, email }: NewAccountFormProps) {
       }}
     >
       <p className="text-sm text-muted-foreground">{t('newAccount.intro')}</p>
+      <div className="grid items-start gap-4 sm:grid-cols-2 sm:gap-3">
+        <form.AppField name="firstName">
+          {(field) => <field.TextField label={t('newAccount.firstName')} autoComplete="given-name" />}
+        </form.AppField>
+        <form.AppField name="lastName">
+          {(field) => <field.TextField label={t('newAccount.lastName')} autoComplete="family-name" />}
+        </form.AppField>
+      </div>
       <form.AppField name="password">
         {(field) => (
           <field.TextField

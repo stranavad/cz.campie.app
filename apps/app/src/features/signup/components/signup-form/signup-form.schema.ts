@@ -45,6 +45,8 @@ const SIGNUP_FORM_DEFAULTS: SignupFormValues = {
   billingEmail: '',
   campName: '',
   subdomain: '',
+  firstName: '',
+  lastName: '',
   email: '',
   password: '',
   acceptTerms: false,

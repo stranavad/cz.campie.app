@@ -61,7 +61,7 @@ export class InvitationRepository {
 
   /**
    * Create an invitation to the current Organisation, without a link yet.
-   * @param input the email, the levels and the expiry
+   * @param input the email, the levels, who sends it, when, and the expiry
    * @throws {Error} when the database returns no row
    */
   public async create({
@@ -70,6 +70,8 @@ export class InvitationRepository {
   }: {
     email: string;
     permissions: Permissions;
+    invitedByAdminId: string | null;
+    sentAt: Date;
     expiresAt: Date;
   }): Promise<InvitationEntity> {
     const [row] = await this.unitOfWork.db
@@ -87,12 +89,22 @@ export class InvitationRepository {
   /**
    * Update an invitation of the current Organisation.
    * @param id invitation id
-   * @param input the levels, the hash of a new link's token (null for none yet) and the expiry
+   * @param input the levels, the hash of a new link's token (null for none yet), who sends it, when, and the
+   * expiry
    * @throws {NotFoundException} when the current Organisation has no invitation with this id
    */
   public async update(
     id: string,
-    { permissions, ...input }: { permissions?: Permissions; tokenHash?: Buffer | null; expiresAt?: Date },
+    {
+      permissions,
+      ...input
+    }: {
+      permissions?: Permissions;
+      tokenHash?: Buffer | null;
+      invitedByAdminId?: string | null;
+      sentAt?: Date;
+      expiresAt?: Date;
+    },
   ): Promise<InvitationEntity> {
     const [row] = await this.unitOfWork.db
       .update(invitations)

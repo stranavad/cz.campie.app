@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
+import { personSchema } from '@repo/schema/shared';
+
 import { permissionsSchema } from '../membership/membership.resource.ts';
 
-// An admin's membership in the current Organisation, with the email that names them.
+// An admin's membership in the current Organisation, with their email and, once they gave it, their name.
 export const memberSchema = z.object({
   id: z.uuid(),
-  email: z.string(),
+  ...personSchema.shape,
   owner: z.boolean(),
   permissions: permissionsSchema,
   // Whether the admin logs in with a TOTP code.

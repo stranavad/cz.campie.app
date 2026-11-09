@@ -4,10 +4,11 @@ import { ConfigService } from '@nestjs/config';
 import type {
   AcceptInvitationBody,
   CreateInvitationBody,
+  Invitation,
   InvitationErrorCode,
   InvitationPreview,
 } from '@repo/schema/admins';
-import { passwordProblem, type PasswordErrorCode } from '@repo/schema/shared';
+import { passwordProblem, type FullName, type PasswordErrorCode } from '@repo/schema/shared';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
@@ -52,21 +53,21 @@ export class InvitationService {
   }
 
   /**
-   * List the current Organisation's invitations not yet accepted.
+   * List the current Organisation's invitations not yet accepted, each with the Owner who last sent it.
    */
-  public list(): Promise<InvitationEntity[]> {
-    return this.invitations.list();
+  public async list(): Promise<Invitation[]> {
+    return this.show(await this.invitations.list());
   }
 
   /**
    * Invite an email to the current Organisation with levels, audited, and email the link once this
-   * commits. Inviting the same email again replaces the earlier invitation: its levels, and its link,
-   * which stops working at once.
+   * commits. Inviting the same email again replaces the earlier invitation: its levels, its sender, and its
+   * link, which stops working at once.
    * @param actor the Owner who invites
    * @param body the email and the levels the invitee gets
    * @throws {ConflictException} when the email already belongs to a member
    */
-  public async invite(actor: Actor, { email, permissions }: CreateInvitationBody): Promise<InvitationEntity> {
+  public async invite(actor: Actor, { email, permissions }: CreateInvitationBody): Promise<Invitation> {
     const admin = await this.admins.getByEmail(email);
 
     if (
@@ -77,11 +78,11 @@ export class InvitationService {
     }
 
     const before = await this.invitations.getByEmail(email);
-    const expiresAt = this.expiry();
+    const sent = { invitedByAdminId: actor.kind === 'admin' ? actor.identity : null, ...this.sending() };
     const after =
       before === null
-        ? await this.invitations.create({ email, permissions, expiresAt })
-        : await this.invitations.update(before.id, { permissions, tokenHash: null, expiresAt });
+        ? await this.invitations.create({ email, permissions, ...sent })
+        : await this.invitations.update(before.id, { permissions, tokenHash: null, ...sent });
 
     await this.audit.record(actor, {
       action: before === null ? 'invitation.create' : 'invitation.update',
@@ -91,7 +92,7 @@ export class InvitationService {
 
     this.jobs.enqueue(invitationCreatedJob, { invitationId: after.id });
 
-    return after;
+    return after.toDto(sent.invitedByAdminId === null ? null : await this.admins.getPersonById(sent.invitedByAdminId));
   }
 
   /**
@@ -122,10 +123,7 @@ export class InvitationService {
     }
 
     const token = generateSessionToken();
-    const invitation = await this.invitations.update(id, {
-      tokenHash: hashSessionToken(token),
-      expiresAt: this.expiry(),
-    });
+    const invitation = await this.invitations.update(id, { tokenHash: hashSessionToken(token), ...this.sending() });
     const organisation = await this.organisations.getByIdOrThrow(invitation.organisationId);
 
     return { email: invitation.email, organisation: organisation.displayName, token };
@@ -139,10 +137,18 @@ export class InvitationService {
     const invitation = await this.getValidOrThrow(token);
     const organisation = await this.organisations.getByIdOrThrow(invitation.organisationId);
     const admin = await this.admins.getByEmail(invitation.email);
+    const inviter =
+      invitation.invitedByAdminId === null ? null : await this.admins.getPersonById(invitation.invitedByAdminId);
 
     return {
       email: invitation.email,
       organisation: { displayName: organisation.displayName },
+      // By name only: the link's holder learns who invited them, not the Owner's email.
+      invitedBy:
+        inviter === null || inviter.firstName === null || inviter.lastName === null
+          ? null
+          : { firstName: inviter.firstName, lastName: inviter.lastName },
+      permissions: invitation.permissions,
       // An account whose email was never verified may be someone else's: the invitee takes it over with a
       // new password, as if there were none.
       hasAccount: admin !== null && admin.emailVerifiedAt !== null,
@@ -155,16 +161,21 @@ export class InvitationService {
    * link proves the email is the invitee's, not that an account under it is: an account whose email was
    * verified joins as it is and signs in as usual. Any other is taken over: the invitee sets its password,
    * its sessions and TOTP end, and they are signed in, as with an email without an account, which gets one.
-   * @param body the token from the link, and the password unless the account's email is verified
+   * @param body the token from the link, and the password and name unless the account's email is verified
    * @param ipAddress where the invitee acts from
    * @throws {BadRequestException} when the link is unknown, used or expired, or a needed password is
-   * missing or too weak
+   * missing or too weak, or a needed name missing
    */
-  public async accept({ token, password }: AcceptInvitationBody, ipAddress: string): Promise<IssuedSession | null> {
+  public async accept(
+    { token, password, firstName, lastName }: AcceptInvitationBody,
+    ipAddress: string,
+  ): Promise<IssuedSession | null> {
     const read = await this.getValidOrThrow(token);
     const existing = await this.admins.getByEmail(read.email);
     const verified = existing !== null && existing.emailVerifiedAt !== null;
     const passwordHash = verified ? undefined : await this.newPasswordHash(read.email, password);
+    // Asked with the password: whoever sets the password names the account, a verified one keeps its name.
+    const name = verified ? undefined : requireName(firstName, lastName);
     // Its levels as it is used up, not as first read: an Owner may have replaced it meanwhile.
     const invitation = await this.invitations.consumeByTokenHash(hashSessionToken(token));
 
@@ -174,7 +185,7 @@ export class InvitationService {
 
     await this.unitOfWork.enter(invitation.organisationId);
     const admin =
-      existing ?? (await this.admins.create({ email: invitation.email, passwordHash, emailVerified: true }));
+      existing ?? (await this.admins.create({ email: invitation.email, passwordHash, emailVerified: true, name }));
     const actor: Actor = { kind: 'admin', identity: admin.id, ipAddress };
 
     if (existing === null) {
@@ -185,10 +196,15 @@ export class InvitationService {
       });
     } else if (passwordHash !== undefined) {
       // A password was required, so the account's email was never verified: the invitee takes it over.
+      const { before, after } = await this.admins.setPassword(admin.id, passwordHash, name);
+      // The name it had was given by whoever made the account, perhaps in another Organisation: it stays
+      // out of this one's log, which records only the name the invitee gave.
+      const { firstName: _firstName, lastName: _lastName, ...unnamed } = before;
+
       await this.audit.record(actor, {
         action: 'admin.replace_credentials',
         target: { type: 'admin', id: admin.id },
-        change: await this.admins.setPassword(admin.id, passwordHash),
+        change: { before: unnamed, after },
       });
     }
 
@@ -247,11 +263,41 @@ export class InvitationService {
   }
 
   /**
-   * Compute when an invitation made now expires.
+   * Show invitations as Owners see them, each with the Owner who last sent it.
+   * @param invitations the invitations
    */
-  private expiry(): Date {
-    return new Date(this.clock.now().getTime() + INVITATION_VALID_DAYS * DAY_MS);
+  private async show(invitations: readonly InvitationEntity[]): Promise<Invitation[]> {
+    const people = await this.admins.listPeopleByIds([
+      ...new Set(invitations.flatMap(({ invitedByAdminId }) => invitedByAdminId ?? [])),
+    ]);
+
+    return invitations.map((invitation) =>
+      invitation.toDto(invitation.invitedByAdminId === null ? null : (people.get(invitation.invitedByAdminId) ?? null)),
+    );
   }
+
+  /**
+   * Stamp a link sent now: when it went out, and its expiry.
+   */
+  private sending(): { sentAt: Date; expiresAt: Date } {
+    const sentAt = this.clock.now();
+
+    return { sentAt, expiresAt: new Date(sentAt.getTime() + INVITATION_VALID_DAYS * DAY_MS) };
+  }
+}
+
+/**
+ * Require the name of a new or taken over account.
+ * @param firstName the first name the invitee gave, if any
+ * @param lastName the last name the invitee gave, if any
+ * @throws {BadRequestException} when either is missing
+ */
+function requireName(firstName: string | undefined, lastName: string | undefined): FullName {
+  if (firstName === undefined || lastName === undefined) {
+    throw invitationError(BadRequestException, 'name_required');
+  }
+
+  return { firstName, lastName };
 }
 
 /**

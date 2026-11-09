@@ -6,3 +6,4 @@ export * from './primitives/primitives.schema.ts';
 export * from './slug/slug.ts';
 export * from './prague-time/prague-time.ts';
 export * from './czech-format/czech-format.ts';
+export * from './person/person.schema.ts';

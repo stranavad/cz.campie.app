@@ -33,6 +33,7 @@ export function InvitationList({ organisationId, invitations }: InvitationListPr
               <span className="text-[13px] text-muted-foreground">
                 {t('invitations.meta', { validity: row.validity, permissions: row.permissions })}
               </span>
+              <span className="text-[13px] break-words text-muted-foreground">{row.sent}</span>
             </span>
             <Button variant="outline" size="sm" disabled={list.isBusy} onClick={() => list.resend(row.id)}>
               {t('invitations.resend')}

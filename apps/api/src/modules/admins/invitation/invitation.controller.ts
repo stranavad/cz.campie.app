@@ -23,16 +23,16 @@ export class InvitationController {
   constructor(private readonly invitations: InvitationService) {}
 
   @Endpoint(listInvitationsEndpoint)
-  public async list(): Promise<Invitation[]> {
-    return (await this.invitations.list()).map((invitation) => invitation.toDto());
+  public list(): Promise<Invitation[]> {
+    return this.invitations.list();
   }
 
   @Endpoint(createInvitationEndpoint)
-  public async create(
+  public create(
     @RequestActor() actor: Actor,
     @EndpointBody(createInvitationEndpoint) body: CreateInvitationBody,
   ): Promise<Invitation> {
-    return (await this.invitations.invite(actor, body)).toDto();
+    return this.invitations.invite(actor, body);
   }
 
   @Endpoint(revokeInvitationEndpoint)

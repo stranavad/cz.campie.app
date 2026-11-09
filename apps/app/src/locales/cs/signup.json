@@ -29,6 +29,8 @@
   },
   "account": {
     "legend": "Váš účet",
+    "firstName": "Jméno",
+    "lastName": "Příjmení",
     "email": "Váš e-mail",
     "emailHint": "Tímto e-mailem se budete přihlašovat. Stanete se vlastníkem organizace.",
     "password": "Heslo",

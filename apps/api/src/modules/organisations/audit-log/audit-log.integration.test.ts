@@ -32,7 +32,11 @@ describe('audit log', () => {
 
   beforeEach(async () => {
     organisationId = await createOrganisation(app());
-    owner = await createAdmin(app(), { memberOf: [organisationId], owner: true });
+    owner = await createAdmin(app(), {
+      memberOf: [organisationId],
+      owner: true,
+      name: { firstName: 'Jana', lastName: 'Zkušební' },
+    });
     headers = owner.headers(organisationId);
     campId = await createCamp(app(), organisationId, 'Letní tábor', 'letni-tabor');
     ({ id: registrationId, variableSymbol } = await submitRegistration(app(), organisationId, campId));
@@ -48,12 +52,52 @@ describe('audit log', () => {
     expect(response.body.entries).toEqual([
       expect.objectContaining({
         action: 'payment_gateway.update',
-        actor: { kind: 'admin', name: owner.email },
+        actor: { kind: 'admin', email: owner.email, firstName: 'Jana', lastName: 'Zkušební' },
         encryptedFields: [{ field: 'secret', label: null, labelKey: null }],
       }),
     ]);
     expect(JSON.stringify(response.body)).not.toContain('comgate-test-secret-1');
     expect(response.body.entries[0].changes.merchantId).toEqual({ old: null, new: '123456' });
+  });
+
+  it('names an actor as they are named now, without changing their entries, and by email alone without a name', async () => {
+    const unnamed = await createAdmin(app(), { memberOf: [organisationId], owner: true });
+    await http().patch(`/api/camps/${campId}`).set(unnamed.headers(organisationId)).send({ name: 'Podzimní tábor' });
+    const recorded = await query('SELECT * FROM audit_entries ORDER BY id');
+
+    await query("UPDATE admins SET first_name = 'Johana', last_name = 'Pokusná' WHERE id = $1", [owner.id]);
+    const actors = (await entries()).map(({ actor }) => actor);
+
+    expect(actors).toContainEqual({ kind: 'admin', email: owner.email, firstName: 'Johana', lastName: 'Pokusná' });
+    expect(actors).toContainEqual({ kind: 'admin', email: unnamed.email, firstName: null, lastName: null });
+    expect(actors).not.toContainEqual(expect.objectContaining({ firstName: 'Jana' }));
+    expect(await query('SELECT * FROM audit_entries ORDER BY id')).toEqual(recorded);
+  });
+
+  it("never names another Organisation's actors, nor an admin of both for what they did there", async () => {
+    const otherId = await createOrganisation(app());
+    const otherOwner = await createAdmin(app(), {
+      memberOf: [otherId],
+      owner: true,
+      name: { firstName: 'Ota', lastName: 'Jinde' },
+    });
+    const both = await createAdmin(app(), {
+      memberOf: [organisationId, otherId],
+      owner: true,
+      name: { firstName: 'Běla', lastName: 'Obojí' },
+    });
+    const otherCampId = await createCamp(app(), otherId, 'Cizí tábor', 'cizi-tabor');
+    await http().patch(`/api/camps/${otherCampId}`).set(otherOwner.headers(otherId)).send({ name: 'Cizí tábor 2' });
+    await http().patch(`/api/camps/${otherCampId}`).set(both.headers(otherId)).send({ name: 'Cizí tábor 3' });
+
+    const here = JSON.stringify(await entries());
+    const there = await entries({}, otherOwner.headers(otherId));
+
+    expect(here).not.toContain('Jinde');
+    expect(here).not.toContain('Obojí');
+    expect(here).not.toContain(otherOwner.email);
+    expect(there.map(({ actor }) => actor.lastName)).toEqual(['Obojí', 'Jinde', null]);
+    expect(JSON.stringify(there)).not.toContain('Zkušební');
   });
 
   it('records changes without ids, the Organisation or timestamps', async () => {
@@ -176,7 +220,7 @@ describe('audit log', () => {
     expect(second.body.next).toBeNull();
     expect(
       (await log({ actor: owner.email })).body.entries.every(
-        ({ actor }: { actor: { name: string } }) => actor.name === owner.email,
+        ({ actor }: { actor: { email: string } }) => actor.email === owner.email,
       ),
     ).toBe(true);
     expect(

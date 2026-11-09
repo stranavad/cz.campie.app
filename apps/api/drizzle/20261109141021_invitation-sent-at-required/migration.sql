@@ -1,0 +1,1 @@
+ALTER TABLE "invitations" ALTER COLUMN "sent_at" SET NOT NULL;

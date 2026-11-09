@@ -152,9 +152,11 @@ export class ProblemReportService {
    * @param reports the reports
    */
   private async sendersOf(reports: readonly ProblemReportRow[]): Promise<Map<string, string>> {
-    return this.admins.listEmailsByIds([
+    const people = await this.admins.listPeopleByIds([
       ...new Set(reports.flatMap(({ adminId }) => (adminId === null ? [] : [adminId]))),
     ]);
+
+    return new Map([...people].map(([id, { email }]) => [id, email]));
   }
 
   /**

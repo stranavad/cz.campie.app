@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { and, eq, inArray, isNull, notExists } from 'drizzle-orm';
 
+import type { Person } from '@repo/schema/shared';
+
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { admins, legalAcceptances, memberships, operators } from '../../../db/schema.ts';
 import { AdminEntity, type AdminInsertModel } from './admin.entity.ts';
@@ -52,21 +54,21 @@ export class AdminRepository {
   }
 
   /**
-   * List the emails of admins, in one query.
+   * List admins by their email and name, in one query.
    * @param ids admin ids
-   * @returns emails by admin id; an unknown id is missing
+   * @returns each admin by id; an unknown id is missing
    */
-  public async listEmailsByIds(ids: readonly string[]): Promise<Map<string, string>> {
+  public async listPeopleByIds(ids: readonly string[]): Promise<Map<string, Person>> {
     if (ids.length === 0) {
       return new Map();
     }
 
     const rows = await this.unitOfWork.db
-      .select({ id: admins.id, email: admins.email })
+      .select({ id: admins.id, email: admins.email, firstName: admins.firstName, lastName: admins.lastName })
       .from(admins)
       .where(inArray(admins.id, [...ids]));
 
-    return new Map(rows.map(({ id, email }) => [id, email]));
+    return new Map(rows.map(({ id, ...person }) => [id, person]));
   }
 
   /**

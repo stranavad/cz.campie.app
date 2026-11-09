@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { czechDateTime } from '@repo/schema/shared';
 
 import { Button } from '@/components/ui/button';
+import { personNameWithEmail } from '@/core/account';
 import {
   useSupportAccessMutations,
   useSupportGrantsQuery,
@@ -18,6 +19,7 @@ export function SupportAccessSection({ organisationId }: { organisationId: strin
   const grants = useSupportGrantsQuery(organisationId);
   const mutations = useSupportAccessMutations(organisationId);
   const active = grants.data?.find((grant) => grant.active);
+  const grantedBy = active?.grantedBy ?? null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -31,6 +33,11 @@ export function SupportAccessSection({ organisationId }: { organisationId: strin
                   until: czechDateTime(active.expiresAt),
                 })}
           </span>
+          {grantedBy === null ? null : (
+            <span className="text-[13px] break-words text-muted-foreground">
+              {t('supportAccess.grantedBy', { name: personNameWithEmail(grantedBy) })}
+            </span>
+          )}
         </span>
         {active === undefined ? null : (
           <Button

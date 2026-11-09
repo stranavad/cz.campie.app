@@ -62,7 +62,7 @@ export class MembershipRepository {
   }
 
   /**
-   * List the current Organisation's members with their emails, in the order they joined.
+   * List the current Organisation's members with their emails and names, in the order they joined.
    */
   public async listMembers(): Promise<MemberEntity[]> {
     const rows = await this.selectMembers()
@@ -183,13 +183,15 @@ export class MembershipRepository {
   }
 
   /**
-   * Select memberships with their admin's email.
+   * Select memberships with their admin's email and name.
    */
   private selectMembers() {
     return this.unitOfWork.db
       .select({
         ...getColumns(memberships),
         email: admins.email,
+        firstName: admins.firstName,
+        lastName: admins.lastName,
         totpEnabled: sql<boolean>`${totpCredentials.confirmedAt} IS NOT NULL`,
       })
       .from(memberships)

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { defineEndpoint, passwordSchema } from '@repo/schema/shared';
+import { defineEndpoint, passwordSchema, personNameSchema } from '@repo/schema/shared';
 
 import { invitationTokenSchema } from './look-up-invitation.contract.ts';
 
@@ -8,6 +8,9 @@ export const acceptInvitationBodySchema = z.object({
   token: invitationTokenSchema,
   // Required unless the address has an account whose email is verified; the account it sets is signed in.
   password: passwordSchema.optional(),
+  // Required with the password; a verified account keeps its own name.
+  firstName: personNameSchema.optional(),
+  lastName: personNameSchema.optional(),
 });
 
 export type AcceptInvitationBody = z.infer<typeof acceptInvitationBodySchema>;

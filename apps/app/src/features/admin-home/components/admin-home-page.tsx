@@ -55,7 +55,7 @@ export function AdminHomePage() {
   return (
     <>
       <PageHeader
-        title={t('title')}
+        title={page.greetingName === null ? t('title') : t('greeting', { name: page.greetingName })}
         actions={
           <>
             <TurnusSwitcher />
