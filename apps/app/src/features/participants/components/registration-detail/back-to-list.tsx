@@ -2,8 +2,12 @@ import { Link } from '@tanstack/react-router';
 import { ChevronLeftIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+interface BackToListProps {
+  turnus?: string;
+}
+
 // The way back to the list, naming the Turnus when it is known.
-export function BackToList({ turnus }: { turnus?: string }) {
+export function BackToList({ turnus }: BackToListProps) {
   const { t } = useTranslation('participants');
 
   return (

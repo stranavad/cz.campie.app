@@ -5,8 +5,12 @@ import type { GuardianDocuments } from '@repo/schema/documents';
 
 import { IconTile } from '@/components/icon-tile';
 
+interface DownloadListProps {
+  downloads: GuardianDocuments['downloads'];
+}
+
 // What the camp publishes for the Turnus to download.
-export function DownloadList({ downloads }: { downloads: GuardianDocuments['downloads'] }) {
+export function DownloadList({ downloads }: DownloadListProps) {
   const { t } = useTranslation('portal');
 
   if (downloads.length === 0) {

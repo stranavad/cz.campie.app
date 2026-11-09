@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { PublicTurnus } from '@repo/schema/camps';
 
 import { Badge } from '@/components/ui/badge';
-import { LAST_PLACES } from '@/core/camp-page/helpers/camp-page.constants';
+import { LAST_PLACES } from '@/core/camp-page/helpers/camp-page.constant';
 
 interface AvailabilityPillProps {
   turnus: PublicTurnus;

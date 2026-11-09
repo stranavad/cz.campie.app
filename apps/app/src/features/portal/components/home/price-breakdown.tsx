@@ -6,8 +6,12 @@ import { czechDate, czk } from '@repo/schema/shared';
 
 import { PaymentRow } from '@/features/portal/components/home/payment-row';
 
+interface PriceBreakdownProps {
+  registration: GuardianRegistration;
+}
+
 // The price line by line and every payment received, folded away until asked for.
-export function PriceBreakdown({ registration }: { registration: GuardianRegistration }) {
+export function PriceBreakdown({ registration }: PriceBreakdownProps) {
   const { t } = useTranslation('portal');
   const { t: tRegistration } = useTranslation('registration');
   const nameAt = (position: number | null) => {

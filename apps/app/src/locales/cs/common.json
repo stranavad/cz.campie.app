@@ -365,6 +365,7 @@
     "previousMonth": "Předchozí měsíc",
     "nextMonth": "Další měsíc",
     "monthCaption": "{{month}} {{year}}",
+    "monthName": "{{date, datetime(month: long)}}",
     "month": "Měsíc",
     "year": "Rok",
     "time": "Čas",
@@ -398,7 +399,7 @@
     "buttonText": "Text na tlačítku bude",
     "white": "bílý",
     "dark": "tmavý",
-    "contrast": "kontrast {{ratio}} : 1",
+    "contrast": "kontrast {{ratio, number(maximumFractionDigits: 1)}} : 1",
     "darkShade": "V tmavém režimu použijeme odstín",
     "automatic": "automaticky"
   },

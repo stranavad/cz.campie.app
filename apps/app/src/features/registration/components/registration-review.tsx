@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Answers, FormField } from '@repo/schema/form-engine';
 
 import { useAnswerText, useFieldLabel } from '@/core/registration-form';
+import type { RegistrationStep } from '@/features/registration/components/registration-step.constant';
 import { ReviewCard, type ReviewRow } from '@/features/registration/components/review-card';
 
 interface RegistrationReviewProps {
@@ -10,7 +11,7 @@ interface RegistrationReviewProps {
   participantFields: readonly FormField[];
   registration: Answers;
   participants: readonly Answers[];
-  onEdit: (step: number, child?: number) => void;
+  onEdit: (step: RegistrationStep, child?: number) => void;
 }
 
 // The answers of the first three steps read back before sending: the guardians, each child, the
@@ -38,18 +39,18 @@ export function RegistrationReview(props: RegistrationReviewProps) {
           props.registrationFields.filter(({ tier }) => tier === 'core'),
           props.registration,
         )}
-        onEdit={() => props.onEdit(1)}
+        onEdit={() => props.onEdit('guardians')}
       />
       {props.participants.map((answers, index) => (
         <ReviewCard
           key={index}
           title={typeof answers.firstName === 'string' ? answers.firstName : t('child', { number: index + 1 })}
           rows={rowsOf(props.participantFields, answers)}
-          onEdit={() => props.onEdit(2, index)}
+          onEdit={() => props.onEdit('children', index)}
         />
       ))}
       {questions.length === 0 ? null : (
-        <ReviewCard title={t('steps.questions.name')} rows={questions} onEdit={() => props.onEdit(3)} />
+        <ReviewCard title={t('steps.questions.name')} rows={questions} onEdit={() => props.onEdit('questions')} />
       )}
     </>
   );

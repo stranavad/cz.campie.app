@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 
 import type { RegistrationDetail } from '@repo/schema/registrations';
 
-import { Button } from '@/components/ui/button';
 import { useRemoveAccessEmailMutation } from '@/features/participants/api/participants.queries';
+import { ConfirmRemoveDialog } from '@/features/participants/components/confirm-remove-dialog';
 import { UndeliverableBadge } from '@/features/participants/components/undeliverable-badge';
 
 interface AccessEmailEntryProps {
@@ -31,15 +31,14 @@ export function AccessEmailEntry({ organisationId, registrationId, access, canWr
         />
       ) : null}
       {canWrite ? (
-        <Button
-          type="button"
-          variant="link"
-          className="min-h-11 self-start text-sm sm:min-h-8"
-          disabled={remove.isPending}
-          onClick={() => remove.mutate(access.id)}
-        >
-          {t('controls.remove')}
-        </Button>
+        <ConfirmRemoveDialog
+          label={t('controls.remove')}
+          title={t('controls.removeAccessEmailTitle')}
+          description={t('controls.removeAccessEmailNote', { email: access.email })}
+          isPending={remove.isPending}
+          isError={remove.isError}
+          onConfirm={() => remove.mutate(access.id)}
+        />
       ) : null}
     </li>
   );

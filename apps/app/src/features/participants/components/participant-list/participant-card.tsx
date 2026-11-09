@@ -11,8 +11,12 @@ import { ParticipantIssues } from '@/features/participants/components/participan
 import { PaymentStatusBadge } from '@/features/participants/components/payment-status-badge';
 import { cn } from '@/lib/utils';
 
+interface ParticipantCardProps {
+  row: ParticipantRow;
+}
+
 // One child on a phone: name, age and guardian, then the payment and whatever is missing.
-export function ParticipantCard({ row }: { row: ParticipantRow }) {
+export function ParticipantCard({ row }: ParticipantCardProps) {
   const { t } = useTranslation('participants');
   const name = t('name', { first: row.firstName, last: row.lastName });
   const isCancelled = row.status === 'cancelled';

@@ -11,8 +11,12 @@ import { PortalBackHeader } from '@/features/portal/components/shared/portal-bac
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
 import { HttpError } from '@/lib/api';
 
+interface ConsentsPageProps {
+  registrationId: string;
+}
+
 // The Consents of a Registration's children: the one to sign next open, the rest as rows.
-export function ConsentsPage({ registrationId }: { registrationId: string }) {
+export function ConsentsPage({ registrationId }: ConsentsPageProps) {
   const { t } = useTranslation('portal');
   const page = useConsentsPage(registrationId);
   const { consents, selected } = page;

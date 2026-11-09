@@ -5,8 +5,12 @@ import { czk } from '@repo/schema/shared';
 
 import { LedgerRow } from '@/features/participants/components/registration-detail/ledger-row';
 
+interface PriceLinesProps {
+  detail: RegistrationDetail;
+}
+
 // The price: its lines, by child where a line is one child's, the adjustments and the total.
-export function PriceLines({ detail }: { detail: RegistrationDetail }) {
+export function PriceLines({ detail }: PriceLinesProps) {
   const { t } = useTranslation('participants');
   const { t: tRegistration } = useTranslation('registration');
   const nameAt = (position: number | null) => {

@@ -22,7 +22,8 @@ export const useGuardianSignOutMutation = () => {
 
   return useMutation({
     mutationFn: portalService.signOut,
-    onSettled: () => queryClient.removeQueries({ queryKey: portalKeys.all }),
+    // Everything the guardian saw goes, not only the portal's queries: a shared device must not keep it.
+    onSettled: () => queryClient.clear(),
   });
 };
 

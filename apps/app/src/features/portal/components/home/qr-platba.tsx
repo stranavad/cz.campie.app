@@ -2,9 +2,13 @@ import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+interface QrPlatbaProps {
+  payload: string;
+}
+
 // A QR platba a banking app reads, drawn in the browser from its payload. Its box is sized up front, so
 // nothing moves when the image arrives.
-export function QrPlatba({ payload }: { payload: string }) {
+export function QrPlatba({ payload }: QrPlatbaProps) {
   const { t } = useTranslation('portal');
   const [image, setImage] = useState<string | null>(null);
 

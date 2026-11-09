@@ -5,8 +5,12 @@ import type { PaymentStatus } from '@repo/schema/pricing';
 import { Badge } from '@/components/ui/badge';
 import { PAYMENT_STATUS_VARIANT } from '@/features/participants/components/payment-status.helper';
 
+interface PaymentStatusBadgeProps {
+  status: PaymentStatus;
+}
+
 // A Registration's payment status as a pill.
-export function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
+export function PaymentStatusBadge({ status }: PaymentStatusBadgeProps) {
   const { t } = useTranslation('participants');
 
   return (

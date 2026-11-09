@@ -3,8 +3,12 @@ import { useTranslation } from 'react-i18next';
 import type { AdminUpload } from '@repo/schema/documents';
 import { czechDateTime } from '@repo/schema/shared';
 
+interface DocumentUploadLineProps {
+  upload: AdminUpload;
+}
+
 // One hand-in: when and by whom, its state and note, and its file or that it came on paper.
-export function DocumentUploadLine({ upload }: { upload: AdminUpload }) {
+export function DocumentUploadLine({ upload }: DocumentUploadLineProps) {
   const { t } = useTranslation('participants');
 
   return (

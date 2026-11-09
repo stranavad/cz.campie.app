@@ -1,8 +1,7 @@
 import { ArrowRightLeftIcon, EllipsisIcon, RefreshCwIcon, Trash2Icon, UserRoundXIcon } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { RegistrationDetail } from '@repo/schema/registrations';
+import type { RegistrationDetail, SelectedTurnus } from '@repo/schema/registrations';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +14,7 @@ import {
 import { CancelDialog } from '@/features/participants/components/registration-detail/cancel-dialog';
 import { EraseDialog } from '@/features/participants/components/registration-detail/erase-dialog';
 import { MoveDialog } from '@/features/participants/components/registration-detail/move-dialog';
+import { useMoreActions } from '@/features/participants/components/registration-detail/use-more-actions.hook';
 
 interface MoreActionsProps {
   organisationId: string;
@@ -24,7 +24,7 @@ interface MoreActionsProps {
   // The Owner's, while there is anything left to erase.
   canErase: boolean;
   // The Camp's other Turnusy to move to.
-  others: { id: string; name: string; startDate: string }[];
+  others: SelectedTurnus['turnusy'];
   onRegenerate: (participantId: string) => void;
 }
 
@@ -32,8 +32,7 @@ interface MoreActionsProps {
 // where it cannot be undone.
 export function MoreActions({ organisationId, detail, canWrite, canErase, others, onRegenerate }: MoreActionsProps) {
   const { t } = useTranslation('participants');
-  const [dialog, setDialog] = useState<'move' | 'cancel' | 'erase' | null>(null);
-  const close = () => setDialog(null);
+  const { openDialog, dialogProps } = useMoreActions();
   const canMove = canWrite && others.length > 0;
 
   if (!canWrite && !canErase) {
@@ -50,7 +49,7 @@ export function MoreActions({ organisationId, detail, canWrite, canErase, others
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {canMove ? (
-            <DropdownMenuItem onClick={() => setDialog('move')}>
+            <DropdownMenuItem onClick={() => openDialog('move')}>
               <ArrowRightLeftIcon aria-hidden="true" />
               {t('edit.move')}
             </DropdownMenuItem>
@@ -67,13 +66,13 @@ export function MoreActions({ organisationId, detail, canWrite, canErase, others
             : null}
           {canWrite ? <DropdownMenuSeparator /> : null}
           {canWrite ? (
-            <DropdownMenuItem variant="destructive" onClick={() => setDialog('cancel')}>
+            <DropdownMenuItem variant="destructive" onClick={() => openDialog('cancel')}>
               <UserRoundXIcon aria-hidden="true" />
               {t('controls.cancelOpen')}
             </DropdownMenuItem>
           ) : null}
           {canErase ? (
-            <DropdownMenuItem variant="destructive" onClick={() => setDialog('erase')}>
+            <DropdownMenuItem variant="destructive" onClick={() => openDialog('erase')}>
               <Trash2Icon aria-hidden="true" />
               {t('erase.open')}
             </DropdownMenuItem>
@@ -85,20 +84,12 @@ export function MoreActions({ organisationId, detail, canWrite, canErase, others
           organisationId={organisationId}
           registrationId={detail.id}
           others={others}
-          open={dialog === 'move'}
-          onClose={close}
+          {...dialogProps('move')}
         />
       ) : null}
-      {canWrite ? (
-        <CancelDialog organisationId={organisationId} detail={detail} open={dialog === 'cancel'} onClose={close} />
-      ) : null}
+      {canWrite ? <CancelDialog organisationId={organisationId} detail={detail} {...dialogProps('cancel')} /> : null}
       {canErase ? (
-        <EraseDialog
-          organisationId={organisationId}
-          registrationId={detail.id}
-          open={dialog === 'erase'}
-          onClose={close}
-        />
+        <EraseDialog organisationId={organisationId} registrationId={detail.id} {...dialogProps('erase')} />
       ) : null}
     </>
   );

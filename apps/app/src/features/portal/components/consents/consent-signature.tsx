@@ -6,8 +6,12 @@ import { czechDateTime } from '@repo/schema/shared';
 
 import { buttonVariants } from '@/components/ui/button';
 
+interface ConsentSignatureProps {
+  signature: NonNullable<GuardianConsent['signature']>;
+}
+
 // Who signed this Consent and when, whether it was withdrawn, and the signed copy.
-export function ConsentSignature({ signature }: { signature: NonNullable<GuardianConsent['signature']> }) {
+export function ConsentSignature({ signature }: ConsentSignatureProps) {
   const { t } = useTranslation('portal');
 
   return (

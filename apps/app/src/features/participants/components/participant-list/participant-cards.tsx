@@ -4,8 +4,12 @@ import type { ParticipantRow } from '@repo/schema/registrations';
 
 import { ParticipantCard } from '@/features/participants/components/participant-list/participant-card';
 
+interface ParticipantCardsProps {
+  rows: ParticipantRow[];
+}
+
 // The list on a phone: one tappable row per child, the problems as pills under the name.
-export function ParticipantCards({ rows }: { rows: ParticipantRow[] }) {
+export function ParticipantCards({ rows }: ParticipantCardsProps) {
   const { t } = useTranslation('participants');
 
   return (

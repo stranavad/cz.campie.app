@@ -4,8 +4,12 @@ import { Card, CardTitle } from '@/components/ui/card';
 import { Meter } from '@/components/ui/meter';
 import { useTurnusyOccupancy } from '@/features/admin-home/components/use-turnusy-occupancy.hook';
 
+interface TurnusyOccupancyProps {
+  organisationId: string;
+}
+
 // How full every coming Turnus is, one bar each.
-export function TurnusyOccupancy({ organisationId }: { organisationId: string }) {
+export function TurnusyOccupancy({ organisationId }: TurnusyOccupancyProps) {
   const { t } = useTranslation('adminHome');
   const rows = useTurnusyOccupancy(organisationId);
 

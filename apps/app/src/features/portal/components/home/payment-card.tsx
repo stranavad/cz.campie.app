@@ -7,12 +7,16 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PaymentActions } from '@/features/portal/components/home/payment-actions';
-import { PAYMENT_STATUS_BADGES } from '@/features/portal/components/home/payment-status.constants';
+import { PAYMENT_STATUS_BADGES } from '@/features/portal/components/home/payment-status.constant';
 import { PriceBreakdown } from '@/features/portal/components/home/price-breakdown';
 import { usePaymentCard } from '@/features/portal/components/home/use-payment-card.hook';
 
+interface PaymentCardProps {
+  registration: GuardianRegistration;
+}
+
 // How a Registration's payment stands: what is left and by when, how much is paid, and how to pay the rest.
-export function PaymentCard({ registration }: { registration: GuardianRegistration }) {
+export function PaymentCard({ registration }: PaymentCardProps) {
   const { t } = useTranslation('portal');
   const card = usePaymentCard(registration);
 

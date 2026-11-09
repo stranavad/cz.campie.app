@@ -8,9 +8,10 @@ interface TextAreaFieldProps {
   label: string;
   description?: string;
   rows?: number;
+  onFocus?: () => void;
 }
 
-export function TextAreaField({ label, description, rows = 4 }: TextAreaFieldProps) {
+export function TextAreaField({ label, description, rows = 4, onFocus }: TextAreaFieldProps) {
   const { field, errors, isInvalid } = useFieldErrors();
   const id = useId();
 
@@ -22,6 +23,7 @@ export function TextAreaField({ label, description, rows = 4 }: TextAreaFieldPro
         name={field.name}
         rows={rows}
         value={typeof field.state.value === 'string' ? field.state.value : ''}
+        onFocus={onFocus}
         onBlur={field.handleBlur}
         onChange={(event) => field.handleChange(event.target.value)}
         aria-invalid={isInvalid}

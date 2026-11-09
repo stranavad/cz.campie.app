@@ -13,9 +13,13 @@ import { PortalBackHeader } from '@/features/portal/components/shared/portal-bac
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
 import { HttpError } from '@/lib/api';
 
+interface DocumentsPageProps {
+  registrationId: string;
+}
+
 // A Registration's documents: what each child still hands in, in full; the rest as rows; and what the camp
 // publishes to download.
-export function DocumentsPage({ registrationId }: { registrationId: string }) {
+export function DocumentsPage({ registrationId }: DocumentsPageProps) {
   const { t } = useTranslation('portal');
   const page = useDocumentsPage(registrationId);
   const { documents, selected } = page;

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import type { CampEmailText } from '@repo/schema/emails';
 
@@ -18,23 +18,6 @@ export function useEmailTextForm(organisationId: string, campId: string, email: 
   const formRef = useRef<HTMLFormElement>(null);
   const target = useRef<'subject' | 'text'>('text');
 
-  // Remembers which of the two inputs a placeholder would go into, as the cursor moves between them.
-  useEffect(() => {
-    const element = formRef.current;
-    const remember = ({ target: focused }: FocusEvent) => {
-      if (
-        (focused instanceof HTMLInputElement || focused instanceof HTMLTextAreaElement) &&
-        (focused.name === 'subject' || focused.name === 'text')
-      ) {
-        target.current = focused.name;
-      }
-    };
-
-    element?.addEventListener('focusin', remember);
-
-    return () => element?.removeEventListener('focusin', remember);
-  }, []);
-
   const form = useAppForm({
     defaultValues: emailTextFormValues(email),
     validators: { onChange: schema },
@@ -53,6 +36,10 @@ export function useEmailTextForm(organisationId: string, campId: string, email: 
   return {
     form,
     formRef,
+    // Remembers which of the two inputs a placeholder would go into, as the cursor moves between them.
+    rememberFocus: (name: 'subject' | 'text') => {
+      target.current = name;
+    },
     status,
     // Puts a placeholder where the cursor was, or over the selection, and the cursor after it.
     insert: (placeholder: string) => {

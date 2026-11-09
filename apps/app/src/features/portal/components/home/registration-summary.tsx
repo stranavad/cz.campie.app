@@ -6,8 +6,12 @@ import type { GuardianRegistration } from '@repo/schema/portal';
 import { Alert } from '@/components/ui/alert';
 import { useRegistrationSummary } from '@/features/portal/components/home/use-registration-summary.hook';
 
+interface RegistrationSummaryProps {
+  registration: GuardianRegistration;
+}
+
 // Whom a Registration places and where: the children by first name, the Camp, Turnus and its dates.
-export function RegistrationSummary({ registration }: { registration: GuardianRegistration }) {
+export function RegistrationSummary({ registration }: RegistrationSummaryProps) {
   const { t } = useTranslation('portal');
   const summary = useRegistrationSummary(registration);
 

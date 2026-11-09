@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type { CampSummary } from '@repo/schema/camps';
 
 import { CampSettingsSectionContent } from '@/features/camps/components/camp-settings/camp-settings-section-content';
-import type { CampSettingsSection as Section } from '@/features/camps/components/camp-settings/camp-settings-section.constants';
+import type { CampSettingsSection as Section } from '@/features/camps/components/camp-settings/camp-settings-section.constant';
 
 interface CampSettingsSectionProps {
   section: Section;

@@ -14,16 +14,10 @@ import type { ConsentContent } from '@repo/schema/consents';
 import type { DocumentTypeBody } from '@repo/schema/documents';
 import type { CampEmailTextBody, EmailType } from '@repo/schema/emails';
 
+import { campListKeys } from '@/core/camp-list';
 import { selectedTurnusKeys } from '@/core/selected-turnus';
 import { campsKeys } from '@/features/camps/api/camps.keys';
 import { campsService } from '@/features/camps/api/camps.service';
-
-export const useCampsQuery = (organisationId: string, enabled: boolean) =>
-  useQuery({
-    queryKey: campsKeys.list(organisationId),
-    queryFn: ({ signal }) => campsService.list(organisationId, signal),
-    enabled,
-  });
 
 export const useCampQuery = (organisationId: string, campId: string) =>
   useQuery({
@@ -46,7 +40,7 @@ export const useCreateCampMutation = (organisationId: string) => {
 
   return useMutation({
     mutationFn: (body: CreateCampBody) => campsService.create(organisationId, body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: campsKeys.list(organisationId) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: campListKeys.camps(organisationId) }),
   });
 };
 
@@ -58,7 +52,7 @@ export const useUpdateCampMutation = (organisationId: string, campId: string) =>
     onSuccess: async (camp) => {
       queryClient.setQueryData(campsKeys.detail(organisationId, campId), camp);
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: campsKeys.list(organisationId) }),
+        queryClient.invalidateQueries({ queryKey: campListKeys.camps(organisationId) }),
         // The header's Turnus switcher names each Turnus with its Camp.
         queryClient.invalidateQueries({ queryKey: selectedTurnusKeys.organisation(organisationId) }),
       ]);
@@ -94,15 +88,9 @@ export const useRemoveCampLogoMutation = (organisationId: string, campId: string
 // The Camp's Turnusy and the header's Turnus switcher, which lists every Turnus of the Organisation.
 const invalidateTurnusy = (queryClient: QueryClient, organisationId: string, campId: string) =>
   Promise.all([
-    queryClient.invalidateQueries({ queryKey: campsKeys.turnusy(organisationId, campId) }),
+    queryClient.invalidateQueries({ queryKey: campListKeys.campTurnusy(organisationId, campId) }),
     queryClient.invalidateQueries({ queryKey: selectedTurnusKeys.organisation(organisationId) }),
   ]);
-
-export const useTurnusyQuery = (organisationId: string, campId: string) =>
-  useQuery({
-    queryKey: campsKeys.turnusy(organisationId, campId),
-    queryFn: ({ signal }) => campsService.listTurnusy(organisationId, campId, signal),
-  });
 
 // A Turnus is saved whole, new (no id) or existing; the Camp's list is refetched either way.
 export const useSaveTurnusMutation = (organisationId: string, campId: string) => {

@@ -5,8 +5,12 @@ import type { GuardianEdit } from '@repo/schema/portal';
 import { Card, CardTitle } from '@/components/ui/card';
 import { DescriptionItem, DescriptionList } from '@/components/ui/description-list';
 
+interface RemovedAnswersProps {
+  removed: GuardianEdit['removed'];
+}
+
 // Answers to questions the form no longer asks, to read only.
-export function RemovedAnswers({ removed }: { removed: GuardianEdit['removed'] }) {
+export function RemovedAnswers({ removed }: RemovedAnswersProps) {
   const { t } = useTranslation('portal');
 
   if (removed.length === 0) {

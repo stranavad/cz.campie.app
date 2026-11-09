@@ -5,10 +5,10 @@
   "notOperator": "Konzole je jen pro provozovatele platformy.",
   "tabs": {
     "label": "Části konzole",
-    "organizace": "Organizace",
-    "hlaseni": "Hlášení problémů",
-    "emaily": "Doručování e-mailů",
-    "podpora": "Přístupy podpory"
+    "organisations": "Organizace",
+    "reports": "Hlášení problémů",
+    "mail": "Doručování e-mailů",
+    "support": "Přístupy podpory"
   },
   "organisations": {
     "title": "Organizace",
@@ -37,7 +37,7 @@
     "statutoryRepresentative": "Statutární zástupce",
     "contact": "Kontakt",
     "mail": "E-maily",
-    "mailValue": "odesláno {{sent}}, nedoručeno {{bounced}}, stížnosti {{complained}} ({{rate}})"
+    "mailValue": "odesláno {{sent, number}}, nedoručeno {{bounced, number}}, stížnosti {{complained, number}} ({{rate, number(style: percent; maximumFractionDigits: 1)}})"
   },
   "rename": {
     "label": "Subdoména",
@@ -108,11 +108,12 @@
   },
   "mail": {
     "title": "Doručování e-mailů",
-    "intro": "Součet za všechny organizace od jejich založení. Nedoručené a stížnosti tvoří {{rate}} odeslaných e-mailů.",
+    "intro": "Součet za všechny organizace od jejich založení. Nedoručené a stížnosti tvoří {{rate, number(style: percent; maximumFractionDigits: 1)}} odeslaných e-mailů.",
+    "count": "{{value, number}}",
     "sent": "odesláno celkem",
     "bounced": "nedoručeno",
     "complained": "označeno jako spam",
     "healthy": "Žádná organizace nemá nedoručených e-mailů ani stížností víc, než poštovní služby snesou.",
-    "warning": "{{organisation}} má {{rate}} nedoručených e-mailů nebo stížností. Zkontrolujte s ní adresy rodičů."
+    "warning": "{{organisation}} má {{rate, number(style: percent; maximumFractionDigits: 1)}} nedoručených e-mailů nebo stížností. Zkontrolujte s ní adresy rodičů."
   }
 }

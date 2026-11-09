@@ -9,11 +9,7 @@ import {
   useRenameOrganisationMutation,
   useSuspendOrganisationMutation,
 } from '@/features/console/api/console.queries';
-import {
-  bounceRateOf,
-  formatRate,
-  hasMailWarning,
-} from '@/features/console/components/mail-delivery/mail-health.helper';
+import { bounceRateOf, hasMailWarning } from '@/features/console/components/mail-delivery/mail-health.helper';
 import { HttpError } from '@/lib/api';
 
 const KNOWN_FAILURES = [...CONSOLE_ERROR_CODES, ...SUBDOMAIN_ERROR_CODES] as const;
@@ -49,7 +45,7 @@ export function useOrganisationRow(organisation: ConsoleOrganisation) {
   };
 
   return {
-    bounceRate: formatRate(bounceRateOf(organisation.mail)),
+    bounceRate: bounceRateOf(organisation.mail),
     mailWarning: hasMailWarning(organisation.mail),
     failure: failureOf(mutations.find((mutation) => mutation.error !== null)?.error ?? null),
     isBusy: mutations.some((mutation) => mutation.isPending),

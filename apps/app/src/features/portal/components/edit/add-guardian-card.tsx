@@ -9,8 +9,12 @@ import { editFailureOf } from '@/features/portal/components/edit/edit-failure';
 import { LabelledInput } from '@/features/portal/components/edit/labelled-input';
 import { StatusMessage } from '@/features/portal/components/shared/status-message';
 
+interface AddGuardianCardProps {
+  registrationId: string;
+}
+
 // Adds a second guardian, who gets an email with a login link and sees the Registration at once.
-export function AddGuardianCard({ registrationId }: { registrationId: string }) {
+export function AddGuardianCard({ registrationId }: AddGuardianCardProps) {
   const { t } = useTranslation('portal');
   const [isOpen, setIsOpen] = useState(false);
   const [firstName, setFirstName] = useState('');

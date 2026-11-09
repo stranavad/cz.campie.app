@@ -3,6 +3,7 @@ import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FileButton } from '@/components/file-button';
+import { FILE_ACCEPT, PHOTO_ACCEPT } from '@/features/portal/components/documents/upload-tiles.constant';
 
 interface UploadTilesProps {
   disabled: boolean;
@@ -24,7 +25,7 @@ export function UploadTiles({ disabled, onChoose }: UploadTilesProps) {
           label={t('documents.takePhoto')}
           icon={<CameraIcon aria-hidden="true" />}
           variant="brand"
-          accept="image/*"
+          accept={PHOTO_ACCEPT}
           capture="environment"
           disabled={disabled}
           describedBy={hintId}
@@ -35,7 +36,7 @@ export function UploadTiles({ disabled, onChoose }: UploadTilesProps) {
           label={t('documents.chooseFile')}
           icon={<FileUpIcon aria-hidden="true" />}
           variant="outline"
-          accept="application/pdf,image/jpeg,image/png"
+          accept={FILE_ACCEPT}
           disabled={disabled}
           describedBy={hintId}
           onFile={onChoose}

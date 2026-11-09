@@ -4,12 +4,12 @@ import { CodeInput } from '@/components/code-input';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { useFieldErrors } from '@/core/form/hooks/use-field-errors.hook';
 
-interface TotpDigitsFieldProps {
+interface CodeFieldProps {
   label: string;
 }
 
-// The six digits from the authenticator app, as the form's `code` field.
-export function TotpDigitsField({ label }: TotpDigitsFieldProps) {
+// A six-digit authenticator code, in single-digit boxes.
+export function CodeField({ label }: CodeFieldProps) {
   const { field, errors, isInvalid } = useFieldErrors();
   const id = useId();
 

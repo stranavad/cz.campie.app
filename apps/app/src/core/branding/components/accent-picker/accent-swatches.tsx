@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { brandColours } from '@repo/schema/organisations';
 
-import { ACCENT_SWATCHES } from '@/core/branding/components/accent-picker/accent-swatches.constants';
+import { ACCENT_SWATCHES } from '@/core/branding/components/accent-picker/accent-swatches.constant';
 
 interface AccentSwatchesProps {
   value: string;

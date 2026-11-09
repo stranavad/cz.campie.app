@@ -11,8 +11,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+interface PrihlaskaPdfProps {
+  participants: RegistrationDetail['participants'];
+}
+
 // Each child's Přihláška PDF: a link for one child, a menu of children for more.
-export function PrihlaskaPdf({ participants }: { participants: RegistrationDetail['participants'] }) {
+export function PrihlaskaPdf({ participants }: PrihlaskaPdfProps) {
   const { t } = useTranslation('participants');
   const withPdf = participants.flatMap((participant) =>
     participant.prihlaska === null ? [] : [{ ...participant, url: participant.prihlaska.url }],

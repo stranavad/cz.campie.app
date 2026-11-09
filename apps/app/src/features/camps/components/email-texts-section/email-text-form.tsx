@@ -21,7 +21,7 @@ interface EmailTextFormProps {
 // One email type's subject and text, whether it is sent, and a preview with made-up data.
 export function EmailTextForm({ organisationId, campId, email, canWrite }: EmailTextFormProps) {
   const { t } = useTranslation('camps');
-  const { form, formRef, status, placeholders, preview, showPreview, reset, insert } = useEmailTextForm(
+  const { form, formRef, rememberFocus, status, placeholders, preview, showPreview, reset, insert } = useEmailTextForm(
     organisationId,
     campId,
     email,
@@ -48,9 +48,11 @@ export function EmailTextForm({ organisationId, campId, email, canWrite }: Email
         </Button>
       </CardHeader>
       <fieldset disabled={!canWrite} className="flex min-w-0 flex-col gap-5">
-        <form.AppField name="subject">{(field) => <field.TextField label={t('emails.subject')} />}</form.AppField>
+        <form.AppField name="subject">
+          {(field) => <field.TextField label={t('emails.subject')} onFocus={() => rememberFocus('subject')} />}
+        </form.AppField>
         <form.AppField name="text">
-          {(field) => <field.TextAreaField label={t('emails.text')} rows={8} />}
+          {(field) => <field.TextAreaField label={t('emails.text')} rows={8} onFocus={() => rememberFocus('text')} />}
         </form.AppField>
         <EmailPlaceholders placeholders={placeholders} onInsert={insert} />
         {email.canSwitchOff ? (

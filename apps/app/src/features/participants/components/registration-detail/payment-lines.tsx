@@ -5,8 +5,12 @@ import { czechDate, czk } from '@repo/schema/shared';
 
 import { LedgerRow } from '@/features/participants/components/registration-detail/ledger-row';
 
+interface PaymentLinesProps {
+  ledger: RegistrationDetail['ledger'];
+}
+
 // The payments received and what they add up to.
-export function PaymentLines({ ledger }: { ledger: RegistrationDetail['ledger'] }) {
+export function PaymentLines({ ledger }: PaymentLinesProps) {
   const { t } = useTranslation('participants');
 
   return (

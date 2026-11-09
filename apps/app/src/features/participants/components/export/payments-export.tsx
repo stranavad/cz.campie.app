@@ -26,8 +26,12 @@ function problemOf(from: string, to: string): (typeof PAYMENTS_EXPORT_ERROR_CODE
   );
 }
 
+interface PaymentsExportProps {
+  organisationId: string;
+}
+
 // The payments within dates for the accountant, the current calendar year in Prague to begin with.
-export function PaymentsExport({ organisationId }: { organisationId: string }) {
+export function PaymentsExport({ organisationId }: PaymentsExportProps) {
   const { t } = useTranslation('participants');
   // This year in Prague, read once when the form appears.
   const [year] = useState(() => pragueDateOf(new Date()).slice(0, 4));

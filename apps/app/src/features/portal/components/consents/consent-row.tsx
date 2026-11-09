@@ -5,7 +5,6 @@ import type { GuardianConsents } from '@repo/schema/consents';
 import { czechDateTime } from '@repo/schema/shared';
 
 import { IconTile } from '@/components/icon-tile';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ConsentSignForm } from '@/features/portal/components/consents/consent-sign-form';
@@ -29,21 +28,11 @@ const TILES = {
 export function ConsentRow({ registrationId, participantId, consent, isOpen, onOpen }: ConsentRowProps) {
   const { t } = useTranslation('portal');
   const { tone, Icon } = TILES[consent.state];
-  // Signed before, but the camp has changed it since: the new version waits for a signature.
-  const newVersion =
-    consent.state === 'unsigned' && consent.signedVersion !== null ? (
-      <Badge variant="warning" className="h-6.5 text-xs font-bold">
-        {t('consents.newVersion')}
-      </Badge>
-    ) : null;
 
   if (isOpen) {
     return (
       <Card className="gap-3.5 px-4.5 py-5">
-        <div className="flex items-start justify-between gap-2">
-          <h2 className="text-heading break-words">{consent.title}</h2>
-          {newVersion}
-        </div>
+        <h2 className="text-heading break-words">{consent.title}</h2>
         <ConsentSignForm params={{ registrationId, participantId, consentId: consent.consentId }} />
       </Card>
     );
@@ -75,7 +64,6 @@ export function ConsentRow({ registrationId, participantId, consent, isOpen, onO
                 : t('consents.signedOn', { date: czechDateTime(consent.signedAt) })}
           </span>
         </div>
-        {newVersion}
         {consent.signedPdf === null ? null : (
           <a
             href={consent.signedPdf.url}

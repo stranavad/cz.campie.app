@@ -1,13 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 
-import { CONSOLE_SECTIONS, ConsolePage } from '@/features/console';
+import { CONSOLE_SECTION_SLUGS, ConsolePage, consoleSectionOf } from '@/features/console';
 
 export const Route = createFileRoute('/platform/konzole')({
-  validateSearch: z.object({ sekce: z.enum(CONSOLE_SECTIONS).optional().catch(undefined) }),
+  validateSearch: z.object({ sekce: z.enum(CONSOLE_SECTION_SLUGS).optional().catch(undefined) }),
   component: function ConsoleRoute() {
     const { sekce } = Route.useSearch();
 
-    return <ConsolePage section={sekce ?? 'organizace'} />;
+    return <ConsolePage section={consoleSectionOf(sekce)} />;
   },
 });

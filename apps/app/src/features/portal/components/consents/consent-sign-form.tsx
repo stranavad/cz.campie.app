@@ -11,8 +11,12 @@ import { SignerFields } from '@/features/portal/components/consents/signer-field
 import { useConsentSignForm } from '@/features/portal/components/consents/use-consent-sign-form.hook';
 import { StatusMessage } from '@/features/portal/components/shared/status-message';
 
+interface ConsentSignFormProps {
+  params: GuardianConsentParams;
+}
+
 // A Consent in full for one child, to read and sign by typed name and place.
-export function ConsentSignForm({ params }: { params: GuardianConsentParams }) {
+export function ConsentSignForm({ params }: ConsentSignFormProps) {
   const { t } = useTranslation('portal');
   const form = useConsentSignForm(params);
 

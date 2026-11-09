@@ -1,6 +1,7 @@
 import { createFormHook } from '@tanstack/react-form';
 
 import { CheckboxField } from '@/core/form/components/checkbox-field';
+import { CodeField } from '@/core/form/components/code-field';
 import { DateField } from '@/core/form/components/date-field';
 import { DateTimeField } from '@/core/form/components/date-time-field';
 import { SelectField } from '@/core/form/components/select-field';
@@ -13,6 +14,6 @@ import { fieldContext, formContext } from '@/core/form/form.context';
 export const { useAppForm, withForm } = createFormHook({
   fieldContext,
   formContext,
-  fieldComponents: { TextField, TextAreaField, CheckboxField, SelectField, DateField, DateTimeField },
+  fieldComponents: { TextField, TextAreaField, CheckboxField, SelectField, DateField, DateTimeField, CodeField },
   formComponents: { SubmitButton },
 });

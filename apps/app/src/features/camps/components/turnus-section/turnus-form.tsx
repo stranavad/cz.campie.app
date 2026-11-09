@@ -7,7 +7,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { FieldLegend, FieldSet } from '@/components/ui/field';
-import { TURNUS_FORM_GROUPS } from '@/features/camps/components/turnus-section/turnus-form.constants';
+import { TURNUS_FORM_GROUPS } from '@/features/camps/components/turnus-section/turnus-form.constant';
 import { TurnusRemoval, type TurnusRemovalProps } from '@/features/camps/components/turnus-section/turnus-removal';
 import { useTurnusForm } from '@/features/camps/components/turnus-section/use-turnus-form.hook';
 import { cn } from '@/lib/utils';

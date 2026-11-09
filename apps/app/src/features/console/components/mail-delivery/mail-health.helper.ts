@@ -16,11 +16,3 @@ export function bounceRateOf({ sent, bounced, complained }: ConsoleOrganisation[
 export function hasMailWarning({ sent, bounced, complained }: ConsoleOrganisation['mail']) {
   return sent >= 50 && (bounced / sent > 0.02 || complained / sent > 0.001);
 }
-
-/**
- * A rate as a Czech percentage, "2,4 %".
- * @param rate from 0 to 1
- */
-export function formatRate(rate: number) {
-  return new Intl.NumberFormat('cs-CZ', { style: 'percent', maximumFractionDigits: 1 }).format(rate);
-}

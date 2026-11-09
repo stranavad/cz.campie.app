@@ -31,7 +31,6 @@ import {
   getRegistrationDetailEndpoint,
   getRegistrationHistoryEndpoint,
   getTurnusFormEndpoint,
-  listParticipantsEndpoint,
   moveRegistrationEndpoint,
   previewAddParticipantEndpoint,
   previewEditAnswersEndpoint,
@@ -51,7 +50,6 @@ import {
   type CreateRegistrationBody,
   type EditAnswersBody,
   type EditGuardianBody,
-  type ParticipantListQuery,
   type RecordPaymentBody,
   type SaveAddParticipantBody,
   type SaveEditAnswersBody,
@@ -62,21 +60,6 @@ import {
 import { apiClient } from '@/lib/api';
 
 export const participantsService = {
-  list: (organisationId: string, turnusId: string, filters: ParticipantListQuery, signal?: AbortSignal) =>
-    apiClient.request(listParticipantsEndpoint, {
-      organisationId,
-      params: { turnusId },
-      query: {
-        ...(filters.search === undefined ? {} : { search: filters.search }),
-        ...(filters.paymentStatus === undefined ? {} : { paymentStatus: filters.paymentStatus }),
-        ...(filters.unverifiedClaimedDiscount === true ? { unverifiedClaimedDiscount: 'true' as const } : {}),
-        ...(filters.overdue === true ? { overdue: 'true' as const } : {}),
-        ...(filters.unsignedConsent === true ? { unsignedConsent: 'true' as const } : {}),
-        ...(filters.missingDocument === true ? { missingDocument: 'true' as const } : {}),
-        ...(filters.missingAnswers === true ? { missingAnswers: 'true' as const } : {}),
-      },
-      signal,
-    }),
   detail: (organisationId: string, registrationId: string, signal?: AbortSignal) =>
     apiClient.request(getRegistrationDetailEndpoint, { organisationId, params: { registrationId }, signal }),
   history: (organisationId: string, registrationId: string, signal?: AbortSignal) =>

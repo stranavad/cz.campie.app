@@ -14,19 +14,14 @@ import type {
   VerifyClaimedDiscountBody,
 } from '@repo/schema/registrations';
 
+import { campListKeys } from '@/core/camp-list';
+import { participantListKeys, participantListQueryOptions } from '@/core/participant-list';
 import { turnusOverviewKeys } from '@/core/turnus-overview';
 import { participantsKeys } from '@/features/participants/api/participants.keys';
 import { participantsService } from '@/features/participants/api/participants.service';
 
 export const useParticipantsQuery = (organisationId: string, turnusId: string | null, filters: ParticipantListQuery) =>
-  useQuery({
-    queryKey: participantsKeys.list(organisationId, turnusId ?? '', filters),
-    queryFn:
-      turnusId === null
-        ? skipToken
-        : ({ signal }) => participantsService.list(organisationId, turnusId, filters, signal),
-    placeholderData: keepPreviousData,
-  });
+  useQuery({ ...participantListQueryOptions(organisationId, turnusId, filters), placeholderData: keepPreviousData });
 
 export const useRegistrationDetailQuery = (organisationId: string, registrationId: string, enabled: boolean) =>
   useQuery({
@@ -41,7 +36,7 @@ export const useRegistrationHistoryQuery = (organisationId: string, registration
     queryFn: enabled ? ({ signal }) => participantsService.history(organisationId, registrationId, signal) : skipToken,
   });
 
-// A change to a Registration shows in its detail, history, the list and the Turnus overview.
+// A change to a Registration shows in its detail, history, the lists, the Turnus overview and the places taken.
 const useRegistrationChange = <Variables, Result>(
   organisationId: string,
   mutationFn: (variables: Variables) => Promise<Result>,
@@ -53,7 +48,9 @@ const useRegistrationChange = <Variables, Result>(
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: participantsKeys.organisation(organisationId) }),
+        queryClient.invalidateQueries({ queryKey: participantListKeys.organisation(organisationId) }),
         queryClient.invalidateQueries({ queryKey: turnusOverviewKeys.organisation(organisationId) }),
+        queryClient.invalidateQueries({ queryKey: campListKeys.turnusy(organisationId) }),
       ]),
   });
 };
@@ -112,32 +109,9 @@ export const useTurnusFormQuery = (organisationId: string, turnusId: string | nu
     retry: false,
   });
 
-// A Deposit paid in cash at the desk is recorded as a payment right after the Registration exists. A failed
-// record is sent again with the form: the same idempotency key returns the same Registration.
 export const useCreateRegistrationMutation = (organisationId: string) =>
-  useRegistrationChange(
-    organisationId,
-    async ({
-      campId,
-      body,
-      cashDeposit,
-    }: {
-      campId: string;
-      body: CreateRegistrationBody;
-      cashDeposit: Pick<RecordPaymentBody, 'paidOn' | 'note'> | null;
-    }) => {
-      const created = await participantsService.create(organisationId, campId, body);
-
-      if (cashDeposit !== null && created.depositTotal !== null && created.depositTotal > 0) {
-        await participantsService.recordPayment(organisationId, created.id, {
-          kind: 'payment',
-          amount: created.depositTotal,
-          ...cashDeposit,
-        });
-      }
-
-      return created;
-    },
+  useRegistrationChange(organisationId, ({ campId, body }: { campId: string; body: CreateRegistrationBody }) =>
+    participantsService.create(organisationId, campId, body),
   );
 
 export const useCancelParticipantMutation = (organisationId: string, registrationId: string) =>

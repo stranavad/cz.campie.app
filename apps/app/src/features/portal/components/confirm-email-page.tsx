@@ -9,8 +9,12 @@ import { NoticeCard } from '@/features/portal/components/shared/notice-card';
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
 import { StatusMessage } from '@/features/portal/components/shared/status-message';
 
+interface ConfirmEmailPageProps {
+  token: string;
+}
+
 // Makes a new guardian email theirs, on a click, so a mail scanner opening the link changes nothing.
-export function ConfirmEmailPage({ token }: { token: string }) {
+export function ConfirmEmailPage({ token }: ConfirmEmailPageProps) {
   const { t } = useTranslation('portal');
   const confirm = useConfirmEmailChangeMutation();
 

@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { CampSettingsSection } from '@/features/camps/components/camp-settings/camp-settings-section.constants';
+import type { CampSettingsSection } from '@/features/camps/components/camp-settings/camp-settings-section.constant';
 import { useCampSwitcher } from '@/features/camps/components/use-camp-switcher.hook';
 
 interface CampSwitcherProps {

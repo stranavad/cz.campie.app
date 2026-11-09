@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { CampSettingsHeader } from '@/features/camps/components/camp-settings/camp-settings-header';
 import { CampSettingsSection } from '@/features/camps/components/camp-settings/camp-settings-section';
-import type { CampSettingsSection as Section } from '@/features/camps/components/camp-settings/camp-settings-section.constants';
+import type { CampSettingsSection as Section } from '@/features/camps/components/camp-settings/camp-settings-section.constant';
 import { CampSettingsTabs } from '@/features/camps/components/camp-settings/camp-settings-tabs';
 import { CreateCampForm } from '@/features/camps/components/create-camp-form/create-camp-form';
 import { useCampsPage } from '@/features/camps/components/use-camps-page.hook';

@@ -1,5 +1,18 @@
 import { CORE_FIELDS } from '@repo/schema/form-engine';
 
+import {
+  REGISTRATION_STEPS,
+  type RegistrationStep,
+} from '@/features/registration/components/registration-step.constant';
+
+/**
+ * Number a step as the address does, from 1.
+ * @param name the step
+ */
+export function stepNumberOf(name: RegistrationStep): number {
+  return REGISTRATION_STEPS.indexOf(name) + 1;
+}
+
 /**
  * Tell on which step (1-based) an answer is asked, by the path its error carries: the guardians' core
  * fields first, the children second, the Registration's own questions third; the rest (the code, the
@@ -8,14 +21,14 @@ import { CORE_FIELDS } from '@repo/schema/form-engine';
  */
 export function stepOfPath(path: readonly (string | number)[]): number {
   if (path[0] === 'participants') {
-    return 2;
+    return stepNumberOf('children');
   }
 
   if (path[0] === 'registration') {
-    return CORE_FIELDS.some(({ key }) => key === path[1]) ? 1 : 3;
+    return stepNumberOf(CORE_FIELDS.some(({ key }) => key === path[1]) ? 'guardians' : 'questions');
   }
 
-  return 4;
+  return stepNumberOf('summary');
 }
 
 /**

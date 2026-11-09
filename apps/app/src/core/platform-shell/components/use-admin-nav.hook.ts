@@ -18,7 +18,8 @@ export function useAdminNav() {
   const account = useAccountQuery();
   const { membership } = useCurrentMembership();
   const { turnusId } = useSelectedTurnus();
-  const overview = useTurnusOverviewQuery(membership?.organisation.id ?? '', turnusId);
+  const canReadRegistrations = membershipAllows(membership, 'registrations', 'read');
+  const overview = useTurnusOverviewQuery(membership?.organisation.id, turnusId, canReadRegistrations);
   const isOwner = membership?.owner === true;
   const items = [
     { to: '/platform', label: 'home', icon: HouseIcon, exact: true, shown: membership !== undefined },
@@ -27,7 +28,7 @@ export function useAdminNav() {
       label: 'registrations',
       icon: ClipboardListIcon,
       exact: false,
-      shown: membershipAllows(membership, 'registrations', 'read'),
+      shown: canReadRegistrations,
       count: overview.data?.registered,
     },
     {

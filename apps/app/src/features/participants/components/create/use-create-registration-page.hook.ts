@@ -1,6 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 
 import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
 import {
@@ -10,16 +9,13 @@ import {
   type FieldScope,
   type FormDefinition,
 } from '@repo/schema/form-engine';
-import { pragueDateOf } from '@repo/schema/shared';
 
 import { membershipAllows, useCurrentMembership } from '@/core/account';
 import { useSelectedTurnus } from '@/core/selected-turnus';
 import { useCreateRegistrationMutation, useTurnusFormQuery } from '@/features/participants/api/participants.queries';
 
-// A Registration taken by phone or on paper: the Turnus's form and its answers, sent once, and a Deposit paid
-// in cash recorded with it.
+// A Registration taken by phone or on paper: the Turnus's form and its answers, sent once.
 export function useCreateRegistrationPage() {
-  const { t } = useTranslation('participants');
   const navigate = useNavigate();
   const { membership, isLoading, isSignedOut } = useCurrentMembership();
   const organisationId = membership?.organisation.id ?? '';
@@ -32,7 +28,6 @@ export function useCreateRegistrationPage() {
   const [children, setChildren] = useState<Answers[]>([{}]);
   const [ticked, setTicked] = useState<readonly string[]>([]);
   const [sendConfirmation, setSendConfirmation] = useState(true);
-  const [cashDeposit, setCashDeposit] = useState(false);
   const [key] = useState(() => crypto.randomUUID());
   const declarations = form.data?.declarations ?? [];
 
@@ -66,8 +61,6 @@ export function useCreateRegistrationPage() {
     tick: (id: string, on: boolean) => setTicked(on ? [...ticked, id] : ticked.filter((known) => known !== id)),
     sendConfirmation,
     setSendConfirmation,
-    cashDeposit,
-    setCashDeposit,
     isCreating: create.isPending,
     failed: create.isError,
     canSubmit: !create.isPending && chosen !== null && form.data !== undefined,
@@ -81,13 +74,11 @@ export function useCreateRegistrationPage() {
                 idempotencyKey: key,
                 turnusId: chosen,
                 submission: { registration, participants: children },
-                // A Deposit paid in cash needs one to pay.
-                paymentChoice: cashDeposit ? 'deposit' : 'full',
+                paymentChoice: 'full',
                 discountCode: null,
                 declarations: declarations.map(({ id }) => ({ id, accepted: ticked.includes(id) })),
                 sendConfirmation,
               },
-              cashDeposit: cashDeposit ? { paidOn: pragueDateOf(new Date()), note: t('create.cashDepositNote') } : null,
             },
             {
               onSuccess: ({ id }) =>

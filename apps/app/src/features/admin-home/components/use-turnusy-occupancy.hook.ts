@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { czechDate, pragueDateOf } from '@repo/schema/shared';
 
-import { useAllTurnusyQuery } from '@/features/admin-home/api/admin-home.queries';
+import { useAllTurnusyQuery } from '@/core/camp-list';
 
 // The Turnusy not yet over, by start, each with its places taken; the Camp named when there are several.
 export function useTurnusyOccupancy(organisationId: string) {

@@ -1,14 +1,11 @@
+import { useTranslation } from 'react-i18next';
+
 import type { ConsoleOrganisation } from '@repo/schema/console';
 
-import {
-  bounceRateOf,
-  formatRate,
-  hasMailWarning,
-} from '@/features/console/components/mail-delivery/mail-health.helper';
-
-const numbers = new Intl.NumberFormat('cs-CZ');
+import { bounceRateOf, hasMailWarning } from '@/features/console/components/mail-delivery/mail-health.helper';
 
 export function useMailDelivery(organisations: readonly ConsoleOrganisation[]) {
+  const { t } = useTranslation('console');
   // Each Organisation's mail since it started, summed: the API keeps no shorter window.
   const total = organisations.reduce(
     (sum, { mail }) => ({
@@ -20,19 +17,18 @@ export function useMailDelivery(organisations: readonly ConsoleOrganisation[]) {
   );
 
   return {
-    sent: numbers.format(total.sent),
-    bounced: numbers.format(total.bounced),
-    complained: numbers.format(total.complained),
-    rate: formatRate(bounceRateOf(total)),
+    sent: t('mail.count', { value: total.sent }),
+    bounced: t('mail.count', { value: total.bounced }),
+    complained: t('mail.count', { value: total.complained }),
+    rate: bounceRateOf(total),
     // Those above what mail providers act on, worst first.
     warnings: organisations
       .filter((organisation) => hasMailWarning(organisation.mail))
-      .map((organisation) => ({ organisation, rate: bounceRateOf(organisation.mail) }))
-      .sort((a, b) => b.rate - a.rate)
-      .map(({ organisation, rate }) => ({
+      .map((organisation) => ({
         id: organisation.id,
         name: organisation.displayName,
-        rate: formatRate(rate),
-      })),
+        rate: bounceRateOf(organisation.mail),
+      }))
+      .sort((a, b) => b.rate - a.rate),
   };
 }

@@ -11,7 +11,8 @@ interface OccupancyHeroProps {
   turnus: { id: string; name: string };
 }
 
-// The Selected Turnus at a glance: how full it is, and the Registrations paid in full and the money received.
+// The Selected Turnus at a glance: how full it is, its money expected, received and outstanding, and the
+// Registrations paid in full and past their due date.
 export function OccupancyHero({ organisationId, turnus }: OccupancyHeroProps) {
   const { t } = useTranslation('adminHome');
   const { isPending, figures: hero } = useOccupancyHero(organisationId, turnus.id);
@@ -47,9 +48,17 @@ export function OccupancyHero({ organisationId, turnus }: OccupancyHeroProps) {
           ].join(' · ')}
         </span>
       </div>
-      <div className="grid min-w-0 flex-[2_1_20rem] grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] gap-3">
-        <StatTile label={t('hero.paidInFull')} value={String(hero.paidInFull)} />
+      <div className="grid min-w-0 flex-[2_1_24rem] grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-3">
+        <StatTile label={t('hero.expected')} value={czk(hero.expected)} />
         <StatTile label={t('hero.received')} value={czk(hero.received)} />
+        <StatTile label={t('hero.outstanding')} value={czk(hero.outstanding)} />
+        {hero.hasOverpaid ? <StatTile label={t('hero.overpaid')} value={czk(hero.overpaid)} /> : null}
+        <StatTile label={t('hero.paidInFull')} value={String(hero.paidInFull)} />
+        <StatTile
+          label={t('hero.overdue')}
+          value={String(hero.overdue)}
+          className={hero.hasOverdue ? 'text-danger-foreground' : undefined}
+        />
       </div>
     </section>
   );

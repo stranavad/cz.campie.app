@@ -68,10 +68,10 @@ export function ConsolePage({ section }: ConsolePageProps) {
     <>
       {header}
       <ConsoleTabs current={section} counts={page.counts} />
-      {section === 'organizace' ? <OrganisationTable organisations={page.organisations} /> : null}
-      {section === 'hlaseni' ? <ProblemReports /> : null}
-      {section === 'emaily' ? <MailDelivery organisations={page.organisations} /> : null}
-      {section === 'podpora' ? <SupportList /> : null}
+      {section === 'organisations' ? <OrganisationTable organisations={page.organisations} /> : null}
+      {section === 'reports' ? <ProblemReports /> : null}
+      {section === 'mail' ? <MailDelivery organisations={page.organisations} /> : null}
+      {section === 'support' ? <SupportList /> : null}
     </>
   );
 }

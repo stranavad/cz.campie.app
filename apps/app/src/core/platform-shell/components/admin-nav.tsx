@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { CountPill } from '@/components/count-pill';
 import { useAdminNav } from '@/core/platform-shell/components/use-admin-nav.hook';
 
 // Pill links; the current page's is tinted with the accent. Registrations carries its count.
@@ -24,12 +25,7 @@ export function AdminNav() {
           {t(`platformShell.nav.${item.label}`)}
           {item.count === undefined ? null : (
             <>
-              <span
-                aria-hidden="true"
-                className="ml-auto flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-muted px-1.75 text-xs font-bold text-foreground tabular-nums"
-              >
-                {item.count}
-              </span>
+              <CountPill count={item.count} aria-hidden="true" className="ml-auto" />
               <span className="sr-only">{t('platformShell.nav.registered', { count: item.count })}</span>
             </>
           )}

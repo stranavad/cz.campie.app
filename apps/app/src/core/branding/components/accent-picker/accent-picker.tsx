@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { accentColourSchema } from '@repo/schema/organisations';
 
+import { typedColour } from '@/core/branding/components/accent-picker/accent-picker.helper';
 import { AccentSwatches } from '@/core/branding/components/accent-picker/accent-swatches';
 import { ColourPopover } from '@/core/branding/components/accent-picker/colour-popover';
 import { cn } from '@/lib/utils';
@@ -13,16 +14,6 @@ interface AccentPickerProps {
   fallback: string;
   // A swatch, the picker and typing all report the colour here, so the form checks each the same way.
   onPick: (colour: string) => void;
-}
-
-/**
- * Read a typed colour: a code typed without its hash gets one.
- * @param text the input's text
- */
-function typedColour(text: string): string {
-  const trimmed = text.trim();
-
-  return trimmed === '' || trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
 }
 
 // An accent colour: a ready-made swatch, or a colour of its own in one pill, its dot opening our picker

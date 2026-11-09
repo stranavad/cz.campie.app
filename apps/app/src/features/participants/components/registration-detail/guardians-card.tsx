@@ -2,12 +2,12 @@ import { useTranslation } from 'react-i18next';
 
 import type { RegistrationDetail } from '@repo/schema/registrations';
 
-import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { DescriptionItem, DescriptionList } from '@/components/ui/description-list';
 import { useRemoveGuardianMutation } from '@/features/participants/api/participants.queries';
 import { AccessEmailEntry } from '@/features/participants/components/access-email-entry';
 import { AccessEmailForm } from '@/features/participants/components/access-email-form';
+import { ConfirmRemoveDialog } from '@/features/participants/components/confirm-remove-dialog';
 import { useAnswerText } from '@/features/participants/components/registration-detail/use-answer-text.hook';
 import { UndeliverableBadge } from '@/features/participants/components/undeliverable-badge';
 
@@ -24,7 +24,7 @@ export function GuardiansCard({ organisationId, registrationId, detail, canWrite
   const { t } = useTranslation('participants');
   const { answerText, answerLabel } = useAnswerText();
   const removeGuardian = useRemoveGuardianMutation(organisationId, registrationId);
-  // A Registration keeps at least one guardian.
+  // Registrations write; a Registration keeps at least one guardian.
   const canRemove = canWrite && detail.guardians.length > 1;
 
   return (
@@ -53,15 +53,17 @@ export function GuardiansCard({ organisationId, registrationId, detail, canWrite
               />
             ) : null}
             {canRemove ? (
-              <Button
-                type="button"
-                variant="link"
-                className="min-h-11 self-start text-sm sm:min-h-8"
-                disabled={removeGuardian.isPending}
-                onClick={() => removeGuardian.mutate(guardian.position)}
-              >
-                {t('controls.removeGuardian')}
-              </Button>
+              <ConfirmRemoveDialog
+                label={t('controls.removeGuardian')}
+                title={t('controls.removeGuardianTitle')}
+                description={t('controls.removeGuardianNote', {
+                  name: t('detail.guardianName', { first: guardian.firstName, last: guardian.lastName }),
+                  email: guardian.email,
+                })}
+                isPending={removeGuardian.isPending}
+                isError={removeGuardian.isError}
+                onConfirm={() => removeGuardian.mutate(guardian.position)}
+              />
             ) : null}
           </li>
         ))}

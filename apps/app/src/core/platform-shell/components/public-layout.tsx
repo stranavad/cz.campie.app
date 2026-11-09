@@ -1,4 +1,4 @@
-import { Link, Outlet, useMatchRoute } from '@tanstack/react-router';
+import { Link, Outlet } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { CampieMark } from '@/components/campie-mark';
@@ -7,6 +7,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { config } from '@/config';
 import { LegalFooter } from '@/core/platform-shell/components/legal-footer';
 import { LegalTabs } from '@/core/platform-shell/components/legal-tabs';
+import { usePublicLayout } from '@/core/platform-shell/components/use-public-layout.hook';
 
 // The platform's own pages for visitors: its mark, the page, the legal links. Signup offers the login in the
 // header, a legal text the other legal texts.
@@ -14,11 +15,7 @@ import { LegalTabs } from '@/core/platform-shell/components/legal-tabs';
 // slow network; a signed-in admin's page moves into the admin layout once the account arrives.
 export function PublicLayout() {
   const { t } = useTranslation();
-  const matchRoute = useMatchRoute();
-  const isSignup = matchRoute({ to: '/platform/registrace-organizace' }) !== false;
-  const isLegal = ['/platform/podminky', '/platform/zpracovatelska-smlouva', '/platform/zpracovani-dat'].some(
-    (to) => matchRoute({ to }) !== false,
-  );
+  const { isSignup, isLegal } = usePublicLayout();
 
   return (
     <div className="flex min-h-dvh flex-col">

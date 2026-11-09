@@ -6,9 +6,7 @@ import {
   getCampEndpoint,
   getRegistrationFormEndpoint,
   getRegistrationFormVersionEndpoint,
-  listCampsEndpoint,
   listDiscountCodesEndpoint,
-  listTurnusyEndpoint,
   previewCampEndpoint,
   publishRegistrationFormEndpoint,
   removeCampLogoEndpoint,
@@ -58,8 +56,6 @@ import {
 import { apiClient } from '@/lib/api';
 
 export const campsService = {
-  list: (organisationId: string, signal?: AbortSignal) =>
-    apiClient.request(listCampsEndpoint, { organisationId, signal }),
   get: (organisationId: string, campId: string, signal?: AbortSignal) =>
     apiClient.request(getCampEndpoint, { organisationId, params: { campId }, signal }),
   create: (organisationId: string, body: CreateCampBody) =>
@@ -109,8 +105,6 @@ export const campsService = {
     apiClient.request(uploadDeclarationFileEndpoint, { organisationId, params: { campId }, file }),
   publishRegistrationForm: (organisationId: string, campId: string) =>
     apiClient.request(publishRegistrationFormEndpoint, { organisationId, params: { campId } }),
-  listTurnusy: (organisationId: string, campId: string, signal?: AbortSignal) =>
-    apiClient.request(listTurnusyEndpoint, { organisationId, params: { campId }, signal }),
   createTurnus: (organisationId: string, campId: string, body: TurnusBody) =>
     apiClient.request(createTurnusEndpoint, { organisationId, params: { campId }, body }),
   updateTurnus: (organisationId: string, turnusId: string, body: TurnusBody) =>

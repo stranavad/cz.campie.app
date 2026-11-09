@@ -2,7 +2,8 @@ import { useState } from 'react';
 
 import { documentTypeBodySchema, type DocumentType } from '@repo/schema/documents';
 
-import { useDocumentTypeMutations, useTurnusyQuery } from '@/features/camps/api/camps.queries';
+import { useTurnusyQuery } from '@/core/camp-list';
+import { useDocumentTypeMutations } from '@/features/camps/api/camps.queries';
 
 // One Document type being written: its fields, the body they make, and the changes that save it.
 export function useDocumentTypeForm(organisationId: string, campId: string, type: DocumentType | null) {

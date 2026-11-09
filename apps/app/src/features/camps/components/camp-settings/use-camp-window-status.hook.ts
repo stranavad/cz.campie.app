@@ -1,4 +1,4 @@
-import { useTurnusyQuery } from '@/features/camps/api/camps.queries';
+import { useTurnusyQuery } from '@/core/camp-list';
 
 export type CampWindowStatus = 'open' | 'notYetOpen' | 'closed' | null;
 

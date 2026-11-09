@@ -8,8 +8,12 @@ import { PortalBackHeader } from '@/features/portal/components/shared/portal-bac
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
 import { HttpError } from '@/lib/api';
 
+interface EditPageProps {
+  registrationId: string;
+}
+
 // What a guardian may change on a Registration until the camp's lock date, and what they only see.
-export function EditPage({ registrationId }: { registrationId: string }) {
+export function EditPage({ registrationId }: EditPageProps) {
   const { t } = useTranslation('portal');
   const edit = useGuardianEditQuery(registrationId);
 

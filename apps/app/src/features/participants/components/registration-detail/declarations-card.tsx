@@ -5,8 +5,12 @@ import type { RegistrationDetail } from '@repo/schema/registrations';
 
 import { Card, CardTitle } from '@/components/ui/card';
 
+interface DeclarationsCardProps {
+  declarations: RegistrationDetail['declarations'];
+}
+
 // The declarations as the guardian answered them.
-export function DeclarationsCard({ declarations }: { declarations: RegistrationDetail['declarations'] }) {
+export function DeclarationsCard({ declarations }: DeclarationsCardProps) {
   const { t } = useTranslation('participants');
 
   if (declarations.length === 0) {

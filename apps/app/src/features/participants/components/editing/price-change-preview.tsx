@@ -3,8 +3,12 @@ import { useTranslation } from 'react-i18next';
 import type { PriceChange } from '@repo/schema/registrations';
 import { czk } from '@repo/schema/shared';
 
+interface PriceChangePreviewProps {
+  change: PriceChange;
+}
+
 // The price lines a change of answers would add, shown before it is saved.
-export function PriceChangePreview({ change }: { change: PriceChange }) {
+export function PriceChangePreview({ change }: PriceChangePreviewProps) {
   const { t } = useTranslation('participants');
 
   return (

@@ -6,8 +6,12 @@ import { Badge } from '@/components/ui/badge';
 
 const VARIANT = { missing: 'danger', pending: 'warning', approved: 'success', returned: 'danger' } as const;
 
+interface DocumentStatusBadgeProps {
+  status: AdminUpload['status'] | 'missing';
+}
+
 // Where a required document stands, as a pill.
-export function DocumentStatusBadge({ status }: { status: AdminUpload['status'] | 'missing' }) {
+export function DocumentStatusBadge({ status }: DocumentStatusBadgeProps) {
   const { t } = useTranslation('participants');
 
   return <Badge variant={VARIANT[status]}>{t(`documents.statuses.${status}`)}</Badge>;

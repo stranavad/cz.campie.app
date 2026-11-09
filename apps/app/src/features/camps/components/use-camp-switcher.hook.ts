@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 
-import type { CampSettingsSection } from '@/features/camps/components/camp-settings/camp-settings-section.constants';
+import type { CampSettingsSection } from '@/features/camps/components/camp-settings/camp-settings-section.constant';
 
 export function useCampSwitcher(section: CampSettingsSection) {
   const navigate = useNavigate();

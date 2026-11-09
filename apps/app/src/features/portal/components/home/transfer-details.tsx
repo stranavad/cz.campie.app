@@ -6,9 +6,13 @@ import { czechDate, czk } from '@repo/schema/shared';
 import { PaymentRow } from '@/features/portal/components/home/payment-row';
 import { QrPlatba } from '@/features/portal/components/home/qr-platba';
 
+interface TransferDetailsProps {
+  registration: GuardianRegistration;
+}
+
 // Paying by transfer: what to pay now and by when, the account and variable symbol, and the QR platby to
 // scan, for the amount due now and, while Deposits are owed, everything at once.
-export function TransferDetails({ registration }: { registration: GuardianRegistration }) {
+export function TransferDetails({ registration }: TransferDetailsProps) {
   const { t } = useTranslation('portal');
   const { payment } = registration;
   const nowLabel = t(payment.phase === 'deposit' ? 'depositNow' : 'amountNow');

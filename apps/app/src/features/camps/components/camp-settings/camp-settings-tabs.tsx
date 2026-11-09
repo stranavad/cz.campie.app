@@ -5,7 +5,7 @@ import { TabNav, tabNavItemClassName } from '@/components/ui/tab-nav';
 import {
   CAMP_SETTINGS_SECTIONS,
   type CampSettingsSection,
-} from '@/features/camps/components/camp-settings/camp-settings-section.constants';
+} from '@/features/camps/components/camp-settings/camp-settings-section.constant';
 
 interface CampSettingsTabsProps {
   campId: string;

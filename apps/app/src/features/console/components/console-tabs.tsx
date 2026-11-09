@@ -1,8 +1,13 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { CountPill } from '@/components/count-pill';
 import { TabNav, tabNavItemClassName } from '@/components/ui/tab-nav';
-import { CONSOLE_SECTIONS, type ConsoleSection } from '@/features/console/components/console-section.constant';
+import {
+  CONSOLE_SECTION_SLUGS,
+  CONSOLE_SECTIONS,
+  type ConsoleSection,
+} from '@/features/console/components/console-section.constant';
 import { cn } from '@/lib/utils';
 
 interface ConsoleTabsProps {
@@ -21,16 +26,12 @@ export function ConsoleTabs({ current, counts }: ConsoleTabsProps) {
         <Link
           key={section}
           to="/platform/konzole"
-          search={{ sekce: section }}
+          search={{ sekce: CONSOLE_SECTION_SLUGS[section] }}
           aria-current={section === current ? 'page' : undefined}
           className={cn(tabNavItemClassName, 'gap-2')}
         >
           {t(`tabs.${section}`)}
-          {counts[section] === 0 ? null : (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-warning px-1.5 text-xs font-bold text-warning-foreground tabular-nums">
-              {counts[section]}
-            </span>
-          )}
+          {counts[section] === 0 ? null : <CountPill count={counts[section]} tone="warning" />}
         </Link>
       ))}
     </TabNav>

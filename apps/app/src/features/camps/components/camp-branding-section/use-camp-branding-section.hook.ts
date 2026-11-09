@@ -1,8 +1,8 @@
+import { useTurnusyQuery } from '@/core/camp-list';
 import {
   useCampBrandingQuery,
   useRemoveCampLogoMutation,
   useSetCampLogoMutation,
-  useTurnusyQuery,
 } from '@/features/camps/api/camps.queries';
 
 export function useCampBrandingSection(organisationId: string, campId: string) {

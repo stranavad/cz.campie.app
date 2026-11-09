@@ -16,10 +16,14 @@ const STATES = {
 const CARD =
   'mt-6 mb-8 flex flex-col items-center gap-3 rounded-[28px] border border-border bg-card px-5.5 py-7 text-center sm:px-8';
 
+interface CardPaymentResultPageProps {
+  transactionId: string;
+}
+
 // Where Comgate sends the guardian back: how the card payment ended, in the Camp's branding, and the way
 // back to the portal. The result names no Registration, so a failed payment is retried from the portal,
 // where the QR platba waits too.
-export function CardPaymentResultPage({ transactionId }: { transactionId: string }) {
+export function CardPaymentResultPage({ transactionId }: CardPaymentResultPageProps) {
   const { t } = useTranslation('registration');
   const result = useCardPaymentResultQuery(transactionId);
 

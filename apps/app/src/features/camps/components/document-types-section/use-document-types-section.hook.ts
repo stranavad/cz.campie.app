@@ -2,7 +2,8 @@ import { useState } from 'react';
 
 import type { DocumentType } from '@repo/schema/documents';
 
-import { useDocumentTypesQuery, useTurnusyQuery } from '@/features/camps/api/camps.queries';
+import { useTurnusyQuery } from '@/core/camp-list';
+import { useDocumentTypesQuery } from '@/features/camps/api/camps.queries';
 
 // The Camp's Document types, which one is open to edit, and the names of the Turnusy a download is for.
 export function useDocumentTypesSection(organisationId: string, campId: string) {

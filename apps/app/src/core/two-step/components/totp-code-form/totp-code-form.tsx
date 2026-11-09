@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { TotpDigitsField } from '@/core/two-step/components/totp-code-form/totp-digits-field';
 import {
   useTotpCodeForm,
   type TotpCodePurpose,
@@ -39,7 +38,7 @@ export function TotpCodeForm({ purpose, onConfirmed }: TotpCodeFormProps) {
                 className="font-mono tracking-[0.2em]"
               />
             ) : (
-              <TotpDigitsField label={t('twoStep.code')} />
+              <field.CodeField label={t('twoStep.code')} />
             )
           }
         </form.AppField>

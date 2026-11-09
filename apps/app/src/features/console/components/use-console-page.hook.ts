@@ -30,10 +30,10 @@ export function useConsolePage() {
     organisations: list,
     // What waits for the operator, beside each tab.
     counts: {
-      organizace: list.filter((organisation) => organisation.status === 'pending').length,
-      hlaseni: (reports.data ?? []).filter((report) => report.resolvedAt === null).length,
-      emaily: list.filter((organisation) => hasMailWarning(organisation.mail)).length,
-      podpora: (account.data?.memberships ?? []).filter((membership) => membership.support !== null).length,
+      organisations: list.filter((organisation) => organisation.status === 'pending').length,
+      reports: (reports.data ?? []).filter((report) => report.resolvedAt === null).length,
+      mail: list.filter((organisation) => hasMailWarning(organisation.mail)).length,
+      support: (account.data?.memberships ?? []).filter((membership) => membership.support !== null).length,
     },
   };
 }

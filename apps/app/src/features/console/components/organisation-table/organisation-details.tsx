@@ -6,8 +6,8 @@ import { DescriptionItem, DescriptionList } from '@/components/ui/description-li
 
 interface OrganisationDetailsProps {
   organisation: ConsoleOrganisation;
-  // Bounces and complaints per message, formatted.
-  bounceRate: string;
+  // Bounces and complaints per message sent, from 0 to 1.
+  bounceRate: number;
   // Above what mail providers act on.
   mailWarning: boolean;
 }

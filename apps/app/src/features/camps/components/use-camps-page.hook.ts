@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { membershipAllows, useCurrentMembership } from '@/core/account';
-import { useCampsQuery } from '@/features/camps/api/camps.queries';
+import { useCampsQuery } from '@/core/camp-list';
 
 export function useCampsPage(selectedId: string | undefined) {
   const { membership, isLoading, isSignedOut, isError, hasNoMembership } = useCurrentMembership();

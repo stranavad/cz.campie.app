@@ -2,7 +2,7 @@ import type { CampSummary } from '@repo/schema/camps';
 
 import { CampBrandingSection } from '@/features/camps/components/camp-branding-section/camp-branding-section';
 import { CampForm } from '@/features/camps/components/camp-form/camp-form';
-import type { CampSettingsSection as Section } from '@/features/camps/components/camp-settings/camp-settings-section.constants';
+import type { CampSettingsSection as Section } from '@/features/camps/components/camp-settings/camp-settings-section.constant';
 import { ConsentsSection } from '@/features/camps/components/consents-section/consents-section';
 import { DiscountCodeSection } from '@/features/camps/components/discount-code-section/discount-code-section';
 import { DocumentTypesSection } from '@/features/camps/components/document-types-section/document-types-section';

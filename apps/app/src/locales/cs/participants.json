@@ -165,9 +165,6 @@
     "open": "Nová přihláška",
     "onlyChild": "Dítě",
     "questions": "Otázky tábora",
-    "cashDeposit": "Záloha zaplacena v hotovosti",
-    "cashDepositHint": "Zapíše se jako platba s dnešním datem, pokud má turnus zálohu.",
-    "cashDepositNote": "Záloha v hotovosti",
     "submitNote": "Přihláška se uloží i mimo přihlašovací období, nad kapacitu a mimo věkové limity. Povinná pole jsou stejná jako pro rodiče."
   },
   "controls": {
@@ -177,6 +174,11 @@
     "cancelAll": "Zrušit všechny děti",
     "cancelNote": "Zrušení uvolní místo a nemění peníze. Storno poplatky a vratky zapište ručně.",
     "removeGuardian": "Odebrat zástupce",
+    "removeGuardianTitle": "Odebrat zákonného zástupce?",
+    "removeGuardianNote": "{{name}} zmizí z přihlášky i s kontakty a e-mail {{email}} k ní ztratí přístup do portálu.",
+    "removeAccessEmailTitle": "Odebrat další přístup?",
+    "removeAccessEmailNote": "E-mail {{email}} se už do portálu k této přihlášce nepřihlásí.",
+    "removeFailed": "Odebrání se nepodařilo. Zkuste to znovu.",
     "accessEmails": "Další e-maily s přístupem do portálu",
     "newAccessEmail": "E-mail",
     "add": "Přidat",
@@ -305,7 +307,11 @@
     "unsignedConsent": "Nepodepsaný souhlas",
     "missingDocument": "Chybí dokument",
     "missingAnswers": "Chybí údaje",
-    "any": "vše"
+    "any": "vše",
+    "chosen_one": "{{count}} vybraná",
+    "chosen_few": "{{count}} vybrané",
+    "chosen_many": "{{count}} vybraných",
+    "chosen_other": "{{count}} vybraných"
   },
   "erase": {
     "title": "Smazat osobní údaje",

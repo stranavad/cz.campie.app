@@ -12,14 +12,14 @@ export const accountQueryOptions = () =>
 // The signed-in admin's account; fails with a 401 HttpError without a session.
 export const useAccountQuery = () => useQuery(accountQueryOptions());
 
-// Reset rather than invalidated, so the signed-out account is not kept as stale data; refetched, it
-// answers 401, which pages show as signed out.
+// Every cached answer goes, so nothing of the Organisation's data outlives the session in this tab; the caller
+// leaves for the login page, where the account is read again and answers 401.
 export const useLogOutMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: accountService.logOut,
-    onSuccess: () => queryClient.resetQueries({ queryKey: accountKeys.all }),
+    onSuccess: () => queryClient.clear(),
   });
 };
 

@@ -4,7 +4,7 @@ import type { ChecklistItem } from '@repo/schema/checklist';
 import { czechDate } from '@repo/schema/shared';
 
 import { useGuardianChecklistQuery } from '@/features/portal/api/portal.queries';
-import { CHECKLIST_TARGETS } from '@/features/portal/components/home/checklist.constants';
+import { CHECKLIST_TARGETS } from '@/features/portal/components/home/checklist.constant';
 
 export interface ChecklistEntry {
   key: string;

@@ -7,8 +7,12 @@ import { cn } from '@/lib/utils';
 // Beyond this many characters the text is clipped until the guardian asks for all of it.
 const CLIPPED_FROM = 280;
 
+interface ConsentTextProps {
+  text: string;
+}
+
 // A Consent's own text, clipped behind "Přečíst celý text" when it is long.
-export function ConsentText({ text }: { text: string }) {
+export function ConsentText({ text }: ConsentTextProps) {
   const { t } = useTranslation('portal');
   const [isExpanded, setIsExpanded] = useState(false);
   const textId = useId();

@@ -5,9 +5,13 @@ import { PaymentCard } from '@/features/portal/components/home/payment-card';
 import { RegistrationLinks } from '@/features/portal/components/home/registration-links';
 import { RegistrationSummary } from '@/features/portal/components/home/registration-summary';
 
+interface RegistrationCardProps {
+  registration: GuardianRegistration;
+}
+
 // One Registration in the portal: its children, payments and how to pay the rest, what is left to do, and
 // where to go next.
-export function RegistrationCard({ registration }: { registration: GuardianRegistration }) {
+export function RegistrationCard({ registration }: RegistrationCardProps) {
   return (
     <article className="flex flex-col gap-4">
       <RegistrationSummary registration={registration} />

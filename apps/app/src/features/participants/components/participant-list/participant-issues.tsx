@@ -4,8 +4,12 @@ import type { ParticipantRow } from '@repo/schema/registrations';
 
 import { Badge } from '@/components/ui/badge';
 
+interface ParticipantIssuesProps {
+  row: ParticipantRow;
+}
+
 // What the child still lacks, as pills; nothing when nothing does.
-export function ParticipantIssues({ row }: { row: ParticipantRow }) {
+export function ParticipantIssues({ row }: ParticipantIssuesProps) {
   const { t } = useTranslation('participants');
   const issues = [
     { shown: row.unsignedConsent, key: 'consent', variant: 'danger', label: t('filters.unsignedConsent') },

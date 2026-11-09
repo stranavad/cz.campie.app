@@ -5,9 +5,14 @@ import { Button } from '@/components/ui/button';
 import { AdjustmentForm } from '@/features/participants/components/ledger/adjustment-form';
 import { PaymentForm } from '@/features/participants/components/ledger/payment-form';
 
+interface LedgerFormsProps {
+  organisationId: string;
+  registrationId: string;
+}
+
 // Adds a payment, a Correcting payment or a Price adjustment; entries are never changed afterwards. One form
 // is open at a time, under the two buttons that open it.
-export function LedgerForms({ organisationId, registrationId }: { organisationId: string; registrationId: string }) {
+export function LedgerForms({ organisationId, registrationId }: LedgerFormsProps) {
   const { t } = useTranslation('participants');
   const [open, setOpen] = useState<'payment' | 'adjustment' | null>(null);
   const toggle = (form: 'payment' | 'adjustment') => setOpen(open === form ? null : form);

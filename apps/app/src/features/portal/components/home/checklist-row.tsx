@@ -2,13 +2,18 @@ import { Link } from '@tanstack/react-router';
 import { ChevronRightIcon } from 'lucide-react';
 
 import { IconTile } from '@/components/icon-tile';
-import { CHECKLIST_ICONS } from '@/features/portal/components/home/checklist.constants';
+import { CHECKLIST_ICONS } from '@/features/portal/components/home/checklist.constant';
 import type { ChecklistEntry } from '@/features/portal/components/home/use-checklist-card.hook';
 
 const rowClassName = 'flex items-center gap-3.5 rounded-3xl border border-border bg-card py-3.5 pr-3.5 pl-4';
 
+interface ChecklistRowProps {
+  entry: ChecklistEntry;
+  registrationId: string;
+}
+
 // One open checklist item: a tappable row to where it is settled, or a plain one when it has no such place.
-export function ChecklistRow({ entry, registrationId }: { entry: ChecklistEntry; registrationId: string }) {
+export function ChecklistRow({ entry, registrationId }: ChecklistRowProps) {
   const Icon = CHECKLIST_ICONS[entry.item.kind];
   const content = (
     <>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-import { useRemoveTurnusMutation, useTurnusyQuery } from '@/features/camps/api/camps.queries';
+import { useTurnusyQuery } from '@/core/camp-list';
+import { useRemoveTurnusMutation } from '@/features/camps/api/camps.queries';
 
 // Which Turnus the form edits, a null id for a new one; null when the form is closed.
 type Editing = { readonly turnusId: string | null } | null;

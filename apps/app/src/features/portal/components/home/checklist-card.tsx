@@ -4,8 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { ChecklistRow } from '@/features/portal/components/home/checklist-row';
 import { useChecklistCard } from '@/features/portal/components/home/use-checklist-card.hook';
 
+interface ChecklistCardProps {
+  registrationId: string;
+}
+
 // What is still open for each child of a Registration, and where to settle it; what is done, as chips.
-export function ChecklistCard({ registrationId }: { registrationId: string }) {
+export function ChecklistCard({ registrationId }: ChecklistCardProps) {
   const { t } = useTranslation('portal');
   const { isEmpty, open, done } = useChecklistCard(registrationId);
 

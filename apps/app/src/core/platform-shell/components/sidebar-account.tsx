@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { LogOutIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +12,7 @@ export function SidebarAccount() {
   const { t } = useTranslation();
   const account = useAccountQuery();
   const logOut = useLogOutMutation();
+  const navigate = useNavigate();
 
   if (account.data === undefined) {
     return null;
@@ -37,7 +38,11 @@ export function SidebarAccount() {
         aria-label={t('platformShell.logOut')}
         title={t('platformShell.logOut')}
         disabled={logOut.isPending}
-        onClick={() => logOut.mutate()}
+        onClick={() =>
+          logOut.mutate(undefined, {
+            onSuccess: () => void navigate({ to: '/platform/prihlaseni', replace: true }),
+          })
+        }
       >
         <LogOutIcon className="size-5" />
       </Button>

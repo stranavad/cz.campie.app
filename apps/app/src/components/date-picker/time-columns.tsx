@@ -2,7 +2,12 @@ import { Radio } from '@base-ui/react/radio';
 import { RadioGroup } from '@base-ui/react/radio-group';
 import { useTranslation } from 'react-i18next';
 
-import { HOURS, PICKED_CLASS_NAME, QUARTERS } from '@/components/date-picker/date-picker.constant';
+import {
+  HOURS,
+  PICKED_CLASS_NAME,
+  QUARTERS,
+  TIME_OPTION_CLASS_NAME,
+} from '@/components/date-picker/date-picker.constant';
 import { cn } from '@/lib/utils';
 
 interface TimeColumnsProps {
@@ -13,9 +18,6 @@ interface TimeColumnsProps {
   compact?: boolean;
 }
 
-const OPTION =
-  'flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-xl text-[15px] font-medium tabular-nums transition-colors outline-none hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:min-h-9 sm:text-sm';
-
 // The hour from a scrolling column and the minutes in quarter hours, each a radio group: arrow keys move
 // within it and screen readers hear "8, 9 of 24" (Base UI).
 export function TimeColumns({ time, onChange, compact = false }: TimeColumnsProps) {
@@ -23,7 +25,7 @@ export function TimeColumns({ time, onChange, compact = false }: TimeColumnsProp
   const [hour = '00', minute = '00'] = time.split(':');
   // A time saved off the quarter-hour grid stays selectable instead of silently changing.
   const minutes = QUARTERS.includes(minute) ? QUARTERS : [...QUARTERS, minute].sort();
-  const option = (checked: boolean) => cn(OPTION, checked && PICKED_CLASS_NAME);
+  const option = (checked: boolean) => cn(TIME_OPTION_CLASS_NAME, checked && PICKED_CLASS_NAME);
 
   return (
     <div className="grid grid-cols-2 gap-1.5">

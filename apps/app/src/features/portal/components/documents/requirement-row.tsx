@@ -5,7 +5,7 @@ import type { GuardianDocuments } from '@repo/schema/documents';
 import { czechDate, czechDateTime } from '@repo/schema/shared';
 
 import { Badge } from '@/components/ui/badge';
-import { REQUIREMENT_STATUS_BADGES } from '@/features/portal/components/documents/requirement-status.constants';
+import { REQUIREMENT_STATUS_BADGES } from '@/features/portal/components/documents/requirement-status.constant';
 import { statusOf } from '@/features/portal/components/documents/requirement-status.helper';
 import { RequirementUploads } from '@/features/portal/components/documents/requirement-uploads';
 

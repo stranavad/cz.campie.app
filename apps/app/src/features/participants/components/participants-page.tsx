@@ -9,8 +9,8 @@ import { ParticipantList } from '@/features/participants/components/participant-
 import { ParticipantsActions } from '@/features/participants/components/participant-list/participants-actions';
 import { ParticipantsPanelCard } from '@/features/participants/components/participant-list/participants-panel-card';
 import { ParticipantsSkeleton } from '@/features/participants/components/participant-list/participants-skeleton';
+import type { ParticipantsSearch } from '@/features/participants/components/participants-search.constant';
 import { useParticipantsPage } from '@/features/participants/components/use-participants-page.hook';
-import type { ParticipantsSearch } from '@/features/participants/schemas/participants-search.schema';
 
 interface ParticipantsPageProps {
   search: ParticipantsSearch;
@@ -66,8 +66,8 @@ export function ParticipantsPage({ search, onSearch }: ParticipantsPageProps) {
             tab={page.tab}
             onTab={page.setTab}
             countOf={page.countOf}
-            check={page.check}
-            onCheck={page.setCheck}
+            checks={page.checks}
+            onToggleCheck={page.toggleCheck}
           />
           <ParticipantList
             rows={page.rows}

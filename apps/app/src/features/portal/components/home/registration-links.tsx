@@ -7,9 +7,13 @@ import type { GuardianRegistration } from '@repo/schema/portal';
 const rowClassName =
   'flex min-h-13 items-center justify-between gap-3 px-5 font-semibold transition-colors hover:bg-muted [&>svg]:size-4.5 [&>svg]:shrink-0 [&>svg]:text-subtle-foreground';
 
+interface RegistrationLinksProps {
+  registration: GuardianRegistration;
+}
+
 // Where to go next for a Registration: its details, Consents and documents, each child's Přihláška, and the
 // camp's contact.
-export function RegistrationLinks({ registration }: { registration: GuardianRegistration }) {
+export function RegistrationLinks({ registration }: RegistrationLinksProps) {
   const { t } = useTranslation('portal');
   const params = { registrationId: registration.id };
   const prihlasky = registration.participants.filter((participant) => participant.prihlaska !== null);

@@ -4,8 +4,13 @@ import { czk } from '@repo/schema/shared';
 
 import { cn } from '@/lib/utils';
 
+interface DueLineProps {
+  amount: number;
+  overdue: boolean;
+}
+
 // What is due now, red once past its date; nothing when nothing is due.
-export function DueLine({ amount, overdue }: { amount: number; overdue: boolean }) {
+export function DueLine({ amount, overdue }: DueLineProps) {
   const { t } = useTranslation('participants');
 
   if (amount === 0) {

@@ -34,7 +34,11 @@
     "over_many": "{{count}} dítěte nad kapacitu",
     "over_other": "{{count}} dětí nad kapacitu",
     "paidInFull": "Přihlášky zaplacené celé",
-    "received": "Vybráno"
+    "expected": "Celkem k úhradě",
+    "received": "Vybráno",
+    "outstanding": "Zbývá doplatit",
+    "overpaid": "Přeplaceno",
+    "overdue": "Přihlášky po splatnosti"
   },
   "waiting": {
     "title": "Čeká na vás",

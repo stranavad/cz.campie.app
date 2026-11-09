@@ -5,8 +5,12 @@ import type { ParticipantRow } from '@repo/schema/registrations';
 import { Table, TableBody, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ParticipantTableRow } from '@/features/participants/components/participant-list/participant-table-row';
 
+interface ParticipantTableProps {
+  rows: ParticipantRow[];
+}
+
 // The whole list on one page, from a tablet up; it scrolls sideways in its own box when narrow.
-export function ParticipantTable({ rows }: { rows: ParticipantRow[] }) {
+export function ParticipantTable({ rows }: ParticipantTableProps) {
   const { t } = useTranslation('participants');
 
   return (

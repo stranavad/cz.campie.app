@@ -10,8 +10,12 @@ import { DueLine } from '@/features/participants/components/participant-list/due
 import { PaymentStatusBadge } from '@/features/participants/components/payment-status-badge';
 import { cn } from '@/lib/utils';
 
+interface ParticipantTableRowProps {
+  row: ParticipantRow;
+}
+
 // One child in the table: who (and whether answers are owed), the guardian, money, Consents and documents.
-export function ParticipantTableRow({ row }: { row: ParticipantRow }) {
+export function ParticipantTableRow({ row }: ParticipantTableRowProps) {
   const { t } = useTranslation('participants');
   const name = t('name', { first: row.firstName, last: row.lastName });
   const isCancelled = row.status === 'cancelled';

@@ -6,7 +6,7 @@ import type { CampSummary } from '@repo/schema/camps';
 
 import { PageHeader } from '@/components/page-header';
 import { buttonVariants } from '@/components/ui/button';
-import type { CampSettingsSection } from '@/features/camps/components/camp-settings/camp-settings-section.constants';
+import type { CampSettingsSection } from '@/features/camps/components/camp-settings/camp-settings-section.constant';
 import { CampWindowBadge } from '@/features/camps/components/camp-settings/camp-window-badge';
 import { CampSwitcher } from '@/features/camps/components/camp-switcher';
 

@@ -7,9 +7,13 @@ import { Input } from '@/components/ui/input';
 import { useResetOwnerTotpMutation } from '@/features/console/api/console.queries';
 import { HttpError } from '@/lib/api';
 
+interface OwnerTotpResetProps {
+  organisationId: string;
+}
+
 // Turning off the two-step login of an Owner who lost their phone and recovery codes, once the operator
 // checked who they are outside the platform.
-export function OwnerTotpReset({ organisationId }: { organisationId: string }) {
+export function OwnerTotpReset({ organisationId }: OwnerTotpResetProps) {
   const { t } = useTranslation('console');
   const reset = useResetOwnerTotpMutation(organisationId);
   const [email, setEmail] = useState('');

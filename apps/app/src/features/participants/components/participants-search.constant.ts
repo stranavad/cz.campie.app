@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import { PAYMENT_STATUSES } from '@repo/schema/pricing';
 
 // The list's payment tabs: every Registration, one payment status, or those past their due date.
@@ -7,7 +5,7 @@ export const PAYMENT_TABS = ['all', ...PAYMENT_STATUSES, 'overdue'] as const;
 
 export type PaymentTab = (typeof PAYMENT_TABS)[number];
 
-// The checklist filters, one at a time.
+// The checklist filters; any number of them narrow the list together with the payment tab.
 export const CHECK_FILTERS = ['unsignedConsent', 'missingDocument', 'missingAnswers', 'unverified'] as const;
 
 export type CheckFilter = (typeof CHECK_FILTERS)[number];
@@ -17,11 +15,9 @@ export const PARTICIPANTS_PANELS = ['reminders', 'export', 'consents'] as const;
 
 export type ParticipantsPanel = (typeof PARTICIPANTS_PANELS)[number];
 
-// The list's tab, filter and open tool, kept in the URL so the overview can link to them.
-export const participantsSearchSchema = z.object({
-  platba: z.enum(PAYMENT_TABS).optional().catch(undefined),
-  kontrola: z.enum(CHECK_FILTERS).optional().catch(undefined),
-  panel: z.enum(PARTICIPANTS_PANELS).optional().catch(undefined),
-});
-
-export type ParticipantsSearch = z.infer<typeof participantsSearchSchema>;
+// The list's tab, filters and open tool, kept in the URL so the overview can link to them; validated by the route.
+export interface ParticipantsSearch {
+  platba?: PaymentTab;
+  kontrola?: readonly CheckFilter[];
+  panel?: ParticipantsPanel;
+}

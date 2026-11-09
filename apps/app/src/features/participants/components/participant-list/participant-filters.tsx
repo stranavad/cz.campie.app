@@ -1,13 +1,9 @@
 import { useTranslation } from 'react-i18next';
 
-import { FilterPill } from '@/components/filter-pill';
 import { SearchInput } from '@/components/search-input';
 import { SegmentedControl, SegmentedControlCount, SegmentedControlItem } from '@/components/ui/segmented-control';
-import {
-  CHECK_FILTERS,
-  type CheckFilter,
-  type PaymentTab,
-} from '@/features/participants/schemas/participants-search.schema';
+import { CheckFilters } from '@/features/participants/components/participant-list/check-filters';
+import type { CheckFilter, PaymentTab } from '@/features/participants/components/participants-search.constant';
 import { cn } from '@/lib/utils';
 
 interface ParticipantFiltersProps {
@@ -17,8 +13,8 @@ interface ParticipantFiltersProps {
   onTab: (tab: PaymentTab) => void;
   // Undefined while the Turnus loads.
   countOf: (tab: PaymentTab) => number | undefined;
-  check: CheckFilter | null;
-  onCheck: (check: CheckFilter | null) => void;
+  checks: readonly CheckFilter[];
+  onToggleCheck: (check: CheckFilter) => void;
 }
 
 // In the design's order; a rare status shows only when someone has it.
@@ -33,7 +29,7 @@ const TABS = [
 ] as const satisfies readonly PaymentTab[];
 const RARE: readonly PaymentTab[] = ['overpaid', 'deposit_paid'];
 
-// The payment status as tabs with counts, the search, and the checklist as one quieter filter.
+// The payment status as tabs with counts, the search, and the checklist filters on top of the tab.
 export function ParticipantFilters(props: ParticipantFiltersProps) {
   const { t } = useTranslation('participants');
   const shown = TABS.filter((tab) => !RARE.includes(tab) || tab === props.tab || (props.countOf(tab) ?? 0) > 0);
@@ -57,15 +53,7 @@ export function ParticipantFilters(props: ParticipantFiltersProps) {
           );
         })}
       </SegmentedControl>
-      <FilterPill
-        label={t('filters.label')}
-        value={props.check ?? 'any'}
-        onValueChange={(value) => props.onCheck(value === 'any' ? null : value)}
-        options={[
-          { value: 'any', label: t('filters.any') },
-          ...CHECK_FILTERS.map((check) => ({ value: check, label: t(`filters.${check}`) })),
-        ]}
-      />
+      <CheckFilters checks={props.checks} onToggle={props.onToggleCheck} />
       <SearchInput
         className="w-full sm:ml-auto sm:w-80"
         placeholder={t('search')}

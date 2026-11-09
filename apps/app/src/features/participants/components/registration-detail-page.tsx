@@ -24,8 +24,12 @@ import { PaymentsCard } from '@/features/participants/components/registration-de
 import { PrihlaskaPdf } from '@/features/participants/components/registration-detail/prihlaska-pdf';
 import { useRegistrationDetailPage } from '@/features/participants/components/use-registration-detail-page.hook';
 
+interface RegistrationDetailPageProps {
+  registrationId: string;
+}
+
 // Everything about one Registration for an admin answering a guardian; read access sees it all read-only.
-export function RegistrationDetailPage({ registrationId }: { registrationId: string }) {
+export function RegistrationDetailPage({ registrationId }: RegistrationDetailPageProps) {
   const { t } = useTranslation('participants');
   const page = useRegistrationDetailPage(registrationId);
 

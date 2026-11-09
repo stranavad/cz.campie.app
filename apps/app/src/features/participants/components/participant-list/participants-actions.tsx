@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import { TurnusSwitcher } from '@/core/selected-turnus';
-import type { ParticipantsPanel } from '@/features/participants/schemas/participants-search.schema';
+import type { ParticipantsPanel } from '@/features/participants/components/participants-search.constant';
 
 interface ParticipantsActionsProps {
   canWrite: boolean;
