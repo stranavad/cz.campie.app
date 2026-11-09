@@ -17,7 +17,7 @@ import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
 import { FileService } from '../../../../core/files/file.service.ts';
-import type { CampEntity } from '../../../../repositories/camps/camp/camp.entity.ts';
+import { publicCampPhotoUrl, type CampEntity } from '../../../../repositories/camps/camp/camp.entity.ts';
 import { CampRepository, type UpdateCamp } from '../../../../repositories/camps/camp/camp.repository.ts';
 import {
   publicLogoUrl,
@@ -96,11 +96,13 @@ export class CampService {
     const camp = await this.camps.getByIdOrThrow(id);
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
     const { logoFileId } = effectiveBranding(camp, organisation);
-    // The public logo address works only on the subdomain; the main host shows it through a short link.
+    // The public logo and photo addresses work only on the subdomain; the main host shows them through
+    // short links.
     const logoUrl = logoFileId === null ? null : (await this.files.link(logoFileId)).url;
+    const photoUrl = camp.photoFileId === null ? null : (await this.files.link(camp.photoFileId)).url;
 
     return {
-      camp: { ...publicOf(camp, organisation, (await this.gatewayAccounts.get()) !== null), logoUrl },
+      camp: { ...publicOf(camp, organisation, (await this.gatewayAccounts.get()) !== null), logoUrl, photoUrl },
       turnusy: await this.turnusy.listPublic(camp.id),
     };
   }
@@ -187,29 +189,49 @@ export class CampService {
   }
 
   /**
-   * Change a Camp of the current Organisation, audited. A new slug is kept with the former ones, which go
-   * on leading to the Camp. Like create, it claims the slug before writing the Camp, so the two never wait
-   * on each other in opposite order.
+   * Change a Camp of the current Organisation, audited; its description, which guardians read, under an
+   * action of its own. A new slug is kept with the former ones, which go on leading to the Camp. Like
+   * create, it claims the slug before writing the Camp, so the two never wait on each other in opposite
+   * order.
    * @param actor who does it
    * @param id Camp id
    * @param body the fields to change
    * @throws {ConflictException} camp_slug_taken when another Camp of the Organisation has or had the slug
    */
-  public async update(actor: Actor, id: string, { modules, ...fields }: UpdateCampBody): Promise<CampEntity> {
+  public async update(
+    actor: Actor,
+    id: string,
+    { modules, description, ...fields }: UpdateCampBody,
+  ): Promise<CampEntity> {
     const before = await this.camps.getByIdForUpdateOrThrow(id);
 
     if (fields.slug !== undefined && fields.slug !== before.slug && !(await this.camps.claimSlug(id, fields.slug))) {
       throw slugTaken();
     }
 
-    const changes: UpdateCamp = modules === undefined ? fields : { ...fields, modules: switchedOn(modules) };
+    const changes: UpdateCamp = {
+      ...fields,
+      ...(modules === undefined ? {} : { modules: switchedOn(modules) }),
+      ...(description === undefined ? {} : { description }),
+    };
     const after = await this.camps.update(id, changes);
 
-    await this.audit.record(actor, {
-      action: 'camp.update',
-      target: { type: 'camp', id },
-      change: { before, after },
-    });
+    if (Object.keys(changes).some((field) => field !== 'description')) {
+      await this.audit.record(actor, {
+        action: 'camp.update',
+        target: { type: 'camp', id },
+        change: { before: withoutDescription(before), after: withoutDescription(after) },
+      });
+    }
+
+    // The settings form sends the description with every save; only a change of it is worth an entry.
+    if (after.description !== before.description) {
+      await this.audit.record(actor, {
+        action: 'camp_description.update',
+        target: { type: 'camp', id },
+        change: { before: { description: before.description }, after: { description: after.description } },
+      });
+    }
 
     // A team address just given, such as one corrected after a bounce, starts without a mark.
     for (const email of after.notificationEmails.filter((email) => !before.notificationEmails.includes(email))) {
@@ -230,10 +252,22 @@ function publicOf(camp: CampEntity, organisation: OrganisationEntity, cardPaymen
   const { accentColour, logoFileId } = effectiveBranding(camp, organisation);
 
   return camp.toPublicDto(
-    { accentColour, logoUrl: logoFileId === null ? null : publicLogoUrl(logoFileId) },
+    {
+      accentColour,
+      logoUrl: logoFileId === null ? null : publicLogoUrl(logoFileId),
+      photoUrl: camp.photoFileId === null ? null : publicCampPhotoUrl(camp.photoFileId),
+    },
     campContactOf(camp, organisation),
     cardPayments,
   );
+}
+
+/**
+ * Leave a Camp's description out of its row, as it is audited under an action of its own.
+ * @param camp the Camp
+ */
+function withoutDescription({ description: _description, ...rest }: CampEntity) {
+  return rest;
 }
 
 /**

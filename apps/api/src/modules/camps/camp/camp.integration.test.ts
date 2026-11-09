@@ -69,6 +69,7 @@ describe('camps', () => {
       name: 'Zimní tábor Pokusník',
       slug: 'zimni-pokusnik',
       websiteUrl: 'https://pokusnik.example.com/zima',
+      description: null,
       contactName: 'Jana Testovací',
       contactEmail: 'zima@pokusnik.example.com',
       contactPhone: '+420 123 456 789',
@@ -129,6 +130,46 @@ describe('camps', () => {
         },
       },
     ]);
+  });
+
+  it('describes a Camp to guardians in plain text, audited as its own action', async () => {
+    const description = 'Týden v lesích u rybníka 👨‍👩‍👧.\n\nSpíme ve stanech s podsadou, <b>vaříme</b> na ohni.';
+
+    const response = await update(owner.headers(organisationId), { description: `  ${description}\r\n` });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ description });
+    expect((await http().get(`/api/camps/${campId}`).set(owner.headers(organisationId))).body).toMatchObject({
+      description,
+    });
+    expect((await publicCamp('letni-pokusnik')).body).toMatchObject({ description });
+    expect(await query('SELECT action, changes FROM audit_entries WHERE target_id = $1', [campId])).toEqual([
+      expect.objectContaining({ action: 'camp.create' }),
+      { action: 'camp_description.update', changes: { description: { old: null, new: description } } },
+    ]);
+
+    await update(owner.headers(organisationId), { description: '', name: 'Letní tábor Pokusník 2027' });
+
+    expect((await publicCamp('letni-pokusnik')).body).toMatchObject({ description: null });
+    expect(
+      await query('SELECT action, changes FROM audit_entries WHERE target_id = $1 ORDER BY occurred_at, id', [campId]),
+    ).toEqual([
+      expect.objectContaining({ action: 'camp.create' }),
+      expect.objectContaining({ action: 'camp_description.update' }),
+      { action: 'camp.update', changes: { name: { old: 'Letní tábor Pokusník', new: 'Letní tábor Pokusník 2027' } } },
+      { action: 'camp_description.update', changes: { description: { old: description, new: null } } },
+    ]);
+  });
+
+  it.each([
+    ['a control character', 'Táboření\u0007'],
+    ['a direction override', 'Tábor ‮akčeřp'],
+    ['more than a few paragraphs', 'a'.repeat(1001)],
+  ])('refuses a description with %s, changing nothing', async (_case, description) => {
+    const response = await update(owner.headers(organisationId), { description });
+
+    expect(response.status).toBe(400);
+    expect(await query('SELECT description FROM camps WHERE id = $1', [campId])).toEqual([{ description: null }]);
   });
 
   it('sets the Sibling discount and whom it goes to, audited', async () => {
@@ -192,11 +233,13 @@ describe('camps', () => {
         name: 'Letní tábor Pokusník',
         slug: 'leto-pokusnik',
         websiteUrl: null,
+        description: null,
         contactName: null,
         contactEmail: expect.stringMatching(/^kontakt-/),
         contactPhone: '+420 123 456 789',
         accentColour: '#2b8a4e',
         logoUrl: null,
+        photoUrl: null,
         cardPayments: false,
       });
     }

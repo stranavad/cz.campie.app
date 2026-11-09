@@ -13,14 +13,21 @@ interface CampHeroProps {
 const CHIP =
   'inline-flex min-h-8 max-w-full items-center gap-1.5 rounded-full bg-card px-3 py-1 text-sm font-semibold text-foreground';
 
-// The top of a Camp's page in its accent: logo, name, and at a glance where, for whom and how long its
+// The top of a Camp's page in its accent: its photo, logo, name, and at a glance where, for whom and how long its
 // Turnusy are, with its website.
 export function CampHero({ camp, turnusy }: CampHeroProps) {
   const { t } = useTranslation();
   const chips = useCampHero(turnusy);
 
   return (
-    <section className="flex flex-col gap-3 rounded-[32px] bg-brand px-5 pt-6 pb-5 text-brand-foreground sm:px-8 sm:pt-8 sm:pb-7">
+    <section className="flex flex-col gap-3 overflow-hidden rounded-[32px] bg-brand px-5 pt-6 pb-5 text-brand-foreground sm:px-8 sm:pt-8 sm:pb-7">
+      {camp.photoUrl === null ? null : (
+        <img
+          src={camp.photoUrl}
+          alt=""
+          className="-mx-5 -mt-6 mb-1 aspect-video w-[calc(100%+2.5rem)] max-w-none object-cover sm:-mx-8 sm:-mt-8 sm:aspect-[21/9] sm:w-[calc(100%+4rem)]"
+        />
+      )}
       {camp.logoUrl === null ? null : (
         <img
           src={camp.logoUrl}

@@ -91,6 +91,7 @@
     "name_required": "Vyplňte jméno.",
     "name_too_long": "Jméno může mít nejvýše 100 znaků.",
     "name_invalid": "Jméno nesmí obsahovat řídicí ani neviditelné znaky.",
+    "text_invalid": "Text nesmí obsahovat řídicí ani neviditelné znaky.",
     "already_member": "Tento e-mail už patří správci organizace.",
     "totp_code_malformed": "Zadejte šest číslic z ověřovací aplikace.",
     "second_step_code_malformed": "Zadejte šest číslic z ověřovací aplikace, nebo záložní kód ve tvaru abcd-ef23.",

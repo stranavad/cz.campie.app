@@ -13,6 +13,7 @@ export const campsKeys = {
     [...campsKeys.detail(organisationId, campId), 'discount-codes'] as const,
   branding: (organisationId: string, campId: string) =>
     [...campsKeys.detail(organisationId, campId), 'branding'] as const,
+  photo: (organisationId: string, campId: string) => [...campsKeys.detail(organisationId, campId), 'photo'] as const,
   documentTypes: (organisationId: string, campId: string) =>
     [...campsKeys.detail(organisationId, campId), 'document-types'] as const,
   consents: (organisationId: string, campId: string) =>

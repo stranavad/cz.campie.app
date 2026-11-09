@@ -37,6 +37,7 @@ export const AUDIT_FIELDS = {
     name: text('name'),
     slug: text('slug'),
     websiteUrl: text('websiteUrl'),
+    description: text('description'),
     contactName: text('contactName'),
     contactEmail: email('contactEmail'),
     contactPhone: text('contactPhone'),
@@ -47,6 +48,7 @@ export const AUDIT_FIELDS = {
     contactEditLockDate: date('contactEditLockDate'),
     accentColour: text('accentColour'),
   },
+  camp_description: { description: text('description') },
   camp_email_text: {
     type: oneOf('emailType', 'emailType'),
     subject: text('subject'),

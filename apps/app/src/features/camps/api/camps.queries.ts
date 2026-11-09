@@ -2,6 +2,7 @@ import { skipToken, useMutation, useQuery, useQueryClient, type QueryClient } fr
 
 import type {
   CampBranding,
+  CampPhoto,
   CreateCampBody,
   CreateDiscountCodeBody,
   SaveRegistrationFormDraftBody,
@@ -84,6 +85,35 @@ export const useSetCampLogoMutation = (organisationId: string, campId: string) =
 
 export const useRemoveCampLogoMutation = (organisationId: string, campId: string) =>
   useBrandingMutation<void>(organisationId, campId, () => campsService.removeLogo(organisationId, campId));
+
+export const useCampPhotoQuery = (organisationId: string, campId: string) =>
+  useQuery({
+    queryKey: campsKeys.photo(organisationId, campId),
+    queryFn: ({ signal }) => campsService.getPhoto(organisationId, campId, signal),
+  });
+
+// Every photo change answers with the photo as it now is; the preview shows it too.
+function usePhotoMutation<Variables>(
+  organisationId: string,
+  campId: string,
+  mutationFn: (variables: Variables) => Promise<CampPhoto>,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn,
+    onSuccess: async (photo) => {
+      queryClient.setQueryData(campsKeys.photo(organisationId, campId), photo);
+      await queryClient.invalidateQueries({ queryKey: campsKeys.preview(organisationId, campId) });
+    },
+  });
+}
+
+export const useSetCampPhotoMutation = (organisationId: string, campId: string) =>
+  usePhotoMutation(organisationId, campId, (file: File) => campsService.setPhoto(organisationId, campId, file));
+
+export const useRemoveCampPhotoMutation = (organisationId: string, campId: string) =>
+  usePhotoMutation<void>(organisationId, campId, () => campsService.removePhoto(organisationId, campId));
 
 // The Camp's Turnusy and the header's Turnus switcher, which lists every Turnus of the Organisation.
 const invalidateTurnusy = (queryClient: QueryClient, organisationId: string, campId: string) =>

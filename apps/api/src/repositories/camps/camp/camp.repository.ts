@@ -80,6 +80,20 @@ export class CampRepository {
   }
 
   /**
+   * Tell whether a file is the photo of a Camp of the current Organisation.
+   * @param fileId the file's id
+   */
+  public async hasPhoto(fileId: string): Promise<boolean> {
+    const rows = await this.unitOfWork.db
+      .select({ id: camps.id })
+      .from(camps)
+      .where(eq(camps.photoFileId, fileId))
+      .limit(1);
+
+    return rows.length > 0;
+  }
+
+  /**
    * Create a Camp in the current Organisation.
    * @param input the Camp
    * @throws {Error} when the database returns no row

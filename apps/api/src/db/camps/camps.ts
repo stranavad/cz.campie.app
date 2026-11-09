@@ -19,6 +19,7 @@ export const camps = p.snakeCase.table.withRLS(
     name: p.text().notNull(),
     slug: p.text().notNull(),
     websiteUrl: p.text(),
+    description: p.text(),
     contactName: p.text(),
     contactEmail: p.text(),
     contactPhone: p.text(),
@@ -35,8 +36,9 @@ export const camps = p.snakeCase.table.withRLS(
       .default(sql`'{}'`),
     contactEditLockDate: p.date({ mode: 'string' }),
     accentColour: p.text(),
-    // No foreign key to files, as on organisations: the logo is replaced or removed through the Camp.
+    // No foreign key to files, as on organisations: the logo and photo are replaced or removed through the Camp.
     logoFileId: p.uuid(),
+    photoFileId: p.uuid(),
   },
   // A slug is unique within the Organisation through camp_slugs, which holds former ones too. The colour is
   // written into pages', emails' and documents' CSS; anything but a hex colour could carry more CSS.

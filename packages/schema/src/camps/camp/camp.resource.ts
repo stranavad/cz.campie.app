@@ -21,12 +21,15 @@ export const campModulesSchema = z.object(
 
 export type CampModules = z.infer<typeof campModulesSchema>;
 
+export const MAX_CAMP_DESCRIPTION_LENGTH = 1000;
+
 // A Camp as its settings show it. The contact is the reply address of its mail and what guardians see.
 export const campSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   slug: z.string(),
   websiteUrl: z.string().nullable(),
+  description: z.string().nullable(),
   contactName: z.string().nullable(),
   contactEmail: z.string().nullable(),
   contactPhone: z.string().nullable(),

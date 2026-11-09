@@ -13,12 +13,16 @@ export const publicCampSchema = z.object({
   name: z.string(),
   slug: z.string(),
   websiteUrl: z.string().nullable(),
+  // Plain text in paragraphs, shown as text.
+  description: z.string().nullable(),
   // Whom guardians ask, shown with any problem the form cannot solve itself.
   contactName: z.string().nullable(),
   contactEmail: z.string(),
   contactPhone: z.string().nullable(),
   accentColour: z.string(),
   logoUrl: z.string().nullable(),
+  // The Camp's photo for its card and the top of its page, served like the logo on the subdomain.
+  photoUrl: z.string().nullable(),
   // Whether the Organisation takes card payments, so the form offers the choice.
   cardPayments: z.boolean(),
 });

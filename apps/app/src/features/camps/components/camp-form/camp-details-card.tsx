@@ -3,13 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardTitle } from '@/components/ui/card';
 import { withForm } from '@/core/form';
 import { campFormOptions } from '@/features/camps/components/camp-form/camp-form.schema';
+import { CampPhotoField } from '@/features/camps/components/camp-form/camp-photo-field';
 
-// The Camp's name, the address of its page and its own web.
+// The Camp's name, the address of its page, its own web, and how its card and page present it to guardians:
+// a description and a photo. The photo is saved as soon as it is chosen, apart from the form.
 export const CampDetailsCard = withForm({
   ...campFormOptions,
   // The address of the Organisation's pages, which the slug ends: tabor-jezero.campie.cz/.
-  props: { canWrite: false, pagesAddress: '' },
-  render: function CampDetailsCard({ form, canWrite, pagesAddress }) {
+  props: { canWrite: false, pagesAddress: '', organisationId: '', campId: '' },
+  render: function CampDetailsCard({ form, canWrite, pagesAddress, organisationId, campId }) {
     const { t } = useTranslation('camps');
 
     return (
@@ -32,7 +34,13 @@ export const CampDetailsCard = withForm({
               {(field) => <field.TextField label={t('camp.websiteUrl')} type="url" />}
             </form.AppField>
           </div>
+          <form.AppField name="description">
+            {(field) => (
+              <field.TextAreaField label={t('camp.description')} description={t('camp.descriptionHint')} rows={5} />
+            )}
+          </form.AppField>
         </fieldset>
+        <CampPhotoField organisationId={organisationId} campId={campId} canWrite={canWrite} />
       </Card>
     );
   },

@@ -3,12 +3,13 @@ import { z } from 'zod';
 
 import { campFieldsSchema, type Camp, type UpdateCampBody } from '@repo/schema/camps';
 
-// The Camp's identity, contact, modules and lock date, saved together from the first tab; the Sibling
+// The Camp's identity, description, contact, modules and lock date, saved together from the first tab; the Sibling
 // discount and the team's addresses are saved from their own tabs. An empty lock date is none.
 const campBasicsSchema = campFieldsSchema.pick({
   name: true,
   slug: true,
   websiteUrl: true,
+  description: true,
   contactName: true,
   contactEmail: true,
   contactPhone: true,
@@ -41,6 +42,7 @@ export function campFormValues(camp: Camp): CampFormValues {
     name: camp.name,
     slug: camp.slug,
     websiteUrl: camp.websiteUrl ?? '',
+    description: camp.description ?? '',
     contactName: camp.contactName ?? '',
     contactEmail: camp.contactEmail ?? '',
     contactPhone: camp.contactPhone ?? '',
@@ -54,6 +56,7 @@ const CAMP_FORM_BLANK: CampFormValues = {
   name: '',
   slug: '',
   websiteUrl: '',
+  description: '',
   contactName: '',
   contactEmail: '',
   contactPhone: '',

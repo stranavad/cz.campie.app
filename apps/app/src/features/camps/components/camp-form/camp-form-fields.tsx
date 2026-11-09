@@ -32,7 +32,13 @@ export function CampFormFields({ organisationId, camp, canWrite }: CampFormField
     >
       <div className="grid items-start gap-4 lg:grid-cols-5">
         <div className="flex min-w-0 flex-col gap-4 lg:col-span-3">
-          <CampDetailsCard form={form} canWrite={canWrite} pagesAddress={pagesAddress} />
+          <CampDetailsCard
+            form={form}
+            canWrite={canWrite}
+            pagesAddress={pagesAddress}
+            organisationId={organisationId}
+            campId={camp.id}
+          />
           <CampContactCard form={form} canWrite={canWrite} />
         </div>
         <div className="flex min-w-0 flex-col gap-4 lg:col-span-2">

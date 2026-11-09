@@ -19,6 +19,24 @@ export function requiredText(max: number) {
   return z.string().trim().min(1).max(max);
 }
 
+/**
+ * A text on several lines, such as a few paragraphs for guardians: trimmed, line breaks as `\n`, and no other
+ * control or invisible formatting character, so nothing hides or reorders what readers see. The zero-width
+ * joiner stays, as emoji such as a family are built with it.
+ * @param max the longest it may be
+ */
+export function multilineText(max: number) {
+  return z
+    .string()
+    .transform((value) => value.replaceAll('\r\n', '\n').trim())
+    .pipe(
+      z
+        .string()
+        .max(max)
+        .regex(/^(?:[^\p{C}\p{Zl}\p{Zp}]|\n|‍)*$/u, 'text_invalid'),
+    );
+}
+
 // Whole CZK, never negative, well inside a 32-bit integer.
 export const czkSchema = z.number().int().min(0).max(10_000_000);
 

@@ -36,12 +36,30 @@
     "slug": "Adresa stránky",
     "slugHint": "Stránka tábora: {{address}}. Odkazy na dřívější adresu budou fungovat dál.",
     "websiteUrl": "Web tábora",
+    "description": "Popis pro rodiče",
+    "descriptionHint": "Pár odstavců o tom, co děti na táboře čeká. Ukáže se na kartě tábora a na jeho stránce, jako prostý text.",
     "contactName": "Kontaktní osoba",
     "contactHint": "Rodiče uvidí tento kontakt a odpovědi na e-maily tábora půjdou na tento e-mail.",
     "contactEmail": "Kontaktní e-mail",
     "contactPhone": "Kontaktní telefon",
     "contactEditLockDate": "Rodiče mohou upravovat kontakty do",
     "contactEditLockDateHint": "Včetně tohoto dne. Do té doby mohou také doplnit nové otázky přihlášky."
+  },
+  "photo": {
+    "title": "Fotka tábora",
+    "current": "Současná fotka",
+    "empty": "Tábor zatím nemá fotku",
+    "upload": "Nahrát fotku",
+    "replace": "Nahrát jinou fotku",
+    "remove": "Odebrat fotku",
+    "loadFailed": "Fotku se nepodařilo načíst.",
+    "hint": "Obrázek JPG, PNG nebo WebP, nejvýše 5 MB. Údaje o místě a fotoaparátu z fotky odstraníme.",
+    "failure": {
+      "file_missing": "Vyberte soubor s fotkou.",
+      "file_too_large": "Fotka může mít nejvýše 5 MB.",
+      "file_type_not_allowed": "Fotka musí být obrázek JPG, PNG nebo WebP.",
+      "unexpected": "Fotku se nepodařilo uložit. Zkuste to prosím znovu."
+    }
   },
   "modules": {
     "title": "Moduly",

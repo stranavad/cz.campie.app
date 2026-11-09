@@ -24,20 +24,36 @@ import { KeyProvider } from '../ports/key-provider/key-provider.port.ts';
 import { deleteStoredFileJob } from './delete-stored-file.job.ts';
 import { downloadLinkKey, readDownloadToken, signDownloadToken } from './download-token.ts';
 import { uploadRejected, type FileUpload } from './file-upload.ts';
+import { withoutMetadata, type ImageContentType } from './image-metadata.ts';
 import { objectKey } from './object-key.ts';
 
-// How each allowed type begins, and the names it may carry. The content decides; the name only has to agree.
-const FILE_TYPES: Record<FileContentType, { readonly signature: Buffer; readonly extensions: readonly string[] }> = {
-  'application/pdf': { signature: Buffer.from('%PDF-'), extensions: ['.pdf'] },
-  'image/jpeg': { signature: Buffer.from('ffd8ff', 'hex'), extensions: ['.jpg', '.jpeg'] },
-  'image/png': { signature: Buffer.from('89504e470d0a1a0a', 'hex'), extensions: ['.png'] },
-  [XLSX_CONTENT_TYPE]: { signature: Buffer.from('504b0304', 'hex'), extensions: ['.xlsx'] },
+// How each allowed type begins, as bytes at offsets, and the names it may carry. The content decides; the name
+// only has to agree.
+const FILE_TYPES: Record<
+  FileContentType,
+  { readonly signature: readonly (readonly [offset: number, bytes: Buffer])[]; readonly extensions: readonly string[] }
+> = {
+  'application/pdf': { signature: [[0, Buffer.from('%PDF-')]], extensions: ['.pdf'] },
+  'image/jpeg': { signature: [[0, Buffer.from('ffd8ff', 'hex')]], extensions: ['.jpg', '.jpeg'] },
+  'image/png': { signature: [[0, Buffer.from('89504e470d0a1a0a', 'hex')]], extensions: ['.png'] },
+  // A RIFF container holding a WebP image.
+  'image/webp': {
+    signature: [
+      [0, Buffer.from('RIFF')],
+      [8, Buffer.from('WEBP')],
+    ],
+    extensions: ['.webp'],
+  },
+  [XLSX_CONTENT_TYPE]: { signature: [[0, Buffer.from('504b0304', 'hex')]], extensions: ['.xlsx'] },
 };
 
 // What a feature narrows an upload to, such as a logo to small images.
 export interface StoreLimits {
   readonly allow?: readonly FileContentType[];
   readonly maxBytes?: number;
+  // An image published to everyone is stored without its metadata (location, camera, author), and only
+  // when it is built like the image its first bytes claim.
+  readonly stripMetadata?: boolean;
 }
 
 // An Organisation's or a Camp's logo: shown on every public page and in every document, so a small image.
@@ -80,7 +96,7 @@ export class FileService {
    * @throws {PayloadTooLargeException} when the file is over the size limit
    */
   public async store(upload: FileUpload, limits: StoreLimits = {}): Promise<string> {
-    const { allow = UPLOAD_CONTENT_TYPES, maxBytes = MAX_FILE_BYTES } = limits;
+    const { allow = UPLOAD_CONTENT_TYPES, maxBytes = MAX_FILE_BYTES, stripMetadata = false } = limits;
     const contentType = contentTypeOf(upload);
 
     if (contentType === null || !allow.includes(contentType)) {
@@ -91,18 +107,24 @@ export class FileService {
       throw uploadRejected('file_too_large');
     }
 
+    const bytes = stripMetadata ? publishable(contentType, upload.bytes) : upload.bytes;
+
+    if (bytes === null) {
+      throw uploadRejected('file_type_not_allowed');
+    }
+
     const cipher = await this.encryption.cipher();
 
     const file = await this.files.create({
       contentType,
       name: cipher.encrypt(upload.name),
-      size: upload.bytes.length,
+      size: bytes.length,
     });
     const key = objectKey(this.unitOfWork.organisationId, file.id);
 
     // The object is written before the record commits; if the record rolls back, nothing would point to it.
     this.unitOfWork.afterRollback(() => this.deleteOrphan(key, file.id));
-    const ciphertext = await buffer(Readable.from([upload.bytes]).pipe(cipher.encryptStream()));
+    const ciphertext = await buffer(Readable.from([bytes]).pipe(cipher.encryptStream()));
     await this.storage.put(key, Readable.from([ciphertext]), ciphertext.length);
 
     return file.id;
@@ -254,6 +276,24 @@ export class FileService {
 }
 
 /**
+ * Rewrite an image to be published without its metadata.
+ * @param contentType the type its content was told to be
+ * @param bytes the image
+ * @returns null when it is no image, or not built like one
+ */
+function publishable(contentType: FileContentType, bytes: Buffer): Buffer | null {
+  return isImage(contentType) ? withoutMetadata(contentType, bytes) : null;
+}
+
+/**
+ * Tell whether a file's type is an image's.
+ * @param contentType the type
+ */
+function isImage(contentType: FileContentType): contentType is ImageContentType {
+  return contentType.startsWith('image/');
+}
+
+/**
  * Tell an upload's type from its first bytes, and check that its name's extension agrees.
  * @param upload the file as uploaded
  * @returns null when the content is no allowed type or the name claims another
@@ -264,7 +304,7 @@ function contentTypeOf({ name, bytes }: FileUpload): FileContentType | null {
   for (const contentType of FILE_CONTENT_TYPES) {
     const { signature, extensions } = FILE_TYPES[contentType];
 
-    if (bytes.subarray(0, signature.length).equals(signature)) {
+    if (signature.every(([offset, part]) => bytes.subarray(offset, offset + part.length).equals(part))) {
       return extensions.includes(extension) ? contentType : null;
     }
   }

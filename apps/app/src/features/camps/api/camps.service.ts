@@ -4,16 +4,19 @@ import {
   createTurnusEndpoint,
   getCampBrandingEndpoint,
   getCampEndpoint,
+  getCampPhotoEndpoint,
   getRegistrationFormEndpoint,
   getRegistrationFormVersionEndpoint,
   listDiscountCodesEndpoint,
   previewCampEndpoint,
   publishRegistrationFormEndpoint,
   removeCampLogoEndpoint,
+  removeCampPhotoEndpoint,
   removeDiscountCodeEndpoint,
   removeTurnusEndpoint,
   saveRegistrationFormDraftEndpoint,
   setCampLogoEndpoint,
+  setCampPhotoEndpoint,
   updateCampBrandingEndpoint,
   updateCampEndpoint,
   updateDiscountCodeEndpoint,
@@ -70,6 +73,12 @@ export const campsService = {
     apiClient.request(setCampLogoEndpoint, { organisationId, params: { campId }, file }),
   removeLogo: (organisationId: string, campId: string) =>
     apiClient.request(removeCampLogoEndpoint, { organisationId, params: { campId } }),
+  getPhoto: (organisationId: string, campId: string, signal?: AbortSignal) =>
+    apiClient.request(getCampPhotoEndpoint, { organisationId, params: { campId }, signal }),
+  setPhoto: (organisationId: string, campId: string, file: File) =>
+    apiClient.request(setCampPhotoEndpoint, { organisationId, params: { campId }, file }),
+  removePhoto: (organisationId: string, campId: string) =>
+    apiClient.request(removeCampPhotoEndpoint, { organisationId, params: { campId } }),
   listDiscountCodes: (organisationId: string, campId: string, signal?: AbortSignal) =>
     apiClient.request(listDiscountCodesEndpoint, { organisationId, params: { campId }, signal }),
   createDiscountCode: (organisationId: string, campId: string, body: CreateDiscountCodeBody) =>

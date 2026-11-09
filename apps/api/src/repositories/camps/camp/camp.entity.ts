@@ -23,6 +23,7 @@ export class CampEntity {
   public readonly name: string;
   public readonly slug: string;
   public readonly websiteUrl: string | null;
+  public readonly description: string | null;
   public readonly contactName: string | null;
   public readonly contactEmail: string | null;
   public readonly contactPhone: string | null;
@@ -33,6 +34,7 @@ export class CampEntity {
   public readonly contactEditLockDate: string | null;
   public readonly accentColour: string | null;
   public readonly logoFileId: string | null;
+  public readonly photoFileId: string | null;
 
   constructor(row: CampSelectModel) {
     this.id = row.id;
@@ -40,6 +42,7 @@ export class CampEntity {
     this.name = row.name;
     this.slug = row.slug;
     this.websiteUrl = row.websiteUrl;
+    this.description = row.description;
     this.contactName = row.contactName;
     this.contactEmail = row.contactEmail;
     this.contactPhone = row.contactPhone;
@@ -51,6 +54,7 @@ export class CampEntity {
     this.contactEditLockDate = row.contactEditLockDate;
     this.accentColour = row.accentColour;
     this.logoFileId = row.logoFileId;
+    this.photoFileId = row.photoFileId;
   }
 
   toDto(): Camp {
@@ -59,6 +63,7 @@ export class CampEntity {
       name: this.name,
       slug: this.slug,
       websiteUrl: this.websiteUrl,
+      description: this.description,
       contactName: this.contactName,
       contactEmail: this.contactEmail,
       contactPhone: this.contactPhone,
@@ -82,7 +87,7 @@ export class CampEntity {
   }
 
   toPublicDto(
-    branding: { accentColour: string; logoUrl: string | null },
+    appearance: { accentColour: string; logoUrl: string | null; photoUrl: string | null },
     contact: { contactEmail: string; contactPhone: string | null },
     cardPayments: boolean,
   ): PublicCamp {
@@ -91,9 +96,10 @@ export class CampEntity {
       name: this.name,
       slug: this.slug,
       websiteUrl: this.websiteUrl,
+      description: this.description,
       contactName: this.contactName,
       ...contact,
-      ...branding,
+      ...appearance,
       cardPayments,
     };
   }
@@ -109,4 +115,13 @@ export class CampEntity {
  */
 function modulesRecord(modules: readonly CampModule[]): CampModules {
   return Object.fromEntries(CAMP_MODULES.map((module) => [module, modules.includes(module)])) as CampModules;
+}
+
+/**
+ * Build the address a Camp's photo is served at on its Organisation's subdomain. The file id is part of it,
+ * so a new photo gets a new address and browsers may keep a photo for good.
+ * @param fileId the photo's file id
+ */
+export function publicCampPhotoUrl(fileId: string): string {
+  return `/api/camp-photos/${fileId}`;
 }

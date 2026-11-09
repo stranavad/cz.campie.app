@@ -16,14 +16,18 @@ interface CampPageViewProps {
   actionOf?: (turnus: PublicTurnus) => ReactNode;
 }
 
-// A Camp's page in its own branding: its Turnusy, and a way back to its website. The public page and the
-// admins' preview show the same.
+// A Camp's page in its own branding: its description, its Turnusy, and a way back to its website. The public
+// page and the admins' preview show the same.
 export function CampPageView({ camp, turnusy, actionOf }: CampPageViewProps) {
   const { t } = useTranslation();
 
   return (
     <div className="flex flex-col gap-6 pt-1 pb-8" {...brandAttributes(camp.accentColour)}>
       <CampHero camp={camp} turnusy={turnusy} />
+      {camp.description === null ? null : (
+        // Plain text: its paragraphs and line breaks are kept, nothing in it is read as markup.
+        <p className="px-1 text-pretty whitespace-pre-line">{camp.description}</p>
+      )}
       <section className="flex flex-col gap-3">
         <h2 className="text-heading px-1 text-2xl">
           {/* An invitation while there is something to register for, else just the list. */}
