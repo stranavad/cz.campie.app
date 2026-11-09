@@ -38,3 +38,5 @@ The public registration form at `/{camp-slug}/prihlaska?turnus={id}`, rendered f
 - Age on start (`ageOnStart`, `ageProblem` in `@repo/schema/camps`): completed years on the start date, both limits inclusive; a child outside them gets a note at the birth date with the camp's contact (a 29 February birthday counts from 1 March in other years).
 - The public Camp now carries its contact (name, email, phone), falling back to the Organisation's contact; Organisation settings say so at the contact email.
 - `surchargesOf` runs on unchecked answers here, so a crafted preview can show a wrong price; issue 35 must price only checked answers.
+
+2026-11-09 - **Decision by the owner: the public form becomes a 4-step wizard.** Following the redesign canvas ("Campie - návrhy designu", artboard `M-Prihlaska`), the one-page layout gives way to four steps: Rodiče, Děti, Otázky, Shrnutí. The Sibling discount the "+ Sourozenec" button shows before a second child is added comes from issue 77.

@@ -116,6 +116,23 @@ Source: `docs/spec.md`, glossary `CONTEXT.md`, decisions `docs/adr/`. Issue file
 | 68  | Bounce and complaint handling                  | E3           | done   | 16, 42     |
 | 69  | Readable audit log                             | E9           | done   | 10, 65     |
 
+## Redesign follow-up - API for the new UI (stage 1b)
+
+The redesign canvas ("Campie - návrhy designu") is implemented frontend-first; these issues add what its screens need from the API. Where the canvas and the spec disagree, the spec wins.
+
+| #   | Issue                                                               | Episode | Status          | Blocked by         |
+| --- | ------------------------------------------------------------------- | ------- | --------------- | ------------------ |
+| 71  | Admin names                                                         | E1      | ready-for-agent | 20, 63, 69, 70     |
+| 72  | Account self-service: name, email, password and TOTP                | E1      | ready-for-agent | 67, 70, 71         |
+| 73  | Registration list signals and admin home                            | E6      | ready-for-agent | 43, 44, 55, 58, 61 |
+| 74  | Price preview for a new admin Registration                          | E6      | ready-for-agent | 38, 44             |
+| 75  | Camp description and photo                                          | E2      | ready-for-agent | 12, 24, 33         |
+| 76  | Camp-wide Consent and document progress, test email                 | E2      | ready-for-agent | 32, 55, 58, 59     |
+| 77  | Public pages: Camp summaries, Deposit, contact and Sibling discount | E3      | ready-for-agent | 27, 33, 34         |
+| 78  | Payment details and Přihláška after submission                      | E3      | ready-for-agent | 36, 40, 49         |
+| 79  | Portal: guardian name and confirmed email                           | E5      | ready-for-agent | 39, 41, 71         |
+| 80  | Console signup date, weekly mail stats and subdomain check          | E1      | ready-for-agent | 17, 21, 22, 68     |
+
 ## Stage 2 - around May 2027 (to be broken down)
 
 - **E10 Health record**: preset via form engine with medications, per-Camp config, complete-by date, guardian fill and states, admin read/write/reopen/on paper, view audit, Health gating, health note behaviour.
