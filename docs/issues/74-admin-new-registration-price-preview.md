@@ -1,6 +1,6 @@
 # 74 - Price preview for a new admin Registration
 
-Status: ready-for-agent
+Status: in-progress
 Stage: 1b
 Episode: E6 Admin Registrations
 Blocked by: 38, 44
@@ -24,3 +24,7 @@ The redesigned Nová přihláška page shows the price as the admin fills it in:
 - Spec sections: Pricing; Registration, placement and declarations.
 - Design: canvas "Campie - návrhy designu", artboard `B3-NovaPrihlaska`. Consumed by the price panel of the admin Nová přihláška page.
 - A cash Deposit taken at the desk is recorded by `POST /camps/:campId/registrations` itself: an optional `cashDeposit` flag records the Deposit as a cash payment dated today in the same transaction as the Registration. Chaining a second `POST /registrations/:registrationId/payments` from the page is not safe: a lost response makes the admin retry, the idempotent create replays the Registration and the payment is recorded twice, with two payment emails. The redesign shipped that chain and the review removed it; this issue brings the checkbox back on the atomic endpoint.
+
+## Comments
+
+2026-11-09 - **In progress.** `POST /camps/:campId/registrations/preview` (Registrations write) takes the create body and answers `NewRegistrationPrice`: lines, total, `depositAvailable`, `depositTotal`, `depositDueDate`, `balanceDueDate` and `discountCode` (`applied` / `not_applied`, null when none typed). Preview and create share one private step, `RegistrationService.priceForAdmin` (form check, code lookup past its limit or expiry, `priceRegistration`), and the due dates come from one helper, so the preview is what create stores; the preview takes no code lock and saves nothing. `cashDeposit` (default false) on the create records one manual payment of the server's Deposit total, dated today in Prague, note "Záloha v hotovosti", through `LedgerService.recordPayment` in the create's unit of work: audited `payment.create`, emailed to the guardians like any payment received; a replay of the key returns before it, so nothing is recorded twice; without a Deposit to pay (paying in full, a Turnus without one, or a price discounted to zero) it answers 409 `cash_deposit_unavailable`. The Nová přihláška summary shows the live price, the Deposit and due dates, "Platit nejdřív zálohu", a Discount code field and "Záloha zaplacena v hotovosti". Decisions to confirm: the admin preview tells only applied or not, no more than the admin create's field errors and the public preview already tell, so it has no rate limit (issue 22 limits anonymous callers); the payment received email goes out with a cash Deposit even when the confirmation is switched off.

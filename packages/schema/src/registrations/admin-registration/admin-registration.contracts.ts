@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { campParamsSchema, priceLineSchema } from '@repo/schema/camps';
 import { answerValueSchema, formDefinitionShape } from '@repo/schema/form-engine';
-import { defineEndpoint, emailSchema, phoneSchema } from '@repo/schema/shared';
+import { calendarDateSchema, defineEndpoint, emailSchema, phoneSchema } from '@repo/schema/shared';
 
 import { registrationParamsSchema } from '../ledger/ledger.resource.ts';
 import { registrationDetailSchema } from '../registration-detail/registration-detail.contracts.ts';
@@ -16,19 +16,55 @@ const answersSchema = z.record(z.string().max(100), answerValueSchema);
 export const createRegistrationBodySchema = submitRegistrationBodySchema.extend({
   // Whether the guardians get the confirmation email, as after a public submission.
   sendConfirmation: z.boolean().default(true),
+  // The Deposit was paid in cash at the desk: recorded as one payment of the Deposit total, dated today, with
+  // the Registration. Needs the Deposit chosen and a Turnus that has one; the amount is the server's.
+  cashDeposit: z.boolean().default(false),
 });
 
 export type CreateRegistrationBody = z.infer<typeof createRegistrationBodySchema>;
 
 // Creates a Registration from a phone call or a paper form: the same form, but outside the Registration
 // window, over capacity and outside age limits, without mandatory declarations, and a Discount code past
-// its limit or expiry still applies and counts as a use. Registrations write.
+// its limit or expiry still applies and counts as a use. With `cashDeposit`, the Deposit is recorded as paid
+// in the same step, so a repeat with the same idempotency key records it no second time. Registrations write.
 export const createRegistrationEndpoint = defineEndpoint({
   method: 'POST',
   path: '/camps/:campId/registrations',
   params: campParamsSchema,
   body: createRegistrationBodySchema,
   response: submittedRegistrationSchema,
+});
+
+// What a Discount code does to a new admin Registration: applied, past its limit or expiry too, or not, when
+// the Camp has no such code or it is switched off.
+export const ADMIN_DISCOUNT_CODE_CHECKS = ['applied', 'not_applied'] as const;
+
+export type AdminDiscountCodeCheck = (typeof ADMIN_DISCOUNT_CODE_CHECKS)[number];
+
+export const newRegistrationPriceSchema = z.object({
+  lines: z.array(priceLineSchema),
+  total: z.number().int(),
+  depositAvailable: z.boolean(),
+  // Owed first when the Deposit was chosen and the Turnus has one; null when paying in full.
+  depositTotal: z.number().int().nullable(),
+  depositDueDate: calendarDateSchema,
+  balanceDueDate: calendarDateSchema.nullable(),
+  // Null when no code was typed.
+  discountCode: z.enum(ADMIN_DISCOUNT_CODE_CHECKS).nullable(),
+});
+
+export type NewRegistrationPrice = z.infer<typeof newRegistrationPriceSchema>;
+
+// The price, Deposit and due dates the same body would get from `createRegistrationEndpoint` now, also for a
+// closed or full Turnus and a child outside the age limits, without saving anything; answers still being
+// filled in are priced as far as they go. Registrations write.
+export const previewNewRegistrationEndpoint = defineEndpoint({
+  method: 'POST',
+  path: '/camps/:campId/registrations/preview',
+  params: campParamsSchema,
+  body: createRegistrationBodySchema,
+  response: newRegistrationPriceSchema,
+  status: 200,
 });
 
 export const editAnswersBodySchema = z.object({
@@ -257,6 +293,9 @@ export const ADMIN_REGISTRATION_ERROR_CODES = [
   // A Registration keeps at least one guardian.
   'guardian_last',
   'access_email_taken',
+  // A cash Deposit was asked of a Registration without a Deposit to pay: paying in full, a Turnus without
+  // one, or a price discounted to nothing.
+  'cash_deposit_unavailable',
 ] as const;
 
 export type AdminRegistrationErrorCode = (typeof ADMIN_REGISTRATION_ERROR_CODES)[number];

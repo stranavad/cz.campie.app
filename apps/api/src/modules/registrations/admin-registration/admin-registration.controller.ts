@@ -14,6 +14,7 @@ import {
   moveRegistrationEndpoint,
   previewAddParticipantEndpoint,
   previewEditAnswersEndpoint,
+  previewNewRegistrationEndpoint,
   regeneratePrihlaskaEndpoint,
   removeAccessEmailEndpoint,
   removeGuardianEndpoint,
@@ -26,6 +27,7 @@ import {
   type EditAnswersBody,
   type EditGuardianBody,
   type MoveRegistrationBody,
+  type NewRegistrationPrice,
   type ParticipantParams,
   type PriceChange,
   type RegistrationDetail,
@@ -129,6 +131,14 @@ export class AdminRegistrationController {
     @EndpointBody(createRegistrationEndpoint) body: CreateRegistrationBody,
   ): Promise<SubmittedRegistration> {
     return this.registrations.createByAdmin(adminAccessOf(actor, member), campId, body);
+  }
+
+  @Endpoint(previewNewRegistrationEndpoint)
+  public previewNew(
+    @EndpointParams(previewNewRegistrationEndpoint) { campId }: CampParams,
+    @EndpointBody(previewNewRegistrationEndpoint) body: CreateRegistrationBody,
+  ): Promise<NewRegistrationPrice> {
+    return this.registrations.previewByAdmin(campId, body);
   }
 
   @Endpoint(getTurnusFormEndpoint)

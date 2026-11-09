@@ -109,6 +109,22 @@ export const useTurnusFormQuery = (organisationId: string, turnusId: string | nu
     retry: false,
   });
 
+// The price of a new Registration as its answers settle; the last price stays shown while the next one loads.
+export const useNewRegistrationPriceQuery = (
+  organisationId: string,
+  campId: string | undefined,
+  body: CreateRegistrationBody | null,
+) =>
+  useQuery({
+    queryKey: [...participantsKeys.organisation(organisationId), 'new-registration-price', campId ?? '', body],
+    queryFn:
+      campId === undefined || body === null
+        ? skipToken
+        : ({ signal }) => participantsService.previewNew(organisationId, campId, body, signal),
+    placeholderData: keepPreviousData,
+    retry: false,
+  });
+
 export const useCreateRegistrationMutation = (organisationId: string) =>
   useRegistrationChange(organisationId, ({ campId, body }: { campId: string; body: CreateRegistrationBody }) =>
     participantsService.create(organisationId, campId, body),

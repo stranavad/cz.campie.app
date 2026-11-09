@@ -34,6 +34,7 @@ import {
   moveRegistrationEndpoint,
   previewAddParticipantEndpoint,
   previewEditAnswersEndpoint,
+  previewNewRegistrationEndpoint,
   previewPaymentRemindersEndpoint,
   recordPaymentEndpoint,
   regeneratePrihlaskaEndpoint,
@@ -90,6 +91,8 @@ export const participantsService = {
     apiClient.request(getTurnusFormEndpoint, { organisationId, params: { turnusId }, signal }),
   create: (organisationId: string, campId: string, body: CreateRegistrationBody) =>
     apiClient.request(createRegistrationEndpoint, { organisationId, params: { campId }, body }),
+  previewNew: (organisationId: string, campId: string, body: CreateRegistrationBody, signal?: AbortSignal) =>
+    apiClient.request(previewNewRegistrationEndpoint, { organisationId, params: { campId }, body, signal }),
   cancelParticipant: (organisationId: string, registrationId: string, participantId: string) =>
     apiClient.request(cancelParticipantEndpoint, { organisationId, params: { registrationId, participantId } }),
   cancelAll: (organisationId: string, registrationId: string) =>

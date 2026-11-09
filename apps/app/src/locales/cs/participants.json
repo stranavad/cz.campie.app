@@ -175,7 +175,20 @@
     "open": "Nová přihláška",
     "onlyChild": "Dítě",
     "questions": "Otázky tábora",
-    "submitNote": "Přihláška se uloží i mimo přihlašovací období, nad kapacitu a mimo věkové limity. Povinná pole jsou stejná jako pro rodiče."
+    "submitNote": "Přihláška se uloží i mimo přihlašovací období, nad kapacitu a mimo věkové limity. Povinná pole jsou stejná jako pro rodiče.",
+    "total": "Celkem",
+    "dueInFull": "Splatné celé do {{date}}",
+    "depositDue": "Záloha {{amount}} splatná do {{date}}",
+    "balanceDue": "Doplatek splatný do {{date}}",
+    "priceFailed": "Cenu se nepodařilo spočítat. Zkuste to znovu.",
+    "depositFirst": "Platit nejdřív zálohu",
+    "cashDeposit": "Záloha zaplacena v hotovosti",
+    "cashDepositHint": "Záloha se zapíše jako platba s dnešním datem spolu s přihláškou.",
+    "discountCode": "Slevový kód",
+    "codeChecks": {
+      "applied": "Slevový kód je uplatněn.",
+      "not_applied": "Tábor takový aktivní slevový kód nemá."
+    }
   },
   "controls": {
     "title": "Zrušit přihlášku",

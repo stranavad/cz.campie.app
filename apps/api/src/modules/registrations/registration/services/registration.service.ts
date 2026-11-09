@@ -25,16 +25,18 @@ import {
   type CoreFieldKey,
   type Submission,
 } from '@repo/schema/form-engine';
-import { dueDatesOf, priceRegistration, type RegistrationPrice } from '@repo/schema/pricing';
+import { dueDatesOf, priceRegistration, type DueDates, type RegistrationPrice } from '@repo/schema/pricing';
 import type {
+  AdminRegistrationErrorCode,
   CreateRegistrationBody,
+  NewRegistrationPrice,
   RegistrationSource,
   SubmissionErrorCode,
   SubmissionFieldErrorCode,
   SubmitRegistrationBody,
   SubmittedRegistration,
 } from '@repo/schema/registrations';
-import type { FieldError } from '@repo/schema/shared';
+import { pragueDateOf, type FieldError } from '@repo/schema/shared';
 
 import type { AdminAccess } from '../../../../core/access/admin-access.ts';
 import type { Actor } from '../../../../core/audit/actor.ts';
@@ -63,6 +65,7 @@ import {
 import { CampEmailService } from '../../../camps/camp-email/services/camp-email.service.ts';
 import { DiscountCodeService } from '../../../camps/discount-code/services/discount-code.service.ts';
 import { changedSensitive, ensureHealthWritable, sealAnswers } from '../../answers/sealed-answers.helper.ts';
+import { LedgerService } from '../../ledger/services/ledger.service.ts';
 import { generatePrihlaskyJob } from '../../prihlaska/generate-prihlasky.job.ts';
 import { notifyTeamJob } from '../notify-team.job.ts';
 import { VariableSymbols } from './variable-symbols.ts';
@@ -70,6 +73,9 @@ import { VariableSymbols } from './variable-symbols.ts';
 // A clash of eight random digits among an Organisation's Registrations is rare; this many in a row means
 // something else is wrong.
 const VARIABLE_SYMBOL_ATTEMPTS = 10;
+
+// The ledger note of a Deposit an admin took in cash with a new Registration.
+const CASH_DEPOSIT_NOTE = 'Záloha v hotovosti';
 
 // What the error response carries at most, as its schema allows.
 const MAX_FIELD_ERRORS = 500;
@@ -116,6 +122,7 @@ export class RegistrationService {
     private readonly forms: RegistrationFormRepository,
     private readonly discountCodes: DiscountCodeService,
     private readonly campEmails: CampEmailService,
+    private readonly ledger: LedgerService,
     private readonly variableSymbols: VariableSymbols,
     private readonly rateLimiter: RateLimiter,
     private readonly unitOfWork: UnitOfWork,
@@ -155,7 +162,7 @@ export class RegistrationService {
     const { submission, errors } = this.checkAnswers(form, turnus, body, true);
 
     if (errors.length > 0) {
-      const code = await this.discountCodeOf(camp.id, body.discountCode, 'check');
+      const code = await this.discountCodeOf(camp.id, body.discountCode, { lock: false, pastLimits: false });
 
       throw invalid(code.error === null ? errors : [...errors, code.error]);
     }
@@ -163,7 +170,7 @@ export class RegistrationService {
     await this.rateLimiter.admitTarget(this.limit, this.unitOfWork.organisationId);
     const locked = await this.lockTurnus(turnus.id);
     await this.ensureRoom(locked, submission.participants.length, now);
-    const { code, error } = await this.discountCodeOf(camp.id, body.discountCode, 'use');
+    const { code, error } = await this.discountCodeOf(camp.id, body.discountCode, { lock: true, pastLimits: false });
 
     if (error !== null) {
       throw invalid([error]);
@@ -200,13 +207,15 @@ export class RegistrationService {
    * Create a Registration for an admin, from a phone call or a paper form: under the Camp's latest form, but
    * outside the Registration window, over capacity and outside age limits, without mandatory declarations,
    * and with a Discount code past its limit or expiry, still counted as a use. The same idempotency key
-   * returns the first Registration. The admin chooses whether the guardians get the confirmation email.
-   * Health answers need Health write.
+   * returns the first Registration, and records no second cash Deposit. The admin chooses whether the
+   * guardians get the confirmation email, and whether the Deposit was paid in cash, recorded with it as one
+   * payment dated today. Health answers need Health write.
    * @param admin the admin
    * @param campId Camp id
-   * @param body the Turnus, the answers, the payment choice, the code, the declarations and whether to confirm
-   * @throws {NotFoundException} when the Camp has no published form or the Turnus is not its
+   * @param body the Turnus, the answers, the payment choice, the code, the declarations, whether to confirm
+   * and whether the Deposit was paid in cash
    * @throws {BadRequestException} submission_invalid with the reasons in `fields`
+   * @throws {ConflictException} cash_deposit_unavailable when a cash Deposit is asked without a Deposit to pay
    */
   public async createByAdmin(
     admin: AdminAccess,
@@ -226,41 +235,33 @@ export class RegistrationService {
       return this.replay(earlier, body.turnusId);
     }
 
-    const camp = await this.camps.getByIdOrThrow(campId);
-    const form = await this.forms.getLatestVersion(camp.id);
-    // No lock: an admin's Registration takes a place whatever the capacity.
-    const turnus = await this.turnusy.getById(body.turnusId);
-
-    if (form === null || turnus === null || turnus.campId !== camp.id) {
-      throw new NotFoundException();
-    }
+    const place = await this.adminPlaceOf(campId, body.turnusId);
 
     ensureHealthWritable(
       admin.health.write,
       [body.submission.registration, ...body.submission.participants].map((answers) =>
         Object.fromEntries(Object.entries(answers).filter(([, value]) => !isEmpty(value))),
       ),
-      sensitiveKeys([form.definition], REGISTRATION_FIELD_CATALOGUE),
+      sensitiveKeys([place.form.definition], REGISTRATION_FIELD_CATALOGUE),
     );
 
-    const { submission, errors } = this.checkAnswers(form, turnus, body, false);
-    const { code, error } = await this.discountCodeOf(camp.id, body.discountCode, 'admin');
+    const { submission, errors, code, codeError, price, now } = await this.priceForAdmin(place, body, true);
 
-    if (errors.length > 0 || error !== null) {
-      throw invalid(error === null ? errors : [...errors, error]);
+    if (errors.length > 0 || codeError !== null) {
+      throw invalid(codeError === null ? errors : [...errors, codeError]);
     }
 
-    const now = this.clock.now();
-    const price = priceRegistration({
-      priceList: turnus,
-      siblingDiscount: camp.toSiblingDiscount(),
-      participants: surchargesOf(form.definition, submission),
-      discountCode: code?.toPricing() ?? null,
-      paymentChoice: body.paymentChoice,
-      submittedAt: now,
-    });
+    // What was paid in cash, by the server's price; zero when there is no Deposit to pay, as when paying in
+    // full, in a Turnus without one, or with discounts that took the whole price.
+    const cashDeposit = body.cashDeposit ? (price.depositTotal ?? 0) : null;
 
-    return this.store({ form, turnus }, body, {
+    if (cashDeposit === 0) {
+      const reason: AdminRegistrationErrorCode = 'cash_deposit_unavailable';
+
+      throw new ConflictException({ code: reason, message: 'No Deposit to record as paid in cash' });
+    }
+
+    const created = await this.store(place, body, {
       submission,
       price,
       code,
@@ -270,6 +271,37 @@ export class RegistrationService {
       source: 'admin',
       sendConfirmation: body.sendConfirmation,
     });
+
+    if (cashDeposit !== null) {
+      await this.ledger.recordPayment(actor, created.id, {
+        kind: 'payment',
+        amount: cashDeposit,
+        paidOn: pragueDateOf(now),
+        note: CASH_DEPOSIT_NOTE,
+      });
+    }
+
+    return created;
+  }
+
+  /**
+   * Price a new admin Registration as `createByAdmin` would price the same body now: its lines, total,
+   * Deposit and due dates, also for a closed or full Turnus and a child outside the age limits, saving
+   * nothing. Answers still being filled in are priced as far as they go.
+   * @param campId Camp id
+   * @param body what `createByAdmin` takes
+   */
+  public async previewByAdmin(campId: string, body: CreateRegistrationBody): Promise<NewRegistrationPrice> {
+    const place = await this.adminPlaceOf(campId, body.turnusId);
+    const { code, price, now } = await this.priceForAdmin(place, body, false);
+    const typed = body.discountCode !== null && body.discountCode.trim() !== '';
+
+    return {
+      ...price,
+      lines: [...price.lines],
+      ...dueDatesFor(place.turnus, now),
+      discountCode: typed ? (code === null ? 'not_applied' : 'applied') : null,
+    };
   }
 
   /**
@@ -328,6 +360,62 @@ export class RegistrationService {
     }
 
     return { camp, form, turnus };
+  }
+
+  /**
+   * Find a Camp of the current Organisation, its latest published form, and its Turnus, for an admin.
+   * @param campId Camp id
+   * @param turnusId Turnus id
+   * @throws {NotFoundException} when the Camp is unknown, has no published form, or the Turnus is not its
+   */
+  private async adminPlaceOf(campId: string, turnusId: string): Promise<Place> {
+    const camp = await this.camps.getByIdOrThrow(campId);
+    const form = await this.forms.getLatestVersion(camp.id);
+    // No lock: an admin's Registration takes a place whatever the capacity.
+    const turnus = await this.turnusy.getById(turnusId);
+
+    if (form === null || turnus === null || turnus.campId !== camp.id) {
+      throw new NotFoundException();
+    }
+
+    return { camp, form, turnus };
+  }
+
+  /**
+   * Check and price an admin's Registration at this moment, the one way both its preview and its creation
+   * price it, so the preview shows what creating stores.
+   * @param place the Camp, its latest form and the Turnus
+   * @param body the answers, the payment choice and the code
+   * @param lockCode whether to hold the code until the unit of work ends, to take a use of it
+   */
+  private async priceForAdmin(
+    { camp, form, turnus }: Place,
+    body: SubmitRegistrationBody,
+    lockCode: boolean,
+  ): Promise<{
+    submission: Submission;
+    errors: FieldError[];
+    code: DiscountCodeEntity | null;
+    codeError: FieldError | null;
+    price: RegistrationPrice;
+    now: Date;
+  }> {
+    const { submission, errors } = this.checkAnswers(form, turnus, body, false);
+    const { code, error } = await this.discountCodeOf(camp.id, body.discountCode, {
+      lock: lockCode,
+      pastLimits: true,
+    });
+    const now = this.clock.now();
+    const price = priceRegistration({
+      priceList: turnus,
+      siblingDiscount: camp.toSiblingDiscount(),
+      participants: surchargesOf(form.definition, submission),
+      discountCode: code?.toPricing() ?? null,
+      paymentChoice: body.paymentChoice,
+      submittedAt: now,
+    });
+
+    return { submission, errors, code, codeError: error, price, now };
   }
 
   /**
@@ -432,23 +520,22 @@ export class RegistrationService {
    * code stays locked until the unit of work ends.
    * @param campId Camp id
    * @param text the code as typed, or nothing
-   * @param purpose `check` to only tell, `use` to take a use next, `admin` to take one past the code's limit
-   * or expiry, as an admin may
+   * @param how whether to lock the code to take a use next, and whether it applies past its limit or expiry,
+   * as for an admin
    */
   private async discountCodeOf(
     campId: string,
     text: string | null,
-    purpose: 'check' | 'use' | 'admin',
+    { lock, pastLimits }: { lock: boolean; pastLimits: boolean },
   ): Promise<{ code: DiscountCodeEntity | null; error: FieldError | null }> {
     if (text === null || text.trim() === '') {
       return { code: null, error: null };
     }
 
-    const { code, status } =
-      purpose === 'check'
-        ? await this.discountCodes.check(campId, text)
-        : await this.discountCodes.checkForUse(campId, text);
-    const usable: readonly DiscountCodeStatus[] = purpose === 'admin' ? ['valid', 'expired', 'exhausted'] : ['valid'];
+    const { code, status } = lock
+      ? await this.discountCodes.checkForUse(campId, text)
+      : await this.discountCodes.check(campId, text);
+    const usable: readonly DiscountCodeStatus[] = pastLimits ? ['valid', 'expired', 'exhausted'] : ['valid'];
 
     if (code !== null && usable.includes(status)) {
       return { code, error: null };
@@ -495,7 +582,7 @@ export class RegistrationService {
       submittedAt: now,
       source,
       // The Turnus's terms as they are now; a later edit of the Turnus moves no Registration's dates.
-      ...dueDatesOf({ submittedAt: now, depositDueDays: turnus.depositDueDays, balanceDueDate: turnus.balanceDueDate }),
+      ...dueDatesFor(turnus, now),
     });
     const guardians = guardiansOf(submission.registration);
     const children = submission.participants.map((answers) => ({
@@ -585,6 +672,15 @@ export class RegistrationService {
 
     throw new Error('No free Variable symbol was drawn');
   }
+}
+
+/**
+ * Fix a Registration's deposit and balance due dates by its Turnus's terms at its submission.
+ * @param turnus the Turnus
+ * @param submittedAt the submission's instant
+ */
+function dueDatesFor(turnus: TurnusEntity, submittedAt: Date): DueDates {
+  return dueDatesOf({ submittedAt, depositDueDays: turnus.depositDueDays, balanceDueDate: turnus.balanceDueDate });
 }
 
 /**
