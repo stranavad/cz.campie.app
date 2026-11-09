@@ -55,6 +55,9 @@
     "unsigned": {
       "title": "Nepodepsané souhlasy"
     },
+    "documents": {
+      "title": "Dokumenty ke kontrole"
+    },
     "families_one": "{{count}} rodina",
     "families_few": "{{count}} rodiny",
     "families_many": "{{count}} rodiny",
@@ -65,6 +68,17 @@
       "show": "Zobrazit"
     },
     "actionOf": ": {{item}}"
+  },
+  "recent": {
+    "title": "Nové přihlášky",
+    "error": "Přihlášky se nepodařilo načíst. Zkuste stránku načíst znovu.",
+    "nothing": "Zatím nepřišla žádná přihláška.",
+    "participant": "{{first}} {{last}}",
+    "detail": "{{camp}} · {{turnus}} · {{date}}",
+    "source": {
+      "public": "Online",
+      "admin": "Zadal správce"
+    }
   },
   "turnusy": {
     "title": "Turnusy",

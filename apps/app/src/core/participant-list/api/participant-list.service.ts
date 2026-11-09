@@ -1,4 +1,8 @@
-import { listParticipantsEndpoint, type ParticipantListQuery } from '@repo/schema/registrations';
+import {
+  listParticipantsEndpoint,
+  listRecentRegistrationsEndpoint,
+  type ParticipantListQuery,
+} from '@repo/schema/registrations';
 
 import { apiClient } from '@/lib/api';
 
@@ -18,4 +22,6 @@ export const participantListService = {
       },
       signal,
     }),
+  recent: (organisationId: string, signal?: AbortSignal) =>
+    apiClient.request(listRecentRegistrationsEndpoint, { organisationId, signal }),
 };

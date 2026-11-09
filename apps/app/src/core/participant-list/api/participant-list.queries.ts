@@ -1,4 +1,4 @@
-import { queryOptions, skipToken } from '@tanstack/react-query';
+import { queryOptions, skipToken, useQuery } from '@tanstack/react-query';
 
 import type { ParticipantListQuery } from '@repo/schema/registrations';
 
@@ -17,4 +17,11 @@ export const participantListQueryOptions = (
       turnusId === null
         ? skipToken
         : ({ signal }) => participantListService.list(organisationId, turnusId, filters, signal),
+  });
+
+// The Organisation's newest Registrations across its Turnusy; Registrations read.
+export const useRecentRegistrationsQuery = (organisationId: string) =>
+  useQuery({
+    queryKey: participantListKeys.recent(organisationId),
+    queryFn: ({ signal }) => participantListService.recent(organisationId, signal),
   });

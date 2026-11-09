@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, desc, eq, inArray, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { documentUploads, internalDocuments } from '../../../db/schema.ts';
@@ -44,6 +44,37 @@ export class DocumentUploadRepository {
       .from(documentUploads)
       .where(inArray(documentUploads.participantId, [...participantIds]))
       .orderBy(desc(documentUploads.uploadedAt), desc(documentUploads.id));
+  }
+
+  /**
+   * Count the documents of Participants waiting for review, in one query: each requirement's newest only, as
+   * one handed in over a waiting document leaves that one for good.
+   * @param participantIds Participant ids
+   */
+  public async countPendingOf(participantIds: readonly string[]): Promise<number> {
+    if (participantIds.length === 0) {
+      return 0;
+    }
+
+    const newest = this.unitOfWork.db
+      .selectDistinctOn([documentUploads.participantId, documentUploads.documentTypeId], {
+        status: documentUploads.status,
+      })
+      .from(documentUploads)
+      .where(inArray(documentUploads.participantId, [...participantIds]))
+      .orderBy(
+        documentUploads.participantId,
+        documentUploads.documentTypeId,
+        desc(documentUploads.uploadedAt),
+        desc(documentUploads.id),
+      )
+      .as('newest');
+    const [row] = await this.unitOfWork.db
+      .select({ pending: count() })
+      .from(newest)
+      .where(eq(newest.status, 'pending'));
+
+    return row?.pending ?? 0;
   }
 
   /**

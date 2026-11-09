@@ -9,9 +9,9 @@ import { PageHeader } from '@/components/page-header';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PaymentStatusBadge } from '@/core/participant-list';
 import { RegistrationDocuments } from '@/features/participants/components/documents/registration-documents';
 import { AdminActions } from '@/features/participants/components/editing/admin-actions';
-import { PaymentStatusBadge } from '@/features/participants/components/payment-status-badge';
 import { RegistrationConsents } from '@/features/participants/components/registration-consents';
 import { BackToList } from '@/features/participants/components/registration-detail/back-to-list';
 import { DeclarationsCard } from '@/features/participants/components/registration-detail/declarations-card';
@@ -75,7 +75,7 @@ export function RegistrationDetailPage({ registrationId }: RegistrationDetailPag
           symbol: detail.variableSymbol,
           camp: detail.camp.name,
           turnus: detail.turnus.name,
-          date: czechDateTime(detail.submittedAt),
+          submitted: t(`detail.submitted.${detail.source}`, { date: czechDateTime(detail.submittedAt) }),
           children: t('children', { count: detail.participants.length }),
           version: detail.formVersion,
         })}

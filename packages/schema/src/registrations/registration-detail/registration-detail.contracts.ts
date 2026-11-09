@@ -9,6 +9,7 @@ import { calendarDateSchema, defineEndpoint } from '@repo/schema/shared';
 
 import { ledgerSchema, registrationParamsSchema } from '../ledger/ledger.resource.ts';
 import { PARTICIPANT_STATUSES } from '../registration/participant-status.ts';
+import { REGISTRATION_SOURCES } from '../registration/registration-source.ts';
 
 // Whether a question was answered under the Registration's form, added to the form later, or removed
 // from the latest form after it was answered.
@@ -36,6 +37,7 @@ export const registrationDetailSchema = z.object({
   id: z.uuid(),
   variableSymbol: z.string(),
   submittedAt: z.iso.datetime(),
+  source: z.enum(REGISTRATION_SOURCES),
   paymentChoice: z.enum(PAYMENT_CHOICES),
   formVersion: z.number().int(),
   // The Camp's latest form, whose fields an admin may answer.

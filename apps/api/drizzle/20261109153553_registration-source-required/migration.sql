@@ -1,0 +1,1 @@
+ALTER TABLE "registrations" ALTER COLUMN "source" SET NOT NULL;

@@ -3,12 +3,19 @@ import { Injectable } from '@nestjs/common';
 import { ageOnStart } from '@repo/schema/camps';
 import type { ChecklistItem } from '@repo/schema/checklist';
 import type { PaymentStatus } from '@repo/schema/pricing';
-import type { ParticipantListQuery, ParticipantRow, SelectedTurnus, TurnusOverview } from '@repo/schema/registrations';
+import type {
+  ParticipantListQuery,
+  ParticipantRow,
+  RecentRegistration,
+  SelectedTurnus,
+  TurnusOverview,
+} from '@repo/schema/registrations';
 
 import { MembershipRepository } from '../../../../repositories/admins/membership/membership.repository.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
+import { DocumentUploadRepository } from '../../../../repositories/documents/document-upload/document-upload.repository.ts';
 import { UndeliverableEmailRepository } from '../../../../repositories/emails/undeliverable-email/undeliverable-email.repository.ts';
 import { ClaimedDiscountVerificationRepository } from '../../../../repositories/registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
@@ -25,20 +32,46 @@ function searchable(text: string): string {
 }
 
 /**
- * Read from a child's checklist what the list marks and filters by.
- * @param items the checklist's items
+ * Read from a child's checklist what the list shows and filters by. A Cancelled child has no checklist, so
+ * no counts and no document status.
+ * @param items the checklist's items, or undefined for a Cancelled child
+ * @param modules the Camp's modules that report Consents and documents
  */
-function openItemsOf(
-  items: readonly ChecklistItem[],
-): Pick<ParticipantRow, 'unsignedConsent' | 'missingDocument' | 'missingAnswers'> {
+function signalsOf(
+  items: readonly ChecklistItem[] | undefined,
+  modules: { consents: boolean; documents: boolean },
+): {
+  shown: Pick<ParticipantRow, 'consents' | 'documents' | 'missingAnswers'>;
+  unsignedConsent: boolean;
+  missingDocument: boolean;
+} {
+  const consents = (items ?? []).filter(({ kind }) => kind === 'consent');
+  const documents = (items ?? []).filter(({ kind }) => kind === 'document');
+  const missingDocument = documents.some(({ state }) => state === 'missing' || state === 'returned');
+
   return {
-    unsignedConsent: items.some(({ kind, state }) => kind === 'consent' && state === 'unsigned'),
-    missingDocument: items.some(
-      ({ kind, state }) => kind === 'document' && (state === 'missing' || state === 'returned'),
-    ),
-    missingAnswers: items.some(({ kind }) => kind === 'missing_answers'),
+    shown: {
+      consents:
+        items === undefined || !modules.consents
+          ? null
+          : { signed: consents.filter(({ done }) => done).length, required: consents.length },
+      documents:
+        items === undefined || !modules.documents
+          ? null
+          : missingDocument
+            ? 'missing'
+            : documents.some(({ state }) => state === 'pending')
+              ? 'to_review'
+              : 'complete',
+      missingAnswers: (items ?? []).some(({ kind }) => kind === 'missing_answers'),
+    },
+    unsignedConsent: consents.some(({ done }) => !done),
+    missingDocument,
   };
 }
+
+// How many of the newest Registrations the admin's overview shows.
+const RECENT_REGISTRATIONS = 5;
 
 // The admin's working list: one row per Participant of a Turnus, with the money of its Registration.
 // Rows are built and searched in the API, a Turnus holding at most a few hundred children, so nothing
@@ -55,6 +88,7 @@ export class ParticipantListService {
     private readonly memberships: MembershipRepository,
     private readonly verifications: ClaimedDiscountVerificationRepository,
     private readonly checklists: ChecklistService,
+    private readonly uploads: DocumentUploadRepository,
   ) {}
 
   /**
@@ -92,12 +126,51 @@ export class ParticipantListService {
   }
 
   /**
+   * List the Organisation's newest Registrations across its Turnusy, with who they are for and how they
+   * are paid; Erased ones are left out.
+   */
+  public async recent(): Promise<RecentRegistration[]> {
+    const registrations = await this.registrations.listRecent(RECENT_REGISTRATIONS);
+    const participants = await this.registrations.listParticipantsOf(registrations.map(({ id }) => id));
+    const balances = await this.ledger.balancesOf(registrations);
+    const turnusy = new Map((await this.turnusy.list()).map((turnus) => [turnus.id, turnus]));
+    const camps = new Map((await this.camps.list()).map((camp) => [camp.id, camp]));
+
+    return registrations.flatMap((registration) => {
+      const turnus = turnusy.get(registration.turnusId);
+      const camp = turnus === undefined ? undefined : camps.get(turnus.campId);
+      const balance = balances.get(registration.id);
+
+      if (turnus === undefined || camp === undefined || balance === undefined) {
+        return [];
+      }
+
+      return [
+        {
+          id: registration.id,
+          submittedAt: registration.submittedAt.toISOString(),
+          source: registration.source,
+          turnus: { id: turnus.id, name: turnus.name },
+          camp: { id: camp.id, name: camp.name },
+          participants: participants
+            .filter(({ registrationId }) => registrationId === registration.id)
+            .sort((one, other) => one.position - other.position)
+            .map(({ firstName, lastName }) => ({ firstName, lastName })),
+          paymentStatus: balance.status,
+        },
+      ];
+    });
+  }
+
+  /**
    * List a Turnus's Participants by surname, searched and filtered.
    * @param turnusId Turnus id
    * @param query the search and filters
    */
   public async list(turnusId: string, query: ParticipantListQuery): Promise<ParticipantRow[]> {
     const turnus = await this.turnusy.getByIdOrThrow(turnusId);
+    const camp = await this.camps.getByIdOrThrow(turnus.campId);
+    const modules = { consents: camp.modules.includes('consents'), documents: camp.modules.includes('documents') };
     const registrations = await this.registrations.listByTurnus(turnusId);
     const ids = registrations.map(({ id }) => id);
     const participants = await this.registrations.listParticipantsOf(ids);
@@ -151,8 +224,13 @@ export class ParticipantListService {
       }
 
       const balance = balances.get(registration.id);
+      const signals = signalsOf(checklistOf.get(participant.id), modules);
 
-      if (balance === undefined) {
+      if (
+        balance === undefined ||
+        (query.unsignedConsent === true && !signals.unsignedConsent) ||
+        (query.missingDocument === true && !signals.missingDocument)
+      ) {
         return [];
       }
 
@@ -170,6 +248,7 @@ export class ParticipantListService {
         {
           participantId: participant.id,
           registrationId: registration.id,
+          submittedAt: registration.submittedAt.toISOString(),
           firstName: participant.firstName,
           lastName: participant.lastName,
           ageOnStart: participant.birthDate === null ? 0 : ageOnStart(participant.birthDate, turnus.startDate),
@@ -182,7 +261,7 @@ export class ParticipantListService {
           overdue: balance.overdue,
           status: participant.status,
           unverifiedClaimedDiscount: claimed.some(({ verifiedAt }) => verifiedAt === null),
-          ...openItemsOf(checklistOf.get(participant.id) ?? []),
+          ...signals.shown,
         },
       ];
     });
@@ -192,8 +271,6 @@ export class ParticipantListService {
           (query.paymentStatus === undefined || row.paymentStatus === query.paymentStatus) &&
           (query.overdue !== true || row.overdue) &&
           (query.unverifiedClaimedDiscount !== true || row.unverifiedClaimedDiscount) &&
-          (query.unsignedConsent !== true || row.unsignedConsent) &&
-          (query.missingDocument !== true || row.missingDocument) &&
           (query.missingAnswers !== true || row.missingAnswers),
       )
       .sort(
@@ -205,13 +282,16 @@ export class ParticipantListService {
   }
 
   /**
-   * Show a Turnus at a glance: places taken, and its money across every Registration.
+   * Show a Turnus at a glance: places taken, its money across every Registration, and the documents of
+   * Registered children waiting for review.
    * @param turnusId Turnus id
    */
   public async overview(turnusId: string): Promise<TurnusOverview> {
     const turnus = await this.turnusy.getByIdOrThrow(turnusId);
+    const camp = await this.camps.getByIdOrThrow(turnus.campId);
     const registrations = await this.registrations.listByTurnus(turnusId);
     const participants = await this.registrations.listParticipantsOf(registrations.map(({ id }) => id));
+    const registered = participants.filter(({ status }) => status === 'registered');
     const balances = [...(await this.ledger.balancesOf(registrations)).values()];
     const sum = (amounts: readonly number[]) => amounts.reduce((total, amount) => total + amount, 0);
     const registrationsByPaymentStatus: Record<PaymentStatus, number> = {
@@ -228,13 +308,16 @@ export class ParticipantListService {
 
     return {
       capacity: turnus.capacity,
-      registered: participants.filter(({ status }) => status === 'registered').length,
+      registered: registered.length,
       expected: sum(balances.map(({ total }) => total)),
       received: sum(balances.map(({ paid }) => paid)),
       outstanding: sum(balances.map(({ balance }) => Math.max(balance, 0))),
       overpaid: sum(balances.map(({ balance }) => Math.max(-balance, 0))),
       overdueRegistrations: balances.filter(({ overdue }) => overdue).length,
       registrationsByPaymentStatus,
+      documentsToReview: camp.modules.includes('documents')
+        ? await this.uploads.countPendingOf(registered.map(({ id }) => id))
+        : 0,
     };
   }
 }

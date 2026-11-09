@@ -59,9 +59,18 @@ export const participantListQuerySchema = z.object({
 
 export type ParticipantListQuery = z.output<typeof participantListQuerySchema>;
 
+// A child's documents at a glance: every requirement approved or done (`complete`), one waiting for review
+// (`to_review`), or one with nothing handed in or only a returned document (`missing`), which outweighs a
+// review.
+export const DOCUMENTS_STATUSES = ['complete', 'to_review', 'missing'] as const;
+
+export type DocumentsStatus = (typeof DOCUMENTS_STATUSES)[number];
+
 export const participantRowSchema = z.object({
   participantId: z.uuid(),
   registrationId: z.uuid(),
+  // When the Registration was submitted.
+  submittedAt: z.iso.datetime(),
   firstName: z.string(),
   lastName: z.string(),
   ageOnStart: z.number().int(),
@@ -76,8 +85,12 @@ export const participantRowSchema = z.object({
   status: z.enum(PARTICIPANT_STATUSES),
   // A Claimed discount that needs the camp's verification was answered for this child.
   unverifiedClaimedDiscount: z.boolean(),
-  unsignedConsent: z.boolean(),
-  missingDocument: z.boolean(),
+  // The Camp's Consents the child has answered, against all of them; a Withdrawn one is the guardians'
+  // answer, so it counts as signed, as on the checklist. Null while the Camp has Consents off, and for a
+  // Cancelled child, who has no checklist.
+  consents: z.object({ signed: z.number().int(), required: z.number().int() }).nullable(),
+  // Null while the Camp has documents off, and for a Cancelled child.
+  documents: z.enum(DOCUMENTS_STATUSES).nullable(),
   missingAnswers: z.boolean(),
 });
 

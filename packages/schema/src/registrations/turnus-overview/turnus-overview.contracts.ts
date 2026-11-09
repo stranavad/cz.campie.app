@@ -19,6 +19,8 @@ export const turnusOverviewSchema = z.object({
   overdueRegistrations: z.number().int(),
   // How many Registrations have each payment status, partly paid apart from unpaid.
   registrationsByPaymentStatus: z.record(z.enum(PAYMENT_STATUSES), z.number().int()),
+  // Documents of Registered children waiting for review; none while the Camp has documents off.
+  documentsToReview: z.number().int(),
 });
 
 export type TurnusOverview = z.infer<typeof turnusOverviewSchema>;

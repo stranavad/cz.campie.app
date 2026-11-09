@@ -263,7 +263,8 @@ export const useRegistrationDocumentsQuery = (organisationId: string, registrati
     refetchInterval: 4 * 60_000,
   });
 
-// Every review or hand-in changes the Registration's documents, which are read again.
+// Every review or hand-in changes the Registration's documents, the lists' document status and the documents
+// waiting in the Turnus overview, which are read again.
 export const useDocumentReview = <Variables, Result>(
   organisationId: string,
   registrationId: string,
@@ -274,7 +275,12 @@ export const useDocumentReview = <Variables, Result>(
   return useMutation({
     mutationFn,
     // A refusal means the page was behind, so it is read again either way.
-    onSettled: () => queryClient.invalidateQueries({ queryKey: documentsKey(organisationId, registrationId) }),
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: documentsKey(organisationId, registrationId) }),
+        queryClient.invalidateQueries({ queryKey: participantListKeys.organisation(organisationId) }),
+        queryClient.invalidateQueries({ queryKey: turnusOverviewKeys.organisation(organisationId) }),
+      ]),
   });
 };
 

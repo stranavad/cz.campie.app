@@ -1,6 +1,6 @@
 # 73 - Registration list signals and admin home
 
-Status: ready-for-agent
+Status: in-progress
 Stage: 1b
 Episode: E6 Admin Registrations
 Blocked by: 43, 44, 55, 58, 61
@@ -32,3 +32,7 @@ The redesigned Přihlášky list and Přehled show more than the rows carry toda
 - Spec sections: Registration, placement and declarations; Payments (Overdue); Documents.
 - Design: canvas "Campie - návrhy designu", artboards `B3-Prehled`, `B3-Prihlasky`, `B3-Detail`, `Sidebar`. Consumed by the admin Přehled, the Přihlášky list, the Registration detail header and the sidebar badge.
 - The detail's "Přesunout na jiný turnus" per child is not built: the spec moves whole Registrations only, and moving one child out means cancelling it and creating a new Registration.
+
+## Comments
+
+2026-11-09 - **In progress.** Participant rows carry `submittedAt`, `consents: { signed, required }` and `documents` (`complete`/`to_review`/`missing`), both null for a Cancelled child or while the Camp has the module off; the booleans are gone and the two filters still read the checklist. A Withdrawn Consent counts as signed, as on the checklist, so `signed < required` is exactly what the unsigned filter finds; the detail's chip counts the same way. Registrations gain `source` (`public`/`admin`), set by the API from how they were created, never from the request; the backfill reads whether a Registration has a `registration.create` Audit entry (the public form audits `registration.submit`, and erasure scrubs the actor but keeps the action), then the column is made required. `GET /registrations/recent` (Registrations read) gives the five newest non-Erased Registrations of the Organisation; the Turnus overview gains `documentsToReview` (each requirement's newest upload when Pending, of Registered children; an admin's hand-in over a Pending one leaves that one Pending for good, so older ones never count; none while documents are off). UI: Přihlášeno, "2 / 2" and the three document states in the list, document pills on phones, "Dokumenty ke kontrole" in Čeká na vás, the Nové přihlášky card and the source in the detail's subtitle. "Dokumenty ke kontrole" opens the unfiltered list, as no filter finds documents to review; `PaymentStatusBadge` moved to `core/participant-list` for the card.

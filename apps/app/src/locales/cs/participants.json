@@ -16,6 +16,7 @@
     "participant": "Účastník",
     "guardian": "Rodič",
     "payment": "Platba",
+    "submittedAt": "Přihlášeno",
     "consents": "Souhlasy",
     "documents": "Dokumenty"
   },
@@ -24,9 +25,14 @@
   "count_many": "{{count}} účastníka",
   "count_other": "{{count}} účastníků",
   "row": {
-    "consentMissing": "Nepodepsáno",
-    "documentMissing": "Chybí",
-    "fine": "V pořádku",
+    "consents": "{{signed}} / {{required}}",
+    "documents": {
+      "complete": "Vše odevzdáno",
+      "to_review": "Ke kontrole",
+      "missing": "Chybí"
+    },
+    "none": "-",
+    "documentToReview": "Dokument ke kontrole",
     "due": "k úhradě {{amount}}",
     "overdue": "{{amount}} po splatnosti",
     "summary": "{{age}} · {{guardian}}",
@@ -54,7 +60,11 @@
     "error": "Přihlášku se nepodařilo načíst.",
     "back": "Přihlášky · {{turnus}}",
     "title": "Přihláška {{symbol}}",
-    "subtitle": "Přihláška {{symbol}} · {{camp}} - {{turnus}} · odesláno {{date}} · {{children}} · formulář verze {{version}}",
+    "subtitle": "Přihláška {{symbol}} · {{camp}} - {{turnus}} · {{submitted}} · {{children}} · formulář verze {{version}}",
+    "submitted": {
+      "public": "odesláno online {{date}}",
+      "admin": "zadal správce {{date}}"
+    },
     "edit": "Upravit",
     "guardians": "Rodiče a přístupy",
     "guardianName": "{{first}} {{last}}",

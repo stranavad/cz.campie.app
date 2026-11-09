@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { PaymentStatus } from '@repo/schema/pricing';
 
 import { Badge } from '@/components/ui/badge';
-import { PAYMENT_STATUS_VARIANT } from '@/features/participants/components/payment-status.helper';
+import { PAYMENT_STATUS_VARIANT } from '@/core/participant-list/components/payment-status.helper';
 
 interface PaymentStatusBadgeProps {
   status: PaymentStatus;

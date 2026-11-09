@@ -3,6 +3,7 @@ import * as p from 'drizzle-orm/pg-core';
 
 import type { Answers } from '@repo/schema/form-engine';
 import { PAYMENT_CHOICES } from '@repo/schema/pricing';
+import { REGISTRATION_SOURCES } from '@repo/schema/registrations';
 
 import { registrationFormVersions } from '../camps/registration-form-versions.ts';
 import { turnusy } from '../camps/turnusy.ts';
@@ -11,6 +12,7 @@ import { id } from '../helpers/ids.ts';
 import { organisationId, organisationPolicy } from '../helpers/organisation.ts';
 
 export const paymentChoice = p.pgEnum('payment_choice', PAYMENT_CHOICES);
+export const registrationSource = p.pgEnum('registration_source', REGISTRATION_SOURCES);
 
 export const registrations = p.snakeCase.table.withRLS(
   'registrations',
@@ -27,6 +29,7 @@ export const registrations = p.snakeCase.table.withRLS(
     // The encrypted and health answers, as one encrypted JSON object; null when there are none.
     encryptedAnswers: encrypted(),
     submittedAt: p.timestamp({ withTimezone: true }).notNull(),
+    source: registrationSource().notNull(),
     // Fixed from the Turnus's terms when the Registration joined it, so editing the Turnus moves no dates.
     depositDueDate: p.date({ mode: 'string' }).notNull(),
     balanceDueDate: p.date({ mode: 'string' }),

@@ -20,6 +20,7 @@ export function useAdminHome() {
     // Addresses the admin by first name, as Czech does, once they gave one.
     greetingName: firstName === null ? null : vocativeOf(firstName),
     canWrite: membershipAllows(membership, 'registrations', 'write'),
+    canReadRegistrations,
     // The Selected Turnus's panels need Registrations read and a Turnus.
     turnus: canReadRegistrations ? turnusy.find(({ id }) => id === turnusId) : undefined,
     canReadCamps,

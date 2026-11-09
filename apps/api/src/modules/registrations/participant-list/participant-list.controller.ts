@@ -4,10 +4,12 @@ import {
   getSelectedTurnusEndpoint,
   getTurnusOverviewEndpoint,
   listParticipantsEndpoint,
+  listRecentRegistrationsEndpoint,
   setSelectedTurnusEndpoint,
   type ParticipantListParams,
   type ParticipantListQuery,
   type ParticipantRow,
+  type RecentRegistration,
   type SelectedTurnus,
   type SetSelectedTurnusBody,
   type TurnusOverview,
@@ -44,6 +46,11 @@ export class ParticipantListController {
     @EndpointQuery(listParticipantsEndpoint) query: ParticipantListQuery,
   ): Promise<ParticipantRow[]> {
     return this.lists.list(turnusId, query);
+  }
+
+  @Endpoint(listRecentRegistrationsEndpoint)
+  public recent(): Promise<RecentRegistration[]> {
+    return this.lists.recent();
   }
 
   @Endpoint(getTurnusOverviewEndpoint)

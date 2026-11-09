@@ -284,6 +284,21 @@ export class RegistrationRepository {
   }
 
   /**
+   * List the newest Registrations of the current Organisation across its Turnusy, leaving out Erased ones.
+   * @param limit how many
+   */
+  public async listRecent(limit: number): Promise<RegistrationEntity[]> {
+    const rows = await this.unitOfWork.db
+      .select()
+      .from(registrations)
+      .where(isNull(registrations.erasedAt))
+      .orderBy(desc(registrations.submittedAt), desc(registrations.id))
+      .limit(limit);
+
+    return rows.map((row) => new RegistrationEntity(row));
+  }
+
+  /**
    * List the Participants of Registrations, in one query.
    * @param registrationIds Registration ids
    */

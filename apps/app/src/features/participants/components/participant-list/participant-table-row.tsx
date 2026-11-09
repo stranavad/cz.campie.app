@@ -2,19 +2,22 @@ import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import type { ParticipantRow } from '@repo/schema/registrations';
+import { czechDate, pragueDateOf } from '@repo/schema/shared';
 
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { hasUnsignedConsent, PaymentStatusBadge } from '@/core/participant-list';
+import { DOCUMENTS_STATUS_VARIANT } from '@/features/participants/components/participant-list/documents-status.constant';
 import { DueLine } from '@/features/participants/components/participant-list/due-line';
-import { PaymentStatusBadge } from '@/features/participants/components/payment-status-badge';
 import { cn } from '@/lib/utils';
 
 interface ParticipantTableRowProps {
   row: ParticipantRow;
 }
 
-// One child in the table: who (and whether answers are owed), the guardian, money, Consents and documents.
+// One child in the table: who (and whether answers are owed), the guardian, money, when registered, Consents
+// and documents.
 export function ParticipantTableRow({ row }: ParticipantTableRowProps) {
   const { t } = useTranslation('participants');
   const name = t('name', { first: row.firstName, last: row.lastName });
@@ -62,14 +65,22 @@ export function ParticipantTableRow({ row }: ParticipantTableRowProps) {
           {row.unverifiedClaimedDiscount ? <Badge variant="warning">{t('filters.unverified')}</Badge> : null}
         </span>
       </TableCell>
-      <TableCell className={row.unsignedConsent ? 'font-medium text-danger-foreground' : 'text-muted-foreground'}>
-        {row.unsignedConsent ? t('row.consentMissing') : t('row.fine')}
+      <TableCell className="text-muted-foreground tabular-nums">
+        {czechDate(pragueDateOf(new Date(row.submittedAt)))}
+      </TableCell>
+      <TableCell
+        className={cn(
+          'tabular-nums',
+          hasUnsignedConsent(row.consents) ? 'font-medium text-danger-foreground' : 'text-muted-foreground',
+        )}
+      >
+        {row.consents === null ? t('row.none') : t('row.consents', row.consents)}
       </TableCell>
       <TableCell>
-        {row.missingDocument ? (
-          <Badge variant="danger">{t('row.documentMissing')}</Badge>
+        {row.documents === null ? (
+          <span className="text-muted-foreground">{t('row.none')}</span>
         ) : (
-          <Badge>{t('row.fine')}</Badge>
+          <Badge variant={DOCUMENTS_STATUS_VARIANT[row.documents]}>{t(`row.documents.${row.documents}`)}</Badge>
         )}
       </TableCell>
     </TableRow>

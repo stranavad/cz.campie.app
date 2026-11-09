@@ -28,6 +28,7 @@ import {
 import { dueDatesOf, priceRegistration, type RegistrationPrice } from '@repo/schema/pricing';
 import type {
   CreateRegistrationBody,
+  RegistrationSource,
   SubmissionErrorCode,
   SubmissionFieldErrorCode,
   SubmitRegistrationBody,
@@ -190,7 +191,7 @@ export class RegistrationService {
       now,
       ipAddress,
       actor,
-      action: 'registration.submit',
+      source: 'public',
       sendConfirmation: true,
     });
   }
@@ -266,7 +267,7 @@ export class RegistrationService {
       now,
       ipAddress: actor.ipAddress,
       actor,
-      action: 'registration.create',
+      source: 'admin',
       sendConfirmation: body.sendConfirmation,
     });
   }
@@ -463,8 +464,8 @@ export class RegistrationService {
    * Participants, price lines, code use and declaration answers; audit it and enqueue what follows.
    * @param place the form and the Turnus, locked
    * @param body the submission
-   * @param checked the checked answers, the price, the code, the instant, who submits and from where, and
-   * whether the guardians get the confirmation email
+   * @param checked the checked answers, the price, the code, the instant, who submits and from where, whether
+   * it came from the public form or an admin, and whether the guardians get the confirmation email
    */
   private async store(
     { form, turnus }: Omit<Place, 'camp'>,
@@ -476,11 +477,11 @@ export class RegistrationService {
       now: Date;
       ipAddress: string;
       actor: Actor;
-      action: 'registration.submit' | 'registration.create';
+      source: RegistrationSource;
       sendConfirmation: boolean;
     },
   ): Promise<SubmittedRegistration> {
-    const { submission, price, code, now, ipAddress, actor, action, sendConfirmation } = checked;
+    const { submission, price, code, now, ipAddress, actor, source, sendConfirmation } = checked;
     // The rodné číslo and health data are sealed here and never reach the audit entry but by name.
     const sensitive = sensitiveKeys([form.definition], REGISTRATION_FIELD_CATALOGUE);
     const cipher = await this.encryption.cipher();
@@ -492,6 +493,7 @@ export class RegistrationService {
       depositTotal: price.depositTotal,
       ...sealAnswers(cipher, withoutCore(submission.registration), sensitive),
       submittedAt: now,
+      source,
       // The Turnus's terms as they are now; a later edit of the Turnus moves no Registration's dates.
       ...dueDatesOf({ submittedAt: now, depositDueDays: turnus.depositDueDays, balanceDueDate: turnus.balanceDueDate }),
     });
@@ -525,7 +527,7 @@ export class RegistrationService {
 
     // What was submitted, as the history shows it; the address is the entry's own, not repeated inside.
     await this.audit.record(actor, {
-      action,
+      action: source === 'admin' ? 'registration.create' : 'registration.submit',
       target: { type: 'registration', id: registration.id },
       change: {
         before: null,
@@ -544,7 +546,7 @@ export class RegistrationService {
             accepted: ticked,
           })),
           // Only an admin chooses; a guardian's submission is always confirmed.
-          ...(action === 'registration.create' ? { sendConfirmation } : {}),
+          ...(source === 'admin' ? { sendConfirmation } : {}),
         },
       },
       encryptedFields: sealedNames,

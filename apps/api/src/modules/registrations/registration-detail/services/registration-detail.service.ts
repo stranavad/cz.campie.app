@@ -111,6 +111,7 @@ export class RegistrationDetailService {
       id: registration.id,
       variableSymbol: registration.variableSymbol,
       submittedAt: registration.submittedAt.toISOString(),
+      source: registration.source,
       paymentChoice: registration.paymentChoice,
       formVersion: version.version,
       latestDefinition: latest.definition,

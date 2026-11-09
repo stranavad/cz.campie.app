@@ -20,7 +20,10 @@ export function useParticipantChecklist(organisationId: string, registrationId: 
 
     return {
       consents:
-        own.length === 0 ? null : { signed: own.filter(({ state }) => state === 'signed').length, total: own.length },
+        own.length === 0
+          ? null
+          : // A Withdrawn Consent is the guardians' answer, so it counts as signed, as in the list.
+            { signed: own.filter(({ state }) => state !== 'unsigned').length, total: own.length },
       documents: (documents.data?.requirements ?? []).flatMap((requirement) => {
         const status = uploads[requirement.id]?.[0]?.status ?? 'missing';
 

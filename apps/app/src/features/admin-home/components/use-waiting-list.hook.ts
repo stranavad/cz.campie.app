@@ -3,20 +3,24 @@ import { useQuery } from '@tanstack/react-query';
 import type { ParticipantRow } from '@repo/schema/registrations';
 import { czechDate } from '@repo/schema/shared';
 
-import { participantListQueryOptions } from '@/core/participant-list';
+import { hasUnsignedConsent, participantListQueryOptions } from '@/core/participant-list';
+import { useTurnusOverviewQuery } from '@/core/turnus-overview';
 
 // How many Registrations the children come from.
 const familiesOf = (rows: ParticipantRow[]) => new Set(rows.map(({ registrationId }) => registrationId)).size;
 
 // What waits in the Turnus: overdue payments by Registration, Claimed discounts to verify and unsigned
-// Consents by child, each with where to deal with it. Only what has something waiting, Cancelled children aside.
+// Consents by child, and documents to review, each with where to deal with it. Only what has something
+// waiting, Cancelled children aside.
 export function useWaitingList(organisationId: string, turnusId: string, canWrite: boolean) {
   // The same entry as the Registrations list's tab counts, so a change there shows here.
   const participants = useQuery(participantListQueryOptions(organisationId, turnusId, {}));
+  // The same entry as the occupancy above, which this panel's admin may read too.
+  const overview = useTurnusOverviewQuery(organisationId, turnusId, true);
   const registered = (participants.data ?? []).filter(({ status }) => status === 'registered');
   const overdue = registered.filter((row) => row.overdue);
   const unverified = registered.filter((row) => row.unverifiedClaimedDiscount);
-  const unsigned = registered.filter((row) => row.unsignedConsent);
+  const unsigned = registered.filter(({ consents }) => hasUnsignedConsent(consents));
   const [oldestDue] = overdue
     .map(({ amountDue }) => amountDue.dueDate)
     .filter((date) => date !== null)
@@ -49,11 +53,21 @@ export function useWaitingList(organisationId: string, turnusId: string, canWrit
       action: canWrite ? 'remind' : 'show',
       search: canWrite ? ({ panel: 'reminders' } as const) : ({ kontrola: ['unsignedConsent'] } as const),
     },
+    {
+      key: 'documents',
+      count: overview.data?.documentsToReview ?? 0,
+      tone: 'neutral',
+      date: null,
+      families: null,
+      // No filter finds them; the list shows each child's documents to review.
+      action: 'show',
+      search: {},
+    },
   ] as const;
 
   return {
-    isPending: participants.isPending,
-    isError: participants.isError,
+    isPending: participants.isPending || overview.isPending,
+    isError: participants.isError || overview.isError,
     items: items.filter(({ count }) => count > 0),
   };
 }

@@ -9,11 +9,13 @@ import { buttonVariants } from '@/components/ui/button';
 import { TurnusSwitcher } from '@/core/selected-turnus';
 import { OccupancyHero } from '@/features/admin-home/components/occupancy-hero';
 import { OrganisationStatusNotice } from '@/features/admin-home/components/organisation-status-notice';
+import { RecentRegistrations } from '@/features/admin-home/components/recent-registrations';
 import { TurnusyOccupancy } from '@/features/admin-home/components/turnusy-occupancy';
 import { useAdminHome } from '@/features/admin-home/components/use-admin-home.hook';
 import { WaitingList } from '@/features/admin-home/components/waiting-list';
 
-// The admin's start of the day: how full the Selected Turnus is, what waits for them, and every Turnus.
+// The admin's start of the day: how full the Selected Turnus is, what waits for them, the newest
+// Registrations, and every Turnus.
 export function AdminHomePage() {
   const { t } = useTranslation('adminHome');
   const page = useAdminHome();
@@ -75,6 +77,7 @@ export function AdminHomePage() {
           <WaitingList organisationId={page.organisationId} turnusId={page.turnus.id} canWrite={page.canWrite} />
         </>
       )}
+      {page.canReadRegistrations ? <RecentRegistrations organisationId={page.organisationId} /> : null}
       {page.canReadCamps ? <TurnusyOccupancy organisationId={page.organisationId} /> : null}
       {page.hasNothingToShow ? <EmptyState icon={<LayoutDashboardIcon />} title={t('nothing')} /> : null}
     </>

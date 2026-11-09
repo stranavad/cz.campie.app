@@ -6,9 +6,9 @@ import type { ParticipantRow } from '@repo/schema/registrations';
 
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { PaymentStatusBadge } from '@/core/participant-list';
 import { DueLine } from '@/features/participants/components/participant-list/due-line';
 import { ParticipantIssues } from '@/features/participants/components/participant-list/participant-issues';
-import { PaymentStatusBadge } from '@/features/participants/components/payment-status-badge';
 import { cn } from '@/lib/utils';
 
 interface ParticipantCardProps {
