@@ -12,6 +12,7 @@ The redesigned Nová přihláška page shows the price as the admin fills it in:
 
 ## Acceptance criteria
 
+- [ ] `cashDeposit` records exactly one cash payment of the Deposit total in the same transaction as the Registration; replaying the create with the same idempotency key records no second payment; it is refused when the body chooses no Deposit or the Turnus has none; it is audited with the Registration.
 - [ ] The preview returns the lines, the total, the Deposit total when chosen, and the deposit and balance due dates the Registration would get; creating it with the same body stores exactly those lines and dates.
 - [ ] A Discount code past its limit or expiry shows as applied, as the admin create applies it; an unknown or inactive one shows as not applied.
 - [ ] A closed or full Turnus and a child outside the age limits still get a price.
@@ -22,4 +23,4 @@ The redesigned Nová přihláška page shows the price as the admin fills it in:
 
 - Spec sections: Pricing; Registration, placement and declarations.
 - Design: canvas "Campie - návrhy designu", artboard `B3-NovaPrihlaska`. Consumed by the price panel of the admin Nová přihláška page.
-- A cash Deposit taken at the desk needs no new endpoint: the page creates the Registration, then records the payment with `POST /registrations/:registrationId/payments`.
+- A cash Deposit taken at the desk is recorded by `POST /camps/:campId/registrations` itself: an optional `cashDeposit` flag records the Deposit as a cash payment dated today in the same transaction as the Registration. Chaining a second `POST /registrations/:registrationId/payments` from the page is not safe: a lost response makes the admin retry, the idempotent create replays the Registration and the payment is recorded twice, with two payment emails. The redesign shipped that chain and the review removed it; this issue brings the checkbox back on the atomic endpoint.

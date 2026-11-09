@@ -14,7 +14,7 @@ The redesigned Camp settings show how each Consent and each requirement Document
 
 - **Counts over Registered Participants** of every Turnus of the Camp; Cancelled Participants and Erased Registrations do not count. A Consent counts as signed when the child's current state is signed (not Withdrawn). A requirement counts as approved when approved or handed in on paper, to review when the latest upload is Pending, missing otherwise.
 - **Where.** `GET /camps/:campId/consents` and `GET /camps/:campId/document-types` gain a `progress` per item, present only for admins with Registrations read and null otherwise, since Camp settings read alone gives no view of Registrations.
-- **Test email.** `POST /camps/:campId/email-texts/:type/test` with the subject and text, Camp settings read, sent on the stream that email type uses to the signed-in admin's own email only, with the same made-up data as the preview. Rate limited per admin.
+- **Test email.** `POST /camps/:campId/email-texts/:type/test` with the subject and text, Camp settings write (the same level that edits the text; a read-only admin cannot trigger mail), sent on the stream that email type uses to the signed-in admin's own email only, with the same made-up data as the preview. Rate limited per admin.
 
 ## Acceptance criteria
 
@@ -22,6 +22,7 @@ The redesigned Camp settings show how each Consent and each requirement Document
 - [ ] In a fixture with approved, paper, Pending, returned and missing documents, each requirement's three counts are right and add up to the Registered Participants.
 - [ ] Without Registrations read, `progress` is null; with it, counts of Organisation A never include B's Turnusy.
 - [ ] The test email reaches only the signed-in admin's address, with the given subject and text and no real Registration's data; nothing else in the body can pick another recipient.
+- [ ] The test email is refused with Camp settings read only.
 - [ ] The test email is refused past its limit, and refused for an unknown email type or a Camp of another Organisation.
 
 ## Notes
