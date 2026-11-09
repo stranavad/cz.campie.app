@@ -246,7 +246,8 @@ describe('files', () => {
     const extended = [...parts.slice(0, 2), later, parts[3]].join('.');
 
     expect((await http().get(extended)).status).toBe(404);
-    expect((await http().get(`${url.slice(0, -2)}AA`)).status).toBe(404);
+    const flipped = url.endsWith('A') ? 'B' : 'A';
+    expect((await http().get(`${url.slice(0, -1)}${flipped}`)).status).toBe(404);
     expect((await http().get('/api/downloads/not-a-token')).status).toBe(404);
   });
 
