@@ -14,6 +14,7 @@ import {
   registrationAccessEmails,
   registrationGuardians,
   registrations,
+  turnusy,
 } from '../../../db/schema.ts';
 import { ParticipantEntity } from '../participant/participant.entity.ts';
 import { RegistrationEntity, type RegistrationInsertModel } from './registration.entity.ts';
@@ -377,6 +378,21 @@ export class RegistrationRepository {
       .groupBy(registrations.turnusId);
 
     return new Map(rows.map(({ turnusId, registered }) => [turnusId, registered]));
+  }
+
+  /**
+   * Count the Registered Participants of every Turnus of a Camp, of Registrations not Erased, in one query.
+   * @param campId Camp id
+   */
+  public async countRegisteredInCamp(campId: string): Promise<number> {
+    const [row] = await this.unitOfWork.db
+      .select({ registered: count() })
+      .from(participants)
+      .innerJoin(registrations, eq(registrations.id, participants.registrationId))
+      .innerJoin(turnusy, eq(turnusy.id, registrations.turnusId))
+      .where(and(eq(turnusy.campId, campId), eq(participants.status, 'registered'), isNull(registrations.erasedAt)));
+
+    return row?.registered ?? 0;
   }
 
   /**

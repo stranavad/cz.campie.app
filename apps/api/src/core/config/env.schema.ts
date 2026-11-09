@@ -185,6 +185,8 @@ const requestLimits = z
     GUARDIAN_ACTION_LIMIT_PER_EMAIL: positiveInteger,
     PROBLEM_REPORT_LIMIT_PER_IP: positiveInteger,
     PROBLEM_REPORT_LIMIT_PER_TARGET: positiveInteger,
+    TEST_EMAIL_LIMIT_PER_IP: positiveInteger,
+    TEST_EMAIL_LIMIT_PER_ADMIN: positiveInteger,
   })
   .transform((env) => {
     const windowMs = env.REQUEST_LIMIT_WINDOW_MINUTES * 60 * 1000;
@@ -236,6 +238,8 @@ const requestLimits = z
         ),
         // Feedback and problem reports to the Platform operator: per address, and per admin or Organisation.
         problemReport: limitOf('problem-report', env.PROBLEM_REPORT_LIMIT_PER_IP, env.PROBLEM_REPORT_LIMIT_PER_TARGET),
+        // An admin's test email of a Camp's text, to their own address: per address and per admin.
+        testEmail: limitOf('test-email', env.TEST_EMAIL_LIMIT_PER_IP, env.TEST_EMAIL_LIMIT_PER_ADMIN),
         // The open-items reminder, as often as the payment reminder, counted apart.
         openItemsReminder: limitOf(
           'open-items-reminder',

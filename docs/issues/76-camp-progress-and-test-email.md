@@ -1,6 +1,6 @@
 # 76 - Camp-wide Consent and document progress, test email
 
-Status: ready-for-agent
+Status: in-progress
 Stage: 1b
 Episode: E2 Camp setup
 Blocked by: 32, 55, 58, 59
@@ -30,3 +30,7 @@ The redesigned Camp settings show how each Consent and each requirement Document
 - Spec sections: Consents; Documents; Emails.
 - Design: canvas "Campie - návrhy designu", artboards `B3-Souhlasy`, `B3-Dokumenty`, `B3-Emaily`. Consumed by the Camp settings Consent, Document type and email text pages.
 - Applying one accent colour and logo to all Camps needs no endpoint: a Camp without its own uses the Organisation's (`PATCH /camps/:campId/branding` with null, `DELETE /camps/:campId/branding/logo`).
+
+## Comments
+
+- 2026-11-09: Implemented on `feat/76-camp-progress-test-email`. `GET /camps/:campId/consents` returns `progress: { signed, registered }` and `GET /camps/:campId/document-types` returns `progress: { approved, toReview, missing }` for requirements, each counted in one aggregate query over the Camp's Turnusy (Registered Participants of Registrations not Erased) and null without Registrations read (and for downloads). `POST /camps/:campId/email-texts/:type/test` (Camp settings write) checks placeholders, counts against `TEST_EMAIL_LIMIT_PER_IP` / `TEST_EMAIL_LIMIT_PER_ADMIN`, and queues a job that renders the draft with the preview's made-up data and sends it to the signed-in admin's own address, looked up by the session's admin id. The job payload carries ids and the draft sealed with the Organisation's key, so no typed text reaches Redis in the clear. The Souhlasy and Dokumenty cards show the progress, the E-maily editor has "Poslat zkušební e-mail mně" for writers. Integration tests cover the counts, permissions, tenant isolation, recipients, header injection, unknown type and placeholder, and the per-admin limit.

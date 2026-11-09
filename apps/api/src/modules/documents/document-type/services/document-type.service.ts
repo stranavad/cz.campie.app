@@ -1,6 +1,12 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 
-import type { DocumentType, DocumentTypeBody, DocumentTypeErrorCode } from '@repo/schema/documents';
+import type {
+  DocumentType,
+  DocumentTypeBody,
+  DocumentTypeErrorCode,
+  DocumentTypeListItem,
+  RequirementProgress,
+} from '@repo/schema/documents';
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
@@ -13,7 +19,11 @@ import {
   DocumentTypeRepository,
   type DocumentTypeRow,
 } from '../../../../repositories/documents/document-type/document-type.repository.ts';
-import { DocumentUploadRepository } from '../../../../repositories/documents/document-upload/document-upload.repository.ts';
+import {
+  DocumentUploadRepository,
+  type UploadStatus,
+} from '../../../../repositories/documents/document-upload/document-upload.repository.ts';
+import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 
 // A Camp's Document types: downloads it publishes, optionally for chosen Turnusy, and requirements each
 // child hands in. Permission (Camp settings) is the route's.
@@ -24,19 +34,46 @@ export class DocumentTypeService {
     private readonly camps: CampRepository,
     private readonly turnusy: TurnusRepository,
     private readonly uploads: DocumentUploadRepository,
+    private readonly registrations: RegistrationRepository,
     private readonly files: FileService,
     private readonly audit: AuditService,
     private readonly clock: Clock,
   ) {}
 
   /**
-   * List a Camp's Document types with links to their files.
+   * List a Camp's Document types with links to their files, and each requirement's progress when asked.
+   * @param campId Camp id
+   * @param withProgress whether to count documents: only for an admin who may read Registrations
+   */
+  public async list(campId: string, withProgress: boolean): Promise<DocumentTypeListItem[]> {
+    await this.camps.getByIdOrThrow(campId);
+    const progress = withProgress ? await this.progressOf(campId) : null;
+
+    return Promise.all(
+      (await this.types.listByCamp(campId)).map(async (type) => ({
+        ...(await this.show(type)),
+        progress: progress === null || type.kind !== 'requirement' ? null : progress(type.id),
+      })),
+    );
+  }
+
+  /**
+   * Count each requirement's documents over the Registered Participants of every Turnus of a Camp, by
+   * each one's newest: Approved (handed in on paper too), Pending, and missing (nothing, or Returned).
    * @param campId Camp id
    */
-  public async list(campId: string): Promise<DocumentType[]> {
-    await this.camps.getByIdOrThrow(campId);
+  private async progressOf(campId: string): Promise<(documentTypeId: string) => RequirementProgress> {
+    const registered = await this.registrations.countRegisteredInCamp(campId);
+    const counts = await this.uploads.countNewestInCamp(campId);
+    const countOf = (documentTypeId: string, status: UploadStatus) =>
+      counts.find((row) => row.documentTypeId === documentTypeId && row.status === status)?.count ?? 0;
 
-    return Promise.all((await this.types.listByCamp(campId)).map((type) => this.show(type)));
+    return (documentTypeId) => {
+      const approved = countOf(documentTypeId, 'approved');
+      const toReview = countOf(documentTypeId, 'pending');
+
+      return { approved, toReview, missing: registered - approved - toReview };
+    };
   }
 
   /**

@@ -145,3 +145,124 @@ describe('Document types', () => {
     await expectIsolated(() => create(body, otherOwner));
   });
 });
+
+describe('Requirement progress across a Camp', () => {
+  const { app, http, database, expectIsolated } = useTestApp();
+
+  const query = <T>(sql: string, values: unknown[] = []) =>
+    withClient(database().ownerUrl, async (client) => (await client.query(sql, values)).rows as T[]);
+
+  // A Camp with its documents switched on, the Owner and the guardian every made-up Registration has.
+  const campWithDocuments = async (organisationId: string) => {
+    const campId = await createCamp(app(), organisationId);
+    const owner = (await createAdmin(app(), { memberOf: [organisationId], owner: true })).headers(organisationId);
+    const camp = (await http().get(`/api/camps/${campId}`).set(owner)).body as { modules: object };
+    await http()
+      .patch(`/api/camps/${campId}`)
+      .set(owner)
+      .send({ modules: { ...camp.modules, documents: true } });
+    const guardian = (await createGuardianSession(app(), organisationId, 'jana.testovaci@example.com')).headers;
+
+    return { campId, owner, guardian };
+  };
+  const documentType = async (owner: RequestHeaders, campId: string, kind: string, name: string) =>
+    (
+      await http()
+        .post(`/api/camps/${campId}/document-types`)
+        .set(owner)
+        .send({ kind, name, description: '', dueDate: null, turnusIds: [] })
+    ).body.id as string;
+  // A Participant's Registration to a Turnus, a new one unless named.
+  const participant = async (organisationId: string, campId: string, turnusId?: string) => {
+    const { id: registrationId } = await submitRegistration(app(), organisationId, campId, { turnusId });
+    const [row] = await query<{ id: string; turnus_id: string }>(
+      'SELECT p.id, r.turnus_id FROM participants p JOIN registrations r ON r.id = p.registration_id WHERE r.id = $1',
+      [registrationId],
+    );
+    const path = `/registrations/${registrationId}/participants/${row?.id}/documents`;
+
+    return { registrationId, participantId: row?.id ?? '', turnusId: row?.turnus_id ?? '', path };
+  };
+  const handIn = async (headers: RequestHeaders, path: string) =>
+    http().post(path).set(headers).attach('file', PDF, 'potvrzeni.pdf').expect(201);
+  const progressOf = async (campId: string, headers: RequestHeaders) =>
+    Object.fromEntries(
+      (
+        (await http().get(`/api/camps/${campId}/document-types`).set(headers)).body as {
+          name: string;
+          progress: unknown;
+        }[]
+      ).map(({ name, progress }) => [name, progress]),
+    );
+
+  it('counts each requirement approved, to review and missing over the Registered children of every Turnus', async () => {
+    const organisationId = await createOrganisation(app());
+    const { campId, owner, guardian } = await campWithDocuments(organisationId);
+    const doctor = await documentType(owner, campId, 'requirement', 'Potvrzení od lékaře');
+    await documentType(owner, campId, 'requirement', 'Plavecký průkaz');
+    await documentType(owner, campId, 'download', 'Seznam věcí');
+    const approved = await participant(organisationId, campId);
+    const { turnusId: first } = approved;
+    const onPaper = await participant(organisationId, campId, first);
+    const pending = await participant(organisationId, campId, first);
+    const returned = await participant(organisationId, campId, first);
+    await participant(organisationId, campId, first);
+    const cancelled = await participant(organisationId, campId, first);
+    const pendingElsewhere = await participant(organisationId, campId);
+    const otherId = await createOrganisation(app());
+    const other = await campWithDocuments(otherId);
+    const otherDoctor = await documentType(other.owner, other.campId, 'requirement', 'Potvrzení od lékaře');
+
+    await handIn(owner, `/api${approved.path}/${doctor}`);
+    await http().post(`/api${onPaper.path}/${doctor}/paper`).set(owner).expect(201);
+    await handIn(guardian, `/api/portal${pending.path}/${doctor}`);
+    await handIn(guardian, `/api/portal${returned.path}/${doctor}`);
+    const [toReturn] = await query<{ id: string }>('SELECT id FROM document_uploads WHERE participant_id = $1', [
+      returned.participantId,
+    ]);
+    await http()
+      .post(`/api/document-uploads/${toReturn?.id}/return`)
+      .set(owner)
+      .send({ note: 'Nečitelné.' })
+      .expect(201);
+    await handIn(owner, `/api${cancelled.path}/${doctor}`);
+    await http()
+      .post(`/api/registrations/${cancelled.registrationId}/participants/${cancelled.participantId}/cancel`)
+      .set(owner)
+      .expect(200);
+    await handIn(guardian, `/api/portal${pendingElsewhere.path}/${doctor}`);
+    await handIn(other.owner, `/api${(await participant(otherId, other.campId)).path}/${otherDoctor}`);
+
+    expect(await progressOf(campId, owner)).toEqual({
+      'Potvrzení od lékaře': { approved: 2, toReview: 2, missing: 2 },
+      'Plavecký průkaz': { approved: 0, toReview: 0, missing: 6 },
+      'Seznam věcí': null,
+    });
+    expect(await progressOf(other.campId, other.owner)).toEqual({
+      'Potvrzení od lékaře': { approved: 1, toReview: 0, missing: 0 },
+    });
+  });
+
+  it('shows progress only with Registrations read, and keeps another Organisation away', async () => {
+    const organisationId = await createOrganisation(app());
+    const { campId, owner } = await campWithDocuments(organisationId);
+    const doctor = await documentType(owner, campId, 'requirement', 'Potvrzení od lékaře');
+    await handIn(owner, `/api${(await participant(organisationId, campId)).path}/${doctor}`);
+    const settingsOnly = await createAdmin(app(), {
+      memberOf: [organisationId],
+      permissions: { campSettings: 'write' },
+    });
+    const registrationsToo = await createAdmin(app(), {
+      memberOf: [organisationId],
+      permissions: { campSettings: 'read', registrations: 'read' },
+    });
+    const otherId = await createOrganisation(app());
+    const otherOwner = (await createAdmin(app(), { memberOf: [otherId], owner: true })).headers(otherId);
+
+    expect(await progressOf(campId, settingsOnly.headers(organisationId))).toEqual({ 'Potvrzení od lékaře': null });
+    expect(await progressOf(campId, registrationsToo.headers(organisationId))).toEqual({
+      'Potvrzení od lékaře': { approved: 1, toReview: 0, missing: 0 },
+    });
+    await expectIsolated(() => http().get(`/api/camps/${campId}/document-types`).set(otherOwner));
+  });
+});

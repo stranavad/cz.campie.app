@@ -1,7 +1,7 @@
 import { DownloadIcon, FileTextIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import type { DocumentType } from '@repo/schema/documents';
+import type { DocumentTypeListItem } from '@repo/schema/documents';
 import { czechDate } from '@repo/schema/shared';
 
 import { IconTile } from '@/components/icon-tile';
@@ -11,14 +11,14 @@ import { Card, CardFooter } from '@/components/ui/card';
 import { DescriptionItem, DescriptionList } from '@/components/ui/description-list';
 
 interface DocumentTypeCardProps {
-  type: DocumentType;
+  type: DocumentTypeListItem;
   // Null when the type is for every Turnus.
   turnusNames: string | null;
   canWrite: boolean;
   onEdit: () => void;
 }
 
-// A Document type at a glance: what it is, by when or for whom, and its file.
+// A Document type at a glance: what it is, by when or for whom, its file, and how a requirement is doing.
 export function DocumentTypeCard({ type, turnusNames, canWrite, onEdit }: DocumentTypeCardProps) {
   const { t } = useTranslation('camps');
   const isDownload = type.kind === 'download';
@@ -65,6 +65,11 @@ export function DocumentTypeCard({ type, turnusNames, canWrite, onEdit }: Docume
             t('documentTypes.withoutFile')
           )}
         </DescriptionItem>
+        {type.progress === null ? null : (
+          <DescriptionItem label={t('documentTypes.progress')}>
+            {t('documentTypes.progressOf', type.progress)}
+          </DescriptionItem>
+        )}
       </DescriptionList>
       {canWrite ? (
         <CardFooter className="mt-auto">

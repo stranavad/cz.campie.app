@@ -16,11 +16,13 @@ import type { FileUpload } from '../../../../core/files/file-upload.ts';
 import { FileService } from '../../../../core/files/file.service.ts';
 import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
+import { ConsentSignatureRepository } from '../../../../repositories/consents/consent-signature/consent-signature.repository.ts';
 import {
   ConsentRepository,
   type ConsentRow,
   type ConsentVersionRow,
 } from '../../../../repositories/consents/consent/consent.repository.ts';
+import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 
 /**
  * Tell whether content says the same as a published version.
@@ -49,18 +51,23 @@ export class ConsentService {
   constructor(
     private readonly consents: ConsentRepository,
     private readonly camps: CampRepository,
+    private readonly registrations: RegistrationRepository,
+    private readonly signatures: ConsentSignatureRepository,
     private readonly files: FileService,
     private readonly audit: AuditService,
     private readonly clock: Clock,
   ) {}
 
   /**
-   * List a Camp's Consents by their newest versions.
+   * List a Camp's Consents by their newest versions, with how many Registered Participants of the
+   * Camp's Turnusy signed each when asked.
    * @param campId Camp id
+   * @param withProgress whether to count signatures: only for an admin who may read Registrations
    */
-  public async list(campId: string): Promise<ConsentSummary[]> {
+  public async list(campId: string, withProgress: boolean): Promise<ConsentSummary[]> {
     await this.camps.getByIdOrThrow(campId);
     const consents = await this.consents.listByCamp(campId);
+    const progress = withProgress ? await this.progressOf(campId) : null;
     const newestOf = new Map(
       (await this.consents.listNewestVersionsOf(consents.map(({ id }) => id))).map((version) => [
         version.consentId,
@@ -80,9 +87,24 @@ export class ConsentService {
               version: newest.version,
               withdrawable: newest.withdrawable,
               publishedAt: newest.publishedAt.toISOString(),
+              progress:
+                progress === null
+                  ? null
+                  : { signed: progress.signed.get(consent.id) ?? 0, registered: progress.registered },
             },
           ];
     });
+  }
+
+  /**
+   * Count the Registered Participants of every Turnus of a Camp, and those of them signed per Consent.
+   * @param campId Camp id
+   */
+  private async progressOf(campId: string): Promise<{ registered: number; signed: Map<string, number> }> {
+    return {
+      registered: await this.registrations.countRegisteredInCamp(campId),
+      signed: await this.signatures.countSignedInCamp(campId),
+    };
   }
 
   /**

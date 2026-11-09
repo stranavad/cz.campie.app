@@ -68,6 +68,11 @@ export const resetCampEmailTextEndpoint = defineEndpoint({
   response: campEmailTextSchema,
 });
 
+// A subject and text an admin is trying out, not saved.
+export const campEmailDraftBodySchema = campEmailTextBodySchema.pick({ subject: true, text: true });
+
+export type CampEmailDraftBody = z.infer<typeof campEmailDraftBodySchema>;
+
 export const emailPreviewSchema = z.object({ subject: z.string(), html: z.string() });
 
 export type EmailPreview = z.infer<typeof emailPreviewSchema>;
@@ -77,7 +82,17 @@ export const previewCampEmailTextEndpoint = defineEndpoint({
   method: 'POST',
   path: '/camps/:campId/email-texts/:type/preview',
   params: campEmailTextParamsSchema,
-  body: campEmailTextBodySchema.pick({ subject: true, text: true }),
+  body: campEmailDraftBodySchema,
   response: emailPreviewSchema,
   status: 200,
+});
+
+// Sends a subject and text of a type, as the preview renders them with made-up data, to the signed-in admin's
+// own address alone, on the type's stream; limited per admin. Camp settings write, as editing the text:
+// an admin who may only read cannot make the platform send mail.
+export const sendTestCampEmailEndpoint = defineEndpoint({
+  method: 'POST',
+  path: '/camps/:campId/email-texts/:type/test',
+  params: campEmailTextParamsSchema,
+  body: campEmailDraftBodySchema,
 });

@@ -4,6 +4,7 @@ import { MailNotificationsModule } from '../emails/emails.module.ts';
 import { CampBrandingController } from './camp-branding/camp-branding.controller.ts';
 import { CampBrandingService } from './camp-branding/services/camp-branding.service.ts';
 import { CampEmailController } from './camp-email/camp-email.controller.ts';
+import { SendTestCampEmailHandler } from './camp-email/send-test-email.handler.ts';
 import { CampEmailService } from './camp-email/services/camp-email.service.ts';
 import { CampPhotoController } from './camp-photo/camp-photo.controller.ts';
 import { PublicCampPhotoController } from './camp-photo/public-camp-photo.controller.ts';
@@ -42,6 +43,7 @@ import { TurnusController } from './turnus/turnus.controller.ts';
     DiscountCodeService,
     RegistrationFormService,
     CampEmailService,
+    SendTestCampEmailHandler,
     PricePreviewService,
   ],
   exports: [

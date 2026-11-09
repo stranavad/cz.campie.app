@@ -10,12 +10,13 @@ import {
   type CampDocumentTypesParams,
   type DocumentType,
   type DocumentTypeBody,
+  type DocumentTypeListItem,
   type DocumentTypeParams,
 } from '@repo/schema/documents';
 
 import { Access } from '../../../core/access/access.decorator.ts';
-import { Requires } from '../../../core/access/permission.ts';
-import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
+import { allows, Requires, type MemberAccess } from '../../../core/access/permission.ts';
+import { RequestActor, RequestMember } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
 import { FileUploadGuard, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
@@ -28,8 +29,11 @@ export class DocumentTypeController {
 
   @Endpoint(listDocumentTypesEndpoint)
   @Requires('campSettings', 'read')
-  public list(@EndpointParams(listDocumentTypesEndpoint) { campId }: CampDocumentTypesParams): Promise<DocumentType[]> {
-    return this.types.list(campId);
+  public list(
+    @RequestMember() member: MemberAccess,
+    @EndpointParams(listDocumentTypesEndpoint) { campId }: CampDocumentTypesParams,
+  ): Promise<DocumentTypeListItem[]> {
+    return this.types.list(campId, allows(member, { area: 'registrations', level: 'read' }));
   }
 
   @Endpoint(createDocumentTypeEndpoint)

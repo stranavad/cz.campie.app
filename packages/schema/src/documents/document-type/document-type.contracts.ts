@@ -23,6 +23,23 @@ export const documentTypeSchema = z.object({
 
 export type DocumentType = z.infer<typeof documentTypeSchema>;
 
+// A requirement over the Registered children of every Turnus of the Camp, by each child's newest document:
+// Approved or handed in on paper, Pending, or nothing or Returned. The three add up to the children.
+export const requirementProgressSchema = z.object({
+  approved: z.number().int(),
+  toReview: z.number().int(),
+  missing: z.number().int(),
+});
+
+export type RequirementProgress = z.infer<typeof requirementProgressSchema>;
+
+export const documentTypeListItemSchema = documentTypeSchema.extend({
+  // Null for a download, and without Registrations read: Camp settings alone give no view of Registrations.
+  progress: requirementProgressSchema.nullable(),
+});
+
+export type DocumentTypeListItem = z.infer<typeof documentTypeListItemSchema>;
+
 export const documentTypeBodySchema = z
   .object({
     kind: z.enum(DOCUMENT_TYPE_KINDS),
@@ -59,12 +76,12 @@ export const DOCUMENT_TYPE_ERROR_CODES = ['document_type_turnus_unknown', 'docum
 
 export type DocumentTypeErrorCode = (typeof DOCUMENT_TYPE_ERROR_CODES)[number];
 
-// A Camp's Document types, oldest first; Camp settings read.
+// A Camp's Document types with each requirement's progress, oldest first; Camp settings read.
 export const listDocumentTypesEndpoint = defineEndpoint({
   method: 'GET',
   path: '/camps/:campId/document-types',
   params: campDocumentTypesParamsSchema,
-  response: z.array(documentTypeSchema),
+  response: z.array(documentTypeListItemSchema),
 });
 
 // Camp settings write; audited.

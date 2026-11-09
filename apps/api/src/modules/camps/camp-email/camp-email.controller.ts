@@ -5,6 +5,8 @@ import {
   previewCampEmailTextEndpoint,
   resetCampEmailTextEndpoint,
   saveCampEmailTextEndpoint,
+  sendTestCampEmailEndpoint,
+  type CampEmailDraftBody,
   type CampEmailText,
   type CampEmailTextBody,
   type CampEmailTextParams,
@@ -52,8 +54,18 @@ export class CampEmailController {
   @Requires('campSettings', 'read')
   public preview(
     @EndpointParams(previewCampEmailTextEndpoint) { campId, type }: CampEmailTextParams,
-    @EndpointBody(previewCampEmailTextEndpoint) body: Pick<CampEmailTextBody, 'subject' | 'text'>,
+    @EndpointBody(previewCampEmailTextEndpoint) body: CampEmailDraftBody,
   ): Promise<EmailPreview> {
     return this.campEmails.preview(campId, type, body);
+  }
+
+  @Endpoint(sendTestCampEmailEndpoint)
+  @Requires('campSettings', 'write')
+  public sendTest(
+    @RequestActor() actor: Actor,
+    @EndpointParams(sendTestCampEmailEndpoint) { campId, type }: CampEmailTextParams,
+    @EndpointBody(sendTestCampEmailEndpoint) draft: CampEmailDraftBody,
+  ): Promise<void> {
+    return this.campEmails.requestTest(actor, campId, type, draft);
   }
 }

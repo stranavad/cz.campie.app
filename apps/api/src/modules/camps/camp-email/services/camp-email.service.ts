@@ -1,11 +1,14 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import {
+  campEmailDraftBodySchema,
   EMAIL_TYPE_SPECS,
   EMAIL_TYPES,
   fillPlaceholders,
   SAMPLE_PLACEHOLDER_VALUES,
   unknownPlaceholders,
+  type CampEmailDraftBody,
   type CampEmailText,
   type CampEmailTextBody,
   type EmailPlaceholder,
@@ -16,8 +19,14 @@ import {
 
 import type { Actor } from '../../../../core/audit/actor.ts';
 import { AuditService } from '../../../../core/audit/audit.service.ts';
+import type { Env } from '../../../../core/config/env.schema.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
 import { EmailService, type EmailOptions, type EmailSender } from '../../../../core/emails/email.service.ts';
+import type { Encrypted } from '../../../../core/encryption/cipher.ts';
+import { EncryptionService } from '../../../../core/encryption/encryption.service.ts';
+import { JobQueue } from '../../../../core/jobs/job-queue.ts';
+import { RateLimiter, type RequestLimit } from '../../../../core/rate-limits/rate-limiter.ts';
+import { AdminRepository } from '../../../../repositories/admins/admin/admin.repository.ts';
 import {
   CampEmailTextRepository,
   type CampEmailTextRow,
@@ -26,6 +35,7 @@ import type { CampEntity } from '../../../../repositories/camps/camp/camp.entity
 import { CampRepository } from '../../../../repositories/camps/camp/camp.repository.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 import { CAMP_EMAILS, type CampEmailProps } from '../camp-email.email.tsx';
+import { sendTestCampEmailJob } from '../send-test-email.job.ts';
 
 // The Camp's name and contact the service fills in itself.
 type FilledByCamp = 'tabor' | 'kontakt';
@@ -47,15 +57,23 @@ export interface CampEmailMessage {
 @Injectable()
 export class CampEmailService {
   private readonly logger = new Logger(CampEmailService.name);
+  private readonly testLimit: RequestLimit;
 
   constructor(
     private readonly texts: CampEmailTextRepository,
     private readonly camps: CampRepository,
     private readonly organisations: OrganisationRepository,
+    private readonly admins: AdminRepository,
     private readonly emails: EmailService,
+    private readonly encryption: EncryptionService,
     private readonly audit: AuditService,
+    private readonly jobs: JobQueue,
+    private readonly rateLimiter: RateLimiter,
     private readonly unitOfWork: UnitOfWork,
-  ) {}
+    config: ConfigService<Env, true>,
+  ) {
+    this.testLimit = config.get('requestLimits', { infer: true }).testEmail;
+  }
 
   /**
    * List a Camp's emails, one per type in their fixed order, its own wording or the defaults.
@@ -130,26 +148,56 @@ export class CampEmailService {
    * @param type the email type
    * @param draft the subject and text to try
    */
-  public async preview(
-    campId: string,
-    type: EmailType,
-    draft: Pick<CampEmailTextBody, 'subject' | 'text'>,
-  ): Promise<EmailPreview> {
-    const camp = await this.camps.getByIdOrThrow(campId);
-    const spec = EMAIL_TYPE_SPECS[type];
-    const sender = await this.senderOf(camp);
-    const values = valuesFor(type, { ...SAMPLE_PLACEHOLDER_VALUES, tabor: camp.name, kontakt: sender.replyTo });
+  public async preview(campId: string, type: EmailType, draft: CampEmailDraftBody): Promise<EmailPreview> {
+    const { template, props, sender } = await this.sampleOf(await this.camps.getByIdOrThrow(campId), type, draft);
 
-    return this.emails.preview(
-      CAMP_EMAILS[spec.stream],
-      {
-        subject: fillPlaceholders(draft.subject, values),
-        text: draft.text,
-        values,
-        ...(spec.stream === 'auth' ? { actionHref: '#' } : {}),
-      },
-      sender,
+    return this.emails.preview(template, props, sender);
+  }
+
+  /**
+   * Have a subject and text of an email type sent, as the preview renders them, to the admin asking and
+   * nobody else. Limited per admin and address, every attempt counted.
+   * @param actor the admin, whose own address it goes to
+   * @param campId Camp id
+   * @param type the email type
+   * @param draft the subject and text to try
+   * @throws {BadRequestException} email_placeholders_unknown when the subject or text uses a placeholder
+   * the type does not offer
+   */
+  public async requestTest(actor: Actor, campId: string, type: EmailType, draft: CampEmailDraftBody): Promise<void> {
+    if (actor.kind !== 'admin' && actor.kind !== 'operator') {
+      throw new Error('Only an admin is sent a test email');
+    }
+
+    await this.rateLimiter.admit(this.testLimit, { ipAddress: actor.ipAddress, target: actor.identity });
+    await this.camps.getByIdOrThrow(campId);
+
+    if (unknownPlaceholders(`${draft.subject}\n${draft.text}`, EMAIL_TYPE_SPECS[type].placeholders).length > 0) {
+      throw refused('email_placeholders_unknown');
+    }
+
+    const sealedDraft = (await this.encryption.cipher()).encrypt(JSON.stringify(draft)).toString('base64');
+
+    this.jobs.enqueue(sendTestCampEmailJob, { adminId: actor.identity, campId, type, sealedDraft });
+  }
+
+  /**
+   * Send a draft of an email type, rendered with made-up data, to an admin's own address alone, even of a
+   * type the Camp switched off or one sent to its team. Call it from a job, as every email.
+   * @param adminId the admin who asked for it
+   * @param campId Camp id
+   * @param type the email type
+   * @param sealedDraft the subject and text to try, as requestTest sealed them
+   */
+  public async sendTest(adminId: string, campId: string, type: EmailType, sealedDraft: string): Promise<void> {
+    const admin = await this.admins.getByIdOrThrow(adminId);
+    const cipher = await this.encryption.cipher();
+    const draft = campEmailDraftBodySchema.parse(
+      JSON.parse(cipher.decrypt(Buffer.from(sealedDraft, 'base64') as Encrypted)),
     );
+    const { template, props, sender } = await this.sampleOf(await this.camps.getByIdOrThrow(campId), type, draft);
+
+    await this.emails.send(template, props, { to: [admin.email], sender });
   }
 
   /**
@@ -207,6 +255,30 @@ export class CampEmailService {
    */
   public async senderFor(campId: string): Promise<EmailSender> {
     return this.senderOf(await this.camps.getByIdOrThrow(campId));
+  }
+
+  /**
+   * Fill a draft of an email type with made-up data, as the Camp would send it: never a real Registration's,
+   * and a login link's button leads nowhere.
+   * @param camp the Camp
+   * @param type the email type
+   * @param draft the subject and text to try
+   */
+  private async sampleOf(camp: CampEntity, type: EmailType, draft: CampEmailDraftBody) {
+    const { stream } = EMAIL_TYPE_SPECS[type];
+    const sender = await this.senderOf(camp);
+    const values = valuesFor(type, { ...SAMPLE_PLACEHOLDER_VALUES, tabor: camp.name, kontakt: sender.replyTo });
+
+    return {
+      template: CAMP_EMAILS[stream],
+      props: {
+        subject: fillPlaceholders(draft.subject, values),
+        text: draft.text,
+        values,
+        ...(stream === 'auth' ? { actionHref: '#' } : {}),
+      },
+      sender,
+    };
   }
 
   /**

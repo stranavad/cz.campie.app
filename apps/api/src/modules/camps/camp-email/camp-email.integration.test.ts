@@ -8,7 +8,13 @@ import { EMAIL_TYPES, type EmailType } from '@repo/schema/emails';
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { JobQueue } from '../../../core/jobs/job-queue.ts';
 import { defineJob, JobHandler } from '../../../core/jobs/job.ts';
-import { createAdmin, createCamp, createOrganisation, type RequestHeaders } from '../../../testing/fixtures.ts';
+import {
+  createAdmin,
+  createCamp,
+  createOrganisation,
+  submitRegistration,
+  type RequestHeaders,
+} from '../../../testing/fixtures.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { snapshot } from '../../../testing/tenant-isolation.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
@@ -209,6 +215,90 @@ describe('camp emails', () => {
     ).toBe(400);
   });
 
+  const sendTest = (headers: RequestHeaders, type: string, body: object) =>
+    http().post(`/api/camps/${campId}/email-texts/${type}/test`).set(headers).send(body);
+
+  it("sends a draft to the signed-in admin alone, with made-up data and no real Registration's", async () => {
+    const editor = await createAdmin(app(), { memberOf: [organisationId], permissions: { campSettings: 'write' } });
+    await http()
+      .patch(`/api/camps/${campId}`)
+      .set(owner.headers(organisationId))
+      .send({ notificationEmails: ['hlavni@tabor.example.com'] });
+    const real = await submitRegistration(app(), organisationId, campId, {
+      children: [{ firstName: 'Bohdana', lastName: 'Skutečná', birthDate: '2016-05-01' }],
+    });
+    await jobs().drain();
+    mail().sent.length = 0;
+
+    const sent = await sendTest(editor.headers(organisationId), 'registration_confirmation', {
+      subject: 'Zkouška {{deti}}',
+      text: 'Ahoj,\n\nturnus {{turnus}}, VS {{variabilni_symbol}}.',
+      to: ['cizi@example.com'],
+      cc: 'cizi@example.com',
+      bcc: 'cizi@example.com',
+      email: 'cizi@example.com',
+      enabled: false,
+    });
+    expect(sent.status).toBe(204);
+    expect(mail().sent).toEqual([]);
+    await jobs().drain();
+
+    expect(mail().sent).toMatchObject([
+      {
+        to: [editor.email],
+        subject: 'Zkouška Ema Testovací, Jan Testovací',
+        from: '"Letní tábor" <info@posta.campie.test>',
+      },
+    ]);
+    const [message] = mail().sent;
+    expect(message?.text).toContain('turnus Turnus 1 (4. 7. - 17. 7.), VS 27123456.');
+    expect(JSON.stringify(message)).not.toMatch(new RegExp(`Bohdana|Skutečná|${real.variableSymbol}|cizi@|hlavni@`));
+    expect(await query('SELECT FROM camp_email_texts')).toEqual([]);
+  });
+
+  it("sends each type on its own stream, the Camp's team notification to the admin too", async () => {
+    await http()
+      .patch(`/api/camps/${campId}`)
+      .set(owner.headers(organisationId))
+      .send({ notificationEmails: ['hlavni@tabor.example.com'] });
+
+    await sendTest(owner.headers(organisationId), 'login_link', { subject: 'Přihlášení', text: 'Odkaz níže.' });
+    await sendTest(owner.headers(organisationId), 'new_registration_notification', {
+      subject: 'Nová přihláška na {{turnus}}',
+      text: 'Přišla přihláška.',
+    });
+    await jobs().drain();
+
+    expect(mail().sent).toMatchObject([
+      { to: [owner.email], from: '"Letní tábor" <prihlaseni@auth.campie.test>' },
+      {
+        to: [owner.email],
+        from: '"Letní tábor" <info@posta.campie.test>',
+        subject: 'Nová přihláška na Turnus 1 (4. 7. - 17. 7.)',
+      },
+    ]);
+  });
+
+  it.each([
+    {
+      name: 'a subject with a line break',
+      type: 'cancellation',
+      body: { subject: 'Ahoj\r\nBcc: cizi@example.com', text: 'x' },
+    },
+    { name: 'an unknown email type', type: 'newsletter', body: { subject: 'Ahoj', text: 'x' } },
+    {
+      name: 'a placeholder the type does not offer',
+      type: 'consent_copy',
+      body: { subject: 'Ahoj', text: '{{castka}}' },
+    },
+  ])('refuses $name and sends nothing', async ({ type, body }) => {
+    const refused = await sendTest(owner.headers(organisationId), type, body);
+    await jobs().drain();
+
+    expect(refused.status).toBe(400);
+    expect(mail().sent).toEqual([]);
+  });
+
   it('takes Camp settings read to see and preview, write to change', async () => {
     await expectPermission(['campSettings', 'read'], organisationId, (headers) => list(headers));
     await expectPermission(['campSettings', 'read'], organisationId, (headers) =>
@@ -221,6 +311,9 @@ describe('camp emails', () => {
     await expectPermission(['campSettings', 'write'], organisationId, (headers) =>
       http().delete(`/api/camps/${campId}/email-texts/cancellation`).set(headers),
     );
+    await expectPermission(['campSettings', 'write'], organisationId, (headers) =>
+      sendTest(headers, 'cancellation', { subject: 'x', text: 'y' }),
+    );
   });
 
   it("keeps another Organisation's admins away from the Camp's emails", async () => {
@@ -230,5 +323,31 @@ describe('camp emails', () => {
     await expectIsolated(() => list(asOther));
     await expectIsolated(() => save(asOther, 'cancellation'));
     await expectIsolated(() => http().delete(`/api/camps/${campId}/email-texts/cancellation`).set(asOther));
+    await expectIsolated(() => sendTest(asOther, 'cancellation', { subject: 'x', text: 'y' }));
+    await jobs().drain();
+    expect(mail().sent).toEqual([]);
+  });
+});
+
+describe('test emails, limited', () => {
+  const { app, http, jobs, mail } = useTestApp({ env: { TEST_EMAIL_LIMIT_PER_ADMIN: '2' } });
+
+  it('refuses an admin past their limit, and not another admin', async () => {
+    const organisationId = await createOrganisation(app());
+    const campId = await createCamp(app(), organisationId);
+    const sendTest = (headers: RequestHeaders) =>
+      http()
+        .post(`/api/camps/${campId}/email-texts/cancellation/test`)
+        .set(headers)
+        .send({ subject: 'Zkouška', text: 'Ahoj.' });
+    const first = (await createAdmin(app(), { memberOf: [organisationId], owner: true })).headers(organisationId);
+    const second = (await createAdmin(app(), { memberOf: [organisationId], owner: true })).headers(organisationId);
+
+    expect((await sendTest(first)).status).toBe(204);
+    expect((await sendTest(first)).status).toBe(204);
+    expect((await sendTest(first)).body).toMatchObject({ code: 'requests_throttled' });
+    expect((await sendTest(second)).status).toBe(204);
+    await jobs().drain();
+    expect(mail().sent).toHaveLength(3);
   });
 });

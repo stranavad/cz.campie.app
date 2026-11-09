@@ -334,7 +334,10 @@
       "document_returned": "Když vrátíte dokument k opravě",
       "cancellation": "Když zrušíte účast dítěte",
       "new_registration_notification": "Týmu tábora po každé nové přihlášce"
-    }
+    },
+    "sendTest": "Poslat zkušební e-mail mně",
+    "testSent": "Zkušební e-mail jsme poslali na vaši adresu.",
+    "testThrottled": "Zkušebních e-mailů bylo v poslední době příliš mnoho. Zkuste to prosím později."
   },
   "preview": {
     "back": "Zpět do nastavení tábora",
@@ -384,7 +387,12 @@
     "no": "Ne",
     "withdrawableNote": "Souhlas můžete později odvolat.",
     "bindingNote": "Tento souhlas nelze odvolat.",
-    "publishedVersionOf": "Zveřejněná verze {{version}} z {{date}} · všechny turnusy"
+    "publishedVersionOf": "Zveřejněná verze {{version}} z {{date}} · všechny turnusy",
+    "signedLabel": "Podpisy",
+    "signedOf_one": "{{signed}} z {{count}} dítěte podepsáno",
+    "signedOf_few": "{{signed}} z {{count}} dětí podepsáno",
+    "signedOf_many": "{{signed}} z {{count}} dětí podepsáno",
+    "signedOf_other": "{{signed}} z {{count}} dětí podepsáno"
   },
   "documentTypes": {
     "title": "Dokumenty",
@@ -421,6 +429,8 @@
     "save": "Uložit",
     "remove": "Smazat",
     "saveFailed": "Změnu se nepodařilo uložit.",
-    "perChild": "K odevzdání za každé dítě"
+    "perChild": "K odevzdání za každé dítě",
+    "progress": "Stav",
+    "progressOf": "{{approved}} schváleno · {{toReview}} ke kontrole · {{missing}} chybí"
   }
 }

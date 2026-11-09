@@ -18,7 +18,7 @@ export const CONSENT_ERROR_CODES = ['consent_file_unknown'] as const;
 
 export type ConsentErrorCode = (typeof CONSENT_ERROR_CODES)[number];
 
-// A Camp's Consents, each by its newest version, oldest Consent first; Camp settings read.
+// A Camp's Consents, each by its newest version with its progress, oldest Consent first; Camp settings read.
 export const listConsentsEndpoint = defineEndpoint({
   method: 'GET',
   path: '/camps/:campId/consents',

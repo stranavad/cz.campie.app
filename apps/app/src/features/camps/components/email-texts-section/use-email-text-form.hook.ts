@@ -3,17 +3,26 @@ import { useRef, useState } from 'react';
 import type { CampEmailText } from '@repo/schema/emails';
 
 import { useAppForm } from '@/core/form';
-import { usePreviewEmailTextMutation, useSaveEmailTextMutation } from '@/features/camps/api/camps.queries';
+import {
+  usePreviewEmailTextMutation,
+  useSaveEmailTextMutation,
+  useSendTestEmailMutation,
+} from '@/features/camps/api/camps.queries';
 import {
   emailTextFormSchema,
   emailTextFormValues,
 } from '@/features/camps/components/email-texts-section/email-text-form.schema';
+import { HttpError } from '@/lib/api';
+
+// What the last action ended with: saved, a test email on its way or refused past its limit, or a failure.
+export type EmailTextStatus = 'saved' | 'testSent' | 'testThrottled' | 'failed';
 
 export function useEmailTextForm(organisationId: string, campId: string, email: CampEmailText) {
   const save = useSaveEmailTextMutation(organisationId, campId, email.type);
   const preview = usePreviewEmailTextMutation(organisationId, campId, email.type);
+  const test = useSendTestEmailMutation(organisationId, campId, email.type);
   const schema = emailTextFormSchema(email.placeholders);
-  const [status, setStatus] = useState<'saved' | 'failed' | null>(null);
+  const [status, setStatus] = useState<EmailTextStatus | null>(null);
   // The form, to find its inputs by name, and the one last typed in; the text until either is.
   const formRef = useRef<HTMLFormElement>(null);
   const target = useRef<'subject' | 'text'>('text');
@@ -70,6 +79,20 @@ export function useEmailTextForm(organisationId: string, campId: string, email: 
       setStatus(null);
       preview.mutate({ subject, text }, { onError: () => setStatus('failed') });
     },
+    // Sends the subject and text as they stand, with made-up data, to the signed-in admin's own address.
+    sendTest: () => {
+      const { subject, text } = form.state.values;
+      setStatus(null);
+      test.mutate(
+        { subject, text },
+        {
+          onSuccess: () => setStatus('testSent'),
+          onError: (error) =>
+            setStatus(error instanceof HttpError && error.code === 'requests_throttled' ? 'testThrottled' : 'failed'),
+        },
+      );
+    },
+    isSendingTest: test.isPending,
     reset: () =>
       save.mutate(null, {
         onSuccess: (defaults) => {

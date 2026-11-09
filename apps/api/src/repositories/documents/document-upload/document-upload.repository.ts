@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { and, count, desc, eq, inArray, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, isNull, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
-import { documentUploads, internalDocuments } from '../../../db/schema.ts';
+import { documentUploads, internalDocuments, participants, registrations, turnusy } from '../../../db/schema.ts';
 
 export type DocumentUploadRow = InferSelectModel<typeof documentUploads>;
 export type InternalDocumentRow = InferSelectModel<typeof internalDocuments>;
+export type UploadStatus = DocumentUploadRow['status'];
 export type CreateDocumentUpload = Omit<InferInsertModel<typeof documentUploads>, 'id' | 'organisationId'>;
 
 @Injectable()
@@ -44,6 +45,38 @@ export class DocumentUploadRepository {
       .from(documentUploads)
       .where(inArray(documentUploads.participantId, [...participantIds]))
       .orderBy(desc(documentUploads.uploadedAt), desc(documentUploads.id));
+  }
+
+  /**
+   * Count, per requirement and status, the newest documents of the Registered Participants of every Turnus
+   * of a Camp, in one query; Erased Registrations left out.
+   * @param campId Camp id
+   */
+  public async countNewestInCamp(
+    campId: string,
+  ): Promise<{ documentTypeId: string; status: UploadStatus; count: number }[]> {
+    const newest = this.unitOfWork.db
+      .selectDistinctOn([documentUploads.participantId, documentUploads.documentTypeId], {
+        documentTypeId: documentUploads.documentTypeId,
+        status: documentUploads.status,
+      })
+      .from(documentUploads)
+      .innerJoin(participants, eq(participants.id, documentUploads.participantId))
+      .innerJoin(registrations, eq(registrations.id, participants.registrationId))
+      .innerJoin(turnusy, eq(turnusy.id, registrations.turnusId))
+      .where(and(eq(turnusy.campId, campId), eq(participants.status, 'registered'), isNull(registrations.erasedAt)))
+      .orderBy(
+        documentUploads.participantId,
+        documentUploads.documentTypeId,
+        desc(documentUploads.uploadedAt),
+        desc(documentUploads.id),
+      )
+      .as('newest');
+
+    return this.unitOfWork.db
+      .select({ documentTypeId: newest.documentTypeId, status: newest.status, count: count() })
+      .from(newest)
+      .groupBy(newest.documentTypeId, newest.status);
   }
 
   /**

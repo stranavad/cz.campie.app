@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { and, desc, eq, inArray, isNull, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, isNull, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
-import { consentSignatures, consentWithdrawals } from '../../../db/schema.ts';
+import { consentSignatures, consentWithdrawals, participants, registrations, turnusy } from '../../../db/schema.ts';
 
 export type ConsentSignatureRow = InferSelectModel<typeof consentSignatures>;
 export type ConsentWithdrawalRow = InferSelectModel<typeof consentWithdrawals>;
@@ -42,6 +42,40 @@ export class ConsentSignatureRepository {
     const [row] = await this.unitOfWork.db.select().from(consentSignatures).where(eq(consentSignatures.id, id));
 
     return row ?? null;
+  }
+
+  /**
+   * Count, per Consent, the Registered Participants of every Turnus of a Camp whose newest signature is not
+   * Withdrawn, in one query; Erased Registrations left out.
+   * @param campId Camp id
+   * @returns Participants signed by Consent id; a Consent nobody signed is missing
+   */
+  public async countSignedInCamp(campId: string): Promise<Map<string, number>> {
+    const newest = this.unitOfWork.db
+      .selectDistinctOn([consentSignatures.participantId, consentSignatures.consentId], {
+        id: consentSignatures.id,
+        consentId: consentSignatures.consentId,
+      })
+      .from(consentSignatures)
+      .innerJoin(participants, eq(participants.id, consentSignatures.participantId))
+      .innerJoin(registrations, eq(registrations.id, participants.registrationId))
+      .innerJoin(turnusy, eq(turnusy.id, registrations.turnusId))
+      .where(and(eq(turnusy.campId, campId), eq(participants.status, 'registered'), isNull(registrations.erasedAt)))
+      .orderBy(
+        consentSignatures.participantId,
+        consentSignatures.consentId,
+        desc(consentSignatures.signedAt),
+        desc(consentSignatures.id),
+      )
+      .as('newest');
+    const rows = await this.unitOfWork.db
+      .select({ consentId: newest.consentId, signed: count() })
+      .from(newest)
+      .leftJoin(consentWithdrawals, eq(consentWithdrawals.signatureId, newest.id))
+      .where(isNull(consentWithdrawals.id))
+      .groupBy(newest.consentId);
+
+    return new Map(rows.map(({ consentId, signed }) => [consentId, signed]));
   }
 
   /**

@@ -52,6 +52,8 @@ import {
   previewCampEmailTextEndpoint,
   resetCampEmailTextEndpoint,
   saveCampEmailTextEndpoint,
+  sendTestCampEmailEndpoint,
+  type CampEmailDraftBody,
   type CampEmailTextBody,
   type EmailType,
 } from '@repo/schema/emails';
@@ -95,12 +97,10 @@ export const campsService = {
     apiClient.request(saveCampEmailTextEndpoint, { organisationId, params: { campId, type }, body }),
   resetEmailText: (organisationId: string, campId: string, type: EmailType) =>
     apiClient.request(resetCampEmailTextEndpoint, { organisationId, params: { campId, type } }),
-  previewEmailText: (
-    organisationId: string,
-    campId: string,
-    type: EmailType,
-    body: Pick<CampEmailTextBody, 'subject' | 'text'>,
-  ) => apiClient.request(previewCampEmailTextEndpoint, { organisationId, params: { campId, type }, body }),
+  previewEmailText: (organisationId: string, campId: string, type: EmailType, body: CampEmailDraftBody) =>
+    apiClient.request(previewCampEmailTextEndpoint, { organisationId, params: { campId, type }, body }),
+  sendTestEmail: (organisationId: string, campId: string, type: EmailType, body: CampEmailDraftBody) =>
+    apiClient.request(sendTestCampEmailEndpoint, { organisationId, params: { campId, type }, body }),
   getRegistrationForm: (organisationId: string, campId: string, signal?: AbortSignal) =>
     apiClient.request(getRegistrationFormEndpoint, { organisationId, params: { campId }, signal }),
   getRegistrationFormVersion: (organisationId: string, campId: string, version: number) =>

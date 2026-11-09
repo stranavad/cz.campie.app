@@ -1,4 +1,4 @@
-import { EyeIcon } from 'lucide-react';
+import { EyeIcon, SendIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { CampEmailText } from '@repo/schema/emails';
@@ -9,7 +9,18 @@ import { Button } from '@/components/ui/button';
 import { CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmailPlaceholders } from '@/features/camps/components/email-texts-section/email-placeholders';
 import { EmailPreview } from '@/features/camps/components/email-texts-section/email-preview';
-import { useEmailTextForm } from '@/features/camps/components/email-texts-section/use-email-text-form.hook';
+import {
+  useEmailTextForm,
+  type EmailTextStatus,
+} from '@/features/camps/components/email-texts-section/use-email-text-form.hook';
+
+// What each status says, and whether as good news or as a failure.
+const STATUSES = {
+  saved: { text: 'saved', success: true },
+  testSent: { text: 'emails.testSent', success: true },
+  testThrottled: { text: 'emails.testThrottled', success: false },
+  failed: { text: 'failure', success: false },
+} as const satisfies Record<EmailTextStatus, { text: string; success: boolean }>;
 
 interface EmailTextFormProps {
   organisationId: string;
@@ -18,14 +29,23 @@ interface EmailTextFormProps {
   canWrite: boolean;
 }
 
-// One email type's subject and text, whether it is sent, and a preview with made-up data.
+// One email type's subject and text, whether it is sent, a preview with made-up data, and a test email to
+// the signed-in admin.
 export function EmailTextForm({ organisationId, campId, email, canWrite }: EmailTextFormProps) {
   const { t } = useTranslation('camps');
-  const { form, formRef, rememberFocus, status, placeholders, preview, showPreview, reset, insert } = useEmailTextForm(
-    organisationId,
-    campId,
-    email,
-  );
+  const {
+    form,
+    formRef,
+    rememberFocus,
+    status,
+    placeholders,
+    preview,
+    showPreview,
+    sendTest,
+    isSendingTest,
+    reset,
+    insert,
+  } = useEmailTextForm(organisationId, campId, email);
 
   return (
     <form
@@ -63,12 +83,19 @@ export function EmailTextForm({ organisationId, campId, email, canWrite }: Email
         <p className="text-[13px] text-muted-foreground">{t('emails.footerNote')}</p>
       </fieldset>
       {status === null ? null : (
-        <Alert variant={status === 'saved' ? 'success' : 'danger'} role={status === 'saved' ? 'status' : 'alert'}>
-          {t(status === 'saved' ? 'saved' : 'failure')}
+        <Alert
+          variant={STATUSES[status].success ? 'success' : 'danger'}
+          role={STATUSES[status].success ? 'status' : 'alert'}
+        >
+          {t(STATUSES[status].text)}
         </Alert>
       )}
       {canWrite ? (
-        <CardFooter className="justify-end">
+        <CardFooter className="flex-wrap justify-end">
+          <Button type="button" variant="outline" className="sm:mr-auto" disabled={isSendingTest} onClick={sendTest}>
+            <SendIcon aria-hidden="true" />
+            {t('emails.sendTest')}
+          </Button>
           {email.customised ? (
             <Button type="button" variant="ghost" onClick={reset}>
               {t('emails.reset')}

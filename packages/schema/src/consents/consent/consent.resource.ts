@@ -56,12 +56,22 @@ export const consentSchema = z.object({
 
 export type Consent = z.infer<typeof consentSchema>;
 
+// How many of the Registered children of every Turnus of the Camp have a signature in force (not Withdrawn).
+export const consentProgressSchema = z.object({
+  signed: z.number().int(),
+  registered: z.number().int(),
+});
+
+export type ConsentProgress = z.infer<typeof consentProgressSchema>;
+
 export const consentSummarySchema = z.object({
   id: z.uuid(),
   title: z.string(),
   version: z.number().int(),
   withdrawable: z.boolean(),
   publishedAt: z.iso.datetime(),
+  // Null without Registrations read: Camp settings alone give no view of Registrations.
+  progress: consentProgressSchema.nullable(),
 });
 
 export type ConsentSummary = z.infer<typeof consentSummarySchema>;

@@ -63,6 +63,8 @@ export const PRODUCTION_ENV = {
   GUARDIAN_ACTION_LIMIT_PER_EMAIL: '100',
   PROBLEM_REPORT_LIMIT_PER_IP: '20',
   PROBLEM_REPORT_LIMIT_PER_TARGET: '50',
+  TEST_EMAIL_LIMIT_PER_IP: '60',
+  TEST_EMAIL_LIMIT_PER_ADMIN: '20',
 } satisfies Record<string, string>;
 
 const initialEnv = new Set(Object.keys(process.env));

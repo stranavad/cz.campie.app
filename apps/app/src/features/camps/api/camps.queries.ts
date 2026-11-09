@@ -13,7 +13,7 @@ import type {
 } from '@repo/schema/camps';
 import type { ConsentContent } from '@repo/schema/consents';
 import type { DocumentTypeBody } from '@repo/schema/documents';
-import type { CampEmailTextBody, EmailType } from '@repo/schema/emails';
+import type { CampEmailDraftBody, CampEmailTextBody, EmailType } from '@repo/schema/emails';
 
 import { campListKeys } from '@/core/camp-list';
 import { selectedTurnusKeys } from '@/core/selected-turnus';
@@ -247,8 +247,12 @@ export const useSaveEmailTextMutation = (organisationId: string, campId: string,
 
 export const usePreviewEmailTextMutation = (organisationId: string, campId: string, type: EmailType) =>
   useMutation({
-    mutationFn: (body: Pick<CampEmailTextBody, 'subject' | 'text'>) =>
-      campsService.previewEmailText(organisationId, campId, type, body),
+    mutationFn: (body: CampEmailDraftBody) => campsService.previewEmailText(organisationId, campId, type, body),
+  });
+
+export const useSendTestEmailMutation = (organisationId: string, campId: string, type: EmailType) =>
+  useMutation({
+    mutationFn: (body: CampEmailDraftBody) => campsService.sendTestEmail(organisationId, campId, type, body),
   });
 
 export const useCampPreviewQuery = (organisationId: string, campId: string, enabled: boolean) =>

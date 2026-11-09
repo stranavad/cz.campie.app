@@ -15,8 +15,8 @@ import {
 } from '@repo/schema/consents';
 
 import { Access } from '../../../core/access/access.decorator.ts';
-import { Requires } from '../../../core/access/permission.ts';
-import { RequestActor } from '../../../core/access/request-actor.decorator.ts';
+import { allows, Requires, type MemberAccess } from '../../../core/access/permission.ts';
+import { RequestActor, RequestMember } from '../../../core/access/request-actor.decorator.ts';
 import type { Actor } from '../../../core/audit/actor.ts';
 import { FileUploadGuard, UploadedFile, type FileUpload } from '../../../core/files/file-upload.ts';
 import { Endpoint, EndpointBody, EndpointParams } from '../../../core/http/endpoint.decorator.ts';
@@ -29,8 +29,11 @@ export class ConsentController {
 
   @Endpoint(listConsentsEndpoint)
   @Requires('campSettings', 'read')
-  public list(@EndpointParams(listConsentsEndpoint) { campId }: CampConsentsParams): Promise<ConsentSummary[]> {
-    return this.consents.list(campId);
+  public list(
+    @RequestMember() member: MemberAccess,
+    @EndpointParams(listConsentsEndpoint) { campId }: CampConsentsParams,
+  ): Promise<ConsentSummary[]> {
+    return this.consents.list(campId, allows(member, { area: 'registrations', level: 'read' }));
   }
 
   @Endpoint(getConsentEndpoint)
