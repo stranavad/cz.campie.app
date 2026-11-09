@@ -112,7 +112,9 @@
     "email_placeholders_unknown": "Text obsahuje neznámou značku ve dvojitých složených závorkách, nebo jí chybí závorka.",
     "notification_emails_invalid": "Zadejte nejvýše 10 různých e-mailů, každý na vlastní řádek.",
     "email_subject_one_line": "Předmět musí být na jednom řádku.",
-    "payment_gateway_merchant_invalid": "Zadejte identifikátor e-shopu z Comgate, jen číslice."
+    "payment_gateway_merchant_invalid": "Zadejte identifikátor e-shopu z Comgate, jen číslice.",
+    "current_password_invalid": "Současné heslo nesouhlasí.",
+    "email_unchanged": "Tento e-mail už k účtu patří."
   },
   "logoField": {
     "title": "Logo",
@@ -336,7 +338,48 @@
     "organisations": "Organizace",
     "organisationsIntro": "Kde jste v týmu a s jakým přístupem.",
     "newRecoveryCodes": "Nové záložní kódy",
-    "newRecoveryCodesIntro": "Došly vám záložní kódy, nebo je mohl vidět někdo jiný? Zadejte kód z ověřovací aplikace a dostanete deset nových. Původní kódy tím přestanou platit a pošleme vám o tom e-mail."
+    "newRecoveryCodesIntro": "Došly vám záložní kódy, nebo je mohl vidět někdo jiný? Zadejte kód z ověřovací aplikace a dostanete deset nových. Původní kódy tím přestanou platit a pošleme vám o tom e-mail.",
+    "name": "Jméno",
+    "nameIntro": "Tak vás uvidí tým, pozvánky i historie změn.",
+    "firstName": "Jméno",
+    "lastName": "Příjmení",
+    "saveName": "Uložit jméno",
+    "nameSaved": "Jméno je uložené.",
+    "changeEmail": "Změna e-mailu",
+    "changeEmailIntro": "Na novou adresu pošleme odkaz. E-mail se změní, až ho potvrdíte; do té doby se přihlašujete tím současným. Na současnou adresu pak přijde upozornění.",
+    "newEmail": "Nový e-mail",
+    "currentPassword": "Současné heslo",
+    "sendEmailLink": "Poslat odkaz pro potvrzení",
+    "emailLinkSent": "Na adresu {{email}} jsme poslali odkaz pro potvrzení. Platí 24 hodin.",
+    "changePassword": "Změna hesla",
+    "changePasswordIntro": "Ostatní přihlášení k účtu ukončíme a pošleme vám o změně e-mail.",
+    "newPassword": "Nové heslo",
+    "newPasswordHint_one": "Alespoň {{count}} znak. Heslo nesmí obsahovat váš e-mail.",
+    "newPasswordHint_few": "Alespoň {{count}} znaky. Heslo nesmí obsahovat váš e-mail.",
+    "newPasswordHint_many": "Alespoň {{count}} znaku. Heslo nesmí obsahovat váš e-mail.",
+    "newPasswordHint_other": "Alespoň {{count}} znaků. Heslo nesmí obsahovat váš e-mail.",
+    "savePassword": "Změnit heslo",
+    "passwordChanged": "Heslo je změněné. Ostatní přihlášení k účtu jsme ukončili.",
+    "totpSince": "Zapnuto od {{date}}",
+    "recoveryCodesLeft_one": "Záložní kódy: zbývá {{left}} z {{count}}",
+    "recoveryCodesLeft_few": "Záložní kódy: zbývá {{left}} z {{count}}",
+    "recoveryCodesLeft_many": "Záložní kódy: zbývá {{left}} z {{count}}",
+    "recoveryCodesLeft_other": "Záložní kódy: zbývá {{left}} z {{count}}",
+    "replacement": {
+      "title": "Nový telefon",
+      "intro": "Přecházíte na nový telefon? Zadejte kód ze stávající aplikace, nový klíč si uložte do nové aplikace a potvrďte jejím kódem. Do té doby platí kódy ze stávající aplikace, záložní kódy zůstávají.",
+      "oldCode": "Kód ze stávající aplikace",
+      "newCode": "Kód z nové aplikace",
+      "start": "Vytvořit nový klíč",
+      "secret": "Klíč zadejte do nové aplikace, nebo otevřete odkaz v novém telefonu. Pak opište kód, který nová aplikace ukazuje.",
+      "confirm": "Přesunout do nového telefonu",
+      "done": "Dvoufázové přihlášení je v novém telefonu. Kódy ze stávající aplikace už neplatí."
+    },
+    "failure": {
+      "login_throttled": "Příliš mnoho chybných hesel. Zkuste to znovu za chvíli.",
+      "requests_throttled": "Příliš mnoho žádostí. Zkuste to znovu za chvíli.",
+      "unexpected": "Změnu se nepodařilo uložit. Zkuste to prosím znovu."
+    }
   },
   "theme": {
     "toDark": "Přepnout na tmavý režim",

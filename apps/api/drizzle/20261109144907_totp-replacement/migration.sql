@@ -1,0 +1,1 @@
+ALTER TABLE "totp_credentials" ADD COLUMN "replacement_secret" bytea;

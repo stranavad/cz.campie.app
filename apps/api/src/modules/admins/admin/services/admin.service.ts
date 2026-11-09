@@ -6,6 +6,7 @@ import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { SessionService } from '../../../../core/sessions/session.service.ts';
 import type { AdminEntity } from '../../../../repositories/admins/admin/admin.entity.ts';
 import { AdminRepository } from '../../../../repositories/admins/admin/admin.repository.ts';
+import { EmailChangeRepository } from '../../../../repositories/admins/email-change/email-change.repository.ts';
 import { TotpCredentialRepository } from '../../../../repositories/admins/totp-credential/totp-credential.repository.ts';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class AdminService {
   constructor(
     private readonly admins: AdminRepository,
     private readonly totpCredentials: TotpCredentialRepository,
+    private readonly emailChanges: EmailChangeRepository,
     private readonly sessions: SessionService,
     private readonly clock: Clock,
   ) {}
@@ -80,7 +82,10 @@ export class AdminService {
   /**
    * Set an admin's password through a link sent to their email, which proves the email theirs, and end
    * every session of the account. An account whose email was never proven may have been made by someone
-   * else under it, so its TOTP goes too: a second factor they enrolled must not keep the owner out.
+   * else under it, so its TOTP goes too: a second factor they enrolled must not keep the owner out. So does
+   * the name they gave it, unless the owner gives one now; an account without a password yet was made by
+   * the operator command line, whose name the operator typed, and keeps it. A waiting email change ends too,
+   * or its maker would take the account back by following its link.
    * @param id admin id
    * @param passwordHash the new password's hash
    * @param name the name the owner gives, replacing one given by whoever made the account, if any
@@ -91,9 +96,12 @@ export class AdminService {
     name?: FullName,
   ): Promise<{ before: AdminEntity; after: AdminEntity }> {
     const before = await this.admins.getByIdOrThrow(id);
+    const credentials = await this.admins.getCredentialsByEmail(before.email);
+    const planted = before.emailVerifiedAt === null && (credentials?.passwordHash ?? null) !== null;
     const after = await this.admins.update(id, {
       passwordHash,
       emailVerifiedAt: before.emailVerifiedAt ?? this.clock.now(),
+      ...(planted ? { firstName: null, lastName: null } : {}),
       ...name,
     });
 
@@ -101,7 +109,45 @@ export class AdminService {
       await this.totpCredentials.remove(id);
     }
 
+    await this.emailChanges.removeWaiting(id);
     await this.sessions.endAllAdmin(id);
+
+    return { before, after };
+  }
+
+  /**
+   * Change an admin's password from a session of theirs, ending every other session of the account and a
+   * waiting email change, which whoever knew the old password may have asked for.
+   * @param id admin id
+   * @param sessionId the session that stays
+   * @param passwordHash the new password's hash
+   */
+  public async changePassword(id: string, sessionId: string, passwordHash: string): Promise<void> {
+    await this.admins.update(id, { passwordHash });
+    await this.emailChanges.removeWaiting(id);
+    await this.sessions.endOtherAdmin(id, sessionId);
+  }
+
+  /**
+   * Change an admin's email to one just proven theirs through a link sent to it, which verifies it.
+   * @param id admin id
+   * @param email the new email, lowercase
+   */
+  public async changeEmail(id: string, email: string): Promise<{ before: AdminEntity; after: AdminEntity }> {
+    const before = await this.admins.getByIdOrThrow(id);
+    const after = await this.admins.update(id, { email, emailVerifiedAt: this.clock.now() });
+
+    return { before, after };
+  }
+
+  /**
+   * Set an admin's first and last name.
+   * @param id admin id
+   * @param name the new name
+   */
+  public async rename(id: string, name: FullName): Promise<{ before: AdminEntity; after: AdminEntity }> {
+    const before = await this.admins.getByIdOrThrow(id);
+    const after = await this.admins.update(id, name);
 
     return { before, after };
   }

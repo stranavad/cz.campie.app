@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ACCESS_HEADERS } from '@repo/schema/shared';
 
+import { runOperatorCommand } from '../../../cli/operator-command.ts';
 import { createAdmin, createOrganisation, mainHost, signUpOrganisation } from '../../../testing/fixtures.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
 import { enrolTotp } from '../../../testing/totp.ts';
@@ -10,7 +11,7 @@ const OLD_PASSWORD = 'spravne kun baterie sponka';
 const NEW_PASSWORD = 'nove heslo pro letni tabor';
 
 describe('admin password reset', () => {
-  const { app, http, clock, mail, jobs } = useTestApp({
+  const { app, http, clock, mail, jobs, database } = useTestApp({
     env: { LOGIN_MAX_FAILURES_PER_ACCOUNT: '2', LOGIN_LOCKOUT_MINUTES: '15' },
   });
 
@@ -21,6 +22,18 @@ describe('admin password reset', () => {
       .send(body);
 
   const logIn = (email: string, password: string) => post('sessions', { email, password });
+
+  // Logs in and returns the account as GET /account shows it.
+  const accountOf = async (email: string, password: string): Promise<unknown> => {
+    const loggedIn = await logIn(email, password);
+    const cookie = String(loggedIn.headers['set-cookie']).split(';')[0] ?? '';
+
+    return (
+      await http()
+        .get('/api/account')
+        .set({ Host: mainHost(app()), Cookie: cookie })
+    ).body;
+  };
 
   // Asks for a reset and returns the token from the emailed link.
   const requestReset = async (email: string): Promise<string> => {
@@ -153,8 +166,38 @@ describe('admin password reset', () => {
     const account = await http()
       .get('/api/account')
       .set({ Host: mainHost(app()), Cookie: String(loggedIn.headers['set-cookie']).split(';')[0] ?? '' });
-    expect(account.body).toMatchObject({ totpEnabled: false });
+    expect(account.body).toMatchObject({ totp: null });
     expect(await lookUpInvitation('jana.testovaci@example.com')).toMatchObject({ hasAccount: true });
+  });
+
+  it('clears the name whoever made an account never verified gave it, so the owner names themselves', async () => {
+    await signUpOrganisation(app(), {
+      email: 'jana.testovaci@example.com',
+      password: OLD_PASSWORD,
+      name: { firstName: 'Podvodník', lastName: 'Vlastník' },
+    });
+
+    const token = await requestReset('jana.testovaci@example.com');
+    await post('password-resets/complete', { token, password: NEW_PASSWORD });
+
+    expect(await accountOf('jana.testovaci@example.com', NEW_PASSWORD)).toMatchObject({
+      firstName: null,
+      lastName: null,
+      emailVerified: true,
+    });
+  });
+
+  it('keeps the name the operator command line gave a new operator account set up through a reset', async () => {
+    await runOperatorCommand(database().ownerUrl, ['grant', 'olga.provozni@example.com', 'Olga', 'Provozní']);
+
+    const token = await requestReset('olga.provozni@example.com');
+    await post('password-resets/complete', { token, password: NEW_PASSWORD });
+
+    expect(await accountOf('olga.provozni@example.com', NEW_PASSWORD)).toMatchObject({
+      firstName: 'Olga',
+      lastName: 'Provozní',
+      emailVerified: true,
+    });
   });
 
   it('keeps the TOTP of a verified account', async () => {
@@ -166,7 +209,7 @@ describe('admin password reset', () => {
 
     const loggedIn = await logIn(admin.email, NEW_PASSWORD);
     const headers = { ...admin.headers(''), Cookie: String(loggedIn.headers['set-cookie']).split(';')[0] ?? '' };
-    expect((await http().get('/api/account').set(headers)).body).toMatchObject({ totpEnabled: true });
+    expect((await http().get('/api/account').set(headers)).body).toMatchObject({ totp: expect.anything() });
   });
 });
 

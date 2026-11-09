@@ -3,11 +3,15 @@ import type { Response } from 'express';
 
 import {
   confirmTotpEnrolmentEndpoint,
+  confirmTotpReplacementEndpoint,
   regenerateRecoveryCodesEndpoint,
   startTotpEnrolmentEndpoint,
+  startTotpReplacementEndpoint,
   verifyTotpEndpoint,
   type ConfirmTotpEnrolmentBody,
+  type ConfirmTotpReplacementBody,
   type RegenerateRecoveryCodesBody,
+  type StartTotpReplacementBody,
   type TotpEnabled,
   type TotpEnrolment,
   type VerifyTotpBody,
@@ -61,5 +65,23 @@ export class TotpController {
     @EndpointBody(regenerateRecoveryCodesEndpoint) body: RegenerateRecoveryCodesBody,
   ): Promise<TotpEnabled> {
     return { recoveryCodes: await this.totp.regenerateRecoveryCodes(actor, session, body.code) };
+  }
+
+  @Endpoint(startTotpReplacementEndpoint)
+  public startReplacement(
+    @RequestActor() actor: Actor,
+    @RequestAdminSession() session: { secondFactor: boolean },
+    @EndpointBody(startTotpReplacementEndpoint) body: StartTotpReplacementBody,
+  ): Promise<TotpEnrolment> {
+    return this.totp.startReplacement(actor, session, body.code);
+  }
+
+  @Endpoint(confirmTotpReplacementEndpoint)
+  public confirmReplacement(
+    @RequestActor() actor: Actor,
+    @RequestAdminSession() session: { secondFactor: boolean },
+    @EndpointBody(confirmTotpReplacementEndpoint) body: ConfirmTotpReplacementBody,
+  ): Promise<void> {
+    return this.totp.confirmReplacement(actor, session, body.code);
   }
 }

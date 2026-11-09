@@ -39,6 +39,11 @@ describe('housekeeping', () => {
         admin.id,
         expiresAt,
       ]);
+      await query(
+        `INSERT INTO admin_email_changes (admin_id, email, token_hash, expires_at, confirmed_at)
+          VALUES ($1, 'nova.adresa@example.com', ${TOKEN}, $2, $2)`,
+        [admin.id, expiresAt],
+      );
 
       for (const organisationId of organisations) {
         for (const table of ['guardian_sessions', 'guardian_login_links']) {
@@ -74,6 +79,7 @@ describe('housekeeping', () => {
 
     expect(await expiries('admin_sessions')).toEqual([at(-DAY + 1)]);
     expect(await expiries('password_resets')).toEqual([at(-DAY + 1)]);
+    expect(await expiries('admin_email_changes')).toEqual([at(-DAY + 1)]);
     expect(await expiries('guardian_sessions')).toEqual([at(-DAY + 1), at(-DAY + 1)]);
     expect(await expiries('guardian_login_links')).toEqual([at(-DAY + 1), at(-DAY + 1)]);
     expect(await query('SELECT email FROM invitations')).toEqual([{ email: 'nedavna@example.com' }]);

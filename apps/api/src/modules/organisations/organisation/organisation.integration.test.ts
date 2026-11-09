@@ -99,7 +99,7 @@ describe('organisation signup', () => {
       lastName: 'Testovací',
       emailVerified: false,
       operator: false,
-      totpEnabled: false,
+      totp: null,
       secondFactor: false,
       memberships: [
         {

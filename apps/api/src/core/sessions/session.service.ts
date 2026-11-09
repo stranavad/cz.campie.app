@@ -69,6 +69,15 @@ export class SessionService {
   }
 
   /**
+   * End every session of an admin but the one they act from.
+   * @param adminId admin id
+   * @param keptId the session that stays
+   */
+  public async endOtherAdmin(adminId: string, keptId: string): Promise<void> {
+    await this.adminSessions.removeByAdminExcept(adminId, keptId);
+  }
+
+  /**
    * Start a session for a guardian, bound to the current Organisation.
    * @param email the guardian's email
    */

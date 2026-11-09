@@ -37,7 +37,7 @@ describe('TOTP for the Platform operator', () => {
       secret: expect.stringMatching(/^[A-Z2-7]{32}$/),
       uri: `otpauth://totp/Campie:${encodeURIComponent(operator.email)}?secret=${started.body.secret}&issuer=Campie&algorithm=SHA1&digits=6&period=30`,
     });
-    expect(await account(operator.headers)).toMatchObject({ totpEnabled: false, secondFactor: false });
+    expect(await account(operator.headers)).toMatchObject({ totp: null, secondFactor: false });
 
     const secret = decodeBase32(started.body.secret);
     const confirmed = await confirm(operator.headers, totpCode(secret, clock().now()));
@@ -45,7 +45,7 @@ describe('TOTP for the Platform operator', () => {
     expect(confirmed.body.recoveryCodes).toHaveLength(10);
 
     const passed = withSessionFrom(operator.headers, confirmed);
-    expect(await account(passed)).toMatchObject({ operator: true, totpEnabled: true, secondFactor: true });
+    expect(await account(passed)).toMatchObject({ operator: true, totp: expect.anything(), secondFactor: true });
     expect((await start(passed)).body).toMatchObject({ code: 'totp_enabled' });
   });
 
@@ -88,7 +88,7 @@ describe('TOTP for the Platform operator', () => {
     expect(wrong.status).toBe(400);
     expect(wrong.body).toMatchObject({ code: 'totp_code_invalid' });
     expect(wrong.headers['set-cookie']).toBeUndefined();
-    expect(await account(operator.headers)).toMatchObject({ totpEnabled: false, secondFactor: false });
+    expect(await account(operator.headers)).toMatchObject({ totp: null, secondFactor: false });
 
     expect((await confirm(operator.headers, totpCode(second, clock().now()))).status).toBe(200);
   });
@@ -99,7 +99,7 @@ describe('TOTP for the Platform operator', () => {
     clock().advance(THIRTY_SECONDS);
 
     const laterSession = await signIn(app(), operator.id);
-    expect(await account(laterSession)).toMatchObject({ totpEnabled: true, secondFactor: false });
+    expect(await account(laterSession)).toMatchObject({ totp: expect.anything(), secondFactor: false });
 
     const code = totpCode(secret, clock().now());
     const verified = await verify(laterSession, code);

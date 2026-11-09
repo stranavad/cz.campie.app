@@ -54,7 +54,7 @@ describe('operator command line', () => {
       firstName: 'Petra',
       lastName: 'Provozní',
       operator: true,
-      totpEnabled: false,
+      totp: null,
     });
   });
 
@@ -76,12 +76,12 @@ describe('operator command line', () => {
     const admin = await createAdmin(app(), { memberOf: [] });
     await runOperatorCommand(database().ownerUrl, ['grant', admin.email]);
     const { headers } = await enrolTotp(http(), await signIn(app(), admin.id), clock().now());
-    expect(await account(headers)).toMatchObject({ totpEnabled: true, secondFactor: true });
+    expect(await account(headers)).toMatchObject({ totp: expect.anything(), secondFactor: true });
 
     await runOperatorCommand(database().ownerUrl, ['reset-totp', admin.email]);
 
     await http().get('/api/account').set(headers).expect(401);
-    expect(await account(await signIn(app(), admin.id))).toMatchObject({ operator: true, totpEnabled: false });
+    expect(await account(await signIn(app(), admin.id))).toMatchObject({ operator: true, totp: null });
   });
 
   it('records each change in the platform audit log as the system', async () => {

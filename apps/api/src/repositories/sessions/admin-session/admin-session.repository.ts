@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq, lt, type InferInsertModel } from 'drizzle-orm';
+import { and, eq, lt, ne, type InferInsertModel } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { adminSessions } from '../../../db/schema.ts';
@@ -63,6 +63,17 @@ export class AdminSessionRepository {
    */
   public async removeByAdmin(adminId: string): Promise<void> {
     await this.unitOfWork.db.delete(adminSessions).where(eq(adminSessions.adminId, adminId));
+  }
+
+  /**
+   * Remove every session of an admin but one.
+   * @param adminId admin id
+   * @param keptId the session that stays
+   */
+  public async removeByAdminExcept(adminId: string, keptId: string): Promise<void> {
+    await this.unitOfWork.db
+      .delete(adminSessions)
+      .where(and(eq(adminSessions.adminId, adminId), ne(adminSessions.id, keptId)));
   }
 
   /**

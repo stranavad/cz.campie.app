@@ -32,6 +32,7 @@ import { MembershipRepository } from '../../../../repositories/admins/membership
 import type { TotpCredentialEntity } from '../../../../repositories/admins/totp-credential/totp-credential.entity.ts';
 import { TotpCredentialRepository } from '../../../../repositories/admins/totp-credential/totp-credential.repository.ts';
 import { OperatorRepository } from '../../../../repositories/operators/operator/operator.repository.ts';
+import { accountChangedJob } from '../../account/account-changed.job.ts';
 import { AdminService } from '../../admin/services/admin.service.ts';
 import { recoveryCodesRegeneratedJob } from '../recovery-codes-regenerated.job.ts';
 import { totpResetJob } from '../totp-reset.job.ts';
@@ -85,11 +86,35 @@ export class TotpService {
   }
 
   /**
-   * Tell whether an admin has TOTP on.
+   * Describe an admin's two-step login: when it was turned on and how many recovery codes are left of those
+   * issued; null while it is off.
    * @param adminId admin id
    */
-  public async isEnabled(adminId: string): Promise<boolean> {
-    return (await this.credentials.getByAdmin(adminId))?.confirmed === true;
+  public async summary(
+    adminId: string,
+  ): Promise<{ enabledAt: Date; recoveryCodesLeft: number; recoveryCodesIssued: number } | null> {
+    const credential = await this.credentials.getByAdmin(adminId);
+
+    if (credential === null || credential.confirmedAt === null) {
+      return null;
+    }
+
+    const { left, issued } = await this.credentials.countRecoveryCodes(adminId);
+
+    return { enabledAt: credential.confirmedAt, recoveryCodesLeft: left, recoveryCodesIssued: issued };
+  }
+
+  /**
+   * Refuse a change to an admin's own account from a session that has not passed the second step while
+   * their two-step login is on: a password alone must not change what protects the account.
+   * @param adminId the signed-in admin
+   * @param session their session
+   * @throws {ForbiddenException} second_factor_required
+   */
+  public async requirePassed(adminId: string, session: { readonly secondFactor: boolean }): Promise<void> {
+    if (!session.secondFactor && (await this.credentials.isEnabled(adminId))) {
+      throw secondFactorRequired();
+    }
   }
 
   /**
@@ -108,12 +133,7 @@ export class TotpService {
       throw totpError('totp_enabled');
     }
 
-    const admin = await this.admins.getByIdOrThrow(adminId);
-
-    return {
-      secret: encodeBase32(secret),
-      uri: totpUri(secret, { issuer: this.productName, account: admin.email }),
-    };
+    return this.enrolmentOf(adminId, secret);
   }
 
   /**
@@ -139,7 +159,7 @@ export class TotpService {
       throw totpError('totp_enabled');
     }
 
-    const step = await this.checkCode(credential, code);
+    const step = await this.checkCode(credential.adminId, credential.sealedSecret, code);
 
     if (!(await this.credentials.confirm(adminId, credential.sealedSecret, step, this.clock.now()))) {
       throw totpError('totp_enabled');
@@ -165,38 +185,81 @@ export class TotpService {
     session: { readonly secondFactor: boolean },
     code: string,
   ): Promise<string[]> {
-    if (actor.kind !== 'admin') {
-      throw new Error('Only an admin makes their own recovery codes');
-    }
+    const { adminId, credential } = await this.ownEnabled(actor, session);
 
-    if (!session.secondFactor) {
-      const refusal: AccessErrorCode = 'second_factor_required';
+    await this.useCode(adminId, credential.sealedSecret, code);
 
-      throw new ForbiddenException({ code: refusal, message: 'The session has not passed a TOTP code' });
-    }
-
-    const credential = await this.credentials.getByAdmin(actor.identity);
-
-    if (credential === null || !credential.confirmed) {
-      throw totpError('totp_not_enabled');
-    }
-
-    const step = await this.checkCode(credential, code);
-
-    // A code seen already, perhaps by someone looking over a shoulder, counts as wrong.
-    if (!(await this.credentials.useStep(actor.identity, step))) {
-      throw totpError('totp_code_invalid');
-    }
-
-    const recoveryCodes = await this.replaceRecoveryCodes(actor.identity);
+    const recoveryCodes = await this.replaceRecoveryCodes(adminId);
 
     await this.audit.recordForPlatform(actor, {
       action: 'admin.regenerate_recovery_codes',
-      target: { type: 'admin', id: actor.identity },
+      target: { type: 'admin', id: adminId },
     });
-    this.jobs.enqueue(recoveryCodesRegeneratedJob, { adminId: actor.identity });
+    this.jobs.enqueue(recoveryCodesRegeneratedJob, { adminId });
 
     return recoveryCodes;
+  }
+
+  /**
+   * Start moving an admin's two-step login to a new phone while it stays on: with a current code from the
+   * app in use, never a recovery code, and from a session that passed the second step, the admin gets a new
+   * secret. Until a code from it confirms it, the old app keeps working.
+   * @param actor the signed-in admin
+   * @param session their session, and whether it passed the second step
+   * @param code a code from the app in use
+   * @throws {HttpException} 409 when the admin's TOTP is not on; 400 for a wrong or used code
+   */
+  public async startReplacement(
+    actor: Actor,
+    session: { readonly secondFactor: boolean },
+    code: string,
+  ): Promise<TotpEnrolment> {
+    const { adminId, credential } = await this.ownEnabled(actor, session);
+    await this.useCode(adminId, credential.sealedSecret, code);
+
+    const secret = generateTotpSecret();
+
+    if (
+      !(await this.credentials.startReplacement(
+        adminId,
+        this.encryption.sealPlatformSecret(secretContext(adminId), secret),
+      ))
+    ) {
+      throw totpError('totp_not_enabled');
+    }
+
+    return this.enrolmentOf(adminId, secret);
+  }
+
+  /**
+   * Replace an admin's secret by the new phone's in one step with a code from the new app; from then only
+   * its codes work, and the recovery codes stay. Audited in the platform's log as the fact only, and emailed
+   * to the admin.
+   * @param actor the signed-in admin
+   * @param session their session, and whether it passed the second step
+   * @param code a code from the new app
+   * @throws {HttpException} 409 when no move to a new phone waits; 400 for a wrong code
+   */
+  public async confirmReplacement(
+    actor: Actor,
+    session: { readonly secondFactor: boolean },
+    code: string,
+  ): Promise<void> {
+    const { adminId, credential } = await this.ownEnabled(actor, session);
+    const replacement = credential.sealedReplacementSecret;
+
+    if (replacement === null) {
+      throw totpError('totp_not_started');
+    }
+
+    const step = await this.checkCode(adminId, replacement, code);
+
+    if (!(await this.credentials.completeReplacement(adminId, replacement, step))) {
+      throw totpError('totp_not_started');
+    }
+
+    await this.audit.recordForPlatform(actor, { action: 'admin.replace_totp', target: { type: 'admin', id: adminId } });
+    this.jobs.enqueue(accountChangedJob, { adminId, change: 'totp' });
   }
 
   /**
@@ -220,12 +283,7 @@ export class TotpService {
       return this.sessions.passSecondFactor(sessionId);
     }
 
-    const step = await this.checkCode(credential, code);
-
-    // A code seen already, perhaps by someone looking over a shoulder, counts as wrong.
-    if (!(await this.credentials.useStep(adminId, step))) {
-      throw totpError('totp_code_invalid');
-    }
+    await this.useCode(adminId, credential.sealedSecret, code);
 
     return this.sessions.passSecondFactor(sessionId);
   }
@@ -296,6 +354,49 @@ export class TotpService {
   }
 
   /**
+   * Get the confirmed credential of the admin acting on their own two-step login, from a session that passed
+   * it.
+   * @param actor the signed-in admin
+   * @param session their session
+   * @throws {HttpException} 409 when the admin's TOTP is not on
+   * @throws {ForbiddenException} second_factor_required when the session has not passed the second step
+   */
+  private async ownEnabled(
+    actor: Actor,
+    session: { readonly secondFactor: boolean },
+  ): Promise<{ adminId: string; credential: TotpCredentialEntity }> {
+    if (actor.kind !== 'admin') {
+      throw new Error('Only an admin changes their own two-step login');
+    }
+
+    const credential = await this.credentials.getByAdmin(actor.identity);
+
+    if (credential === null || !credential.confirmed) {
+      throw totpError('totp_not_enabled');
+    }
+
+    if (!session.secondFactor) {
+      throw secondFactorRequired();
+    }
+
+    return { adminId: actor.identity, credential };
+  }
+
+  /**
+   * Describe a secret as an authenticator app takes it, labelled with the admin's email.
+   * @param adminId the admin
+   * @param secret the secret
+   */
+  private async enrolmentOf(adminId: string, secret: Buffer): Promise<TotpEnrolment> {
+    const admin = await this.admins.getByIdOrThrow(adminId);
+
+    return {
+      secret: encodeBase32(secret),
+      uri: totpUri(secret, { issuer: this.productName, account: admin.email }),
+    };
+  }
+
+  /**
    * Store ten new recovery codes for an admin in place of any they had.
    * @param adminId the admin
    * @returns the codes in plain text, to show once
@@ -339,25 +440,42 @@ export class TotpService {
   }
 
   /**
-   * Check a code against a credential's secret, counting the attempt against the admin's limit until it
-   * matches.
-   * @param credential the admin's credential
+   * Check a code against an admin's confirmed secret and use up its time step, so a code seen already,
+   * perhaps by someone looking over a shoulder, counts as wrong.
+   * @param adminId the admin
+   * @param sealedSecret their confirmed secret, sealed
+   * @param code the code from their app
+   * @throws {HttpException} 400 totp_code_invalid for a wrong or used code
+   */
+  private async useCode(adminId: string, sealedSecret: Buffer, code: string): Promise<void> {
+    const step = await this.checkCode(adminId, sealedSecret, code);
+
+    if (!(await this.credentials.useStep(adminId, step))) {
+      throw totpError('totp_code_invalid');
+    }
+  }
+
+  /**
+   * Check a code against one of an admin's sealed secrets, counting the attempt against their limit until
+   * it matches.
+   * @param adminId the admin
+   * @param sealedSecret the secret the code should come from, sealed
    * @param code the code from their app
    * @throws {HttpException} 429 when the admin entered too many wrong codes; 400 for a wrong code
    */
-  private async checkCode(credential: TotpCredentialEntity, code: string): Promise<number> {
-    if ((await this.rateLimiter.take(this.failures, credential.adminId)) === null) {
+  private async checkCode(adminId: string, sealedSecret: Buffer, code: string): Promise<number> {
+    if ((await this.rateLimiter.take(this.failures, adminId)) === null) {
       throw totpError('totp_throttled');
     }
 
-    const secret = this.encryption.openPlatformSecret(secretContext(credential.adminId), credential.sealedSecret);
+    const secret = this.encryption.openPlatformSecret(secretContext(adminId), sealedSecret);
     const step = matchTotpStep(secret, code, this.clock.now());
 
     if (step === null) {
       throw totpError('totp_code_invalid');
     }
 
-    this.unitOfWork.afterCommit(() => this.rateLimiter.clear(this.failures, credential.adminId));
+    this.unitOfWork.afterCommit(() => this.rateLimiter.clear(this.failures, adminId));
 
     return step;
   }
@@ -371,6 +489,15 @@ const REFUSALS: Readonly<Record<TotpErrorCode, { status: HttpStatus; message: st
   totp_code_invalid: { status: HttpStatus.BAD_REQUEST, message: 'Wrong or used code' },
   totp_throttled: { status: HttpStatus.TOO_MANY_REQUESTS, message: 'Too many wrong codes, try later' },
 };
+
+/**
+ * Build the refusal of a session that has not passed the second step.
+ */
+function secondFactorRequired(): ForbiddenException {
+  const code: AccessErrorCode = 'second_factor_required';
+
+  return new ForbiddenException({ code, message: 'The session has not passed a TOTP code' });
+}
 
 /**
  * Build a refused step's exception with the code the app translates.

@@ -1,7 +1,7 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import type { LogInBody, LogInErrorCode } from '@repo/schema/admins';
+import type { AccountErrorCode, LogInBody, LogInErrorCode } from '@repo/schema/admins';
 
 import type { Env } from '../../../../core/config/env.schema.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
@@ -37,10 +37,47 @@ export class LoginService {
    * password until the oldest failure leaves the lockout period.
    * @param body the email and password
    * @param ipAddress where the attempt comes from
-   * @throws {HttpException} 429 when the email or the IP address has failed too often; 401 when the email
-   * has no account, the account no password, or the password is wrong, all alike
+   * @throws {HttpException} 401 when the email has no account, the account no password, or the password is
+   * wrong, all alike
    */
   public async logIn({ email, password }: LogInBody, ipAddress: string): Promise<IssuedSession> {
+    const credentials = await this.check(email, password, ipAddress);
+
+    if (credentials === null) {
+      throw loginError('credentials_invalid');
+    }
+
+    return this.sessions.startAdmin(credentials.id);
+  }
+
+  /**
+   * Check the current password of a signed-in admin before a change to their account, as a login checks
+   * it: a wrong one counts against the same limits, so a session left open does not let anyone guess it.
+   * @param email the admin's email, lowercase
+   * @param password the password they typed
+   * @param ipAddress where the request comes from
+   * @throws {HttpException} 429 login_throttled when the email or the IP address has failed too often
+   * @throws {BadRequestException} current_password_invalid when the password is wrong or the admin has none
+   */
+  public async confirmPassword(email: string, password: string, ipAddress: string): Promise<void> {
+    if ((await this.check(email, password, ipAddress)) === null) {
+      const code: AccountErrorCode = 'current_password_invalid';
+
+      throw new BadRequestException({ code, message: 'The current password is wrong' });
+    }
+  }
+
+  /**
+   * Check an email and password, counting the attempt against the email's and the IP address's limit
+   * unless it succeeds.
+   * @param email the email, lowercase
+   * @param password the password
+   * @param ipAddress where the attempt comes from
+   * @throws {HttpException} 429 login_throttled when the email or the IP address has failed too often
+   * @returns the admin's id, or null when the email has no account, the account no password, or the
+   * password is wrong, all alike
+   */
+  private async check(email: string, password: string, ipAddress: string): Promise<{ id: string } | null> {
     const accountAttempt = await this.rateLimiter.take(this.limits.account, email);
 
     if (accountAttempt === null) {
@@ -59,14 +96,14 @@ export class LoginService {
     const credentials = await this.admins.getCredentialsByEmail(email);
 
     if (credentials === null || !(await verifyPassword(password, credentials.passwordHash))) {
-      throw loginError('credentials_invalid');
+      return null;
     }
 
-    // Only once the session is committed: a login that fails after all still counts.
+    // Only once the change is committed: an attempt that fails after all still counts.
     this.unitOfWork.afterCommit(() => ipAttempt.release());
     this.forgetFailures(email);
 
-    return this.sessions.startAdmin(credentials.id);
+    return { id: credentials.id };
   }
 
   /**

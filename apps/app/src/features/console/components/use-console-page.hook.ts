@@ -12,7 +12,7 @@ export function useConsolePage() {
   const step: ConsoleStep | undefined =
     account.data === undefined
       ? undefined
-      : account.data.totpEnabled && account.data.secondFactor
+      : account.data.totp !== null && account.data.secondFactor
         ? 'organisations'
         : 'enrol';
   const showsOrganisations = account.data?.operator === true && step === 'organisations';

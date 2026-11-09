@@ -1,6 +1,6 @@
 # 72 - Account self-service: name, email, password and TOTP
 
-Status: ready-for-agent
+Status: in-progress
 Stage: 1b
 Episode: E1 Organisations and identity
 Blocked by: 67, 70, 71
@@ -33,3 +33,16 @@ The Účet page lets a signed-in admin manage their own identity; today only `GE
 - Spec sections: Identity, permissions and audit.
 - Issue 70 left changing an admin's own email out of scope; this issue brings it in with verification of the new address.
 - Design: canvas "Campie - návrhy designu", artboard `B3-Ucet`. Consumed by the admin Účet page.
+
+## Comments
+
+2026-11-09 - **Implemented, awaiting merge.** Every account change needs a session that passed the second step while TOTP is on (403 `second_factor_required`).
+
+- `PATCH /account` sets `firstName` and `lastName` with the shared name schema; `GET /account` replaces `totpEnabled` with `totp` (`enabledAt`, `recoveryCodesLeft`, `recoveryCodesIssued`, or null while off).
+- `POST /account/password` takes `currentPassword` and `password`. The current one is checked as a login (`LoginService.confirmPassword`): a wrong one answers 400 `current_password_invalid` and counts against the login limits, past them 429 `login_throttled`. The new one meets the reset's strength rules; every other session ends, the admin is emailed.
+- `POST /email-changes` takes the new `email` and `currentPassword`, checked the same way, and counts against the reset limit per IP and new address. It answers 204 whether or not another admin has the address; the job mails the link (auth stream, `/zmena-emailu?token=`, 24 hours, newest only, hash stored in `admin_email_changes`) only when nobody has it. `POST /email-changes/confirm` (platform access) changes and verifies the email, ends the admin's reset links, which went to the old address, and mails the old address a notice without the new one; a used, replaced or expired link answers 400 `email_change_invalid`, an address taken by now 409 `email_taken`. A password change, a reset and an invitation takeover end a waiting change, so whoever asked for it with the old password cannot take the account back through its link.
+- `POST /account/totp/replacement` with a current app code (used up, never a recovery code) stores a second sealed secret (`totp_credentials.replacement_secret`); `/account/totp/replacement/confirm` with a code from it swaps it in one step. The old app logs in until then; `enabledAt` and the recovery codes stay; the admin is emailed.
+- Platform log actions `admin.rename` and `admin.change_email` (old and new values), `admin.change_password` and `admin.replace_totp` (the fact only), as the admin; nothing in an Organisation's log.
+- Issue 71's open item: a password reset that takes back an account never verified now clears the name its maker gave it, unless the account had no password yet, which only `pnpm operator grant` makes, so an operator account set up through a reset keeps the name the operator typed. The owner names themselves on Můj účet.
+- UI: Můj účet edits the name, asks a new email and a new password with the current one, shows "Zapnuto od" and "zbývá X z Y" recovery codes, and moves two-step login to a new phone; `/zmena-emailu` confirms a new email with a button.
+- Migrations: `totp_credentials.replacement_secret` (nullable) and the new `admin_email_changes` table; rolling back drops both. Housekeeping removes expired email changes.

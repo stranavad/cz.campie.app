@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import type { TotpEnrolment } from '@repo/schema/admins';
+
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { totpCode } from '../../../core/totp/totp.ts';
 import { MembershipRepository } from '../../../repositories/admins/membership/membership.repository.ts';
@@ -8,7 +10,7 @@ import { createAdmin, createOrganisation, signIn, type RequestHeaders } from '..
 import { createOperator } from '../../../testing/operator.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
-import { enrolTotp, withSessionFrom } from '../../../testing/totp.ts';
+import { decodeBase32, enrolTotp, withSessionFrom } from '../../../testing/totp.ts';
 
 const THIRTY_SECONDS = 30 * 1000;
 
@@ -100,7 +102,7 @@ describe('two-step login for admins', () => {
     expect(refused.status).toBe(403);
     expect(refused.body).toMatchObject({ code: 'totp_setup_required' });
     expect((await http().get('/api/account').set(member.headers(''))).body).toMatchObject({
-      totpEnabled: false,
+      totp: null,
       memberships: [{ organisation: { id: organisationId, totpRequired: true } }],
     });
 
@@ -133,7 +135,7 @@ describe('two-step login for admins', () => {
     await http().get('/api/account').set(member.headers('')).expect(401);
     const later = await signIn(app(), member.id);
     expect((await camps(later)).status).toBe(200);
-    expect((await http().get('/api/account').set(later)).body).toMatchObject({ totpEnabled: false });
+    expect((await http().get('/api/account').set(later)).body).toMatchObject({ totp: null });
     expect(await auditActions()).toEqual([{ action: 'member.reset_totp', organisation_id: organisationId }]);
 
     await jobs().drain();
@@ -248,7 +250,7 @@ describe('two-step login for admins', () => {
           .set(await signIn(app(), owner.id))
       ).body,
     ).toMatchObject({
-      totpEnabled: false,
+      totp: null,
     });
     expect(await auditActions()).toEqual([{ action: 'member.reset_totp', organisation_id: organisationId }]);
 
@@ -273,8 +275,111 @@ describe('two-step login for admins', () => {
           .set(await signIn(app(), member.id))
       ).body,
     ).toMatchObject({
-      totpEnabled: true,
+      totp: expect.anything(),
     });
     expect(await auditActions()).toEqual([]);
+  });
+
+  const accountOf = async (headers: RequestHeaders) => (await http().get('/api/account').set(headers)).body;
+  const platformEntries = () =>
+    withClient(
+      database().ownerUrl,
+      async (client) =>
+        (await client.query('SELECT actor_identity, action, target_id, changes FROM platform_audit_entries')).rows,
+    );
+
+  it('reports when two-step login was turned on and how many recovery codes are left', async () => {
+    const enabledAt = clock().now().toISOString();
+    const { recoveryCodes, headers } = await enrolTotp(http(), member.headers(''), clock().now());
+    expect(await accountOf(headers)).toMatchObject({
+      totp: { enabledAt, recoveryCodesLeft: 10, recoveryCodesIssued: 10 },
+    });
+
+    clock().advance(THIRTY_SECONDS);
+    expect((await verify(await signIn(app(), member.id), recoveryCodes[0] ?? '')).status).toBe(204);
+
+    expect(await accountOf(headers)).toMatchObject({
+      totp: { enabledAt, recoveryCodesLeft: 9, recoveryCodesIssued: 10 },
+    });
+  });
+
+  describe('moving to a new phone', () => {
+    const startReplacement = (headers: RequestHeaders, code: string) =>
+      http().post('/api/account/totp/replacement').set(headers).send({ code });
+    const confirmReplacement = (headers: RequestHeaders, code: string) =>
+      http().post('/api/account/totp/replacement/confirm').set(headers).send({ code });
+
+    it('replaces the secret only once a code from the new app confirms it, keeping the recovery codes', async () => {
+      const enabledAt = clock().now().toISOString();
+      const { secret: oldSecret, recoveryCodes, headers } = await enrolTotp(http(), member.headers(''), clock().now());
+      clock().advance(THIRTY_SECONDS);
+
+      const started = await startReplacement(headers, totpCode(oldSecret, clock().now()));
+      expect(started.status).toBe(200);
+      const newSecret = decodeBase32((started.body as TotpEnrolment).secret);
+      expect(newSecret.equals(oldSecret)).toBe(false);
+
+      clock().advance(THIRTY_SECONDS);
+      expect((await verify(await signIn(app(), member.id), totpCode(newSecret, clock().now()))).status).toBe(400);
+      expect((await verify(await signIn(app(), member.id), totpCode(oldSecret, clock().now()))).status).toBe(204);
+      expect(await platformEntries()).toEqual([]);
+
+      clock().advance(THIRTY_SECONDS);
+      expect((await confirmReplacement(headers, totpCode(newSecret, clock().now()))).status).toBe(204);
+
+      clock().advance(THIRTY_SECONDS);
+      const oldApp = await verify(await signIn(app(), member.id), totpCode(oldSecret, clock().now()));
+      expect(oldApp.body).toMatchObject({ code: 'totp_code_invalid' });
+      expect((await verify(await signIn(app(), member.id), totpCode(newSecret, clock().now()))).status).toBe(204);
+      expect((await verify(await signIn(app(), member.id), recoveryCodes[0] ?? '')).status).toBe(204);
+      expect(await accountOf(headers)).toMatchObject({
+        totp: { enabledAt, recoveryCodesLeft: 9, recoveryCodesIssued: 10 },
+      });
+      expect((await camps(headers)).status).toBe(200);
+
+      expect(await platformEntries()).toEqual([
+        { actor_identity: member.id, action: 'admin.replace_totp', target_id: member.id, changes: null },
+      ]);
+      expect(await auditActions()).toEqual([]);
+      await jobs().drain();
+      expect(mail().sent.map(({ to, subject }) => ({ to, subject }))).toEqual([
+        { to: [member.email], subject: 'Dvoufázové přihlášení je v novém telefonu' },
+      ]);
+    });
+
+    it('needs a current code from the old app, once, and a session that passed two-step login', async () => {
+      const { secret, recoveryCodes, headers } = await enrolTotp(http(), member.headers(''), clock().now());
+      clock().advance(THIRTY_SECONDS);
+      const code = totpCode(secret, clock().now());
+
+      expect((await startReplacement(headers, '000000')).body).toMatchObject({ code: 'totp_code_invalid' });
+      expect((await startReplacement(headers, recoveryCodes[0] ?? '')).status).toBe(400);
+      expect((await startReplacement(await signIn(app(), member.id), code)).body).toMatchObject({
+        code: 'second_factor_required',
+      });
+      expect((await startReplacement(headers, code)).status).toBe(200);
+      expect((await startReplacement(headers, code)).body).toMatchObject({ code: 'totp_code_invalid' });
+    });
+
+    it('refuses to confirm without a replacement started, or with a code of the old app', async () => {
+      const { secret, headers } = await enrolTotp(http(), member.headers(''), clock().now());
+      clock().advance(THIRTY_SECONDS);
+
+      expect((await confirmReplacement(headers, totpCode(secret, clock().now()))).body).toMatchObject({
+        code: 'totp_not_started',
+      });
+      await startReplacement(headers, totpCode(secret, clock().now()));
+      clock().advance(THIRTY_SECONDS);
+      expect((await confirmReplacement(headers, totpCode(secret, clock().now()))).body).toMatchObject({
+        code: 'totp_code_invalid',
+      });
+      expect(await platformEntries()).toEqual([]);
+    });
+
+    it('refuses an admin without two-step login', async () => {
+      const refused = await startReplacement(member.headers(''), '123456');
+
+      expect(refused.body).toMatchObject({ statusCode: 409, code: 'totp_not_enabled' });
+    });
   });
 });

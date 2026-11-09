@@ -13,7 +13,15 @@ export const accountSchema = z.object({
   emailVerified: z.boolean(),
   // Whether the admin is the Platform operator, whose console needs TOTP.
   operator: z.boolean(),
-  totpEnabled: z.boolean(),
+  // Null while two-step login is off: when it was turned on, and how many of the recovery codes issued are
+  // still unused.
+  totp: z
+    .object({
+      enabledAt: z.iso.datetime(),
+      recoveryCodesLeft: z.number().int(),
+      recoveryCodesIssued: z.number().int(),
+    })
+    .nullable(),
   // Whether this session passed a TOTP code.
   secondFactor: z.boolean(),
   memberships: z.array(
@@ -38,3 +46,9 @@ export const accountSchema = z.object({
 });
 
 export type Account = z.infer<typeof accountSchema>;
+
+// Codes of a refused change of the admin's own account, which the app translates: the current password is
+// wrong, or the new email is the one they have.
+export const ACCOUNT_ERROR_CODES = ['current_password_invalid', 'email_unchanged'] as const;
+
+export type AccountErrorCode = (typeof ACCOUNT_ERROR_CODES)[number];

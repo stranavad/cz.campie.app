@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { JobQueue } from '../../../core/jobs/job-queue.ts';
 import { Clock } from '../../../core/ports/clock/clock.port.ts';
+import { EmailChangeRepository } from '../../../repositories/admins/email-change/email-change.repository.ts';
 import { InvitationRepository } from '../../../repositories/admins/invitation/invitation.repository.ts';
 import { PasswordResetRepository } from '../../../repositories/admins/password-reset/password-reset.repository.ts';
 import { OrganisationRepository } from '../../../repositories/organisations/organisation/organisation.repository.ts';
@@ -30,6 +31,7 @@ export class HousekeepingService {
     private readonly organisations: OrganisationRepository,
     private readonly adminSessions: AdminSessionRepository,
     private readonly passwordResets: PasswordResetRepository,
+    private readonly adminEmailChanges: EmailChangeRepository,
     private readonly invitations: InvitationRepository,
     private readonly guardianSessions: GuardianSessionRepository,
     private readonly loginLinks: GuardianLoginLinkRepository,
@@ -40,7 +42,7 @@ export class HousekeepingService {
   ) {}
 
   /**
-   * Remove the platform's expired admin sessions, password resets and invitations, and have every
+   * Remove the platform's expired admin sessions, password resets, email changes and invitations, and have every
    * Organisation tidy its own data once this commits.
    */
   public async tidyPlatform(): Promise<void> {
@@ -50,6 +52,7 @@ export class HousekeepingService {
     const removed = {
       adminSessions: await this.adminSessions.removeExpired(loginDataBefore),
       passwordResets: await this.passwordResets.removeExpired(loginDataBefore),
+      emailChanges: await this.adminEmailChanges.removeExpired(loginDataBefore),
       invitations: await this.invitations.removeAllExpired(new Date(now - INVITATION_KEPT_MS)),
     };
     const organisations = await this.organisations.list();

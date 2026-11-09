@@ -1,8 +1,16 @@
 import { Module } from '@nestjs/common';
 
+import { AccountChangedHandler } from './account/account-changed.handler.ts';
 import { AccountController } from './account/account.controller.ts';
 import { AccountService } from './account/services/account.service.ts';
 import { AdminService } from './admin/services/admin.service.ts';
+import { EmailChangeLinkController } from './email-change/email-change-link.controller.ts';
+import { EmailChangeController } from './email-change/email-change.controller.ts';
+import {
+  AdminEmailChangeConfirmedHandler,
+  AdminEmailChangeRequestedHandler,
+} from './email-change/email-change.handlers.ts';
+import { EmailChangeService } from './email-change/services/email-change.service.ts';
 import { EmailVerificationLinkController } from './email-verification/email-verification-link.controller.ts';
 import { EmailVerificationRequestedHandler } from './email-verification/email-verification-requested.handler.ts';
 import { EmailVerificationController } from './email-verification/email-verification.controller.ts';
@@ -31,6 +39,8 @@ import { TotpController } from './totp/totp.controller.ts';
     PasswordResetController,
     EmailVerificationController,
     EmailVerificationLinkController,
+    EmailChangeController,
+    EmailChangeLinkController,
     MemberController,
     InvitationController,
     InvitationAcceptanceController,
@@ -41,11 +51,15 @@ import { TotpController } from './totp/totp.controller.ts';
     MembershipService,
     OwnerChangedHandler,
     AccountService,
+    AccountChangedHandler,
     LoginService,
     PasswordResetService,
     PasswordResetRequestedHandler,
     EmailVerificationService,
     EmailVerificationRequestedHandler,
+    EmailChangeService,
+    AdminEmailChangeRequestedHandler,
+    AdminEmailChangeConfirmedHandler,
     InvitationService,
     InvitationCreatedHandler,
     TotpService,

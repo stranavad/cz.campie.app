@@ -28,6 +28,7 @@ import { Route as PlatformTaboryRouteImport } from './routes/platform/tabory'
 import { Route as PlatformUcetRouteImport } from './routes/platform/ucet'
 import { Route as PlatformUzivateleRouteImport } from './routes/platform/uzivatele'
 import { Route as PlatformZapomenuteHesloRouteImport } from './routes/platform/zapomenute-heslo'
+import { Route as PlatformZmenaEmailuRouteImport } from './routes/platform/zmena-emailu'
 import { Route as PlatformZpracovaniDatRouteImport } from './routes/platform/zpracovani-dat'
 import { Route as PlatformZpracovatelskaSmlouvaRouteImport } from './routes/platform/zpracovatelska-smlouva'
 import { Route as UnknownSplatRouteImport } from './routes/unknown/$'
@@ -140,6 +141,11 @@ const PlatformZapomenuteHesloRoute = PlatformZapomenuteHesloRouteImport.update({
   path: '/zapomenute-heslo',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
+const PlatformZmenaEmailuRoute = PlatformZmenaEmailuRouteImport.update({
+  id: '/zmena-emailu',
+  path: '/zmena-emailu',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
 const PlatformZpracovaniDatRoute = PlatformZpracovaniDatRouteImport.update({
   id: '/zpracovani-dat',
   path: '/zpracovani-dat',
@@ -243,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/platform/ucet': typeof PlatformUcetRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
+  '/platform/zmena-emailu': typeof PlatformZmenaEmailuRoute
   '/platform/zpracovani-dat': typeof PlatformZpracovaniDatRoute
   '/platform/zpracovatelska-smlouva': typeof PlatformZpracovatelskaSmlouvaRoute
   '/unknown/$': typeof UnknownSplatRoute
@@ -277,6 +284,7 @@ export interface FileRoutesByTo {
   '/platform/ucet': typeof PlatformUcetRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
+  '/platform/zmena-emailu': typeof PlatformZmenaEmailuRoute
   '/platform/zpracovani-dat': typeof PlatformZpracovaniDatRoute
   '/platform/zpracovatelska-smlouva': typeof PlatformZpracovatelskaSmlouvaRoute
   '/unknown/$': typeof UnknownSplatRoute
@@ -314,6 +322,7 @@ export interface FileRoutesById {
   '/platform/ucet': typeof PlatformUcetRoute
   '/platform/uzivatele': typeof PlatformUzivateleRoute
   '/platform/zapomenute-heslo': typeof PlatformZapomenuteHesloRoute
+  '/platform/zmena-emailu': typeof PlatformZmenaEmailuRoute
   '/platform/zpracovani-dat': typeof PlatformZpracovaniDatRoute
   '/platform/zpracovatelska-smlouva': typeof PlatformZpracovatelskaSmlouvaRoute
   '/unknown/$': typeof UnknownSplatRoute
@@ -352,6 +361,7 @@ export interface FileRouteTypes {
     | '/platform/ucet'
     | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
+    | '/platform/zmena-emailu'
     | '/platform/zpracovani-dat'
     | '/platform/zpracovatelska-smlouva'
     | '/unknown/$'
@@ -386,6 +396,7 @@ export interface FileRouteTypes {
     | '/platform/ucet'
     | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
+    | '/platform/zmena-emailu'
     | '/platform/zpracovani-dat'
     | '/platform/zpracovatelska-smlouva'
     | '/unknown/$'
@@ -422,6 +433,7 @@ export interface FileRouteTypes {
     | '/platform/ucet'
     | '/platform/uzivatele'
     | '/platform/zapomenute-heslo'
+    | '/platform/zmena-emailu'
     | '/platform/zpracovani-dat'
     | '/platform/zpracovatelska-smlouva'
     | '/unknown/$'
@@ -582,6 +594,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformZapomenuteHesloRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
+    '/platform/zmena-emailu': {
+      id: '/platform/zmena-emailu'
+      path: '/zmena-emailu'
+      fullPath: '/platform/zmena-emailu'
+      preLoaderRoute: typeof PlatformZmenaEmailuRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
     '/platform/zpracovani-dat': {
       id: '/platform/zpracovani-dat'
       path: '/zpracovani-dat'
@@ -737,6 +756,7 @@ interface PlatformRouteRouteChildren {
   PlatformUcetRoute: typeof PlatformUcetRoute
   PlatformUzivateleRoute: typeof PlatformUzivateleRoute
   PlatformZapomenuteHesloRoute: typeof PlatformZapomenuteHesloRoute
+  PlatformZmenaEmailuRoute: typeof PlatformZmenaEmailuRoute
   PlatformZpracovaniDatRoute: typeof PlatformZpracovaniDatRoute
   PlatformZpracovatelskaSmlouvaRoute: typeof PlatformZpracovatelskaSmlouvaRoute
   PlatformIndexRoute: typeof PlatformIndexRoute
@@ -761,6 +781,7 @@ const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformUcetRoute: PlatformUcetRoute,
   PlatformUzivateleRoute: PlatformUzivateleRoute,
   PlatformZapomenuteHesloRoute: PlatformZapomenuteHesloRoute,
+  PlatformZmenaEmailuRoute: PlatformZmenaEmailuRoute,
   PlatformZpracovaniDatRoute: PlatformZpracovaniDatRoute,
   PlatformZpracovatelskaSmlouvaRoute: PlatformZpracovatelskaSmlouvaRoute,
   PlatformIndexRoute: PlatformIndexRoute,

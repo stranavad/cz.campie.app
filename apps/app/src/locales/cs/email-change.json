@@ -1,0 +1,12 @@
+{
+  "title": "Potvrzení nového e-mailu",
+  "intro": "Potvrďte, že se k účtu chcete od teď přihlašovat touto adresou. Původní adresa dostane upozornění.",
+  "submit": "Potvrdit nový e-mail",
+  "done": "E-mail je změněný. Přihlašujte se od teď novou adresou.",
+  "continue": "Pokračovat do správy",
+  "failure": {
+    "email_change_invalid": "Odkaz už neplatí: byl použit, nahrazen novějším, nebo vypršel. O změnu požádejte znovu na stránce Můj účet.",
+    "email_taken": "Tuto adresu už používá jiný účet, takže ji k vašemu účtu nelze přidat.",
+    "unexpected": "E-mail se nepodařilo změnit. Zkuste to prosím znovu."
+  }
+}

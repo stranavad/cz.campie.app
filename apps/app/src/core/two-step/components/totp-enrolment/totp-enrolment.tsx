@@ -5,12 +5,8 @@ import { Alert } from '@/components/ui/alert';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useStartTotpEnrolmentMutation } from '@/core/two-step/api/two-step.queries';
 import { TotpCodeForm } from '@/core/two-step/components/totp-code-form/totp-code-form';
+import { groupSecret } from '@/core/two-step/helpers/group-secret.helper';
 import { useShowRecoveryCodes } from '@/core/two-step/recovery-codes.context';
-
-// Groups of four, as authenticator apps print a key, so it is easier to type in.
-function groupSecret(secret: string): string {
-  return secret.replaceAll(/(.{4})(?=.)/g, '$1 ');
-}
 
 interface TotpEnrolmentProps {
   // Why the admin sets it up here: by their own choice, or because the Organisation or the console requires it.

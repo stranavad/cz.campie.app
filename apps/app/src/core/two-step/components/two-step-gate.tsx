@@ -39,7 +39,7 @@ function Gated({ children }: TwoStepGateProps) {
     return children;
   }
 
-  if (account.data.totpEnabled && !account.data.secondFactor) {
+  if (account.data.totp !== null && !account.data.secondFactor) {
     return (
       <GateCard icon={<ShieldCheckIcon />}>
         <div className="flex flex-col gap-1">
@@ -56,7 +56,7 @@ function Gated({ children }: TwoStepGateProps) {
     ({ organisation, support }) => organisation.totpRequired && support === null,
   );
 
-  if (!account.data.totpEnabled && requiring !== undefined) {
+  if (account.data.totp === null && requiring !== undefined) {
     return (
       <GateCard icon={<ShieldCheckIcon />}>
         <TotpEnrolment intro={t('twoStep.enrolment.required', { organisation: requiring.organisation.displayName })} />

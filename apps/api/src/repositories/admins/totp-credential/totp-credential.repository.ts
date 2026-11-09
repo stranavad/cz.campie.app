@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq, isNotNull, isNull, lt, or } from 'drizzle-orm';
+import { and, count, eq, isNotNull, isNull, lt, or, sql } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { totpCredentials, totpRecoveryCodes } from '../../../db/schema.ts';
@@ -65,6 +65,51 @@ export class TotpCredentialRepository {
   }
 
   /**
+   * Store a new phone's secret beside an admin's confirmed one, replacing one stored earlier and not
+   * confirmed; the confirmed secret keeps working.
+   * @param adminId admin id
+   * @param sealedSecret the new secret, sealed
+   * @returns whether the admin's TOTP is on, so the secret was stored
+   */
+  public async startReplacement(adminId: string, sealedSecret: Buffer): Promise<boolean> {
+    const rows = await this.unitOfWork.db
+      .update(totpCredentials)
+      .set({ replacementSecret: sealedSecret })
+      .where(and(eq(totpCredentials.adminId, adminId), isNotNull(totpCredentials.confirmedAt)))
+      .returning({ adminId: totpCredentials.adminId });
+
+    return rows.length > 0;
+  }
+
+  /**
+   * Replace an admin's secret by the new phone's in one step, only while it still waits as the code was
+   * checked against it, using up the code's time step.
+   * @param adminId admin id
+   * @param sealedSecret the new secret as stored when the code was checked
+   * @param step the time step of the new app's code
+   * @returns whether the secret was replaced; false when another request replaced or restarted it first
+   */
+  public async completeReplacement(adminId: string, sealedSecret: Buffer, step: number): Promise<boolean> {
+    const rows = await this.unitOfWork.db
+      .update(totpCredentials)
+      .set({
+        secret: sealedSecret,
+        replacementSecret: null,
+        lastUsedStep: sql`greatest(${totpCredentials.lastUsedStep}, ${step})`,
+      })
+      .where(
+        and(
+          eq(totpCredentials.adminId, adminId),
+          eq(totpCredentials.replacementSecret, sealedSecret),
+          isNotNull(totpCredentials.confirmedAt),
+        ),
+      )
+      .returning({ adminId: totpCredentials.adminId });
+
+    return rows.length > 0;
+  }
+
+  /**
    * Use up the time step of a code of an admin's confirmed credential, unless it or a later one was used.
    * @param adminId admin id
    * @param step the code's time step
@@ -94,6 +139,19 @@ export class TotpCredentialRepository {
   public async replaceRecoveryCodes(adminId: string, codeHashes: readonly string[]): Promise<void> {
     await this.unitOfWork.db.delete(totpRecoveryCodes).where(eq(totpRecoveryCodes.adminId, adminId));
     await this.unitOfWork.db.insert(totpRecoveryCodes).values(codeHashes.map((codeHash) => ({ adminId, codeHash })));
+  }
+
+  /**
+   * Count an admin's recovery codes: those still unused, and all issued with them.
+   * @param adminId the admin
+   */
+  public async countRecoveryCodes(adminId: string): Promise<{ left: number; issued: number }> {
+    const [row] = await this.unitOfWork.db
+      .select({ issued: count(), used: count(totpRecoveryCodes.usedAt) })
+      .from(totpRecoveryCodes)
+      .where(eq(totpRecoveryCodes.adminId, adminId));
+
+    return { left: (row?.issued ?? 0) - (row?.used ?? 0), issued: row?.issued ?? 0 };
   }
 
   /**

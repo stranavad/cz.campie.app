@@ -162,7 +162,7 @@ describe('invitations', () => {
     const invitee = { Host: mainHost(app()), Cookie: String(loggedIn.headers['set-cookie']).split(';')[0] ?? '' };
     expect((await http().get('/api/account').set(invitee)).body).toMatchObject({
       ...NAME,
-      totpEnabled: false,
+      totp: null,
       memberships: expect.arrayContaining([
         expect.objectContaining({ owner: true, organisation: expect.objectContaining({ id: planted.organisationId }) }),
         expect.objectContaining({ permissions: LEVELS, organisation: expect.objectContaining({ id: organisationId }) }),

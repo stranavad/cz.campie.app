@@ -1,4 +1,5 @@
 export { admins } from './admins/admins.ts';
+export { adminEmailChanges } from './admins/admin-email-changes.ts';
 export { invitations } from './admins/invitations.ts';
 export { memberships, permissionLevel } from './admins/memberships.ts';
 export { emailVerifications } from './admins/email-verifications.ts';
