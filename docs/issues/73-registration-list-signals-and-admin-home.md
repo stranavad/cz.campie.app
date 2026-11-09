@@ -1,6 +1,6 @@
 # 73 - Registration list signals and admin home
 
-Status: in-progress
+Status: done
 Stage: 1b
 Episode: E6 Admin Registrations
 Blocked by: 43, 44, 55, 58, 61

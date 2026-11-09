@@ -1,6 +1,6 @@
 # 72 - Account self-service: name, email, password and TOTP
 
-Status: in-progress
+Status: done
 Stage: 1b
 Episode: E1 Organisations and identity
 Blocked by: 67, 70, 71

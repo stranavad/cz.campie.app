@@ -1,6 +1,6 @@
 # 76 - Camp-wide Consent and document progress, test email
 
-Status: in-progress
+Status: done
 Stage: 1b
 Episode: E2 Camp setup
 Blocked by: 32, 55, 58, 59

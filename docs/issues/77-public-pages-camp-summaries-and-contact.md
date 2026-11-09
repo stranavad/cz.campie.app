@@ -1,6 +1,6 @@
 # 77 - Public pages: Camp summaries, Deposit, contact and Sibling discount
 
-Status: in-progress
+Status: done
 Stage: 1b
 Episode: E3 Public registration
 Blocked by: 27, 33, 34

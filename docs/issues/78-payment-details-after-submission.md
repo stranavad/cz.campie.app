@@ -1,6 +1,6 @@
 # 78 - Payment details and Přihláška after submission
 
-Status: in-progress
+Status: done
 Stage: 1b
 Episode: E3 Public registration
 Blocked by: 36, 40, 49

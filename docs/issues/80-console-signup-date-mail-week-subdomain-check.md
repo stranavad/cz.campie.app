@@ -1,6 +1,6 @@
 # 80 - Console signup date, weekly mail stats and subdomain check
 
-Status: in-progress
+Status: done
 Stage: 1b
 Episode: E1 Organisations and identity
 Blocked by: 17, 21, 22, 68

@@ -1,6 +1,6 @@
 # 71 - Admin names
 
-Status: in-progress
+Status: done
 Stage: 1b
 Episode: E1 Organisations and identity
 Blocked by: 20, 63, 69, 70

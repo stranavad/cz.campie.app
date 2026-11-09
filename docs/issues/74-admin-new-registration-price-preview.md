@@ -1,6 +1,6 @@
 # 74 - Price preview for a new admin Registration
 
-Status: in-progress
+Status: done
 Stage: 1b
 Episode: E6 Admin Registrations
 Blocked by: 38, 44

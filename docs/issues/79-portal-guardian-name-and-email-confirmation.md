@@ -1,6 +1,6 @@
 # 79 - Portal: guardian name and confirmed email
 
-Status: in-progress
+Status: done
 Stage: 1b
 Episode: E5 Guardian portal
 Blocked by: 39, 41, 71

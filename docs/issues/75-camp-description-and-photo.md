@@ -1,6 +1,6 @@
 # 75 - Camp description and photo
 
-Status: in-progress
+Status: done
 Stage: 1b
 Episode: E2 Camp setup
 Blocked by: 12, 24, 33
