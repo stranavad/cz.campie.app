@@ -56,8 +56,9 @@ export interface StoreLimits {
   readonly stripMetadata?: boolean;
 }
 
-// An Organisation's or a Camp's logo: shown on every public page and in every document, so a small image.
-export const LOGO_LIMITS: StoreLimits = { allow: LOGO_CONTENT_TYPES, maxBytes: MAX_LOGO_BYTES };
+// An Organisation's or a Camp's logo: shown on every public page and in every document, so a small image
+// published without what its maker's program or phone wrote into it.
+export const LOGO_LIMITS: StoreLimits = { allow: LOGO_CONTENT_TYPES, maxBytes: MAX_LOGO_BYTES, stripMetadata: true };
 
 // Long enough to open a file on a slow phone, short enough that a forwarded or logged link soon dies.
 const LINK_LIFETIME_MS = 5 * 60 * 1000;

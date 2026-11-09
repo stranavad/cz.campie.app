@@ -8,6 +8,7 @@ import {
   organisationHost,
   type RequestHeaders,
 } from '../../../testing/fixtures.ts';
+import { PALETTE_PNG, RGBA_PNG } from '../../../testing/images.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
 
 const TURNUS = {
@@ -141,11 +142,10 @@ describe('public camp pages', () => {
   });
 
   it("previews a Camp's logo through a link that works on the main host", async () => {
-    const png = Buffer.concat([Buffer.from('89504e470d0a1a0a', 'hex'), Buffer.from('fake logo')]);
     await http()
       .put(`/api/camps/${campId}/branding/logo`)
       .set(owner.headers(organisationId))
-      .attach('file', png, 'logo.png');
+      .attach('file', RGBA_PNG, 'logo.png');
 
     const { logoUrl } = (await http().get(`/api/camps/${campId}/preview`).set(owner.headers(organisationId))).body.camp;
     const logo = await http()
@@ -154,17 +154,14 @@ describe('public camp pages', () => {
       .buffer(true);
 
     expect(logo.status).toBe(200);
-    expect(logo.body).toEqual(png);
+    expect(logo.body).toEqual(RGBA_PNG);
   });
 
   it("previews a Camp's photo through a link that works on the main host", async () => {
-    // A PNG's signature, header and end: built like an image, as a published photo must be.
-    const png = Buffer.concat(
-      ['89504e470d0a1a0a', '0000000d 49484452 00000001 00000001 0806000000 00000000', '00000000 49454e44 00000000'].map(
-        (part) => Buffer.from(part.replaceAll(' ', ''), 'hex'),
-      ),
-    );
-    await http().put(`/api/camps/${campId}/photo`).set(owner.headers(organisationId)).attach('file', png, 'tabor.png');
+    await http()
+      .put(`/api/camps/${campId}/photo`)
+      .set(owner.headers(organisationId))
+      .attach('file', PALETTE_PNG, 'tabor.png');
 
     const { photoUrl } = (await http().get(`/api/camps/${campId}/preview`).set(owner.headers(organisationId))).body
       .camp;
@@ -175,7 +172,7 @@ describe('public camp pages', () => {
 
     expect(photoUrl).toMatch(/^\/api\/downloads\//);
     expect(photo.status).toBe(200);
-    expect(photo.body).toEqual(png);
+    expect(photo.body).toEqual(PALETTE_PNG);
   });
 
   it("previews no other Organisation's Camp", async () => {

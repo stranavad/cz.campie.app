@@ -3,11 +3,17 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { FileService } from '../../../core/files/file.service.ts';
 import { createAdmin, createOrganisation, organisationHost, type RequestHeaders } from '../../../testing/fixtures.ts';
+import { latin1, PNG_IEND, pngChunk, RGBA_PNG } from '../../../testing/images.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
 
-// The first bytes of a PNG and a JPG, which decide the type; the rest is made up.
-const PNG = Buffer.concat([Buffer.from('89504e470d0a1a0a', 'hex'), Buffer.from('fake logo')]);
+// The logo as a graphics program saves it: who made it, where, and when.
+const PNG_WITH_METADATA = Buffer.concat([
+  RGBA_PNG.subarray(0, -12),
+  pngChunk('tEXt', latin1('Author\0Jana Testovaci')),
+  pngChunk('eXIf', latin1('MM\0*GPS 50.0755N 14.4378E')),
+  PNG_IEND,
+]);
 const PDF = Buffer.from('%PDF-1.7 fake');
 
 describe('organisation settings', () => {
@@ -128,12 +134,12 @@ describe('organisation settings', () => {
     await expectIsolated(() => update(otherOwner.headers(organisationId), { displayName: 'Převzato' }));
   });
 
-  it('stores the logo encrypted and serves it on the public pages, and a new one under a new address', async () => {
-    const uploaded = await uploadLogo(PNG, 'logo.png');
+  it('stores the logo encrypted and serves it on the public pages without its metadata, a new one under a new address', async () => {
+    const uploaded = await uploadLogo(PNG_WITH_METADATA, 'logo.png');
 
     expect(uploaded.status).toBe(200);
     expect(uploaded.body.logo).toMatchObject({ url: expect.stringMatching(/^\/api\/downloads\//) });
-    expect([...files().objects.values()].some((object) => object.includes(PNG))).toBe(false);
+    expect([...files().objects.values()].some((object) => object.includes(RGBA_PNG))).toBe(false);
 
     const { logoUrl } = await publicOrganisation();
     const served = await http()
@@ -145,9 +151,9 @@ describe('organisation settings', () => {
     expect(served.headers['content-type']).toBe('image/png');
     expect(served.headers['cache-control']).toBe('public, max-age=31536000, immutable');
     expect(served.headers['content-security-policy']).toBe("default-src 'none'; sandbox");
-    expect(served.body).toEqual(PNG);
+    expect(served.body).toEqual(RGBA_PNG);
 
-    await uploadLogo(PNG, 'novy.png');
+    await uploadLogo(RGBA_PNG, 'novy.png');
 
     expect((await publicOrganisation()).logoUrl).not.toBe(logoUrl);
     expect(
@@ -161,7 +167,7 @@ describe('organisation settings', () => {
   });
 
   it('removes the logo and its file', async () => {
-    await uploadLogo(PNG, 'logo.png');
+    await uploadLogo(RGBA_PNG, 'logo.png');
 
     const response = await http().delete('/api/organisation-settings/logo').set(owner.headers(organisationId));
 
@@ -172,7 +178,8 @@ describe('organisation settings', () => {
 
   it.each([
     [PDF, 'logo.pdf', 400, 'file_type_not_allowed'],
-    [Buffer.concat([PNG, Buffer.alloc(1024 * 1024)]), 'logo.png', 413, 'file_too_large'],
+    [Buffer.concat([RGBA_PNG.subarray(0, 8), latin1('no picture')]), 'logo.png', 400, 'file_type_not_allowed'],
+    [Buffer.concat([RGBA_PNG, Buffer.alloc(1024 * 1024)]), 'logo.png', 413, 'file_too_large'],
   ])('rejects a logo that is no small image (%#)', async (bytes, name, status, code) => {
     const response = await uploadLogo(bytes, name);
 
@@ -192,7 +199,7 @@ describe('organisation settings', () => {
     await http()
       .put('/api/organisation-settings/logo')
       .set(otherOwner.headers(otherId))
-      .attach('file', PNG, 'logo.png');
+      .attach('file', RGBA_PNG, 'logo.png');
     const [otherLogo] = await query<{ logo_file_id: string }>('SELECT logo_file_id FROM organisations WHERE id = $1', [
       otherId,
     ]);

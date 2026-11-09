@@ -11,57 +11,28 @@ import {
   organisationHost,
   type RequestHeaders,
 } from '../../../testing/fixtures.ts';
+import {
+  BASELINE_JPEG,
+  hex,
+  JPEG_COMMENT,
+  JPEG_SOI,
+  jpegSegment,
+  latin1,
+  LOSSY_WEBP,
+  RGBA_PNG,
+} from '../../../testing/images.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
 
-const hex = (value: string) => Buffer.from(value.replaceAll(' ', ''), 'hex');
-
-/**
- * A JPEG segment: its marker and a length that counts itself.
- * @param marker the marker's second byte
- * @param data the segment's data
- */
-function segment(marker: number, data: Buffer): Buffer {
-  const head = Buffer.from([0xff, marker, 0, 0]);
-  head.writeUInt16BE(data.length + 2, 2);
-
-  return Buffer.concat([head, data]);
-}
-
 // A made-up JPEG as a phone writes one at camp: the picture after an Exif block naming where it was taken,
 // and a comment naming who took it.
-const PICTURE = [
-  segment(0xdb, Buffer.alloc(65, 1)),
-  segment(0xc0, hex('08 0001 0001 01 01 11 00')),
-  segment(0xc4, Buffer.alloc(20, 2)),
-  segment(0xda, hex('01 01 00 00 3f 00')),
-  hex('1234 ff00 56'),
-  hex('ffd9'),
-];
 const JPEG_AT_CAMP = Buffer.concat([
-  hex('ffd8'),
-  segment(
-    0xe1,
-    Buffer.concat([Buffer.from('Exif\0\0'), hex('4d4d002a 00000008 0000 00000000'), Buffer.from('GPS 49.1N')]),
-  ),
-  segment(0xfe, Buffer.from('Fotila Jana Testovaci')),
-  ...PICTURE,
+  JPEG_SOI,
+  jpegSegment(0xe1, Buffer.concat([latin1('Exif\0\0'), hex('4d4d002a 00000008 0000 00000000'), latin1('GPS 49.1N')])),
+  JPEG_COMMENT,
+  BASELINE_JPEG.subarray(2),
 ]);
-const JPEG_WITHOUT_METADATA = Buffer.concat([hex('ffd8'), ...PICTURE]);
-
-const PNG = Buffer.concat([
-  hex('89504e470d0a1a0a'),
-  hex('0000000d 49484452 00000001 00000001 0806000000 00000000'),
-  hex('0000000a 49444154 789c6360000000020001 00000000'),
-  hex('00000000 49454e44 00000000'),
-]);
-const WEBP = Buffer.concat([
-  Buffer.from('RIFF'),
-  hex('14000000'),
-  Buffer.from('WEBPVP8 '),
-  hex('08000000'),
-  Buffer.alloc(8, 3),
-]);
+const JPEG_WITHOUT_METADATA = BASELINE_JPEG;
 
 type Admin = Awaited<ReturnType<typeof createAdmin>>;
 
@@ -84,7 +55,7 @@ describe('camp photo', () => {
     withClient(database().ownerUrl, async (client) => (await client.query(sql, values)).rows as T[]);
 
   const photo = (headers: RequestHeaders, id = campId) => http().get(`/api/camps/${id}/photo`).set(headers);
-  const upload = (headers: RequestHeaders, bytes = JPEG_AT_CAMP, name = 'tabor.jpg', id = campId) =>
+  const upload = (headers: RequestHeaders, bytes: Buffer = JPEG_AT_CAMP, name = 'tabor.jpg', id = campId) =>
     http().put(`/api/camps/${id}/photo`).set(headers).attach('file', bytes, name);
   const remove = (headers: RequestHeaders, id = campId) => http().delete(`/api/camps/${id}/photo`).set(headers);
   const publicCamp = async () => (await http().get('/api/public-camps/letni-pokusnik').set(host)).body;
@@ -123,8 +94,8 @@ describe('camp photo', () => {
   });
 
   it.each([
-    [PNG, 'tabor.png', 'image/png'],
-    [WEBP, 'tabor.webp', 'image/webp'],
+    [RGBA_PNG, 'tabor.png', 'image/png'],
+    [LOSSY_WEBP, 'tabor.webp', 'image/webp'],
   ])('takes a photo as %#', async (bytes, name, contentType) => {
     await upload(owner.headers(organisationId), bytes, name);
 
@@ -138,7 +109,7 @@ describe('camp photo', () => {
     await upload(owner.headers(organisationId));
     const { photoUrl: first } = await publicCamp();
 
-    await upload(owner.headers(organisationId), PNG, 'novy.png');
+    await upload(owner.headers(organisationId), RGBA_PNG, 'novy.png');
     const { photoUrl: second } = await publicCamp();
 
     expect(second).not.toBe(first);
@@ -183,7 +154,7 @@ describe('camp photo', () => {
     ],
     ['a GIF', Buffer.from('GIF89a\x01\x00\x01\x00'), 'tabor.gif', 400, 'file_type_not_allowed'],
     ['a PDF', Buffer.from('%PDF-1.7'), 'tabor.pdf', 400, 'file_type_not_allowed'],
-    ['a PNG named as a JPEG', PNG, 'tabor.jpg', 400, 'file_type_not_allowed'],
+    ['a RGBA_PNG named as a JPEG', RGBA_PNG, 'tabor.jpg', 400, 'file_type_not_allowed'],
     [
       'a photo over the limit',
       Buffer.concat([JPEG_AT_CAMP, Buffer.alloc(MAX_CAMP_PHOTO_BYTES)]),
@@ -221,11 +192,11 @@ describe('camp photo', () => {
     // Another file of the same Organisation, such as a guardian's upload, and the Camp's logo.
     const notAPhoto = await app()
       .get(UnitOfWork)
-      .run(organisationId, () => app().get(FileService).store({ name: 'karta.png', bytes: PNG }));
+      .run(organisationId, () => app().get(FileService).store({ name: 'karta.png', bytes: RGBA_PNG }));
     await http()
       .put(`/api/camps/${campId}/branding/logo`)
       .set(owner.headers(organisationId))
-      .attach('file', PNG, 'logo.png');
+      .attach('file', RGBA_PNG, 'logo.png');
     const [{ logo_file_id: logo }] = await query<{ logo_file_id: string }>('SELECT logo_file_id FROM camps');
     const otherId = await createOrganisation(app());
     const otherCampId = await createCamp(app(), otherId, 'Cizí tábor', 'cizi-tabor');

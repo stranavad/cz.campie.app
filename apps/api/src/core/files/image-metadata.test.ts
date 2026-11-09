@@ -1,186 +1,356 @@
 import { describe, expect, it } from 'vitest';
 
+import { MAX_CAMP_PHOTO_BYTES } from '@repo/schema/camps';
+
+import {
+  ANIMATED_WEBP,
+  BASELINE_JPEG,
+  hex,
+  ICC_PROFILE,
+  JPEG_COMMENT,
+  JPEG_DHT,
+  JPEG_DQT,
+  JPEG_EOI,
+  JPEG_EXIF,
+  JPEG_SCAN,
+  JPEG_SOF0,
+  JPEG_SOI,
+  JPEG_SOS,
+  JPEG_XMP,
+  jpegSegment,
+  latin1,
+  LOSSLESS_WEBP,
+  LOSSY_WEBP,
+  PALETTE_PNG,
+  png,
+  PNG_IEND,
+  PNG_SIGNATURE,
+  pngChunk,
+  PROGRESSIVE_JPEG,
+  RGBA_PNG,
+  riffChunk,
+  webp,
+  WEBP_VP8,
+  WEBP_VP8L,
+  webpFrame,
+} from '../../testing/images.ts';
 import { withoutMetadata } from './image-metadata.ts';
 
-const hex = (value: string) => Buffer.from(value.replaceAll(' ', ''), 'hex');
-const ascii = (value: string) => Buffer.from(value, 'latin1');
-
-/**
- * A JPEG segment: its marker and a length that counts itself.
- * @param marker the marker's second byte
- * @param data the segment's data
- */
-function segment(marker: number, data: Buffer): Buffer {
-  const head = Buffer.alloc(4);
-  head.writeUInt8(0xff, 0);
-  head.writeUInt8(marker, 1);
-  head.writeUInt16BE(data.length + 2, 2);
-
-  return Buffer.concat([head, data]);
-}
-
-/**
- * A PNG chunk; the checksum is not checked, so it is left zero.
- * @param type the chunk's type
- * @param data the chunk's data
- */
-function chunk(type: string, data: Buffer): Buffer {
-  const length = Buffer.alloc(4);
-  length.writeUInt32BE(data.length);
-
-  return Buffer.concat([length, ascii(type), data, Buffer.alloc(4)]);
-}
-
-/**
- * A RIFF chunk of a WebP file, padded to an even length.
- * @param fourcc the chunk's code
- * @param data the chunk's data
- */
-function riffChunk(fourcc: string, data: Buffer): Buffer {
-  const size = Buffer.alloc(4);
-  size.writeUInt32LE(data.length);
-
-  return Buffer.concat([ascii(fourcc), size, data, Buffer.alloc(data.length % 2)]);
-}
-
-function webp(...chunks: Buffer[]): Buffer {
-  const body = Buffer.concat([ascii('WEBP'), ...chunks]);
-  const size = Buffer.alloc(4);
-  size.writeUInt32LE(body.length);
-
-  return Buffer.concat([ascii('RIFF'), size, body]);
-}
-
-const SOI = hex('ffd8');
-const EOI = hex('ffd9');
 // JFIF 1.02, 72 dpi, with a 1x1 thumbnail of its own.
-const JFIF_WITH_THUMBNAIL = segment(0xe0, hex('4a46494600 0102 01 0048 0048 01 01 ffffff'));
-const JFIF = segment(0xe0, hex('4a46494600 0102 01 0048 0048 00 00'));
-// Exif, little-endian, IFD0 with the camera's make, orientation 6 (turned right) and a GPS pointer.
-const EXIF = segment(
+const JFIF_WITH_THUMBNAIL = jpegSegment(0xe0, hex('4a46494600 0102 01 0048 0048 01 01 ffffff'));
+const JFIF = jpegSegment(0xe0, hex('4a46494600 0102 01 0048 0048 00 00'));
+// The orientation of JPEG_EXIF, alone, big-endian: all the Exif a browser needs to turn the photo upright.
+const ORIENTATION_ONLY = jpegSegment(
   0xe1,
-  Buffer.concat([
-    ascii('Exif\0\0'),
-    hex('49492a00 08000000 0300'),
-    hex('0f01 0200 06000000 32000000'),
-    hex('1201 0300 01000000 0600 0000'),
-    hex('2588 0400 01000000 38000000'),
-    hex('00000000'),
-    ascii('Fotak\0'),
-    ascii('GPS 50.0755N 14.4378E'),
-  ]),
+  Buffer.concat([latin1('Exif\0\0'), hex('4d4d002a 00000008 0001 0112 0003 00000001 0006 0000 00000000')]),
 );
-// The same orientation, alone, big-endian: all the Exif a browser needs to turn the photo upright.
-const ORIENTATION_ONLY = segment(
-  0xe1,
-  Buffer.concat([ascii('Exif\0\0'), hex('4d4d002a 00000008 0001 0112 0003 00000001 0006 0000 00000000')]),
-);
-const XMP = segment(0xe1, ascii('http://ns.adobe.com/xap/1.0/\0<x:xmpmeta>GPS 50.0755N</x:xmpmeta>'));
-const IPTC = segment(0xed, ascii('Photoshop 3.0\0Jana Testovaci'));
-const COMMENT = segment(0xfe, ascii('Fotila Jana Testovaci'));
-const ICC = segment(0xe2, ascii('ICC_PROFILE\0\x01\x01profile'));
-const MPF = segment(0xe2, ascii('MPF\0second image'));
-const ADOBE = segment(0xee, ascii('Adobe\0\x64\0\0\0\0\x01'));
-const DQT = segment(0xdb, Buffer.alloc(65, 1));
-const SOF0 = segment(0xc0, hex('08 0001 0001 01 01 11 00'));
-const DHT = segment(0xc4, Buffer.alloc(20, 2));
-const SOS = segment(0xda, hex('01 01 00 00 3f 00'));
-// Entropy-coded data with a stuffed 0xff and a restart marker, which are part of the scan.
-const SCAN = hex('1234 ff00 56 ffd0 78');
+const IPTC = jpegSegment(0xed, latin1('Photoshop 3.0\0Jana Testovaci'));
+/**
+ * A segment of a colour profile split over a JPEG's segments.
+ * @param part which one, from 1
+ * @param parts how many there are
+ * @param data its part of the profile
+ */
+const iccSegment = (part: number, parts: number, data: Buffer) =>
+  jpegSegment(0xe2, Buffer.concat([latin1('ICC_PROFILE\0'), Buffer.from([part, parts]), data]));
+const ICC = iccSegment(1, 1, ICC_PROFILE);
+const MPF = jpegSegment(0xe2, latin1('MPF\0second image'));
+const ADOBE = jpegSegment(0xee, latin1('Adobe\0\x64\0\0\0\0\x01'));
 // What phones append after the image: a second picture, a motion clip with its own location.
-const TRAILER = ascii('ftypmp42 GPS 50.0755N');
+const TRAILER = latin1('ftypmp42 GPS 50.0755N');
+const IHDR = pngChunk('IHDR', hex('00000001 00000001 08 06 00 00 00'));
+const PICTURE = [JPEG_DQT, JPEG_SOF0, JPEG_DHT, JPEG_SOS, JPEG_SCAN];
 
 describe('withoutMetadata', () => {
   it('keeps of a JPEG only the picture, its colours and its orientation', () => {
     const photo = Buffer.concat([
-      SOI,
+      JPEG_SOI,
       JFIF_WITH_THUMBNAIL,
-      EXIF,
-      XMP,
+      JPEG_EXIF,
+      JPEG_XMP,
       ICC,
       MPF,
       IPTC,
-      COMMENT,
+      JPEG_COMMENT,
       ADOBE,
-      DQT,
-      SOF0,
-      DHT,
-      SOS,
-      SCAN,
-      EOI,
+      ...PICTURE,
+      JPEG_EOI,
       TRAILER,
     ]);
 
     expect(withoutMetadata('image/jpeg', photo)).toEqual(
-      Buffer.concat([SOI, JFIF, ORIENTATION_ONLY, ICC, ADOBE, DQT, SOF0, DHT, SOS, SCAN, EOI]),
+      Buffer.concat([JPEG_SOI, JFIF, ORIENTATION_ONLY, ICC, ADOBE, ...PICTURE, JPEG_EOI]),
     );
   });
 
-  it('drops the Exif of a JPEG whole when it holds no turn, and keeps every scan of a progressive one', () => {
-    const upright = segment(0xe1, Buffer.concat([ascii('Exif\0\0'), hex('4d4d002a 00000008 0000 00000000')]));
-    const photo = Buffer.concat([SOI, upright, DQT, SOF0, DHT, SOS, SCAN, DHT, SOS, SCAN, EOI]);
+  it('drops the Exif of a JPEG whole when it holds no turn', () => {
+    const upright = jpegSegment(0xe1, Buffer.concat([latin1('Exif\0\0'), hex('4d4d002a 00000008 0000 00000000')]));
 
-    expect(withoutMetadata('image/jpeg', photo)).toEqual(
-      Buffer.concat([SOI, DQT, SOF0, DHT, SOS, SCAN, DHT, SOS, SCAN, EOI]),
-    );
-  });
-
-  it('keeps of a PNG only the chunks that draw it', () => {
-    const IHDR = chunk('IHDR', hex('00000001 00000001 08 06 00 00 00'));
-    const SRGB = chunk('sRGB', hex('00'));
-    const PHYS = chunk('pHYs', hex('00000b13 00000b13 01'));
-    const IDAT = chunk('IDAT', hex('789c 6360 0000 0002 0001'));
-    const IEND = chunk('IEND', Buffer.alloc(0));
-    const image = Buffer.concat([
-      hex('89504e470d0a1a0a'),
-      IHDR,
-      SRGB,
-      chunk('tEXt', ascii('Author\0Jana Testovaci')),
-      chunk('eXIf', ascii('MM\0*GPS 50.0755N')),
-      chunk('iTXt', ascii('XML:com.adobe.xmp\0\0\0\0\0GPS')),
-      chunk('tIME', hex('07eb 07 04 0c 00 00')),
-      PHYS,
-      IDAT,
-      chunk('zzZz', ascii('private')),
-      IEND,
-      TRAILER,
-    ]);
-
-    expect(withoutMetadata('image/png', image)).toEqual(
-      Buffer.concat([hex('89504e470d0a1a0a'), IHDR, SRGB, PHYS, IDAT, IEND]),
-    );
-  });
-
-  it('keeps of a WebP only the chunks that draw it, and no longer announces Exif or XMP', () => {
-    const ICCP = riffChunk('ICCP', ascii('profile'));
-    const VP8 = riffChunk('VP8 ', Buffer.alloc(11, 3));
-    // Flags: ICC (0x20), Exif (0x08) and XMP (0x04); a 1x1 canvas.
-    const image = webp(
-      riffChunk('VP8X', hex('2c 000000 000000 000000')),
-      ICCP,
-      VP8,
-      riffChunk('EXIF', ascii('MM\0*GPS 50.0755N')),
-      riffChunk('XMP ', ascii('<x:xmpmeta>GPS</x:xmpmeta>')),
-    );
-
-    expect(withoutMetadata('image/webp', Buffer.concat([image, TRAILER]))).toEqual(
-      webp(riffChunk('VP8X', hex('20 000000 000000 000000')), ICCP, VP8),
+    expect(withoutMetadata('image/jpeg', Buffer.concat([JPEG_SOI, upright, ...PICTURE, JPEG_EOI]))).toEqual(
+      BASELINE_JPEG,
     );
   });
 
   it.each([
-    ['a JPEG cut short', 'image/jpeg', Buffer.concat([SOI, JFIF, DQT, SOF0, SOS, SCAN])],
-    ['a JPEG segment longer than the file', 'image/jpeg', Buffer.concat([SOI, hex('ffdb 0100 01')])],
-    ['a JPEG of bare bytes', 'image/jpeg', Buffer.concat([SOI, ascii('<script>')])],
-    ['a PNG without its end', 'image/png', Buffer.concat([hex('89504e470d0a1a0a'), chunk('IHDR', Buffer.alloc(13))])],
+    ['a baseline JPEG', 'image/jpeg', BASELINE_JPEG],
+    ['a progressive JPEG with restart markers', 'image/jpeg', PROGRESSIVE_JPEG],
+    ['a palette PNG with a transparent colour', 'image/png', PALETTE_PNG],
+    ['a PNG with alpha', 'image/png', RGBA_PNG],
+    ['a lossy WebP', 'image/webp', LOSSY_WEBP],
+    ['a lossless WebP', 'image/webp', LOSSLESS_WEBP],
+    ['an animated WebP', 'image/webp', ANIMATED_WEBP],
+  ] as const)('keeps %s without metadata as it is', (_case, contentType, bytes) => {
+    expect(withoutMetadata(contentType, bytes)).toEqual(bytes);
+  });
+
+  it('keeps of a PNG only the chunks that draw it', () => {
+    const [head, tail] = [PALETTE_PNG.subarray(0, 33), PALETTE_PNG.subarray(33)];
+    const image = Buffer.concat([
+      head,
+      pngChunk('tEXt', latin1('Author\0Jana Testovaci')),
+      pngChunk('eXIf', latin1('MM\0*GPS 50.0755N')),
+      pngChunk('iTXt', latin1('XML:com.adobe.xmp\0\0\0\0\0GPS')),
+      pngChunk('tIME', hex('07eb 07 04 0c 00 00')),
+      tail.subarray(0, -12),
+      pngChunk('zzZz', latin1('private')),
+      PNG_IEND,
+      TRAILER,
+    ]);
+
+    expect(withoutMetadata('image/png', image)).toEqual(PALETTE_PNG);
+  });
+
+  it('keeps of a WebP only the chunks that draw it, and no longer announces Exif or XMP', () => {
+    const ICCP = riffChunk('ICCP', ICC_PROFILE);
+    // Flags: ICC (0x20), Exif (0x08) and XMP (0x04); a 1x1 canvas.
+    const image = webp(
+      riffChunk('VP8X', hex('2c 000000 000000 000000')),
+      ICCP,
+      WEBP_VP8,
+      riffChunk('EXIF', latin1('MM\0*GPS 50.0755N')),
+      riffChunk('XMP ', latin1('<x:xmpmeta>GPS</x:xmpmeta>')),
+    );
+
+    expect(withoutMetadata('image/webp', Buffer.concat([image, TRAILER]))).toEqual(
+      webp(riffChunk('VP8X', hex('20 000000 000000 000000')), ICCP, WEBP_VP8),
+    );
+  });
+
+  // As large as an upload may be, built of the smallest parts there are, so a part that cost a new buffer
+  // or a list entry each would take a second and hundreds of megabytes.
+  const repeated = (part: Buffer) => Buffer.alloc(MAX_CAMP_PHOTO_BYTES - (MAX_CAMP_PHOTO_BYTES % part.length), part);
+
+  it.each([
+    ['temporary markers outside a scan', 'image/jpeg', [JPEG_SOI, repeated(hex('ff01')), ...PICTURE, JPEG_EOI]],
+    ['restart markers outside a scan', 'image/jpeg', [JPEG_SOI, repeated(hex('ffd0')), ...PICTURE, JPEG_EOI]],
+    ['empty restart intervals', 'image/jpeg', [JPEG_SOI, repeated(hex('ffdd 0002')), ...PICTURE, JPEG_EOI]],
+    ['restart intervals', 'image/jpeg', [JPEG_SOI, repeated(hex('ffdd 0004 0001')), ...PICTURE, JPEG_EOI]],
+    ['comments', 'image/jpeg', [JPEG_SOI, repeated(hex('fffe 0002')), ...PICTURE, JPEG_EOI]],
     [
-      'a PNG not starting with its header',
+      'gamma chunks',
       'image/png',
-      Buffer.concat([hex('89504e470d0a1a0a'), chunk('IEND', Buffer.alloc(0))]),
+      [PALETTE_PNG.subarray(0, 33), repeated(pngChunk('gAMA', hex('0000b18f'))), PALETTE_PNG.subarray(33)],
     ],
-    ['a WebP longer than it says', 'image/webp', Buffer.concat([ascii('RIFF'), hex('ffffff00'), ascii('WEBP')])],
-    ['a WebP that draws nothing', 'image/webp', webp(riffChunk('EXIF', ascii('MM\0*')))],
+    [
+      'image data chunks',
+      'image/png',
+      [PALETTE_PNG.subarray(0, -12), repeated(pngChunk('IDAT', Buffer.alloc(0))), PNG_IEND],
+    ],
+    ['frames', 'image/webp', [webp(riffChunk('VP8X', hex('02 000000 000000 000000')), repeated(webpFrame(WEBP_VP8)))]],
+  ] as const)('refuses an image of countless %s', (_case, contentType, parts) => {
+    expect(withoutMetadata(contentType, Buffer.concat(parts))).toBeNull();
+  });
+
+  it.each([
+    ['a JPEG cut short', 'image/jpeg', Buffer.concat([JPEG_SOI, JFIF, ...PICTURE])],
+    ['a JPEG segment longer than the file', 'image/jpeg', Buffer.concat([JPEG_SOI, hex('ffdb 0100 01')])],
+    ['a JPEG of bare bytes', 'image/jpeg', Buffer.concat([JPEG_SOI, latin1('<script>')])],
+    ['a PNG without its end', 'image/png', Buffer.concat([PNG_SIGNATURE, IHDR])],
+    ['a PNG not starting with its header', 'image/png', Buffer.concat([PNG_SIGNATURE, PNG_IEND])],
+    ['a WebP longer than it says', 'image/webp', Buffer.concat([latin1('RIFF'), hex('ffffff00'), latin1('WEBP')])],
+    ['a WebP that draws nothing', 'image/webp', webp(riffChunk('EXIF', latin1('MM\0*')))],
+    ['a JPEG of no picture', 'image/jpeg', Buffer.concat([JPEG_SOI, JPEG_EOI])],
+    ['a JPEG frame without a scan', 'image/jpeg', Buffer.concat([JPEG_SOI, JPEG_DQT, JPEG_SOF0, JPEG_DHT, JPEG_EOI])],
+    [
+      'a JPEG scan before its frame',
+      'image/jpeg',
+      Buffer.concat([JPEG_SOI, JPEG_DQT, JPEG_DHT, JPEG_SOS, JPEG_SCAN, JPEG_SOF0, JPEG_EOI]),
+    ],
+    ['a JPEG of two frames', 'image/jpeg', Buffer.concat([JPEG_SOI, JPEG_SOF0, ...PICTURE, JPEG_EOI])],
+    [
+      'an arithmetic-coded JPEG, which browsers do not draw',
+      'image/jpeg',
+      Buffer.concat([
+        JPEG_SOI,
+        JPEG_DQT,
+        jpegSegment(0xc9, hex('08 0001 0001 01 01 11 00')),
+        JPEG_SOS,
+        JPEG_SCAN,
+        JPEG_EOI,
+      ]),
+    ],
+    ['a PNG that draws nothing', 'image/png', Buffer.concat([PNG_SIGNATURE, IHDR, PNG_IEND])],
+    [
+      'a PNG chunk with a wrong checksum',
+      'image/png',
+      Buffer.concat([PALETTE_PNG.subarray(0, -16), hex('00000000'), PNG_IEND]),
+    ],
+    [
+      'a PNG of two gammas',
+      'image/png',
+      png(6, hex('2b8a4eff'), [pngChunk('gAMA', hex('0000b18f')), pngChunk('gAMA', hex('0000b18f'))]),
+    ],
+    [
+      'a WebP frame that draws nothing',
+      'image/webp',
+      webp(riffChunk('VP8X', hex('02 000000 000000 000000')), riffChunk('ANIM', hex('ffffffff 0000')), webpFrame()),
+    ],
+    ['a lossy WebP without its start code', 'image/webp', webp(riffChunk('VP8 ', Buffer.alloc(18, 3)))],
   ] as const)('reads %s as no image', (_case, contentType, bytes) => {
     expect(withoutMetadata(contentType, bytes)).toBeNull();
+  });
+  // Text a part the picture is built of could carry, were it kept without being read.
+  const TEXT = latin1('GPS 50.0755N 14.4378E Jana Testovaci');
+
+  it.each([
+    ['a reserved marker', 'image/jpeg', Buffer.concat([JPEG_SOI, jpegSegment(0x02, TEXT), ...PICTURE, JPEG_EOI])],
+    ['another reserved marker', 'image/jpeg', Buffer.concat([JPEG_SOI, jpegSegment(0xbf, TEXT), ...PICTURE, JPEG_EOI])],
+    ['a hierarchical frame', 'image/jpeg', Buffer.concat([JPEG_SOI, jpegSegment(0xde, TEXT), ...PICTURE, JPEG_EOI])],
+    ['an expanded reference', 'image/jpeg', Buffer.concat([JPEG_SOI, jpegSegment(0xdf, TEXT), ...PICTURE, JPEG_EOI])],
+    ['a number of lines', 'image/jpeg', Buffer.concat([JPEG_SOI, ...PICTURE, jpegSegment(0xdc, TEXT), JPEG_EOI])],
+    ['the reserved JPG frame', 'image/jpeg', Buffer.concat([JPEG_SOI, jpegSegment(0xc8, TEXT), ...PICTURE, JPEG_EOI])],
+    ['arithmetic conditioning', 'image/jpeg', Buffer.concat([JPEG_SOI, jpegSegment(0xcc, TEXT), ...PICTURE, JPEG_EOI])],
+    [
+      'text after a quantisation table',
+      'image/jpeg',
+      Buffer.concat([JPEG_SOI, jpegSegment(0xdb, Buffer.concat([JPEG_DQT.subarray(4), TEXT])), ...PICTURE, JPEG_EOI]),
+    ],
+    [
+      'text after a Huffman table',
+      'image/jpeg',
+      Buffer.concat([JPEG_SOI, jpegSegment(0xc4, Buffer.concat([JPEG_DHT.subarray(4), TEXT])), ...PICTURE, JPEG_EOI]),
+    ],
+    [
+      'text after a restart interval',
+      'image/jpeg',
+      Buffer.concat([JPEG_SOI, jpegSegment(0xdd, Buffer.concat([hex('0001'), TEXT])), ...PICTURE, JPEG_EOI]),
+    ],
+    [
+      'text after a frame',
+      'image/jpeg',
+      Buffer.concat([
+        JPEG_SOI,
+        JPEG_DQT,
+        jpegSegment(0xc0, Buffer.concat([JPEG_SOF0.subarray(4), TEXT])),
+        JPEG_DHT,
+        JPEG_SOS,
+        JPEG_SCAN,
+        JPEG_EOI,
+      ]),
+    ],
+    [
+      'text after a scan header',
+      'image/jpeg',
+      Buffer.concat([
+        JPEG_SOI,
+        JPEG_DQT,
+        JPEG_SOF0,
+        JPEG_DHT,
+        jpegSegment(0xda, Buffer.concat([JPEG_SOS.subarray(4), TEXT])),
+        JPEG_SCAN,
+        JPEG_EOI,
+      ]),
+    ],
+    ...['pHYs', 'bKGD', 'gAMA', 'cHRM', 'sBIT', 'tRNS', 'sRGB', 'cLLI'].map(
+      (type) => [`text as ${type}`, 'image/png', png(2, hex('2b8a4e'), [pngChunk(type, TEXT)])] as const,
+    ),
+    ['a palette of no whole colours', 'image/png', png(3, hex('00'), [pngChunk('PLTE', hex('2b8a4e 00'))])],
+    [
+      'two extended headers',
+      'image/webp',
+      webp(
+        riffChunk('VP8X', hex('00 000000 000000 000000')),
+        riffChunk('VP8X', hex('00 000000 000000 000000')),
+        WEBP_VP8,
+      ),
+    ],
+    [
+      'two colour profiles',
+      'image/webp',
+      webp(
+        riffChunk('VP8X', hex('20 000000 000000 000000')),
+        riffChunk('ICCP', ICC_PROFILE),
+        riffChunk('ICCP', ICC_PROFILE),
+        WEBP_VP8,
+      ),
+    ],
+    [
+      'alpha before a lossless bitstream, which holds its own',
+      'image/webp',
+      webp(riffChunk('VP8X', hex('10 000000 000000 000000')), riffChunk('ALPH', hex('00')), WEBP_VP8L),
+    ],
+    ['text as an extended header', 'image/webp', webp(riffChunk('VP8X', TEXT), WEBP_VP8)],
+    [
+      'text as an animation',
+      'image/webp',
+      webp(riffChunk('VP8X', hex('02 000000 000000 000000')), riffChunk('ANIM', TEXT), webpFrame(WEBP_VP8)),
+    ],
+  ] as const)('refuses an image with %s', (_case, contentType, bytes) => {
+    expect(withoutMetadata(contentType, bytes)).toBeNull();
+  });
+
+  it("keeps of a JPEG's Adobe segment only its colour transform", () => {
+    const adobe = jpegSegment(0xee, Buffer.concat([latin1('Adobe\0\x64\x80\0\0\0\x01'), TEXT]));
+
+    expect(withoutMetadata('image/jpeg', Buffer.concat([JPEG_SOI, adobe, ...PICTURE, JPEG_EOI]))).toEqual(
+      Buffer.concat([JPEG_SOI, ADOBE, ...PICTURE, JPEG_EOI]),
+    );
+  });
+
+  it('drops the palette and the transparent colour an encoder wrote into a PNG with alpha', () => {
+    const image = png(6, hex('2b8a4eff'), [pngChunk('PLTE', TEXT), pngChunk('tRNS', TEXT)]);
+
+    expect(withoutMetadata('image/png', image)).toEqual(RGBA_PNG);
+  });
+
+  it('drops of a JPEG what claims to be part of a colour profile and is not, and keeps one split in parts', () => {
+    const split = [iccSegment(1, 2, ICC_PROFILE.subarray(0, 64)), iccSegment(2, 2, ICC_PROFILE.subarray(64))];
+    const photo = Buffer.concat([
+      JPEG_SOI,
+      ...split,
+      iccSegment(1, 2, TEXT),
+      iccSegment(3, 2, TEXT),
+      iccSegment(0, 2, TEXT),
+      jpegSegment(0xe2, latin1('ICC_PROFILE\0')),
+      ...PICTURE,
+      JPEG_EOI,
+    ]);
+
+    expect(withoutMetadata('image/jpeg', photo)).toEqual(Buffer.concat([JPEG_SOI, ...split, ...PICTURE, JPEG_EOI]));
+  });
+
+  it('drops of a WebP a colour profile that is none, and no longer announces it', () => {
+    const image = webp(riffChunk('VP8X', hex('20 000000 000000 000000')), riffChunk('ICCP', TEXT), WEBP_VP8);
+
+    expect(withoutMetadata('image/webp', image)).toEqual(
+      webp(riffChunk('VP8X', hex('00 000000 000000 000000')), WEBP_VP8),
+    );
+  });
+
+  it('keeps fill bytes before a restart marker inside a scan', () => {
+    const photo = Buffer.concat([JPEG_SOI, ...PICTURE.slice(0, -1), hex('12 ffff d0 34'), JPEG_EOI]);
+
+    expect(withoutMetadata('image/jpeg', photo)).toEqual(photo);
+  });
+
+  it('keeps of the frames of an animated WebP only what draws them', () => {
+    const image = webp(
+      riffChunk('VP8X', hex('02 000000 000000 000000')),
+      riffChunk('ANIM', hex('ffffffff 0000')),
+      webpFrame(WEBP_VP8, riffChunk('EXIF', TEXT)),
+      webpFrame(riffChunk('XMP ', TEXT), WEBP_VP8L),
+    );
+
+    expect(withoutMetadata('image/webp', image)).toEqual(ANIMATED_WEBP);
   });
 });

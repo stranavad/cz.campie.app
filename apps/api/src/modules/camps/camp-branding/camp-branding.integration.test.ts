@@ -7,10 +7,9 @@ import {
   organisationHost,
   type RequestHeaders,
 } from '../../../testing/fixtures.ts';
+import { RGBA_PNG } from '../../../testing/images.ts';
 import { withClient } from '../../../testing/services/postgres.ts';
 import { useTestApp } from '../../../testing/test-app.ts';
-
-const PNG = Buffer.concat([Buffer.from('89504e470d0a1a0a', 'hex'), Buffer.from('fake logo')]);
 
 type Admin = Awaited<ReturnType<typeof createAdmin>>;
 
@@ -34,13 +33,13 @@ describe('camp branding', () => {
   const update = (headers: RequestHeaders, body: object, id = campId) =>
     http().patch(`/api/camps/${id}/branding`).set(headers).send(body);
   const uploadLogo = (headers: RequestHeaders, id = campId) =>
-    http().put(`/api/camps/${id}/branding/logo`).set(headers).attach('file', PNG, 'logo.png');
+    http().put(`/api/camps/${id}/branding/logo`).set(headers).attach('file', RGBA_PNG, 'logo.png');
 
   it("shows the Organisation's branding for a Camp without its own", async () => {
     await http()
       .put('/api/organisation-settings/logo')
       .set(owner.headers(organisationId))
-      .attach('file', PNG, 'logo.png');
+      .attach('file', RGBA_PNG, 'logo.png');
 
     const response = await branding(owner.headers(organisationId));
 
@@ -67,7 +66,7 @@ describe('camp branding', () => {
       .get(`/api/logos/${camp?.logo_file_id}`)
       .set({ Host: await organisationHost(app(), organisationId) })
       .buffer(true);
-    expect(served.body).toEqual(PNG);
+    expect(served.body).toEqual(RGBA_PNG);
 
     await update(owner.headers(organisationId), { accentColour: null });
     const cleared = await http().delete(`/api/camps/${campId}/branding/logo`).set(owner.headers(organisationId));
