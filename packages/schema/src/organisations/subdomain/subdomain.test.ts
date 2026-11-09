@@ -20,6 +20,7 @@ describe('subdomainProblem', () => {
     'api',
     'admin',
     'staging',
+    'dev',
     'mail',
     'auth',
     'posta',
