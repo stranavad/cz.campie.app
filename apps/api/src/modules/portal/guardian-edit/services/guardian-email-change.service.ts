@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 import type {
   ConfirmGuardianEmailChangeBody,
+  ConfirmGuardianEmailChangeResponse,
   GuardianEditErrorCode,
   GuardianEmailChangeBody,
 } from '@repo/schema/portal';
@@ -146,14 +147,17 @@ export class GuardianEmailChangeService {
 
   /**
    * Follow a change's link, once: the guardian's email changes, audited, and the old address is told once
-   * this commits.
+   * this commits. Answers the new address, which a refused link never learns.
    * @param body the token from the link
    * @param ipAddress where the request comes from
    * @throws {BadRequestException} email_change_invalid when the link is unknown, used or expired
    * @throws {ConflictException} guardian_email_taken when the other guardian took the address meanwhile;
    * registration_locked after the Camp's contact-edit lock date
    */
-  public async confirm({ token }: ConfirmGuardianEmailChangeBody, ipAddress: string): Promise<void> {
+  public async confirm(
+    { token }: ConfirmGuardianEmailChangeBody,
+    ipAddress: string,
+  ): Promise<ConfirmGuardianEmailChangeResponse> {
     const change = await this.changes.confirm(hashSessionToken(token), this.clock.now());
 
     if (change === null) {
@@ -194,6 +198,8 @@ export class GuardianEmailChangeService {
     // Following the link proved the address receives mail.
     await this.undeliverable.clear(actor, change.email);
     this.jobs.enqueue(emailChangeConfirmedJob, { changeId: change.id });
+
+    return { email: change.email };
   }
 
   /**

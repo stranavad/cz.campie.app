@@ -39,8 +39,8 @@ export class GuardianRegistrationService {
   }
 
   /**
-   * List the Registrations of the current Organisation that name a guardian, newest first, with whom to
-   * write about a technical problem.
+   * List the Registrations of the current Organisation that name a guardian, newest first, with the
+   * guardian's name and whom to write about a technical problem.
    * @param email the signed-in guardian's email
    */
   public async list(email: string): Promise<GuardianPortal> {
@@ -52,7 +52,15 @@ export class GuardianRegistrationService {
       shown.push(await this.show(registration, card));
     }
 
-    return { registrations: shown, technicalContact: this.technicalContact };
+    const guardians = await this.registrations.listGuardiansOf(registrations.map(({ id }) => id));
+    // The newest Registration naming the email as a guardian, not as an access email, spells the name.
+    const guardian = registrations.flatMap(({ id }) => guardians.get(id) ?? []).find((named) => named.email === email);
+
+    return {
+      registrations: shown,
+      guardian: guardian === undefined ? null : { firstName: guardian.firstName, lastName: guardian.lastName },
+      technicalContact: this.technicalContact,
+    };
   }
 
   /**

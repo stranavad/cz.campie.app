@@ -80,6 +80,8 @@ export type GuardianRegistrationParams = z.infer<typeof guardianRegistrationPara
 // The portal's home: the guardian's Registrations and whom to write about a technical problem.
 export const guardianPortalSchema = z.object({
   registrations: z.array(guardianRegistrationSchema),
+  // The signed-in email's name as a guardian on its newest Registration; null for an access email only.
+  guardian: z.object({ firstName: z.string(), lastName: z.string() }).nullable(),
   technicalContact: z.string(),
 });
 

@@ -1,5 +1,6 @@
 {
   "title": "Dobrý den",
+  "greeting": "Dobrý den, {{name}}",
   "signOut": "Odhlásit",
   "none": "K tomuto e-mailu zatím nepatří žádná přihláška.",
   "error": "Přihlášky se nepodařilo načíst. Zkuste stránku načíst znovu.",
@@ -93,7 +94,7 @@
     "title": "Potvrzení e-mailu",
     "confirm": "Potvrdit novou adresu",
     "doneTitle": "Nový e-mail je potvrzený",
-    "done": "Zprávy od tábora teď budou chodit na novou adresu.",
+    "done": "Zprávy od tábora teď budou chodit na adresu {{email}}.",
     "continue": "Pokračovat do portálu",
     "invalid": "Odkaz už neplatí: byl použit, nebo vypršel."
   },

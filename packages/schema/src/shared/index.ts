@@ -7,3 +7,4 @@ export * from './slug/slug.ts';
 export * from './prague-time/prague-time.ts';
 export * from './czech-format/czech-format.ts';
 export * from './person/person.schema.ts';
+export * from './vocative/vocative.ts';

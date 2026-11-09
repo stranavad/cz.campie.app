@@ -140,7 +140,8 @@ describe('guardian edits in the portal', () => {
       .post('/api/portal/email-changes/confirm')
       .set({ Host: await organisationHost(app(), organisationId), 'x-csrf-protection': '1' })
       .send({ token: tokenFrom('jana.nova@example.com') });
-    expect(confirmed.status).toBe(204);
+    expect(confirmed.status).toBe(200);
+    expect(confirmed.body).toEqual({ email: 'jana.nova@example.com' });
     await jobs().drain();
 
     expect((await edit(asNew)).status).toBe(200);
@@ -163,7 +164,34 @@ describe('guardian edits in the portal', () => {
       .post('/api/portal/email-changes/confirm')
       .set({ Host: await organisationHost(app(), organisationId), 'x-csrf-protection': '1' })
       .send({ token: tokenFrom('jana.nova@example.com') });
+    expect(again.status).toBe(400);
     expect(again.body).toMatchObject({ code: 'email_change_invalid' });
+    expect(JSON.stringify(again.body)).not.toContain('jana.nova');
+  });
+
+  it('refuses an expired link, or one followed on another Organisation, without naming the address', async () => {
+    const other = await createOrganisation(app());
+    await http()
+      .post(`/api/portal/registrations/${registrationId}/guardians/1/email-change`)
+      .set(asJana)
+      .send({ email: 'jana.nova@example.com' });
+    await jobs().drain();
+    const confirm = async (host: string) =>
+      http()
+        .post('/api/portal/email-changes/confirm')
+        .set({ Host: host, 'x-csrf-protection': '1' })
+        .send({ token: tokenFrom('jana.nova@example.com') });
+
+    const elsewhere = await confirm(await organisationHost(app(), other));
+    clock().advance(24 * 60 * 60 * 1000);
+    const expired = await confirm(await organisationHost(app(), organisationId));
+
+    for (const refused of [elsewhere, expired]) {
+      expect(refused.status).toBe(400);
+      expect(refused.body).toMatchObject({ code: 'email_change_invalid' });
+      expect(JSON.stringify(refused.body)).not.toContain('jana.nova');
+    }
+    expect(await query('SELECT email FROM registration_guardians')).toEqual([{ email: JANA }]);
   });
 
   it('offers fields added later and shows removed ones read-only', async () => {

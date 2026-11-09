@@ -23,7 +23,7 @@ export function ConfirmEmailPage({ token }: ConfirmEmailPageProps) {
       <h1 className="text-title px-1">{t('confirmEmail.title')}</h1>
       {confirm.isSuccess ? (
         <NoticeCard icon={<CheckIcon strokeWidth={3} />} tone="success" title={t('confirmEmail.doneTitle')}>
-          <p className="text-muted-foreground">{t('confirmEmail.done')}</p>
+          <p className="text-muted-foreground">{t('confirmEmail.done', { email: confirm.data.email })}</p>
           <Link
             to="/organisation/portal"
             className={buttonVariants({ variant: 'outline', size: 'lg', className: 'mt-2 w-full' })}

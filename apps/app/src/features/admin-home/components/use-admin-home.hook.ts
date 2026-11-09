@@ -1,4 +1,4 @@
-import { vocativeOf } from '@repo/schema/admins';
+import { vocativeOf } from '@repo/schema/shared';
 
 import { membershipAllows, useAccountQuery, useCurrentMembership } from '@/core/account';
 import { useSelectedTurnus } from '@/core/selected-turnus';

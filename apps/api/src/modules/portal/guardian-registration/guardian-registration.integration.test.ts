@@ -19,6 +19,7 @@ describe('guardian portal Registrations', () => {
   const { app, http, clock, database, jobs } = useTestApp();
 
   let organisationId: string;
+  let campId: string;
   let registrationId: string;
   let owner: RequestHeaders;
   let asJana: RequestHeaders;
@@ -31,7 +32,7 @@ describe('guardian portal Registrations', () => {
     clock().set(new Date('2027-04-10T10:00:00Z'));
     organisationId = await createOrganisation(app());
     await brandOrganisation(app(), organisationId, { bankAccount: '19-2000145399/0800' });
-    const campId = await createCamp(app(), organisationId, 'Letní tábor', 'letni-tabor');
+    campId = await createCamp(app(), organisationId, 'Letní tábor', 'letni-tabor');
     owner = (await createAdmin(app(), { memberOf: [organisationId], owner: true })).headers(organisationId);
     registrationId = (
       await submitRegistration(app(), organisationId, campId, { turnus: WITH_DEPOSIT, paymentChoice: 'deposit' })
@@ -128,5 +129,57 @@ describe('guardian portal Registrations', () => {
     await query("UPDATE participants SET status = 'cancelled' WHERE registration_id = $1", [registrationId]);
 
     expect((await portal()).body.registrations[0].participants).toMatchObject([{ status: 'cancelled' }]);
+  });
+
+  it('names the guardian as their newest Registration does, each guardian their own name', async () => {
+    clock().advance(24 * 60 * 60 * 1000);
+    await submitRegistration(app(), organisationId, campId, {
+      secondGuardian: true,
+      answers: { guardianFirstName: 'Janka', guardianLastName: 'Testovací-Nová' },
+    });
+    const asPetr = (await createGuardianSession(app(), organisationId, 'petr.testovaci@example.com')).headers;
+
+    expect((await portal()).body).toMatchObject({
+      registrations: [{}, { id: registrationId }],
+      guardian: { firstName: 'Janka', lastName: 'Testovací-Nová' },
+    });
+    expect((await portal(asPetr)).body.guardian).toEqual({ firstName: 'Petr', lastName: 'Testovací' });
+  });
+
+  it('names nobody to an access email, even one named as a guardian elsewhere', async () => {
+    await http()
+      .post(`/api/registrations/${registrationId}/access-emails`)
+      .set(owner)
+      .send({ email: 'babicka@example.com' });
+    const other = await createOrganisation(app());
+    await submitRegistration(app(), other, await createCamp(app(), other, 'Jiný tábor', 'jiny-tabor'), {
+      answers: { guardianFirstName: 'Johana', guardianLastName: 'Jiná', guardianEmail: 'babicka@example.com' },
+    });
+    const asGrandma = (await createGuardianSession(app(), organisationId, 'babicka@example.com')).headers;
+
+    expect((await portal(asGrandma)).body).toMatchObject({ registrations: [{ id: registrationId }], guardian: null });
+  });
+
+  it('takes the name from a Registration naming the email as a guardian, past a newer access only', async () => {
+    clock().advance(60 * 60 * 1000);
+    const newer = await submitRegistration(app(), organisationId, campId, {
+      answers: { guardianFirstName: 'Petr', guardianLastName: 'Jiný', guardianEmail: 'petr.jiny@example.com' },
+    });
+    await http().post(`/api/registrations/${newer.id}/access-emails`).set(owner).send({ email: JANA });
+
+    expect((await portal()).body).toMatchObject({
+      registrations: [{ id: newer.id }, { id: registrationId }],
+      guardian: { firstName: 'Jana', lastName: 'Testovací' },
+    });
+  });
+
+  it("never takes the name from another Organisation's Registration of the same email", async () => {
+    const other = await createOrganisation(app());
+    clock().advance(60 * 60 * 1000);
+    await submitRegistration(app(), other, await createCamp(app(), other, 'Jiný tábor', 'jiny-tabor'), {
+      answers: { guardianFirstName: 'Johana', guardianLastName: 'Jiná' },
+    });
+
+    expect((await portal()).body.guardian).toEqual({ firstName: 'Jana', lastName: 'Testovací' });
   });
 });

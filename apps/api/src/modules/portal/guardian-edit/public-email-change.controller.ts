@@ -1,6 +1,10 @@
 import { Controller, Ip } from '@nestjs/common';
 
-import { confirmGuardianEmailChangeEndpoint, type ConfirmGuardianEmailChangeBody } from '@repo/schema/portal';
+import {
+  confirmGuardianEmailChangeEndpoint,
+  type ConfirmGuardianEmailChangeBody,
+  type ConfirmGuardianEmailChangeResponse,
+} from '@repo/schema/portal';
 
 import { Access } from '../../../core/access/access.decorator.ts';
 import { Endpoint, EndpointBody } from '../../../core/http/endpoint.decorator.ts';
@@ -16,7 +20,7 @@ export class PublicEmailChangeController {
   public confirm(
     @EndpointBody(confirmGuardianEmailChangeEndpoint) body: ConfirmGuardianEmailChangeBody,
     @Ip() ipAddress: string,
-  ): Promise<void> {
+  ): Promise<ConfirmGuardianEmailChangeResponse> {
     return this.emailChanges.confirm(body, ipAddress);
   }
 }

@@ -5,6 +5,7 @@ import {
   addGuardianBodySchema,
   answerNewFieldsBodySchema,
   confirmGuardianEmailChangeBodySchema,
+  confirmGuardianEmailChangeResponseSchema,
   guardianContactBodySchema,
   guardianEditSchema,
   guardianEmailChangeBodySchema,
@@ -48,11 +49,13 @@ export const requestGuardianEmailChangeEndpoint = defineEndpoint({
 });
 
 // Follows an email change's link, once, without a session: the guardian's email changes, and the old address
-// is told; audited.
+// is told; audited. Answers the new address, for the page to say which one was confirmed.
 export const confirmGuardianEmailChangeEndpoint = defineEndpoint({
   method: 'POST',
   path: '/portal/email-changes/confirm',
   body: confirmGuardianEmailChangeBodySchema,
+  response: confirmGuardianEmailChangeResponseSchema,
+  status: 200,
 });
 
 // Answers fields added to the form after the Registration was submitted, until the lock date. The first

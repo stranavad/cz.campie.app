@@ -66,6 +66,11 @@ export const confirmGuardianEmailChangeBodySchema = z.object({ token: z.string()
 
 export type ConfirmGuardianEmailChangeBody = z.infer<typeof confirmGuardianEmailChangeBodySchema>;
 
+// The address the link confirmed, which only its own mailbox received the link at.
+export const confirmGuardianEmailChangeResponseSchema = z.object({ email: z.string() });
+
+export type ConfirmGuardianEmailChangeResponse = z.infer<typeof confirmGuardianEmailChangeResponseSchema>;
+
 export const answerNewFieldsBodySchema = z.object({
   registration: answersSchema,
   participants: z.array(z.object({ participantId: z.uuid(), answers: answersSchema })).max(20),

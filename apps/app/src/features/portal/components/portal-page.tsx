@@ -4,18 +4,17 @@ import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/empty-state';
 import { Alert } from '@/components/ui/alert';
-import { useGuardianRegistrationsQuery } from '@/features/portal/api/portal.queries';
 import { RegistrationCard } from '@/features/portal/components/home/registration-card';
+import { usePortalPage } from '@/features/portal/components/home/use-portal-page.hook';
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
-import { HttpError } from '@/lib/api';
 
 // The signed-in guardian's Registrations in the subdomain's Organisation, past ones included. Signing out
 // sits in the shell's header.
 export function PortalPage() {
   const { t } = useTranslation('portal');
-  const portal = useGuardianRegistrationsQuery();
+  const { portal, isSignedOut, greetingName } = usePortalPage();
 
-  if (portal.error instanceof HttpError && portal.error.status === 401) {
+  if (isSignedOut) {
     return <Navigate to="/organisation/portal/prihlaseni" replace />;
   }
 
@@ -25,7 +24,9 @@ export function PortalPage() {
 
   return (
     <PortalColumn className="gap-6">
-      <h1 className="text-title -mb-3 px-1 pt-3">{t('title')}</h1>
+      <h1 className="text-title -mb-3 px-1 pt-3">
+        {greetingName === null ? t('title') : t('greeting', { name: greetingName })}
+      </h1>
       {portal.isError ? (
         <Alert variant="danger" role="alert">
           {t('error')}
