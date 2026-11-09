@@ -12,8 +12,8 @@ interface MailDeliveryProps {
   organisations: readonly ConsoleOrganisation[];
 }
 
-// How the platform's mail fares, summed over every Organisation since it started, and which Organisations
-// bounce or draw complaints above what mail providers act on.
+// How the platform's mail fared over the last 7 days, summed over every Organisation, and which
+// Organisations bounce or draw complaints above what mail providers act on.
 export function MailDelivery({ organisations }: MailDeliveryProps) {
   const { t } = useTranslation('console');
   const mail = useMailDelivery(organisations);

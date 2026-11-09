@@ -42,7 +42,7 @@ export function OrganisationManageDialog({ organisation, row }: OrganisationMana
           <DialogTitle className="break-words">{organisation.displayName}</DialogTitle>
           <Badge variant={ORGANISATION_STATUS_BADGE[organisation.status]}>{t(`status.${organisation.status}`)}</Badge>
         </div>
-        <OrganisationDetails organisation={organisation} bounceRate={row.bounceRate} mailWarning={row.mailWarning} />
+        <OrganisationDetails organisation={organisation} mail={row.mail} />
         {isPending ? <SubdomainRename organisation={organisation} row={row} /> : null}
         <OrganisationStatusActions organisation={organisation} row={row} />
         {row.failure === null ? null : (

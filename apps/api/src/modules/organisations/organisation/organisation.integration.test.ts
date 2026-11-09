@@ -343,3 +343,92 @@ describe('organisation signup limits', () => {
     expect((await signUp('198.51.100.7')).status).toBe(204);
   });
 });
+
+describe('subdomain check', () => {
+  const { app, http, database } = useTestApp();
+
+  const check = (subdomain: string, headers: Record<string, string> = { Host: mainHost(app()) }) =>
+    http()
+      .get(`/api/subdomains/${encodeURIComponent(subdomain)}/availability`)
+      .set(headers);
+  const signUp = (body: Partial<typeof SIGNUP>) =>
+    http()
+      .post('/api/organisations')
+      .set({ Host: mainHost(app()), [ACCESS_HEADERS.csrf]: '1' })
+      .send({ ...SIGNUP, ...body });
+
+  it('answers what a signup would for a free, malformed, reserved and taken name, and nothing more', async () => {
+    await createOrganisation(app(), { subdomain: 'cekajici', status: 'pending' });
+    await createOrganisation(app(), { subdomain: 'pozastaveny', status: 'suspended' });
+    const names = ['volny', ' Volny ', 'a--b', 'x'.repeat(64), 'admin', 'campie', 'cekajici', 'pozastaveny'];
+
+    const answers = [];
+    for (const name of names) {
+      const response = await check(name);
+      expect(response.status).toBe(200);
+      expect(Object.keys(response.body)).toEqual(['availability']);
+      answers.push(response.body.availability);
+    }
+
+    expect(answers).toEqual([
+      'available',
+      'available',
+      'subdomain_malformed',
+      'subdomain_malformed',
+      'subdomain_reserved',
+      'subdomain_reserved',
+      'subdomain_taken',
+      'subdomain_taken',
+    ]);
+    const signups = [];
+    for (const [index, name] of names.entries()) {
+      const response = await signUp({ subdomain: name, email: `jana-${index}@example.com` });
+      signups.push(response.status === 204 ? 'available' : response.body.code);
+      await withClient(database().ownerUrl, (client) =>
+        client.query(`DELETE FROM organisations WHERE subdomain NOT IN ('cekajici', 'pozastaveny')`),
+      );
+    }
+    expect(signups).toEqual(answers);
+  });
+
+  it('needs no session, but only answers on the main host', async () => {
+    expect((await check('volny', { Host: 'tabor.campie.test' })).status).toBe(404);
+  });
+
+  it('is advisory: a signup for a name taken since the check is refused as taken', async () => {
+    expect((await check('pokusnik')).body).toEqual({ availability: 'available' });
+    expect((await signUp({ email: 'petr.testovaci@example.com' })).status).toBe(204);
+
+    const late = await signUp({});
+
+    expect(late.status).toBe(409);
+    expect(late.body).toMatchObject({ code: 'subdomain_taken' });
+  });
+});
+
+describe('subdomain check limits', () => {
+  const { app, http } = useTestApp({
+    env: { SIGNUP_LIMIT_PER_IP: '2', SIGNUP_LIMIT_PER_EMAIL: '1', REQUEST_LIMIT_WINDOW_MINUTES: '60' },
+  });
+
+  const check = (ipAddress: string, subdomain = 'volny') =>
+    http()
+      .get(`/api/subdomains/${subdomain}/availability`)
+      .set({ Host: mainHost(app()), 'X-Forwarded-For': ipAddress });
+
+  it('refuses checks past the signup limit of an IP address, whatever the name, without using up signups', async () => {
+    expect((await check('198.51.100.7', 'prvni')).status).toBe(200);
+    expect((await check('198.51.100.7', 'a--b')).status).toBe(200);
+
+    const refused = await check('198.51.100.7', 'treti');
+
+    expect(refused.status).toBe(429);
+    expect(refused.body).toMatchObject({ code: 'requests_throttled' });
+    expect((await check('2001:db8::1')).status).toBe(200);
+    const signup = await http()
+      .post('/api/organisations')
+      .set({ Host: mainHost(app()), [ACCESS_HEADERS.csrf]: '1', 'X-Forwarded-For': '198.51.100.7' })
+      .send(SIGNUP);
+    expect(signup.status).toBe(204);
+  });
+});

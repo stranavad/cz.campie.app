@@ -3,6 +3,7 @@ export * from './legal-document/legal-document.resource.ts';
 export * from './organisation/organisation.resource.ts';
 export * from './organisation/sign-up-organisation.contract.ts';
 export * from './subdomain/subdomain.ts';
+export * from './subdomain/check-subdomain.contract.ts';
 export * from './organisation/get-public-organisation.contract.ts';
 export * from './bank-account/bank-account.ts';
 export * from './branding/brand-colours.ts';

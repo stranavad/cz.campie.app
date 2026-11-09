@@ -25,7 +25,9 @@
     "nameHint": "Pod tímto názvem uvidí tábor rodiče. Další tábory přidáte později.",
     "subdomain": "Adresa přihlášek",
     "subdomainHint": "Na této adrese budou přihlášky na vaše tábory. Po schválení organizace ji už nelze změnit.",
-    "subdomainSuffix": ".{{platformDomain}}"
+    "subdomainSuffix": ".{{platformDomain}}",
+    "subdomainAvailable": "Adresa je volná.",
+    "subdomainUnchecked": "Dostupnost adresy teď nelze ověřit, ověříme ji při odeslání."
   },
   "account": {
     "legend": "Váš účet",

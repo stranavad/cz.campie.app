@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 
 import type { UndeliverableReason } from '@repo/schema/emails';
-import { emailSchema } from '@repo/schema/shared';
+import { emailSchema, pragueDateOf } from '@repo/schema/shared';
 
 import { AuditService } from '../../../../core/audit/audit.service.ts';
 import { UnitOfWork } from '../../../../core/database/unit-of-work.ts';
@@ -62,7 +62,12 @@ export class MailNotificationService {
         await this.mark(email, reason);
       }
 
-      await this.statistics.add(organisationId, reason === 'bounce' ? 'bounced' : 'complained', 1);
+      await this.statistics.add(
+        organisationId,
+        pragueDateOf(this.clock.now()),
+        reason === 'bounce' ? 'bounced' : 'complained',
+        1,
+      );
     });
   }
 

@@ -1,6 +1,6 @@
 # 80 - Console signup date, weekly mail stats and subdomain check
 
-Status: ready-for-agent
+Status: in-progress
 Stage: 1b
 Episode: E1 Organisations and identity
 Blocked by: 17, 21, 22, 68
@@ -26,3 +26,7 @@ The redesigned operator console shows when each Organisation signed up and its m
 
 - Spec sections: Tenancy; Identity, permissions and audit (operator).
 - Design: canvas "Campie - návrhy designu", artboards `B3-Konzole`, `B3-RegistraceOrg`. Consumed by the operator console's Organisation list and the signup form's subdomain field.
+
+## Comments
+
+- 2026-11-09: Implemented. Organisations have `createdAt` (backfilled from the UUIDv7 id), `mail_statistics` counts per Organisation and Prague day (existing totals moved to the Organisation's signup day), and the console returns `createdAt` and `mail.total` / `mail.lastSevenDays`. `GET /subdomains/:subdomain/availability` answers `available` or signup's code, rate limited per address with the signup limit's numbers under its own counter, so checks never use up signups. The console table shows the signup date, the mail panel and warnings use the last 7 days, and signup checks the subdomain once typing pauses. Not yet checked in the browser.

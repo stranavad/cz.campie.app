@@ -15,6 +15,7 @@
     "empty": "Zatím se nezaregistrovala žádná organizace.",
     "organisation": "Organizace",
     "status": "Stav",
+    "createdAt": "Založena",
     "actions": "Akce",
     "ico": "IČO {{ico}}",
     "search": "Hledat organizaci",
@@ -36,7 +37,8 @@
     "seat": "Sídlo",
     "statutoryRepresentative": "Statutární zástupce",
     "contact": "Kontakt",
-    "mail": "E-maily",
+    "mailLastSevenDays": "E-maily za 7 dní",
+    "mailTotal": "E-maily celkem",
     "mailValue": "odesláno {{sent, number}}, nedoručeno {{bounced, number}}, stížnosti {{complained, number}} ({{rate, number(style: percent; maximumFractionDigits: 1)}})"
   },
   "rename": {
@@ -108,12 +110,12 @@
   },
   "mail": {
     "title": "Doručování e-mailů",
-    "intro": "Součet za všechny organizace od jejich založení. Nedoručené a stížnosti tvoří {{rate, number(style: percent; maximumFractionDigits: 1)}} odeslaných e-mailů.",
+    "intro": "Součet za všechny organizace za posledních 7 dní. Nedoručené a stížnosti tvoří {{rate, number(style: percent; maximumFractionDigits: 1)}} odeslaných e-mailů.",
     "count": "{{value, number}}",
-    "sent": "odesláno celkem",
+    "sent": "odesláno za 7 dní",
     "bounced": "nedoručeno",
     "complained": "označeno jako spam",
     "healthy": "Žádná organizace nemá nedoručených e-mailů ani stížností víc, než poštovní služby snesou.",
-    "warning": "{{organisation}} má {{rate, number(style: percent; maximumFractionDigits: 1)}} nedoručených e-mailů nebo stížností. Zkontrolujte s ní adresy rodičů."
+    "warning": "{{organisation}} má za posledních 7 dní {{rate, number(style: percent; maximumFractionDigits: 1)}} nedoručených e-mailů nebo stížností. Zkontrolujte s ní adresy rodičů."
   }
 }

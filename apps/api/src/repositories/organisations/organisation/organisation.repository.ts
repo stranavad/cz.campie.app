@@ -8,6 +8,8 @@ import { organisations } from '../../../db/schema.ts';
 import { OrganisationEntity, type OrganisationInsertModel } from './organisation.entity.ts';
 
 export type CreateOrganisation = Omit<OrganisationInsertModel, 'id'>;
+// An Organisation as its creator gives it; when it signed up is the Clock's.
+export type NewOrganisation = Omit<CreateOrganisation, 'createdAt'>;
 export type UpdateOrganisation = Partial<Omit<OrganisationInsertModel, 'id' | 'subdomain'>>;
 // What the operator console changes, and only while the Organisation has a given status.
 export type ConsoleChange = Partial<Pick<OrganisationInsertModel, 'status' | 'subdomain'>>;

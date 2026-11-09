@@ -1,57 +1,96 @@
 import { Injectable } from '@nestjs/common';
-import { eq, sql } from 'drizzle-orm';
+import { eq, gte, sql, type SQL } from 'drizzle-orm';
+
+import type { MailCounts } from '@repo/schema/console';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { mailStatistics } from '../../../db/schema.ts';
 
 export type MailCount = 'sent' | 'skipped' | 'bounced' | 'complained';
 
-export interface MailCounts {
-  readonly sent: number;
-  readonly skipped: number;
-  readonly bounced: number;
-  readonly complained: number;
+// An Organisation's mail since its first message, and since a given day.
+export interface MailSummary {
+  readonly total: MailCounts;
+  readonly recent: MailCounts;
 }
+
+const NO_COUNTS: MailCounts = { sent: 0, bounced: 0, complained: 0 };
+
+export const NO_MAIL: MailSummary = { total: NO_COUNTS, recent: NO_COUNTS };
 
 @Injectable()
 export class MailStatisticsRepository {
   constructor(private readonly unitOfWork: UnitOfWork) {}
 
   /**
-   * Count messages of an Organisation.
+   * Count messages of an Organisation on a day.
    * @param organisationId the Organisation
+   * @param day the Prague day, YYYY-MM-DD
    * @param count which count
    * @param by how many
    */
-  public async add(organisationId: string, count: MailCount, by: number): Promise<void> {
+  public async add(organisationId: string, day: string, count: MailCount, by: number): Promise<void> {
     await this.unitOfWork.db
       .insert(mailStatistics)
-      .values({ organisationId, [count]: by })
+      .values({ organisationId, day, [count]: by })
       .onConflictDoUpdate({
-        target: mailStatistics.organisationId,
+        target: [mailStatistics.organisationId, mailStatistics.day],
         set: { [count]: sql`${mailStatistics[count]} + ${by}` },
       });
   }
 
   /**
-   * Get an Organisation's counts, none before its first message.
+   * Sum an Organisation's counts, none before its first message.
    * @param organisationId the Organisation
+   * @param since the first Prague day of the recent counts, YYYY-MM-DD
    */
-  public async getOf(organisationId: string): Promise<MailCounts> {
-    const [row] = await this.unitOfWork.db
-      .select()
-      .from(mailStatistics)
-      .where(eq(mailStatistics.organisationId, organisationId));
+  public async getOf(organisationId: string, since: string): Promise<MailSummary> {
+    const summaries = await this.summarise(since, eq(mailStatistics.organisationId, organisationId));
 
-    return row ?? { sent: 0, skipped: 0, bounced: 0, complained: 0 };
+    return summaries.get(organisationId) ?? NO_MAIL;
   }
 
   /**
-   * List every Organisation's counts, for the console.
+   * Sum every Organisation's counts, for the console; one without mail is left out.
+   * @param since the first Prague day of the recent counts, YYYY-MM-DD
    */
-  public async listAll(): Promise<Map<string, MailCounts>> {
-    const rows = await this.unitOfWork.db.select().from(mailStatistics);
+  public listAll(since: string): Promise<Map<string, MailSummary>> {
+    return this.summarise(since);
+  }
 
-    return new Map(rows.map(({ organisationId, ...counts }) => [organisationId, counts]));
+  /**
+   * Sum the counts per Organisation, in total and since a day.
+   * @param since the first Prague day of the recent counts
+   * @param where which Organisations, all when omitted
+   */
+  private async summarise(since: string, where?: SQL): Promise<Map<string, MailSummary>> {
+    const recent = gte(mailStatistics.day, since);
+    const total = (count: MailCount) => sql`sum(${mailStatistics[count]})`.mapWith(Number);
+    const recentSum = (count: MailCount) =>
+      sql`coalesce(sum(${mailStatistics[count]}) filter (where ${recent}), 0)`.mapWith(Number);
+
+    const rows = await this.unitOfWork.db
+      .select({
+        organisationId: mailStatistics.organisationId,
+        sent: total('sent'),
+        bounced: total('bounced'),
+        complained: total('complained'),
+        recentSent: recentSum('sent'),
+        recentBounced: recentSum('bounced'),
+        recentComplained: recentSum('complained'),
+      })
+      .from(mailStatistics)
+      .where(where)
+      .groupBy(mailStatistics.organisationId);
+
+    return new Map(
+      rows.map((row) => [
+        row.organisationId,
+        {
+          total: { sent: row.sent, bounced: row.bounced, complained: row.complained },
+          recent: { sent: row.recentSent, bounced: row.recentBounced, complained: row.recentComplained },
+        },
+      ]),
+    );
   }
 }

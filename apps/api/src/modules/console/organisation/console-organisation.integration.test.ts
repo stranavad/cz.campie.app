@@ -1,3 +1,4 @@
+import { readdirSync, readFileSync } from 'node:fs';
 import { Controller, Get } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
 
@@ -62,7 +63,7 @@ const signUpBody = (subdomain: string, email: string) => ({
 
 describe('operator console', () => {
   const testApp = useTestApp({ controllers: [ReachingController] });
-  const { app, http, database, jobs, mail } = testApp;
+  const { app, http, database, jobs, mail, clock } = testApp;
 
   const platform = () => ({ Host: mainHost(app()), [ACCESS_HEADERS.csrf]: '1' });
   const list = (headers: RequestHeaders) => http().get('/api/console/organisations').set(headers);
@@ -125,9 +126,11 @@ describe('operator console', () => {
   });
 
   it('lists every Organisation, newest first, with its identity and status only', async () => {
-    const operator = await createOperator(testApp);
+    clock().set(new Date('2027-01-31T23:30:00.000Z'));
     const older = await createOrganisation(app(), { subdomain: 'starsi', status: 'approved' });
+    clock().set(new Date('2027-02-03T09:15:00.000Z'));
     const newer = await createOrganisation(app(), { subdomain: 'novejsi', status: 'pending' });
+    const operator = await createOperator(testApp);
 
     const response = await list(operator.headers);
 
@@ -145,9 +148,46 @@ describe('operator console', () => {
         statutoryRepresentative: 'Jana Testovací',
         contactEmail: expect.stringMatching(/^kontakt-.*@example\.com$/),
         contactPhone: '+420 123 456 789',
-        mail: { sent: 0, bounced: 0, complained: 0 },
+        createdAt: id === newer ? '2027-02-03T09:15:00.000Z' : '2027-01-31T23:30:00.000Z',
+        mail: {
+          total: { sent: 0, bounced: 0, complained: 0 },
+          lastSevenDays: { sent: 0, bounced: 0, complained: 0 },
+        },
       })),
     );
+  });
+
+  it('dates Organisations from before signup dates by their id, keeping their mail totals', async () => {
+    // A UUIDv7 made at 23:30 UTC on 31 January 2027, 00:30 on 1 February in Prague.
+    const id = '01a36e15-80c0-7000-8000-000000000001';
+    const [backfill] = readdirSync(new URL('../../../../drizzle/', import.meta.url)).filter((name) =>
+      name.endsWith('_backfill-signup-date-and-mail-day'),
+    );
+    const sql = readFileSync(new URL(`../../../../drizzle/${backfill}/migration.sql`, import.meta.url), 'utf8');
+    await query('ALTER TABLE mail_statistics DROP CONSTRAINT mail_statistics_pkey');
+    await query('ALTER TABLE mail_statistics ALTER COLUMN day DROP NOT NULL');
+    await query('ALTER TABLE organisations ALTER COLUMN created_at DROP NOT NULL');
+    await query(
+      `INSERT INTO organisations (id, subdomain, legal_name, ico, address, statutory_representative,
+                                  contact_email, contact_phone, billing_email, display_name)
+       VALUES ($1, 'puvodni', 'Původní spolek z. s.', '12345678', 'Smyšlená 1, 123 45 Testov',
+               'Jana Testovací', 'kontakt@puvodni.example.com', '+420 123 456 789',
+               'fakturace@puvodni.example.com', 'Tábor Původní')`,
+      [id],
+    );
+    await query(
+      `INSERT INTO mail_statistics (organisation_id, sent, skipped, bounced, complained) VALUES ($1, 40, 2, 3, 1)`,
+      [id],
+    );
+
+    await query(sql);
+
+    expect(await query(`SELECT created_at FROM organisations WHERE id = $1`, [id])).toEqual([
+      { created_at: new Date('2027-01-31T23:30:00.000Z') },
+    ]);
+    expect(
+      await query(`SELECT to_char(day, 'YYYY-MM-DD') AS day, sent, skipped, bounced, complained FROM mail_statistics`),
+    ).toEqual([{ day: '2027-02-01', sent: 40, skipped: 2, bounced: 3, complained: 1 }]);
   });
 
   it('approves a pending Organisation once, audited as the Platform operator', async () => {

@@ -6,12 +6,12 @@ import { bounceRateOf, hasMailWarning } from '@/features/console/components/mail
 
 export function useMailDelivery(organisations: readonly ConsoleOrganisation[]) {
   const { t } = useTranslation('console');
-  // Each Organisation's mail since it started, summed: the API keeps no shorter window.
+  // Each Organisation's mail over the last 7 days, summed: what mail providers judge a sender by now.
   const total = organisations.reduce(
-    (sum, { mail }) => ({
-      sent: sum.sent + mail.sent,
-      bounced: sum.bounced + mail.bounced,
-      complained: sum.complained + mail.complained,
+    (sum, { mail: { lastSevenDays } }) => ({
+      sent: sum.sent + lastSevenDays.sent,
+      bounced: sum.bounced + lastSevenDays.bounced,
+      complained: sum.complained + lastSevenDays.complained,
     }),
     { sent: 0, bounced: 0, complained: 0 },
   );
@@ -27,7 +27,7 @@ export function useMailDelivery(organisations: readonly ConsoleOrganisation[]) {
       .map((organisation) => ({
         id: organisation.id,
         name: organisation.displayName,
-        rate: bounceRateOf(organisation.mail),
+        rate: bounceRateOf(organisation.mail.lastSevenDays),
       }))
       .sort((a, b) => b.rate - a.rate),
   };

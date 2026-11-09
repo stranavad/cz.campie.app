@@ -5,6 +5,7 @@ import type { FileLink } from '@repo/schema/files';
 import type { OrganisationSettings, OrganisationStatus, PublicOrganisation } from '@repo/schema/organisations';
 
 import type { organisations } from '../../../db/schema.ts';
+import type { MailSummary } from '../../emails/mail-statistics/mail-statistics.repository.ts';
 
 export type OrganisationSelectModel = InferSelectModel<typeof organisations>;
 export type OrganisationInsertModel = InferInsertModel<typeof organisations>;
@@ -13,6 +14,7 @@ export class OrganisationEntity {
   public readonly id: string;
   public readonly subdomain: string;
   public readonly status: OrganisationStatus;
+  public readonly createdAt: Date;
   public readonly legalName: string;
   public readonly ico: string;
   public readonly address: string;
@@ -31,6 +33,7 @@ export class OrganisationEntity {
     this.id = row.id;
     this.subdomain = row.subdomain;
     this.status = row.status;
+    this.createdAt = row.createdAt;
     this.legalName = row.legalName;
     this.ico = row.ico;
     this.address = row.address;
@@ -46,7 +49,7 @@ export class OrganisationEntity {
     this.totpRequired = row.totpRequired;
   }
 
-  toConsoleDto(mail: ConsoleOrganisation['mail']): ConsoleOrganisation {
+  toConsoleDto(mail: MailSummary): ConsoleOrganisation {
     return {
       id: this.id,
       subdomain: this.subdomain,
@@ -59,7 +62,11 @@ export class OrganisationEntity {
       statutoryRepresentative: this.statutoryRepresentative,
       contactEmail: this.contactEmail,
       contactPhone: this.contactPhone,
-      mail: { sent: mail.sent, bounced: mail.bounced, complained: mail.complained },
+      createdAt: this.createdAt.toISOString(),
+      mail: {
+        total: { sent: mail.total.sent, bounced: mail.total.bounced, complained: mail.total.complained },
+        lastSevenDays: { sent: mail.recent.sent, bounced: mail.recent.bounced, complained: mail.recent.complained },
+      },
     };
   }
 

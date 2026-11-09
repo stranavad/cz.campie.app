@@ -3,17 +3,16 @@ import { useTranslation } from 'react-i18next';
 import type { ConsoleOrganisation } from '@repo/schema/console';
 
 import { DescriptionItem, DescriptionList } from '@/components/ui/description-list';
+import type { OrganisationRowState } from '@/features/console/components/organisation-table/use-organisation-row.hook';
 
 interface OrganisationDetailsProps {
   organisation: ConsoleOrganisation;
-  // Bounces and complaints per message sent, from 0 to 1.
-  bounceRate: number;
-  // Above what mail providers act on.
-  mailWarning: boolean;
+  // Its mail with the rates of bounces and complaints, and whether it is above what mail providers act on.
+  mail: OrganisationRowState['mail'];
 }
 
 // What the operator checks before approving: the legal identity, the contacts and how its mail fares.
-export function OrganisationDetails({ organisation, bounceRate, mailWarning }: OrganisationDetailsProps) {
+export function OrganisationDetails({ organisation, mail }: OrganisationDetailsProps) {
   const { t } = useTranslation('console');
 
   return (
@@ -31,16 +30,12 @@ export function OrganisationDetails({ organisation, bounceRate, mailWarning }: O
       <DescriptionItem label={t('fields.contact')}>
         {t('fields.contactValue', { email: organisation.contactEmail, phone: organisation.contactPhone })}
       </DescriptionItem>
-      <DescriptionItem label={t('fields.mail')}>
-        <span className={mailWarning ? 'text-danger-foreground' : undefined}>
-          {t('fields.mailValue', {
-            sent: organisation.mail.sent,
-            bounced: organisation.mail.bounced,
-            complained: organisation.mail.complained,
-            rate: bounceRate,
-          })}
+      <DescriptionItem label={t('fields.mailLastSevenDays')}>
+        <span className={mail.warning ? 'text-danger-foreground' : undefined}>
+          {t('fields.mailValue', mail.lastSevenDays)}
         </span>
       </DescriptionItem>
+      <DescriptionItem label={t('fields.mailTotal')}>{t('fields.mailValue', mail.total)}</DescriptionItem>
     </DescriptionList>
   );
 }

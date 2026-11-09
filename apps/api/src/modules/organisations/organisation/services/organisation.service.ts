@@ -5,6 +5,7 @@ import {
   CURRENT_LEGAL_VERSIONS,
   LEGAL_DOCUMENTS,
   subdomainProblem,
+  type CheckSubdomainResponse,
   type SignUpErrorCode,
   type SignUpOrganisationBody,
   type SubdomainErrorCode,
@@ -28,7 +29,7 @@ import { LegalAcceptanceRepository } from '../../../../repositories/organisation
 import type { OrganisationEntity } from '../../../../repositories/organisations/organisation/organisation.entity.ts';
 import {
   OrganisationRepository,
-  type CreateOrganisation,
+  type NewOrganisation,
 } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 import { AdminService } from '../../../admins/admin/services/admin.service.ts';
 import { EmailVerificationService } from '../../../admins/email-verification/services/email-verification.service.ts';
@@ -46,6 +47,7 @@ const TAKEN_BY_CONSTRAINT: Readonly<Record<string, SignUpErrorCode | SubdomainEr
 export class OrganisationService {
   private readonly productName: string;
   private readonly signupLimit: RequestLimit;
+  private readonly subdomainCheckLimit: RequestLimit;
 
   constructor(
     private readonly organisations: OrganisationRepository,
@@ -64,7 +66,9 @@ export class OrganisationService {
     config: ConfigService<Env, true>,
   ) {
     this.productName = config.get('PRODUCT_NAME', { infer: true });
-    this.signupLimit = config.get('requestLimits', { infer: true }).signup;
+    const limits = config.get('requestLimits', { infer: true });
+    this.signupLimit = limits.signup;
+    this.subdomainCheckLimit = limits.subdomainCheck;
   }
 
   /**
@@ -83,11 +87,11 @@ export class OrganisationService {
   }
 
   /**
-   * Create an Organisation with its data key, in the current platform unit of work.
+   * Create an Organisation with its data key, in the current platform unit of work, signed up now.
    * @param input the Organisation
    */
-  public async create(input: CreateOrganisation): Promise<OrganisationEntity> {
-    const organisation = await this.organisations.create(input);
+  public async create(input: NewOrganisation): Promise<OrganisationEntity> {
+    const organisation = await this.organisations.create({ ...input, createdAt: this.clock.now() });
 
     await this.encryption.createDataKey(organisation.id);
 
@@ -176,6 +180,18 @@ export class OrganisationService {
   }
 
   /**
+   * Tell whether a signup could take a subdomain now, or the code it would be refused with. Every check
+   * counts against the IP address's limit first.
+   * @param subdomain the subdomain, lowercase
+   * @param ipAddress where the check comes from
+   */
+  public async checkSubdomain(subdomain: string, ipAddress: string): Promise<CheckSubdomainResponse> {
+    await this.rateLimiter.admitAddress(this.subdomainCheckLimit, ipAddress);
+
+    return { availability: (await this.subdomainRefusal(subdomain)) ?? 'available' };
+  }
+
+  /**
    * Create the Organisation and its first Owner's admin identity. A simultaneous signup that took the
    * subdomain or the email after the checks is refused with its code, not as a server error.
    * @param organisation the Organisation
@@ -183,7 +199,7 @@ export class OrganisationService {
    * @throws {ConflictException} when the subdomain or the email was taken meanwhile
    */
   private async createOrganisationAndAdmin(
-    organisation: CreateOrganisation,
+    organisation: NewOrganisation,
     admin: { email: string; passwordHash: string; name: FullName },
   ): Promise<{ organisation: OrganisationEntity; admin: AdminEntity }> {
     try {
@@ -202,15 +218,25 @@ export class OrganisationService {
    * @throws {ConflictException} when another Organisation has it
    */
   private async requireAvailableSubdomain(subdomain: string): Promise<void> {
+    const refusal = await this.subdomainRefusal(subdomain);
+
+    if (refusal !== null) {
+      throw signUpError(refusal === 'subdomain_taken' ? ConflictException : BadRequestException, refusal);
+    }
+  }
+
+  /**
+   * Tell why a subdomain cannot be a new Organisation's: malformed, reserved or taken by one of any status.
+   * @param subdomain the subdomain, lowercase
+   */
+  private async subdomainRefusal(subdomain: string): Promise<SubdomainErrorCode | null> {
     const problem = subdomainProblem(subdomain, this.productName);
 
     if (problem !== null) {
-      throw signUpError(BadRequestException, problem);
+      return problem;
     }
 
-    if ((await this.organisations.getBySubdomain(subdomain)) !== null) {
-      throw signUpError(ConflictException, 'subdomain_taken');
-    }
+    return (await this.organisations.getBySubdomain(subdomain)) === null ? null : 'subdomain_taken';
   }
 }
 

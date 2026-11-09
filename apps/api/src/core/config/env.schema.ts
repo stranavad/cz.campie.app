@@ -198,6 +198,9 @@ const requestLimits = z
     return {
       requestLimits: {
         signup: limitOf('signup', env.SIGNUP_LIMIT_PER_IP, env.SIGNUP_LIMIT_PER_EMAIL),
+        // The signup form's subdomain check tells which Organisations exist, so an address checks no faster
+        // than it could sign up; counted apart, so checking never uses up the signups. Per address only.
+        subdomainCheck: limitOf('subdomain-check', env.SIGNUP_LIMIT_PER_IP, env.SIGNUP_LIMIT_PER_EMAIL),
         passwordReset: limitOf('password-reset', env.PASSWORD_RESET_LIMIT_PER_IP, env.PASSWORD_RESET_LIMIT_PER_EMAIL),
         // A form asks again as it is filled in, so the price preview allows many; its target is the
         // Organisation, so a flood from many addresses still stops.

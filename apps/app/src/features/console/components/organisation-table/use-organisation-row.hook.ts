@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { CONSOLE_ERROR_CODES, type ConsoleOrganisation } from '@repo/schema/console';
 import { SUBDOMAIN_ERROR_CODES } from '@repo/schema/organisations';
+import { czechDate, pragueDateOf } from '@repo/schema/shared';
 
 import {
   useApproveOrganisationMutation,
@@ -45,8 +46,12 @@ export function useOrganisationRow(organisation: ConsoleOrganisation) {
   };
 
   return {
-    bounceRate: bounceRateOf(organisation.mail),
-    mailWarning: hasMailWarning(organisation.mail),
+    signedUpOn: czechDate(pragueDateOf(new Date(organisation.createdAt))),
+    mail: {
+      lastSevenDays: { ...organisation.mail.lastSevenDays, rate: bounceRateOf(organisation.mail.lastSevenDays) },
+      total: { ...organisation.mail.total, rate: bounceRateOf(organisation.mail.total) },
+      warning: hasMailWarning(organisation.mail),
+    },
     failure: failureOf(mutations.find((mutation) => mutation.error !== null)?.error ?? null),
     isBusy: mutations.some((mutation) => mutation.isPending),
     confirming,

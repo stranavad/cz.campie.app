@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 import type { ConsoleErrorCode } from '@repo/schema/console';
 import { subdomainProblem, type OrganisationStatus, type SubdomainErrorCode } from '@repo/schema/organisations';
+import { addDays, pragueDateOf } from '@repo/schema/shared';
 
 import { OrganisationHostCache } from '../../../../core/access/organisation-host-cache.ts';
 import type { Actor } from '../../../../core/audit/actor.ts';
@@ -10,11 +11,13 @@ import { AuditService } from '../../../../core/audit/audit.service.ts';
 import type { PlatformAuditAction } from '../../../../core/audit/platform-actions.ts';
 import type { Env } from '../../../../core/config/env.schema.ts';
 import { violatedConstraint } from '../../../../core/database/constraint-violation.ts';
+import { Clock } from '../../../../core/ports/clock/clock.port.ts';
 import { AdminRepository } from '../../../../repositories/admins/admin/admin.repository.ts';
 import { MembershipRepository } from '../../../../repositories/admins/membership/membership.repository.ts';
 import {
   MailStatisticsRepository,
-  type MailCounts,
+  NO_MAIL,
+  type MailSummary,
 } from '../../../../repositories/emails/mail-statistics/mail-statistics.repository.ts';
 import type { OrganisationEntity } from '../../../../repositories/organisations/organisation/organisation.entity.ts';
 import {
@@ -29,16 +32,17 @@ const NOT_IN_STATUS: Readonly<Record<OrganisationStatus, ConsoleErrorCode | null
   suspended: null,
 };
 
-// The Platform operator's work on Organisations, in the console's unit of work: platform tables only,
-// audited in the platform's log, since a rejected Organisation's own log goes with it.
-// An Organisation as the console lists it, with its mail counts.
+// How many Prague days, today included, the console's recent mail counts cover.
+const RECENT_MAIL_DAYS = 7;
+
+// An Organisation as the console lists it, with its mail counts, the recent ones over RECENT_MAIL_DAYS.
 export interface ConsoleOrganisationView {
   readonly organisation: OrganisationEntity;
-  readonly mail: MailCounts;
+  readonly mail: MailSummary;
 }
 
-const NO_MAIL: MailCounts = { sent: 0, skipped: 0, bounced: 0, complained: 0 };
-
+// The Platform operator's work on Organisations, in the console's unit of work: platform tables only,
+// audited in the platform's log, since a rejected Organisation's own log goes with it.
 @Injectable()
 export class ConsoleOrganisationService {
   private readonly productName: string;
@@ -50,6 +54,7 @@ export class ConsoleOrganisationService {
     private readonly admins: AdminRepository,
     private readonly audit: AuditService,
     private readonly hosts: OrganisationHostCache,
+    private readonly clock: Clock,
     config: ConfigService<Env, true>,
   ) {
     this.productName = config.get('PRODUCT_NAME', { infer: true });
@@ -60,7 +65,7 @@ export class ConsoleOrganisationService {
    */
   public async list(): Promise<ConsoleOrganisationView[]> {
     const organisations = await this.organisations.list();
-    const counts = await this.statistics.listAll();
+    const counts = await this.statistics.listAll(this.recentMailSince());
 
     return organisations.map((organisation) => ({ organisation, mail: counts.get(organisation.id) ?? NO_MAIL }));
   }
@@ -142,7 +147,14 @@ export class ConsoleOrganisationService {
    * @param organisation the Organisation
    */
   private async withMail(organisation: OrganisationEntity): Promise<ConsoleOrganisationView> {
-    return { organisation, mail: await this.statistics.getOf(organisation.id) };
+    return { organisation, mail: await this.statistics.getOf(organisation.id, this.recentMailSince()) };
+  }
+
+  /**
+   * Tell the first Prague day of the recent mail counts.
+   */
+  private recentMailSince(): string {
+    return addDays(pragueDateOf(this.clock.now()), 1 - RECENT_MAIL_DAYS);
   }
 
   /**

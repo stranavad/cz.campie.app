@@ -4,6 +4,7 @@ import { render, toPlainText } from '@react-email/render';
 import { createElement, type ReactElement } from 'react';
 
 import { DEFAULT_ACCENT_COLOUR } from '@repo/schema/organisations';
+import { pragueDateOf } from '@repo/schema/shared';
 
 import { MailStatisticsRepository } from '../../repositories/emails/mail-statistics/mail-statistics.repository.ts';
 import { UndeliverableEmailRepository } from '../../repositories/emails/undeliverable-email/undeliverable-email.repository.ts';
@@ -12,6 +13,7 @@ import { OrganisationRepository } from '../../repositories/organisations/organis
 import type { Env } from '../config/env.schema.ts';
 import { UnitOfWork } from '../database/unit-of-work.ts';
 import { FileService } from '../files/file.service.ts';
+import { Clock } from '../ports/clock/clock.port.ts';
 import { MailSender, type MailAttachment } from '../ports/mail-sender/mail-sender.port.ts';
 import type { EmailBrand } from './email-layout.tsx';
 
@@ -71,6 +73,7 @@ export class EmailService {
     private readonly files: FileService,
     private readonly mailSender: MailSender,
     private readonly config: ConfigService<Env, true>,
+    private readonly clock: Clock,
   ) {}
 
   /**
@@ -97,7 +100,7 @@ export class EmailService {
 
     if (skipped > 0) {
       this.logger.warn(`Email skipped for ${skipped} undeliverable address(es) of Organisation ${organisation.id}`);
-      await this.statistics.add(organisation.id, 'skipped', skipped);
+      await this.statistics.add(organisation.id, pragueDateOf(this.clock.now()), 'skipped', skipped);
     }
 
     if (recipients.length === 0) {
@@ -113,7 +116,7 @@ export class EmailService {
       organisationId: organisation.id,
     });
     // Counted after the send, so the Organisation's row of counts stays locked only until the job commits.
-    await this.statistics.add(organisation.id, 'sent', 1);
+    await this.statistics.add(organisation.id, pragueDateOf(this.clock.now()), 'sent', 1);
   }
 
   /**

@@ -24,7 +24,7 @@ const SENDER = { name: 'Letní tábor', replyTo: 'tabor@spolek.example.com' };
 
 describe('bounce and complaint notifications', () => {
   const testApp = useTestApp();
-  const { app, http, mail, database, expectIsolated, expectPermission } = testApp;
+  const { app, http, mail, clock, database, expectIsolated, expectPermission } = testApp;
 
   let organisationId: string;
   let otherOrganisationId: string;
@@ -245,8 +245,36 @@ describe('bounce and complaint notifications', () => {
     const listed = await http().get('/api/console/organisations').set(operator.headers);
 
     expect(listed.body).toContainEqual(
-      expect.objectContaining({ id: organisationId, mail: { sent: 1, bounced: 1, complained: 0 } }),
+      expect.objectContaining({
+        id: organisationId,
+        mail: { total: { sent: 1, bounced: 1, complained: 0 }, lastSevenDays: { sent: 1, bounced: 1, complained: 0 } },
+      }),
     );
     expect(JSON.stringify(listed.body)).not.toContain(GUARDIAN);
+  });
+
+  it('counts mail of the last 7 Prague days apart from the totals', async () => {
+    clock().set(new Date('2027-02-02T12:00:00.000Z'));
+    await send(SampleNoticeEmail);
+    await notify({ reason: 'complaint', organisationId, recipients: [GUARDIAN] });
+    // 23:30 on 3 February in Prague: a day too early.
+    clock().set(new Date('2027-02-03T22:30:00.000Z'));
+    await send(SampleLoginEmail);
+    // 00:30 on 4 February in Prague: the first of the last 7 days.
+    clock().set(new Date('2027-02-03T23:30:00.000Z'));
+    await send(SampleLoginEmail);
+    clock().set(new Date('2027-02-10T21:00:00.000Z'));
+    await send(SampleLoginEmail);
+    await notify({ reason: 'bounce', organisationId, recipients: [GUARDIAN] });
+    const operator = await createOperator(testApp);
+
+    const listed = await http().get('/api/console/organisations').set(operator.headers);
+
+    expect(listed.body).toContainEqual(
+      expect.objectContaining({
+        id: organisationId,
+        mail: { total: { sent: 4, bounced: 1, complained: 1 }, lastSevenDays: { sent: 2, bounced: 1, complained: 0 } },
+      }),
+    );
   });
 });

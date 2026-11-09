@@ -25,7 +25,7 @@ import { CampRepository } from '../repositories/camps/camp/camp.repository.ts';
 import { RegistrationFormRepository } from '../repositories/camps/registration-form/registration-form.repository.ts';
 import {
   OrganisationRepository,
-  type CreateOrganisation,
+  type NewOrganisation,
 } from '../repositories/organisations/organisation/organisation.repository.ts';
 
 // Fixtures create the world through the app's own seams, so the data is what the app itself would hold.
@@ -41,7 +41,7 @@ export type RequestHeaders = Record<string, string>;
  */
 export async function createOrganisation(
   app: INestApplication,
-  options: Partial<Omit<CreateOrganisation, 'logoFileId'>> = {},
+  options: Partial<Omit<NewOrganisation, 'logoFileId'>> = {},
 ): Promise<string> {
   const suffix = randomUUID().slice(0, 8);
   const organisation = await app.get(UnitOfWork).runForPlatform(() =>

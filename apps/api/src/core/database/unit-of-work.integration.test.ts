@@ -21,11 +21,11 @@ describe('unit of work', () => {
     await withClient(database().ownerUrl, async (client) => {
       await client.query(
         `INSERT INTO organisations (id, subdomain, legal_name, ico, address, statutory_representative,
-                                    contact_email, contact_phone, billing_email, display_name)
+                                    contact_email, contact_phone, billing_email, display_name, created_at)
          VALUES ($1, 'tabor-a', 'Spolek A z. s.', '12345678', 'Smyšlená 1, 123 45 Testov', 'Jana Testovací',
-                 'a@example.com', '+420 123 456 789', 'a@example.com', 'Tábor A'),
+                 'a@example.com', '+420 123 456 789', 'a@example.com', 'Tábor A', now()),
                 ($2, 'tabor-b', 'Spolek B z. s.', '87654321', 'Smyšlená 2, 123 45 Testov', 'Petr Testovací',
-                 'b@example.com', '+420 123 456 789', 'b@example.com', 'Tábor B')`,
+                 'b@example.com', '+420 123 456 789', 'b@example.com', 'Tábor B', now())`,
         [ORG_A, ORG_B],
       );
       await client.query(
@@ -112,6 +112,7 @@ describe('unit of work', () => {
           contactPhone: '+420 123 456 789',
           billingEmail: 'c@example.com',
           displayName: 'Tábor C',
+          createdAt: new Date('2027-01-15T10:00:00.000Z'),
         })
         .returning({ id: organisations.id, subdomain: organisations.subdomain });
       expect(created).toEqual([{ id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-7/), subdomain: 'tabor-c' }]);

@@ -12,7 +12,8 @@ interface OrganisationTableRowProps {
   organisation: ConsoleOrganisation;
 }
 
-// One Organisation: its name and IČO, its address, its status and what the operator can do with it.
+// One Organisation: its name and IČO, its address, when it signed up, its status and what the operator can
+// do with it.
 export function OrganisationTableRow({ organisation }: OrganisationTableRowProps) {
   const { t } = useTranslation('console');
   const row = useOrganisationRow(organisation);
@@ -28,6 +29,7 @@ export function OrganisationTableRow({ organisation }: OrganisationTableRowProps
       <TableCell className="break-all text-muted-foreground">
         {t('fields.addressValue', { subdomain: organisation.subdomain })}
       </TableCell>
+      <TableCell className="whitespace-nowrap text-muted-foreground">{row.signedUpOn}</TableCell>
       <TableCell>
         <Badge variant={ORGANISATION_STATUS_BADGE[organisation.status]}>{t(`status.${organisation.status}`)}</Badge>
       </TableCell>

@@ -2,6 +2,15 @@ import { z } from 'zod';
 
 import { ORGANISATION_STATUSES } from '@repo/schema/organisations';
 
+// Counts of an Organisation's mail, never an address or a message.
+export const mailCountsSchema = z.object({
+  sent: z.number().int(),
+  bounced: z.number().int(),
+  complained: z.number().int(),
+});
+
+export type MailCounts = z.infer<typeof mailCountsSchema>;
+
 // An Organisation as the Platform operator's console shows it: its identity and status, nothing it holds.
 export const consoleOrganisationSchema = z.object({
   id: z.uuid(),
@@ -15,8 +24,11 @@ export const consoleOrganisationSchema = z.object({
   statutoryRepresentative: z.string(),
   contactEmail: z.string(),
   contactPhone: z.string(),
-  // Its mail so far, without a single address: messages sent, and bounce and complaint notifications.
-  mail: z.object({ sent: z.number().int(), bounced: z.number().int(), complained: z.number().int() }),
+  // When it signed up.
+  createdAt: z.iso.datetime(),
+  // Its mail since the start and over the last 7 Prague days, today included, without a single address:
+  // messages sent, and bounce and complaint notifications.
+  mail: z.object({ total: mailCountsSchema, lastSevenDays: mailCountsSchema }),
 });
 
 export type ConsoleOrganisation = z.infer<typeof consoleOrganisationSchema>;

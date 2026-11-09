@@ -34,11 +34,12 @@ export function OrganisationTable({ organisations }: OrganisationTableProps) {
       {table.rows.length === 0 ? (
         <p className="px-1 text-sm text-muted-foreground">{t('organisations.noMatch')}</p>
       ) : (
-        <Table className="min-w-[46rem]" aria-label={t('organisations.title')}>
+        <Table className="min-w-[52rem]" aria-label={t('organisations.title')}>
           <TableHeader>
             <TableRow>
               <TableHead>{t('organisations.organisation')}</TableHead>
               <TableHead>{t('fields.address')}</TableHead>
+              <TableHead>{t('organisations.createdAt')}</TableHead>
               <TableHead>{t('organisations.status')}</TableHead>
               <TableHead>
                 <span className="sr-only">{t('organisations.actions')}</span>

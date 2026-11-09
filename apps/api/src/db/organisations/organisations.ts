@@ -13,6 +13,7 @@ export const organisations = p.snakeCase.table(
     id: id(),
     subdomain: p.text().notNull().unique(),
     status: organisationStatus().notNull().default('pending'),
+    createdAt: p.timestamp({ withTimezone: true }).notNull(),
     legalName: p.text().notNull(),
     ico: p.text().notNull(),
     address: p.text().notNull(),
