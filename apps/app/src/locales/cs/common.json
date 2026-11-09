@@ -313,7 +313,8 @@
       "voluntary": "Při přihlášení pak kromě hesla zadáte i kód z ověřovací aplikace v telefonu, například Google Authenticator nebo Aegis.",
       "required": "Organizace {{organisation}} vyžaduje dvoufázové přihlášení. Než budete pokračovat, nastavte si ho: při přihlášení pak kromě hesla zadáte i kód z ověřovací aplikace v telefonu, například Google Authenticator nebo Aegis.",
       "start": "Vytvořit klíč",
-      "secret": "Klíč zadejte do aplikace, nebo otevřete odkaz v telefonu. Pak opište kód, který aplikace ukazuje.",
+      "secret": "Naskenujte QR kód ověřovací aplikací. Jde to i opsáním klíče nebo odkazem otevřeným v telefonu. Pak opište kód, který aplikace ukazuje.",
+      "qr": "QR kód pro ověřovací aplikaci",
       "openApp": "Otevřít v ověřovací aplikaci",
       "failure": "Klíč se nepodařilo vytvořit. Zkuste to prosím znovu."
     },
@@ -373,7 +374,7 @@
       "oldCode": "Kód ze stávající aplikace",
       "newCode": "Kód z nové aplikace",
       "start": "Vytvořit nový klíč",
-      "secret": "Klíč zadejte do nové aplikace, nebo otevřete odkaz v novém telefonu. Pak opište kód, který nová aplikace ukazuje.",
+      "secret": "Naskenujte QR kód novou aplikací. Jde to i opsáním klíče nebo odkazem otevřeným v novém telefonu. Pak opište kód, který nová aplikace ukazuje.",
       "confirm": "Přesunout do nového telefonu",
       "done": "Dvoufázové přihlášení je v novém telefonu. Kódy ze stávající aplikace už neplatí."
     },

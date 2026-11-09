@@ -1,9 +1,7 @@
-import { ExternalLinkIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Alert } from '@/components/ui/alert';
-import { buttonVariants } from '@/components/ui/button';
-import { groupSecret } from '@/core/two-step';
+import { TotpSecret } from '@/core/two-step';
 import { useTotpReplacement } from '@/features/account-settings/components/totp-replacement/use-totp-replacement.hook';
 
 // A new phone while two-step login stays on: the old app's code, the new key, then the new app's code.
@@ -29,16 +27,7 @@ export function TotpReplacement() {
       }}
     >
       {enrolment === null ? null : (
-        <>
-          <p className="text-sm">{t('accountSettings.replacement.secret')}</p>
-          <code className="rounded-2xl bg-muted px-4 py-3 font-mono text-base tracking-wider break-all sm:text-lg">
-            {groupSecret(enrolment.secret)}
-          </code>
-          <a href={enrolment.uri} className={buttonVariants({ variant: 'outline', className: 'self-start' })}>
-            <ExternalLinkIcon aria-hidden="true" />
-            {t('twoStep.enrolment.openApp')}
-          </a>
-        </>
+        <TotpSecret intro={t('accountSettings.replacement.secret')} secret={enrolment.secret} uri={enrolment.uri} />
       )}
       <div className="max-w-xs">
         <form.AppField name="code">

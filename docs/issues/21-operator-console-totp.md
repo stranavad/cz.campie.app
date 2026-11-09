@@ -42,7 +42,7 @@ The platform operator is a global admin identity with an operator flag that can 
   - There is no way back from suspension (no reinstate) and no email to the Owners on approval, rejection or suspension; neither was asked for.
   - The console's actions are not copied into the Organisation's own audit log: the console never enters an Organisation. Support access (issue 63) will write there.
   - Until issue 67, a password-only session of the operator still works outside the console (account and any membership of their own); only the console demands the code.
-  - Enrolment shows the key and an otpauth link, no QR code (it would need a library); issue 67 can add one for admins.
+  - Enrolment shows a QR code, the key and an otpauth link (the QR code was added on 2026-11-09, see issue 67).
   - The CLI's audit entries use the database's `now()`, not the Clock: it runs outside the app.
 - Open, not changed:
   - Rejection doesn't delete the Organisation's objects in storage. Its data key goes with it, so they can no longer be decrypted, but they stay there. `FileStorage` has no prefix delete, and nothing stores files for a pending Organisation yet (the logo comes with issue 23).

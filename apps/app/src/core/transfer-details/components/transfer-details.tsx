@@ -4,7 +4,7 @@ import type { RegistrationPayment } from '@repo/schema/registrations';
 import { czechDate, czk } from '@repo/schema/shared';
 
 import { PaymentRow } from '@/components/payment-row';
-import { QrPlatba } from '@/core/transfer-details/components/qr-platba';
+import { QrCode } from '@/components/qr-code';
 
 interface TransferDetailsProps {
   payment: RegistrationPayment;
@@ -43,7 +43,7 @@ export function TransferDetails({ payment, variableSymbol }: TransferDetailsProp
       <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
         {payment.qrPlatba === null ? null : (
           <figure className="flex flex-col items-center gap-2 rounded-2xl bg-muted p-3 text-center">
-            <QrPlatba payload={payment.qrPlatba} />
+            <QrCode payload={payment.qrPlatba} alt={t('qr')} />
             <figcaption className="text-[13px] font-semibold">
               {t('qrFor', { label: nowLabel, amount: czk(payment.amount) })}
             </figcaption>
@@ -51,7 +51,7 @@ export function TransferDetails({ payment, variableSymbol }: TransferDetailsProp
         )}
         {payment.balance === null || payment.balance.qrPlatba === null ? null : (
           <figure className="flex flex-col items-center gap-2 rounded-2xl bg-muted p-3 text-center">
-            <QrPlatba payload={payment.balance.qrPlatba} />
+            <QrCode payload={payment.balance.qrPlatba} alt={t('qr')} />
             <figcaption className="text-[13px] font-semibold">
               {t('qrFor', { label: t('allAtOnce'), amount: czk(payment.balance.outstanding) })}
             </figcaption>

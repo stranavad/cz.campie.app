@@ -1,11 +1,10 @@
-import { ExternalLinkIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Alert } from '@/components/ui/alert';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { useStartTotpEnrolmentMutation } from '@/core/two-step/api/two-step.queries';
 import { TotpCodeForm } from '@/core/two-step/components/totp-code-form/totp-code-form';
-import { groupSecret } from '@/core/two-step/helpers/group-secret.helper';
+import { TotpSecret } from '@/core/two-step/components/totp-secret';
 import { useShowRecoveryCodes } from '@/core/two-step/recovery-codes.context';
 
 interface TotpEnrolmentProps {
@@ -32,14 +31,7 @@ export function TotpEnrolment({ intro }: TotpEnrolmentProps) {
         </Button>
       ) : (
         <>
-          <p className="text-sm">{t('twoStep.enrolment.secret')}</p>
-          <code className="rounded-2xl bg-muted px-4 py-3 font-mono text-base tracking-wider break-all sm:text-lg">
-            {groupSecret(start.data.secret)}
-          </code>
-          <a href={start.data.uri} className={buttonVariants({ variant: 'outline', className: 'self-start' })}>
-            <ExternalLinkIcon aria-hidden="true" />
-            {t('twoStep.enrolment.openApp')}
-          </a>
+          <TotpSecret intro={t('twoStep.enrolment.secret')} secret={start.data.secret} uri={start.data.uri} />
           <TotpCodeForm purpose="confirm" onConfirmed={showRecoveryCodes} />
         </>
       )}
