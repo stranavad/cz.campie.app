@@ -38,7 +38,7 @@ services:
       - traefik.http.services.${DEPLOYMENT_NAME:?}.loadbalancer.server.port=80
       # The main host and every single label below the platform domain, taken literally (\Q...\E); the API
       # answers an unknown subdomain with 404. A label holds no dot, so production never routes a staging
-      # host, and `staging` is a reserved subdomain.
+      # host, and `dev` and `staging` are reserved subdomains.
       - traefik.http.routers.${DEPLOYMENT_NAME}.rule=Host(`app.${PLATFORM_DOMAIN}`) || HostRegexp(`^[a-z0-9-]+\.\Q${PLATFORM_DOMAIN}\E$$`)
       - traefik.http.routers.${DEPLOYMENT_NAME}.entrypoints=websecure
       - traefik.http.routers.${DEPLOYMENT_NAME}.service=${DEPLOYMENT_NAME}
@@ -56,6 +56,21 @@ services:
       - traefik.http.routers.${DEPLOYMENT_NAME}-http.middlewares=${DEPLOYMENT_NAME}-https
       - traefik.http.middlewares.${DEPLOYMENT_NAME}-https.redirectscheme.scheme=https
       - traefik.http.middlewares.${DEPLOYMENT_NAME}-https.redirectscheme.permanent=true
+      # The bare platform domain only redirects to the main host. The explicit priority beats production's
+      # subdomain rule, which also matches a deployment's bare domain (dev.campie.cz) and is longer.
+      - traefik.http.routers.${DEPLOYMENT_NAME}-bare.rule=Host(`${PLATFORM_DOMAIN}`)
+      - traefik.http.routers.${DEPLOYMENT_NAME}-bare.priority=1000
+      - traefik.http.routers.${DEPLOYMENT_NAME}-bare.entrypoints=websecure
+      - traefik.http.routers.${DEPLOYMENT_NAME}-bare.service=${DEPLOYMENT_NAME}
+      - traefik.http.routers.${DEPLOYMENT_NAME}-bare.middlewares=${DEPLOYMENT_NAME}-to-main
+      - traefik.http.routers.${DEPLOYMENT_NAME}-bare.tls.certresolver=${TRAEFIK_CERT_RESOLVER}
+      - traefik.http.middlewares.${DEPLOYMENT_NAME}-to-main.redirectregex.regex=^https://[^/]+(.*)$$
+      - traefik.http.middlewares.${DEPLOYMENT_NAME}-to-main.redirectregex.replacement=https://app.${PLATFORM_DOMAIN}$${1}
+      - traefik.http.routers.${DEPLOYMENT_NAME}-bare-http.rule=Host(`${PLATFORM_DOMAIN}`)
+      - traefik.http.routers.${DEPLOYMENT_NAME}-bare-http.priority=1000
+      - traefik.http.routers.${DEPLOYMENT_NAME}-bare-http.entrypoints=web
+      - traefik.http.routers.${DEPLOYMENT_NAME}-bare-http.service=${DEPLOYMENT_NAME}
+      - traefik.http.routers.${DEPLOYMENT_NAME}-bare-http.middlewares=${DEPLOYMENT_NAME}-https
     healthcheck:
       <<: *healthcheck
       test: [CMD, wget, -q, --spider, http://127.0.0.1/]
