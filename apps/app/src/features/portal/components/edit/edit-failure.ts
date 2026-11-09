@@ -3,13 +3,14 @@ import { REQUEST_LIMIT_ERROR_CODES, type RequestLimitErrorCode } from '@repo/sch
 
 import { HttpError } from '@/lib/api';
 
+// Why an edit failed, as the portal translates it.
+export type EditFailure = GuardianEditErrorCode | RequestLimitErrorCode | 'unexpected';
+
 /**
  * Name why an edit failed, as the portal translates it.
  * @param error what the edit failed with
  */
-export function editFailureOf(
-  error: Error | null,
-): GuardianEditErrorCode | RequestLimitErrorCode | 'unexpected' | null {
+export function editFailureOf(error: Error | null): EditFailure | null {
   if (error === null) {
     return null;
   }

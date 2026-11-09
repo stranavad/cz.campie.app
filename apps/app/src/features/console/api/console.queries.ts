@@ -53,8 +53,9 @@ export const useEnterSupportMutation = () =>
 
 const problemReportsKey = ['console', 'problem-reports'] as const;
 
-export const useProblemReportsQuery = () =>
-  useQuery({ queryKey: problemReportsKey, queryFn: ({ signal }) => consoleService.problemReports(signal) });
+// Disabled, like the list, until the console is open to this session.
+export const useProblemReportsQuery = (enabled: boolean) =>
+  useQuery({ queryKey: problemReportsKey, queryFn: ({ signal }) => consoleService.problemReports(signal), enabled });
 
 export const useResolveProblemReportMutation = () => {
   const queryClient = useQueryClient();

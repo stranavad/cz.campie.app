@@ -47,8 +47,7 @@
     "requests_throttled": "Pokusů o založení organizace bylo v poslední době příliš mnoho. Zkuste to prosím později.",
     "unexpected": "Organizaci se nepodařilo založit. Zkuste to prosím znovu."
   },
-  "submit": "Založit organizaci",
-  "logIn": "Už máte účet? <a>Přihlaste se</a>.",
+  "submit": "Odeslat ke schválení",
   "pitch": {
     "title": "Přihlášky na tábor bez papírů",
     "lead": "Rodiče přihlásí děti online, zaplatí přes QR kód a podepíšou souhlasy v telefonu. Vy máte vše na jednom místě.",

@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
 import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { TotpDigitsField } from '@/core/two-step/components/totp-code-form/totp-digits-field';
 import {
   useTotpCodeForm,
   type TotpCodePurpose,
@@ -14,7 +16,7 @@ interface TotpCodeFormProps {
 
 export function TotpCodeForm({ purpose, onConfirmed }: TotpCodeFormProps) {
   const { t } = useTranslation();
-  const { form, failure } = useTotpCodeForm(purpose, onConfirmed);
+  const { form, failure, recovery, toggleRecovery } = useTotpCodeForm(purpose, onConfirmed);
 
   return (
     <form
@@ -28,22 +30,16 @@ export function TotpCodeForm({ purpose, onConfirmed }: TotpCodeFormProps) {
       <div className="max-w-xs">
         <form.AppField name="code">
           {(field) =>
-            purpose !== 'verify' ? (
+            recovery ? (
               <field.TextField
-                label={t('twoStep.code')}
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={6}
-                className="font-mono tracking-[0.2em]"
-              />
-            ) : (
-              <field.TextField
-                label={t('twoStep.codeOrRecovery')}
-                autoComplete="one-time-code"
+                label={t('twoStep.recoveryCode')}
+                autoComplete="off"
                 autoCapitalize="none"
                 maxLength={9}
                 className="font-mono tracking-[0.2em]"
               />
+            ) : (
+              <TotpDigitsField label={t('twoStep.code')} />
             )
           }
         </form.AppField>
@@ -56,6 +52,16 @@ export function TotpCodeForm({ purpose, onConfirmed }: TotpCodeFormProps) {
       <form.AppForm>
         <form.SubmitButton className="self-start">{t(`twoStep.submit.${purpose}`)}</form.SubmitButton>
       </form.AppForm>
+      {purpose === 'verify' ? (
+        <Button
+          type="button"
+          variant="link"
+          className="min-h-11 self-start text-sm sm:min-h-9"
+          onClick={toggleRecovery}
+        >
+          {recovery ? t('twoStep.useApp') : t('twoStep.useRecovery')}
+        </Button>
+      ) : null}
     </form>
   );
 }

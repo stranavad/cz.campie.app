@@ -85,6 +85,10 @@ export function TurnusForm({ organisationId, campId, turnusId, turnus, removal, 
             </div>
           </FieldSet>
         ))}
+        {turnus === null ? null : (
+          // Prices are stored on each Registration when it is submitted; a change here never reprices one.
+          <p className="rounded-2xl bg-muted px-3.5 py-3 text-sm text-muted-foreground">{t('turnus.priceNote')}</p>
+        )}
         {hasFailed ? (
           <Alert variant="danger" role="alert">
             {t('failure')}

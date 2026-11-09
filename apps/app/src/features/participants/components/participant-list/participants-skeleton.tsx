@@ -10,7 +10,6 @@ export function ParticipantsSkeleton() {
     <output className="flex flex-col gap-5">
       <span className="sr-only">{t('loading')}</span>
       <Skeleton className="h-10 w-48" />
-      <Skeleton className="h-28 rounded-3xl" />
       <Skeleton className="h-11 w-full max-w-xl rounded-full" />
       <Skeleton className="h-96 rounded-3xl" />
     </output>

@@ -20,7 +20,7 @@ export function useIdentityForm(organisationId: string, settings: OrganisationSe
       setStatus(null);
 
       try {
-        // parse() applies the schema's trimming and the bank account's canonical form before sending.
+        // parse() applies the schema's trimming before sending.
         const saved = await update.mutateAsync(identityFormSchema.parse(value));
 
         formApi.reset(identityFormValues(saved));

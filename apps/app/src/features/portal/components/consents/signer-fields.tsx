@@ -14,7 +14,7 @@ export function SignerFields({ name, place, onName, onPlace }: SignerFieldsProps
   const { t } = useTranslation('portal');
 
   return (
-    <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-[3fr_2fr]">
+    <div className="grid grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-2.5">
       <LabelledInput
         label={t('consents.signerName')}
         value={name}

@@ -69,7 +69,7 @@ export function ConsentEditor({
         </Button>
         {canWrite ? (
           <Button type="button" disabled={!editor.canSave} onClick={editor.save}>
-            {consentId === null ? t('consents.create') : t('consents.publish')}
+            {consentId === null ? t('consents.create') : t('consents.publish', { version: nextVersion })}
           </Button>
         ) : null}
       </CardFooter>

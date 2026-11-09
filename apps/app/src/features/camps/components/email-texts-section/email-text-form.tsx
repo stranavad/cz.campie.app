@@ -21,10 +21,15 @@ interface EmailTextFormProps {
 // One email type's subject and text, whether it is sent, and a preview with made-up data.
 export function EmailTextForm({ organisationId, campId, email, canWrite }: EmailTextFormProps) {
   const { t } = useTranslation('camps');
-  const { form, status, placeholders, preview, showPreview, reset } = useEmailTextForm(organisationId, campId, email);
+  const { form, formRef, status, placeholders, preview, showPreview, reset, insert } = useEmailTextForm(
+    organisationId,
+    campId,
+    email,
+  );
 
   return (
     <form
+      ref={formRef}
       noValidate
       className="flex flex-col gap-5"
       onSubmit={(event) => {
@@ -47,12 +52,13 @@ export function EmailTextForm({ organisationId, campId, email, canWrite }: Email
         <form.AppField name="text">
           {(field) => <field.TextAreaField label={t('emails.text')} rows={8} />}
         </form.AppField>
-        <EmailPlaceholders placeholders={placeholders} />
+        <EmailPlaceholders placeholders={placeholders} onInsert={insert} />
         {email.canSwitchOff ? (
           <form.AppField name="enabled">{(field) => <field.CheckboxField label={t('emails.enabled')} />}</form.AppField>
         ) : (
           <p className="text-[13px] text-muted-foreground">{t('emails.alwaysSent')}</p>
         )}
+        <p className="text-[13px] text-muted-foreground">{t('emails.footerNote')}</p>
       </fieldset>
       {status === null ? null : (
         <Alert variant={status === 'saved' ? 'success' : 'danger'} role={status === 'saved' ? 'status' : 'alert'}>

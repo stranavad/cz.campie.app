@@ -31,7 +31,7 @@ export function ConsentList({ consents, openId, canWrite, onOpen, onStartNew }: 
         >
           <span className="font-display text-lg leading-tight font-bold break-words">{consent.title}</span>
           <span className="text-[13px] text-muted-foreground">
-            {t('consents.versionOf', { version: consent.version, date: czechDateTime(consent.publishedAt) })}
+            {t('consents.publishedVersionOf', { version: consent.version, date: czechDateTime(consent.publishedAt) })}
           </span>
           {consent.withdrawable ? <Badge variant="neutral">{t('consents.withdrawableShort')}</Badge> : null}
         </button>

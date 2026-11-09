@@ -14,13 +14,17 @@ import type {
   StandardFieldState,
 } from '@repo/schema/form-engine';
 
-import { useSaveRegistrationFormMutation } from '@/features/camps/api/camps.queries';
+import {
+  useDiscardRegistrationFormDraftMutation,
+  useSaveRegistrationFormMutation,
+} from '@/features/camps/api/camps.queries';
 import { newCustomField } from '@/features/camps/components/registration-form-section/custom-field.helper';
 import { HttpError } from '@/lib/api';
 
 export type BuilderStatus =
   | 'saved'
   | 'published'
+  | 'discarded'
   | 'invalid'
   | 'invalid_max'
   | 'form_field_changed'
@@ -42,6 +46,7 @@ function storedDeclaration({ file, ...declaration }: ShownDeclaration): Declarat
 // The draft being edited, a copy of the saved one: the builder is one big form, saved as a whole.
 export function useRegistrationFormBuilder(organisationId: string, campId: string, form: RegistrationForm) {
   const save = useSaveRegistrationFormMutation(organisationId, campId);
+  const discard = useDiscardRegistrationFormDraftMutation(organisationId, campId);
   const [definition, setDefinition] = useState<FormDefinition>(form.draft);
   const [maxParticipants, setMaxParticipants] = useState(form.maxParticipants);
   const [declarations, setDeclarations] = useState<readonly ShownDeclaration[]>(form.declarations);
@@ -100,7 +105,7 @@ export function useRegistrationFormBuilder(organisationId: string, campId: strin
     declarations,
     setDeclarations,
     status,
-    isSaving: save.isPending,
+    isSaving: save.isPending || discard.isPending,
     setMaxParticipants,
     // A field keeps its place among the standard fields; a new one joins at the end.
     setStandardField: (key: string, entry: { state: StandardFieldState; options?: CampOption[] }) =>
@@ -144,5 +149,23 @@ export function useRegistrationFormBuilder(organisationId: string, campId: strin
     },
     save: () => submit(false),
     publish: () => submit(true),
+    // The latest published version back as the draft, here and saved; nothing to go back to before one.
+    discard: () => {
+      if (form.latest === null) {
+        return;
+      }
+
+      setStatus(null);
+      discard.mutate(form.latest.version, {
+        onSuccess: (saved) => {
+          setDefinition(saved.draft);
+          setMaxParticipants(saved.maxParticipants);
+          setDeclarations(saved.declarations);
+          setSelectedId(null);
+          setStatus('discarded');
+        },
+        onError: () => setStatus('failed'),
+      });
+    },
   };
 }

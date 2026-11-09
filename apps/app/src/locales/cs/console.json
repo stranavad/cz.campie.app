@@ -1,15 +1,25 @@
 {
-  "title": "Konzole provozovatele",
+  "title": "Konzole",
   "loading": "Načítáme…",
   "error": "Konzoli se nepodařilo načíst. Zkuste stránku načíst znovu.",
   "notOperator": "Konzole je jen pro provozovatele platformy.",
+  "tabs": {
+    "label": "Části konzole",
+    "organizace": "Organizace",
+    "hlaseni": "Hlášení problémů",
+    "emaily": "Doručování e-mailů",
+    "podpora": "Přístupy podpory"
+  },
   "organisations": {
     "title": "Organizace",
     "empty": "Zatím se nezaregistrovala žádná organizace.",
-    "pendingCount_one": "{{count}} čeká na schválení",
-    "pendingCount_few": "{{count}} čekají na schválení",
-    "pendingCount_many": "{{count}} čeká na schválení",
-    "pendingCount_other": "{{count}} čeká na schválení"
+    "organisation": "Organizace",
+    "status": "Stav",
+    "actions": "Akce",
+    "ico": "IČO {{ico}}",
+    "search": "Hledat organizaci",
+    "searchPlaceholder": "Hledat název, IČO nebo adresu",
+    "noMatch": "Hledání neodpovídá žádná organizace."
   },
   "status": {
     "pending": "Čeká na schválení",
@@ -49,7 +59,9 @@
     "confirm": {
       "reject": "Opravdu zamítnout a smazat",
       "suspend": "Opravdu pozastavit"
-    }
+    },
+    "manage": "Spravovat",
+    "manageOrganisation": "Spravovat {{organisation}}"
   },
   "failure": {
     "organisation_not_pending": "Organizace už nečeká na schválení. Načtěte stránku znovu.",
@@ -93,5 +105,14 @@
     "done": "Vypnuto. Vlastník si dvoufázové přihlášení nastaví při příštím přihlášení.",
     "unknown": "Organizace nemá vlastníka s tímto e-mailem.",
     "failure": "Nepodařilo se. Zkuste to prosím znovu."
+  },
+  "mail": {
+    "title": "Doručování e-mailů",
+    "intro": "Součet za všechny organizace od jejich založení. Nedoručené a stížnosti tvoří {{rate}} odeslaných e-mailů.",
+    "sent": "odesláno celkem",
+    "bounced": "nedoručeno",
+    "complained": "označeno jako spam",
+    "healthy": "Žádná organizace nemá nedoručených e-mailů ani stížností víc, než poštovní služby snesou.",
+    "warning": "{{organisation}} má {{rate}} nedoručených e-mailů nebo stížností. Zkontrolujte s ní adresy rodičů."
   }
 }

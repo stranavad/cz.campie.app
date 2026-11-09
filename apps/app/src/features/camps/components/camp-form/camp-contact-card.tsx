@@ -4,7 +4,7 @@ import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import { withForm } from '@/core/form';
 import { campFormOptions } from '@/features/camps/components/camp-form/camp-form.schema';
 
-// Who guardians reach, and who in the team hears of a new Registration.
+// Who guardians reach: shown to them, and the reply address of the Camp's e-mails.
 export const CampContactCard = withForm({
   ...campFormOptions,
   props: { canWrite: false },
@@ -29,15 +29,6 @@ export const CampContactCard = withForm({
               {(field) => <field.TextField label={t('camp.contactPhone')} type="tel" autoComplete="off" />}
             </form.AppField>
           </div>
-          <form.AppField name="notificationEmails">
-            {(field) => (
-              <field.TextAreaField
-                label={t('camp.notificationEmails')}
-                description={t('camp.notificationEmailsHint')}
-                rows={3}
-              />
-            )}
-          </form.AppField>
         </fieldset>
       </Card>
     );

@@ -29,7 +29,9 @@ export function DocumentTypeCard({ type, turnusNames, canWrite, onEdit }: Docume
         <IconTile>{isDownload ? <DownloadIcon /> : <FileTextIcon />}</IconTile>
         <div className="flex min-w-0 flex-1 flex-col leading-tight">
           <h3 className="text-heading break-words">{type.name}</h3>
-          <span className="text-sm text-muted-foreground">{t(`documentTypes.kinds.${type.kind}`)}</span>
+          <span className="text-sm text-muted-foreground">
+            {isDownload ? t('documentTypes.kinds.download') : t('documentTypes.perChild')}
+          </span>
         </div>
       </div>
       {type.description === '' ? null : (

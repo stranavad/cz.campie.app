@@ -1,4 +1,4 @@
-import { FileTextIcon } from 'lucide-react';
+import { useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { RegistrationDetail } from '@repo/schema/registrations';
@@ -6,7 +6,7 @@ import { czechDate } from '@repo/schema/shared';
 
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
 import { DescriptionItem, DescriptionList } from '@/components/ui/description-list';
 import { ClaimedDiscounts } from '@/features/participants/components/registration-detail/claimed-discounts';
@@ -15,16 +15,30 @@ import { useAnswerText } from '@/features/participants/components/registration-d
 interface ParticipantDetailCardProps {
   participant: RegistrationDetail['participants'][number];
   discounts: RegistrationDetail['claimedDiscounts'];
+  // The child's checklist chips, shown folded too.
+  checklist: ReactNode;
+  // A second child starts folded, so the page opens on the first.
+  folded: boolean;
   canWrite: boolean;
   onVerify: (fieldId: string, optionId: string | null) => void;
   isVerifying: boolean;
 }
 
-// One child: who, their answers, the Přihláška PDF and the discounts claimed for them.
-export function ParticipantDetailCard({ participant, discounts, ...verifying }: ParticipantDetailCardProps) {
+// One child: who, their answers and the discounts claimed for them, with their checklist.
+export function ParticipantDetailCard({
+  participant,
+  discounts,
+  checklist,
+  folded,
+  ...verifying
+}: ParticipantDetailCardProps) {
   const { t } = useTranslation('participants');
   const { answerText, answerLabel } = useAnswerText();
+  const [isOpen, setOpen] = useState(!folded);
+  const bodyId = useId();
   const name = t('name', { first: participant.firstName, last: participant.lastName });
+  const hasFacts = participant.birthDate !== null || participant.answers.length > 0;
+  const hasBody = hasFacts || discounts.length > 0;
 
   return (
     <Card>
@@ -39,31 +53,37 @@ export function ParticipantDetailCard({ participant, discounts, ...verifying }: 
           )}
         </div>
         {participant.status === 'cancelled' ? <Badge>{t('cancelled')}</Badge> : null}
-        {participant.prihlaska === null ? null : (
-          <a
-            href={participant.prihlaska.url}
-            target="_blank"
-            rel="noreferrer"
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+        {folded && hasBody ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            aria-expanded={isOpen}
+            aria-controls={bodyId}
+            onClick={() => setOpen(!isOpen)}
           >
-            <FileTextIcon aria-hidden="true" />
-            {t('detail.prihlaska')}
-          </a>
-        )}
+            {t(isOpen ? 'detail.fold' : 'detail.unfold')}
+          </Button>
+        ) : null}
       </CardHeader>
-      {participant.birthDate === null && participant.answers.length === 0 ? null : (
-        <DescriptionList className="sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
-          {participant.birthDate === null ? null : (
-            <DescriptionItem label={t('detail.birthDate')}>{czechDate(participant.birthDate)}</DescriptionItem>
-          )}
-          {participant.answers.map((row) => (
-            <DescriptionItem key={row.key} label={answerLabel(row)}>
-              {answerText(row)}
-            </DescriptionItem>
-          ))}
-        </DescriptionList>
-      )}
-      {discounts.length === 0 ? null : <ClaimedDiscounts discounts={discounts} {...verifying} />}
+      {hasBody ? (
+        <div id={bodyId} hidden={!isOpen} className="flex flex-col gap-4">
+          {hasFacts ? (
+            <DescriptionList className="sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
+              {participant.birthDate === null ? null : (
+                <DescriptionItem label={t('detail.birthDate')}>{czechDate(participant.birthDate)}</DescriptionItem>
+              )}
+              {participant.answers.map((row) => (
+                <DescriptionItem key={row.key} label={answerLabel(row)}>
+                  {answerText(row)}
+                </DescriptionItem>
+              ))}
+            </DescriptionList>
+          ) : null}
+          {discounts.length === 0 ? null : <ClaimedDiscounts discounts={discounts} {...verifying} />}
+        </div>
+      ) : null}
+      {checklist}
     </Card>
   );
 }

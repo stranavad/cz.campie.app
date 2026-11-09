@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 
 import { czechDateTime } from '@repo/schema/shared';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   useSupportAccessMutations,
@@ -21,25 +20,19 @@ export function SupportAccessSection({ organisationId }: { organisationId: strin
   const active = grants.data?.find((grant) => grant.active);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h3 className="font-bold">{t('supportAccess.title')}</h3>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="flex min-w-0 flex-[1_1_16rem] flex-col leading-snug">
+          <span className="font-semibold">{t('supportAccess.title')}</span>
+          <span className="text-[13px] text-muted-foreground">
+            {active === undefined
+              ? t('supportAccess.intro')
+              : t(active.allowWrites ? 'supportAccess.activeWrites' : 'supportAccess.activeReadOnly', {
+                  until: czechDateTime(active.expiresAt),
+                })}
+          </span>
+        </span>
         {active === undefined ? null : (
-          <Badge variant="warning" dot>
-            {t('supportAccess.activeBadge')}
-          </Badge>
-        )}
-      </div>
-      <p className="text-sm text-muted-foreground">{t('supportAccess.intro')}</p>
-      {active === undefined ? (
-        <SupportGrantForm isGranting={mutations.grant.isPending} onGrant={(body) => mutations.grant.mutate(body)} />
-      ) : (
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-warning p-3 pl-4 text-warning-foreground">
-          <p className="min-w-0 flex-[1_1_14rem] text-sm font-semibold">
-            {t(active.allowWrites ? 'supportAccess.activeWrites' : 'supportAccess.activeReadOnly', {
-              until: czechDateTime(active.expiresAt),
-            })}
-          </p>
           <Button
             type="button"
             size="sm"
@@ -50,8 +43,11 @@ export function SupportAccessSection({ organisationId }: { organisationId: strin
           >
             {t('supportAccess.revoke')}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
+      {active === undefined ? (
+        <SupportGrantForm isGranting={mutations.grant.isPending} onGrant={(body) => mutations.grant.mutate(body)} />
+      ) : null}
       <SupportGrantHistory grants={grants.data ?? []} />
       {mutations.grant.isError || mutations.revoke.isError ? (
         <FormMessage tone="danger">{t('failure')}</FormMessage>

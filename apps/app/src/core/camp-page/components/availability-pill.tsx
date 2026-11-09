@@ -2,26 +2,25 @@ import { useTranslation } from 'react-i18next';
 
 import type { PublicTurnus } from '@repo/schema/camps';
 
-import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { LAST_PLACES } from '@/core/camp-page/helpers/camp-page.constants';
 
 interface AvailabilityPillProps {
   turnus: PublicTurnus;
 }
 
-// Whether guardians can register for a Turnus and how many places are left: green while it is open.
+// Whether guardians can register for a Turnus and how many places are left: green while it is open, amber
+// for the last few places.
 export function AvailabilityPill({ turnus }: AvailabilityPillProps) {
   const { t } = useTranslation();
   const isOpen = turnus.availability === 'open';
+  const isLast = isOpen && turnus.remainingPlaces <= LAST_PLACES;
 
   return (
-    <p
-      className={cn(
-        'inline-flex items-center gap-2 self-start rounded-full px-3 py-1 text-[13px] leading-snug font-semibold',
-        isOpen ? 'bg-success text-success-foreground' : 'bg-muted text-nav-foreground',
-      )}
-    >
-      <span aria-hidden="true" className="size-[7px] shrink-0 rounded-full bg-current" />
-      {t(`campPage.availability.${turnus.availability}`, { count: turnus.remainingPlaces })}
-    </p>
+    <Badge variant={isLast ? 'warning' : isOpen ? 'success' : 'neutral'} className="h-6.5 text-xs font-bold">
+      {isLast
+        ? t('campPage.lastPlaces', { count: turnus.remainingPlaces })
+        : t(`campPage.availability.${turnus.availability}`, { count: turnus.remainingPlaces })}
+    </Badge>
   );
 }

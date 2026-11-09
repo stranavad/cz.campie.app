@@ -13,21 +13,43 @@ export type LoginFailure = 'requests_throttled' | 'unexpected';
 export function useLoginForm() {
   const requestLink = useRequestLoginLinkMutation();
   const [failure, setFailure] = useState<LoginFailure | null>(null);
+  // The address the link went to, repeated on the card that replaces the form.
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [isResent, setIsResent] = useState(false);
+
+  const send = async (email: string) => {
+    setFailure(null);
+
+    try {
+      await requestLink.mutateAsync({ email });
+      setSentTo(email);
+
+      return true;
+    } catch (error) {
+      const code = error instanceof HttpError ? error.code : undefined;
+
+      setFailure(REQUEST_LIMIT_ERROR_CODES.find((known) => known === code) ?? 'unexpected');
+
+      return false;
+    }
+  };
 
   const form = useAppForm({
     ...loginFormOptions,
     onSubmit: async ({ value }) => {
-      setFailure(null);
-
-      try {
-        await requestLink.mutateAsync(loginFormSchema.parse(value));
-      } catch (error) {
-        const code = error instanceof HttpError ? error.code : undefined;
-
-        setFailure(REQUEST_LIMIT_ERROR_CODES.find((known) => known === code) ?? 'unexpected');
-      }
+      await send(loginFormSchema.parse(value).email);
     },
   });
 
-  return { form, isSent: requestLink.isSuccess, failure };
+  return {
+    form,
+    sentTo,
+    failure,
+    isResending: requestLink.isPending,
+    isResent,
+    resend: async () => {
+      setIsResent(false);
+      setIsResent(sentTo !== null && (await send(sentTo)));
+    },
+  };
 }

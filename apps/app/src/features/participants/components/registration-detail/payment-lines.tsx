@@ -5,10 +5,9 @@ import { czechDate, czk } from '@repo/schema/shared';
 
 import { LedgerRow } from '@/features/participants/components/registration-detail/ledger-row';
 
-// The payments received, what they add up to, what is left and what is due now.
+// The payments received and what they add up to.
 export function PaymentLines({ ledger }: { ledger: RegistrationDetail['ledger'] }) {
   const { t } = useTranslation('participants');
-  const due = ledger.amountDue;
 
   return (
     <div className="flex flex-col gap-1">
@@ -19,21 +18,10 @@ export function PaymentLines({ ledger }: { ledger: RegistrationDetail['ledger'] 
             key={payment.id}
             label={t(`detail.source.${payment.source}`, { date: czechDate(payment.paidOn), note: payment.note })}
             value={czk(payment.amount)}
+            className={payment.amount > 0 ? 'text-success-foreground' : undefined}
           />
         ))}
         <LedgerRow label={t('detail.paid')} value={czk(ledger.paid)} isTotal />
-        <LedgerRow label={t('detail.balance')} value={czk(ledger.balance)} />
-        <LedgerRow
-          label={t(`status.${ledger.status}`)}
-          value={
-            due.amount === 0
-              ? ''
-              : due.dueDate === null
-                ? t('detail.dueNowUndated', { amount: czk(due.amount) })
-                : t('detail.dueNow', { amount: czk(due.amount), date: czechDate(due.dueDate) })
-          }
-          className="text-muted-foreground"
-        />
       </dl>
     </div>
   );

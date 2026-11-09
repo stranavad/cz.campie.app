@@ -55,7 +55,7 @@ export function FieldInput({ field, value, onChange, invalid, describedBy }: Fie
     return (
       <Field>
         <FieldLabel htmlFor={id}>{caption}</FieldLabel>
-        <DatePicker id={id} value={text} onChange={onChange} max={today} {...aria} />
+        <DatePicker id={id} value={text} onChange={onChange} max={today} yearSelect {...aria} />
       </Field>
     );
   }

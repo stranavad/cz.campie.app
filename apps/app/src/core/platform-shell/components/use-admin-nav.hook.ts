@@ -9,11 +9,16 @@ import {
 } from 'lucide-react';
 
 import { membershipAllows, useAccountQuery, useCurrentMembership } from '@/core/account';
+import { useSelectedTurnus } from '@/core/selected-turnus';
+import { useTurnusOverviewQuery } from '@/core/turnus-overview';
 
-// The admin pages this admin may open, in the sidebar's order.
+// The admin pages this admin may open, in the sidebar's order; Registrations counts the children registered
+// in the Selected Turnus.
 export function useAdminNav() {
   const account = useAccountQuery();
   const { membership } = useCurrentMembership();
+  const { turnusId } = useSelectedTurnus();
+  const overview = useTurnusOverviewQuery(membership?.organisation.id ?? '', turnusId);
   const isOwner = membership?.owner === true;
   const items = [
     { to: '/platform', label: 'home', icon: HouseIcon, exact: true, shown: membership !== undefined },
@@ -23,6 +28,7 @@ export function useAdminNav() {
       icon: ClipboardListIcon,
       exact: false,
       shown: membershipAllows(membership, 'registrations', 'read'),
+      count: overview.data?.registered,
     },
     {
       to: '/platform/tabory',
@@ -43,5 +49,7 @@ export function useAdminNav() {
     },
   ] as const;
 
-  return items.filter((item) => item.shown);
+  return items
+    .filter((item) => item.shown)
+    .map((item) => ({ ...item, count: 'count' in item ? item.count : undefined }));
 }

@@ -23,17 +23,20 @@ export function ChoiceChips({
   describedBy,
 }: ChoiceChipsProps) {
   const name = useId();
+  // Short options, such as sizes, line up in a grid of four; longer ones wrap as they fit.
+  const isGrid = choices.length >= 3 && choices.every(({ label }) => label.length <= 6);
 
   return (
     <fieldset className="flex min-w-0 flex-col gap-2" aria-describedby={describedBy}>
       <legend className="mb-2 text-sm leading-snug font-semibold">{caption}</legend>
-      <div className="flex flex-wrap gap-2">
+      <div className={isGrid ? 'grid grid-cols-4 gap-2' : 'flex flex-wrap gap-2'}>
         {choices.map((choice) => (
           <label
             key={choice.id}
             className={cn(
               'flex min-h-12 min-w-16 cursor-pointer items-center justify-center rounded-[14px] border bg-input-background px-4 py-2 text-center text-[15px] leading-snug font-medium transition-colors hover:bg-muted has-checked:border-2 has-checked:border-foreground has-checked:bg-brand-soft has-checked:px-[15px] has-checked:font-bold has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring',
               invalid ? 'border-danger-foreground' : 'border-input',
+              isGrid && 'min-w-0 px-2 has-checked:px-[7px]',
             )}
           >
             <input

@@ -34,7 +34,9 @@ export function ForgottenPasswordForm() {
         </Alert>
       )}
       <form.AppForm>
-        <form.SubmitButton className="mt-1 w-full">{t('forgotten.submit')}</form.SubmitButton>
+        <form.SubmitButton size="lg" className="mt-1 w-full">
+          {t('forgotten.submit')}
+        </form.SubmitButton>
       </form.AppForm>
     </form>
   );

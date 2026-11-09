@@ -1,9 +1,9 @@
 {
   "title": "Tým",
-  "intro": "Kdo může s čím pracovat. Změna oprávnění platí od dalšího kroku správce v aplikaci.",
+  "intro": "Kdo může s čím pracovat. Co člověk nesmí, to neuvidí. Změna oprávnění platí od dalšího kroku člena v aplikaci.",
   "inviteAction": "Pozvat člena",
   "loading": "Načítáme…",
-  "error": "Uživatele se nepodařilo načíst. Zkuste stránku načíst znovu.",
+  "error": "Tým se nepodařilo načíst. Zkuste stránku načíst znovu.",
   "notOwner": "Tým spravují jen vlastníci organizace.",
   "areas": {
     "registrations": "Přihlášky",
@@ -14,44 +14,56 @@
   },
   "levels": {
     "none": "Bez přístupu",
-    "read": "Čtení",
-    "write": "Úpravy"
+    "read": "Číst",
+    "write": "Upravit"
   },
   "members": {
-    "title": "Správci",
+    "title": "Členové týmu",
+    "member": "Člen",
+    "totp": "Dvoufázové přihlášení",
+    "actions": "Akce",
     "owner": "Vlastník",
     "edit": "Upravit",
+    "editMember": "Upravit {{email}}",
+    "editTitle": "Upravit člena",
+    "done": "Hotovo",
     "permission": "{{area}}: {{level}}",
-    "ownerHasAll": "Vlastník má přístup ke všemu a spravuje uživatele.",
+    "ownerHasAll": "Vlastník má přístup ke všemu a spravuje tým.",
     "promote": "Udělat vlastníkem",
     "demote": "Odebrat roli vlastníka",
-    "remove": "Odebrat ze správy",
+    "remove": "Odebrat z týmu",
     "confirmRemove": "Opravdu odebrat",
     "cancel": "Zrušit",
     "failure": {
       "last_owner": "Organizace musí mít alespoň jednoho vlastníka.",
       "unexpected": "Změnu se nepodařilo uložit. Zkuste to prosím znovu.",
-      "totp_reset_elsewhere": "Tento správce má přístup i jinam (do jiné organizace nebo ke konzoli platformy), proto mu dvoufázové přihlášení může vypnout jen provozovatel platformy. Napište mu přes odkaz „Napsat zpětnou vazbu nebo nahlásit problém“."
+      "totp_reset_elsewhere": "Tento člen má přístup i jinam (do jiné organizace nebo ke konzoli platformy), proto mu dvoufázové přihlášení může vypnout jen provozovatel platformy. Napište mu přes odkaz „Napsat zpětnou vazbu nebo nahlásit problém“."
     },
-    "totpOn": "Dvoufázové přihlášení zapnuté",
-    "totpOff": "Bez dvoufázového přihlášení",
+    "totpOn": "Zapnuto",
+    "totpOff": "Vypnuto",
     "resetTotp": "Vypnout dvoufázové přihlášení",
-    "confirmResetTotp": "Opravdu vypnout - správce si ho nastaví znovu"
+    "confirmResetTotp": "Opravdu vypnout - člen si ho nastaví znovu"
   },
   "invitations": {
-    "title": "Čekající pozvánky",
-    "empty": "Žádná pozvánka nečeká na přijetí.",
+    "pending": "Čeká na přijetí pozvánky: {{email}}",
+    "meta": "{{validity}} · {{permissions}}",
     "expires": "Platí do {{date}}",
+    "expired": "Platnost vypršela",
+    "resend": "Poslat znovu",
+    "resent": "Pozvánku jsme znovu poslali na {{email}}, s novým odkazem.",
     "revoke": "Zrušit pozvánku",
-    "failure": "Pozvánku se nepodařilo zrušit. Zkuste to prosím znovu.",
-    "expired": "Platnost vypršela, pošlete pozvánku znovu"
+    "failure": {
+      "revoke": "Pozvánku se nepodařilo zrušit. Zkuste to prosím znovu.",
+      "resend": "Pozvánku se nepodařilo znovu odeslat. Zkuste to prosím znovu."
+    }
   },
   "invite": {
-    "title": "Pozvat správce",
+    "title": "Pozvat člena do týmu",
     "intro": "Pozvaný dostane e-mail s odkazem. Bez účtu si nastaví heslo, s účtem se přidá pod svým stávajícím přihlášením.",
     "email": "E-mail",
     "permissions": "Oprávnění",
     "submit": "Poslat pozvánku",
+    "close": "Zavřít",
     "sent": "Pozvánku jsme poslali na {{email}}.",
     "failure": "Pozvánku se nepodařilo odeslat. Zkuste to prosím znovu."
   }

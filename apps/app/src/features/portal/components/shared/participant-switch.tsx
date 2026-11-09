@@ -1,14 +1,16 @@
 import { useTranslation } from 'react-i18next';
 
-import { SegmentedControl, SegmentedControlCount, SegmentedControlItem } from '@/components/ui/segmented-control';
+import { SegmentedControl, SegmentedControlItem } from '@/components/ui/segmented-control';
 
 interface ParticipantSwitchProps {
-  participants: readonly { id: string; firstName: string; count?: number }[];
+  // `left`: how many things the child still needs done here.
+  participants: readonly { id: string; firstName: string; left: number }[];
   selectedId: string | undefined;
   onSelect: (participantId: string) => void;
 }
 
-// Picks which child of the Registration a screen shows; only shown for more than one.
+// Picks which child of the Registration a screen shows, with what is left for each; only shown for more
+// than one.
 export function ParticipantSwitch({ participants, selectedId, onSelect }: ParticipantSwitchProps) {
   const { t } = useTranslation('portal');
 
@@ -23,12 +25,14 @@ export function ParticipantSwitch({ participants, selectedId, onSelect }: Partic
           key={participant.id}
           selected={participant.id === selectedId}
           onClick={() => onSelect(participant.id)}
-          className="flex-1 justify-center px-4 text-[15px] sm:h-11"
+          className="min-w-0 flex-1 justify-center px-3 text-[15px] sm:h-11"
         >
-          {participant.firstName}
-          {participant.count === undefined || participant.count === 0 ? null : (
-            <SegmentedControlCount>{participant.count}</SegmentedControlCount>
-          )}
+          <span className="truncate">
+            {t('participantLeft', {
+              name: participant.firstName,
+              left: participant.left === 0 ? t('allDone') : t('left', { count: participant.left }),
+            })}
+          </span>
         </SegmentedControlItem>
       ))}
     </SegmentedControl>

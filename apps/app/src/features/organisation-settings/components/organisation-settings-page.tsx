@@ -7,12 +7,13 @@ import { Alert } from '@/components/ui/alert';
 import { LogoField } from '@/core/branding';
 import { BrandingForm } from '@/features/organisation-settings/components/branding-form/branding-form';
 import { IdentityForm } from '@/features/organisation-settings/components/identity-form/identity-form';
-import { PaymentGatewayForm } from '@/features/organisation-settings/components/payment-gateway-form/payment-gateway-form';
+import { PaymentsSection } from '@/features/organisation-settings/components/payments-section/payments-section';
 import { SupportAccessSection } from '@/features/organisation-settings/components/support-access-section/support-access-section';
 import { TwoStepSection } from '@/features/organisation-settings/components/two-step-section/two-step-section';
 import { useOrganisationSettingsPage } from '@/features/organisation-settings/components/use-organisation-settings-page.hook';
 
-// The Owner's settings of the Organisation: legal identity, bank account, contacts, branding and Comgate keys.
+// The Owner's settings of the Organisation: legal identity, branding, payments and security, each section
+// saved on its own.
 export function OrganisationSettingsPage() {
   const { t } = useTranslation('organisationSettings');
   const page = useOrganisationSettingsPage();
@@ -46,7 +47,7 @@ export function OrganisationSettingsPage() {
         />
         <BrandingForm organisationId={page.organisationId} settings={page.settings} />
       </SettingsSection>
-      <PaymentGatewayForm organisationId={page.organisationId} />
+      <PaymentsSection organisationId={page.organisationId} settings={page.settings} />
       <SettingsSection title={t('security.title')} description={t('security.intro')}>
         <TwoStepSection organisationId={page.organisationId} required={page.settings.totpRequired} />
         <hr className="border-border-subtle" />

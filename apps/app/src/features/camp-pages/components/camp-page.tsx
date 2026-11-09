@@ -1,5 +1,5 @@
 import { Link, Navigate } from '@tanstack/react-router';
-import { ArrowRightIcon, SearchXIcon } from 'lucide-react';
+import { SearchXIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/empty-state';
@@ -49,7 +49,6 @@ export function CampPage({ campSlug }: CampPageProps) {
             className={buttonVariants({ variant: 'brand', size: 'lg' })}
           >
             {t('register')}
-            <ArrowRightIcon aria-hidden="true" />
           </Link>
         ) : null
       }

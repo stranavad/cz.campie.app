@@ -4,13 +4,21 @@ import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/page-header';
 import { Alert } from '@/components/ui/alert';
 import { TotpEnrolment } from '@/core/two-step';
-import { OrganisationList } from '@/features/console/components/organisation-list/organisation-list';
+import type { ConsoleSection } from '@/features/console/components/console-section.constant';
+import { ConsoleTabs } from '@/features/console/components/console-tabs';
+import { MailDelivery } from '@/features/console/components/mail-delivery/mail-delivery';
+import { OrganisationTable } from '@/features/console/components/organisation-table/organisation-table';
 import { ProblemReports } from '@/features/console/components/problem-reports/problem-reports';
 import { SupportList } from '@/features/console/components/support-list/support-list';
 import { useConsolePage } from '@/features/console/components/use-console-page.hook';
 
+interface ConsolePageProps {
+  section: ConsoleSection;
+}
+
 // The Platform operator's console: never without a TOTP code in this session, which the shell asks for.
-export function ConsolePage() {
+// Its sections are tabs, each counting what waits in it.
+export function ConsolePage({ section }: ConsolePageProps) {
   const { t } = useTranslation('console');
   const page = useConsolePage();
 
@@ -47,19 +55,23 @@ export function ConsolePage() {
     );
   }
 
+  if (page.step === 'enrol') {
+    return (
+      <>
+        {header}
+        <TotpEnrolment intro={t('enrolmentIntro')} />
+      </>
+    );
+  }
+
   return (
     <>
       {header}
-      {page.step === 'enrol' ? <TotpEnrolment intro={t('enrolmentIntro')} /> : null}
-      {page.step === 'organisations' ? (
-        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-          <OrganisationList organisations={page.organisations} pendingCount={page.pendingCount} />
-          <div className="flex min-w-0 flex-col gap-6">
-            <SupportList />
-            <ProblemReports />
-          </div>
-        </div>
-      ) : null}
+      <ConsoleTabs current={section} counts={page.counts} />
+      {section === 'organizace' ? <OrganisationTable organisations={page.organisations} /> : null}
+      {section === 'hlaseni' ? <ProblemReports /> : null}
+      {section === 'emaily' ? <MailDelivery organisations={page.organisations} /> : null}
+      {section === 'podpora' ? <SupportList /> : null}
     </>
   );
 }

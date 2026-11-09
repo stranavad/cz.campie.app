@@ -12,7 +12,7 @@ export function ParticipantTable({ rows }: { rows: ParticipantRow[] }) {
   return (
     <Table
       containerClassName="hidden md:block"
-      className="min-w-[60rem]"
+      className="min-w-[50rem]"
       footer={<TableFooter>{t('count', { count: rows.length })}</TableFooter>}
     >
       <TableHeader>
@@ -22,8 +22,6 @@ export function ParticipantTable({ rows }: { rows: ParticipantRow[] }) {
           <TableHead>{t('columns.payment')}</TableHead>
           <TableHead>{t('columns.consents')}</TableHead>
           <TableHead>{t('columns.documents')}</TableHead>
-          <TableHead>{t('columns.answers')}</TableHead>
-          <TableHead>{t('columns.variableSymbol')}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

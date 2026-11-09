@@ -7,7 +7,7 @@ import { ParticipantExport } from '@/features/participants/components/export/par
 import { OpenItemsReminder } from '@/features/participants/components/reminders/open-items-reminder';
 import { PaymentReminders } from '@/features/participants/components/reminders/payment-reminders';
 import { TurnusConsents } from '@/features/participants/components/turnus-consents';
-import type { ParticipantsPanel } from '@/features/participants/components/use-participants-page.hook';
+import type { ParticipantsPanel } from '@/features/participants/schemas/participants-search.schema';
 
 interface ParticipantsPanelCardProps {
   panel: ParticipantsPanel;

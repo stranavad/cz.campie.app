@@ -9,13 +9,18 @@ import { ParticipantList } from '@/features/participants/components/participant-
 import { ParticipantsActions } from '@/features/participants/components/participant-list/participants-actions';
 import { ParticipantsPanelCard } from '@/features/participants/components/participant-list/participants-panel-card';
 import { ParticipantsSkeleton } from '@/features/participants/components/participant-list/participants-skeleton';
-import { TurnusOverview } from '@/features/participants/components/turnus-overview';
 import { useParticipantsPage } from '@/features/participants/components/use-participants-page.hook';
+import type { ParticipantsSearch } from '@/features/participants/schemas/participants-search.schema';
 
-// The admin's working list: the Participants of the Selected Turnus, searched and filtered.
-export function ParticipantsPage() {
+interface ParticipantsPageProps {
+  search: ParticipantsSearch;
+  onSearch: (search: ParticipantsSearch) => void;
+}
+
+// The admin's working list: the Participants of the Selected Turnus by payment, searched and filtered.
+export function ParticipantsPage({ search, onSearch }: ParticipantsPageProps) {
   const { t } = useTranslation('participants');
-  const page = useParticipantsPage();
+  const page = useParticipantsPage(search, onSearch);
 
   if (page.isSignedOut) {
     return <Navigate to="/platform/prihlaseni" replace />;
@@ -55,18 +60,14 @@ export function ParticipantsPage() {
               onClose={() => page.togglePanel(null)}
             />
           )}
-          <TurnusOverview
-            key={`overview-${page.turnusId}`}
-            organisationId={page.organisationId}
-            turnusId={page.turnusId}
-          />
           <ParticipantFilters
-            search={page.search}
-            onSearch={page.setSearch}
-            paymentStatus={page.paymentStatus}
-            onPaymentStatus={page.setPaymentStatus}
-            flags={page.flags}
-            onToggleFlag={page.toggleFlag}
+            text={page.text}
+            onText={page.setText}
+            tab={page.tab}
+            onTab={page.setTab}
+            countOf={page.countOf}
+            check={page.check}
+            onCheck={page.setCheck}
           />
           <ParticipantList
             rows={page.rows}

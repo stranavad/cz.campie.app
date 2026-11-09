@@ -1,10 +1,10 @@
 import { Link } from '@tanstack/react-router';
-import { BellIcon, DownloadIcon, FileCheckIcon, PlusIcon } from 'lucide-react';
+import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import { TurnusSwitcher } from '@/core/selected-turnus';
-import type { ParticipantsPanel } from '@/features/participants/components/use-participants-page.hook';
+import type { ParticipantsPanel } from '@/features/participants/schemas/participants-search.schema';
 
 interface ParticipantsActionsProps {
   canWrite: boolean;
@@ -26,24 +26,9 @@ export function ParticipantsActions({ canWrite, hasTurnus, panel, onToggle }: Pa
   return (
     <>
       <TurnusSwitcher />
-      {hasTurnus && canWrite ? (
-        <Button {...tool('reminders')}>
-          <BellIcon aria-hidden="true" />
-          {t('actions.remind')}
-        </Button>
-      ) : null}
-      {hasTurnus ? (
-        <Button {...tool('export')}>
-          <DownloadIcon aria-hidden="true" />
-          {t('actions.export')}
-        </Button>
-      ) : null}
-      {hasTurnus ? (
-        <Button {...tool('consents')}>
-          <FileCheckIcon aria-hidden="true" />
-          {t('consents.title')}
-        </Button>
-      ) : null}
+      {hasTurnus && canWrite ? <Button {...tool('reminders')}>{t('actions.remind')}</Button> : null}
+      {hasTurnus ? <Button {...tool('export')}>{t('actions.export')}</Button> : null}
+      {hasTurnus ? <Button {...tool('consents')}>{t('consents.title')}</Button> : null}
       {canWrite ? (
         <Link to="/platform/prihlasky/nova" className={buttonVariants()}>
           <PlusIcon aria-hidden="true" />

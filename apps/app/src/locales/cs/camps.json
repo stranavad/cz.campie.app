@@ -25,51 +25,49 @@
       "open": "Přihlášky otevřené",
       "notYetOpen": "Přihlášky se teprve otevřou",
       "closed": "Přihlášky uzavřené"
-    }
+    },
+    "current": "vybraný"
   },
   "camp": {
     "title": "Základní údaje",
-    "contactTitle": "Kontakt",
+    "contactTitle": "Kontakt pro rodiče",
     "registrationTitle": "Přihlašování",
     "name": "Název tábora",
-    "slug": "Adresa tábora",
-    "slugHint": "Část adresy přihlášek za názvem organizace. Odkazy na dřívější adresu budou fungovat dál.",
+    "slug": "Adresa stránky",
+    "slugHint": "Stránka tábora: {{address}}. Odkazy na dřívější adresu budou fungovat dál.",
     "websiteUrl": "Web tábora",
     "contactName": "Kontaktní osoba",
     "contactHint": "Rodiče uvidí tento kontakt a odpovědi na e-maily tábora půjdou na tento e-mail.",
     "contactEmail": "Kontaktní e-mail",
     "contactPhone": "Kontaktní telefon",
-    "notificationEmails": "Komu poslat zprávu o nové přihlášce",
-    "notificationEmailsHint": "Jeden e-mail na řádek, nejvýše 10.",
     "contactEditLockDate": "Rodiče mohou upravovat kontakty do",
     "contactEditLockDateHint": "Včetně tohoto dne. Do té doby mohou také doplnit nové otázky přihlášky."
   },
   "modules": {
     "title": "Moduly",
-    "intro": "Vypnutý modul se skryje, jeho data zůstanou zachovaná.",
+    "intro": "Rodiče uvidí jen zapnuté části. Vypnutý modul data skryje, nesmaže je.",
     "consents": "Souhlasy",
     "documents": "Dokumenty",
-    "generatedDocuments": "Generované dokumenty",
-    "healthRecord": "Zdravotní záznam",
-    "campHealthLog": "Zdravotnický deník",
-    "oddily": "Oddíly",
-    "vedouci": "Vedoucí"
+    "descriptions": {
+      "consents": "Rodiče podepíší souhlasy v portálu",
+      "documents": "Soubory ke stažení a dokumenty, které rodiče odevzdají ke kontrole"
+    }
   },
   "branding": {
-    "intro": "Bez vlastního loga a barvy má tábor vzhled organizace.",
+    "intro": "Vyberte barvu, kterou znají děti a rodiče. Odstín pro text a tmavý režim dopočítáme, aby byl vždy čitelný.",
     "organisationLogo": "Tábor používá logo organizace.",
     "ownColour": "Vlastní barva tábora",
-    "accentColour": "Barva",
-    "accentColourHint": "Barvu textu k ní zvolíme sami, aby byl vždy čitelný.",
     "colourTitle": "Barva tábora",
     "organisationColour": "Tábor má barvu organizace.",
     "preview": "Takhle to uvidí rodiče",
     "previewPortal": "Můj portál",
-    "previewPlaces": "Volná místa",
-    "previewCta": "Přihlásit dítě"
+    "previewCta": "Přihlásit dítě",
+    "previewFree_one": "{{count}} volné místo",
+    "previewFree_few": "{{count}} volná místa",
+    "previewFree_many": "{{count}} volného místa",
+    "previewFree_other": "{{count}} volných míst"
   },
   "create": {
-    "open": "Přidat tábor",
     "title": "Nový tábor",
     "intro": "Tábor dostane vlastní stránku s přihláškami. Další údaje doplníte v jeho nastavení.",
     "close": "Zavřít",
@@ -124,17 +122,19 @@
       "depositDueDays": "Zálohu zaplatit do (dnů od přihlášení)",
       "balanceDueDate": "Doplatek zaplatit do",
       "closedManually": "Přihlašování ručně uzavřít"
-    }
+    },
+    "priceNote": "Změna ceny se týká jen nových přihlášek. Už přihlášeným cenu upravíte v detailu přihlášky."
   },
   "siblingDiscount": {
     "title": "Sourozenecká sleva",
     "amount": "Sleva na dítě (Kč)",
-    "amountHint": "Platí, když jedna přihláška obsahuje více dětí. 0 = bez slevy.",
     "appliesTo": "Komu sleva patří",
     "modes": {
       "every_child": "Každému dítěti",
       "from_second_child": "Až od druhého dítěte"
-    }
+    },
+    "intro": "Platí, když jedna přihláška obsahuje více dětí.",
+    "enabled": "Zapnutá"
   },
   "discountCodes": {
     "title": "Slevové kódy",
@@ -178,7 +178,7 @@
   "registrationForm": {
     "title": "Přihláška",
     "unpublished": "Přihláška zatím nebyla zveřejněna.",
-    "latest": "Rodiče vidí verzi {{version}}. Úpravy se jim ukážou až po zveřejnění.",
+    "latest": "Upravujete koncept. Rodiče zatím vidí zveřejněnou verzi {{version}} z {{date}}.",
     "maxParticipants": "Nejvíce dětí na jedné přihlášce",
     "groups": {
       "registration": "Rodiče",
@@ -245,7 +245,7 @@
     "newFieldType": "Druh nové otázky",
     "addField": "Přidat otázku",
     "saveDraft": "Uložit koncept",
-    "publish": "Uložit a zveřejnit",
+    "publish": "Zveřejnit verzi {{version}}",
     "showPreview": "Náhled",
     "hidePreview": "Skrýt náhled",
     "previewChild": "Dítě",
@@ -258,8 +258,12 @@
       "failed": "Přihlášku se nepodařilo uložit. Zkuste to prosím znovu.",
       "invalid_max": "Nejvíce dětí na přihlášce musí být 1 až 10.",
       "form_definition_invalid": "Koncept už neodpovídá nabídce standardních polí. Zkontrolujte je a uložte znovu.",
-      "declaration_file_unknown": "Některé prohlášení odkazuje na PDF, které už není k dispozici. Nahrajte ho znovu."
-    }
+      "declaration_file_unknown": "Některé prohlášení odkazuje na PDF, které už není k dispozici. Nahrajte ho znovu.",
+      "discarded": "Koncept je zahozený, upravujete znovu zveřejněnou verzi."
+    },
+    "discard": "Zahodit koncept",
+    "confirmDiscard": "Opravdu zahodit",
+    "keepDraft": "Ponechat"
   },
   "declarations": {
     "title": "Prohlášení",
@@ -279,7 +283,7 @@
     "subject": "Předmět",
     "text": "Text",
     "intro": "E-maily, které za tábor posíláme rodičům a vašemu týmu. Předmět i text můžete napsat po svém, výchozí znění jde kdykoli vrátit.",
-    "placeholders": "Do předmětu i textu můžete vložit",
+    "placeholders": "Vložit údaj",
     "enabled": "Posílat tento e-mail",
     "alwaysSent": "Tento e-mail se posílá vždy, bez něj se rodiče nepřihlásí do portálu.",
     "reset": "Vrátit výchozí znění",
@@ -298,7 +302,21 @@
       "cancellation": "Zrušení přihlášky",
       "new_registration_notification": "Zpráva táboru o nové přihlášce"
     },
-    "previewSubject": "Předmět: {{subject}}"
+    "previewSubject": "Předmět: {{subject}}",
+    "footerNote": "Patička s kontaktem tábora se přidá automaticky.",
+    "notificationEmails": "Upozornění pro tým posílat na",
+    "notificationEmailsHint": "Zpráva o každé nové přihlášce. Jeden e-mail na řádek, nejvýše 10.",
+    "when": {
+      "registration_confirmation": "Hned po odeslání přihlášky",
+      "login_link": "Když si rodič vyžádá přihlášení do portálu",
+      "payment_received": "Po připsání platby",
+      "payment_reminder": "Když pošlete připomínku plateb",
+      "consent_copy": "Po podpisu souhlasu",
+      "open_items_reminder": "Když pošlete připomínku chybějících věcí",
+      "document_returned": "Když vrátíte dokument k opravě",
+      "cancellation": "Když zrušíte účast dítěte",
+      "new_registration_notification": "Týmu tábora po každé nové přihlášce"
+    }
   },
   "preview": {
     "back": "Zpět do nastavení tábora",
@@ -338,7 +356,7 @@
     "uploadFailed": "PDF se nepodařilo nahrát. Nahrát lze jen soubor PDF.",
     "versionNote": "Uložením zveřejníte novou verzi. Kdo už podepsal, má podpis u své verze.",
     "create": "Vytvořit a zveřejnit",
-    "publish": "Zveřejnit novou verzi",
+    "publish": "Zveřejnit verzi {{version}}",
     "saved": "Uloženo.",
     "saveFailed": "Souhlas se nepodařilo uložit. Zkontrolujte, že má název a každý bod text.",
     "preview": "Jak ho uvidí rodiče",
@@ -347,7 +365,8 @@
     "yes": "Ano",
     "no": "Ne",
     "withdrawableNote": "Souhlas můžete později odvolat.",
-    "bindingNote": "Tento souhlas nelze odvolat."
+    "bindingNote": "Tento souhlas nelze odvolat.",
+    "publishedVersionOf": "Zveřejněná verze {{version}} z {{date}} · všechny turnusy"
   },
   "documentTypes": {
     "title": "Dokumenty",
@@ -383,6 +402,7 @@
     "noFile": "Chybí soubor, rodiče ho nevidí",
     "save": "Uložit",
     "remove": "Smazat",
-    "saveFailed": "Změnu se nepodařilo uložit."
+    "saveFailed": "Změnu se nepodařilo uložit.",
+    "perChild": "K odevzdání za každé dítě"
   }
 }

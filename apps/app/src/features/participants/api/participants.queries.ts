@@ -14,6 +14,7 @@ import type {
   VerifyClaimedDiscountBody,
 } from '@repo/schema/registrations';
 
+import { turnusOverviewKeys } from '@/core/turnus-overview';
 import { participantsKeys } from '@/features/participants/api/participants.keys';
 import { participantsService } from '@/features/participants/api/participants.service';
 
@@ -40,7 +41,7 @@ export const useRegistrationHistoryQuery = (organisationId: string, registration
     queryFn: enabled ? ({ signal }) => participantsService.history(organisationId, registrationId, signal) : skipToken,
   });
 
-// A change to a Registration's money or discounts shows in its detail, history and the list.
+// A change to a Registration shows in its detail, history, the list and the Turnus overview.
 const useRegistrationChange = <Variables, Result>(
   organisationId: string,
   mutationFn: (variables: Variables) => Promise<Result>,
@@ -49,7 +50,11 @@ const useRegistrationChange = <Variables, Result>(
 
   return useMutation({
     mutationFn,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: participantsKeys.organisation(organisationId) }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: participantsKeys.organisation(organisationId) }),
+        queryClient.invalidateQueries({ queryKey: turnusOverviewKeys.organisation(organisationId) }),
+      ]),
   });
 };
 
@@ -107,9 +112,32 @@ export const useTurnusFormQuery = (organisationId: string, turnusId: string | nu
     retry: false,
   });
 
+// A Deposit paid in cash at the desk is recorded as a payment right after the Registration exists. A failed
+// record is sent again with the form: the same idempotency key returns the same Registration.
 export const useCreateRegistrationMutation = (organisationId: string) =>
-  useRegistrationChange(organisationId, ({ campId, body }: { campId: string; body: CreateRegistrationBody }) =>
-    participantsService.create(organisationId, campId, body),
+  useRegistrationChange(
+    organisationId,
+    async ({
+      campId,
+      body,
+      cashDeposit,
+    }: {
+      campId: string;
+      body: CreateRegistrationBody;
+      cashDeposit: Pick<RecordPaymentBody, 'paidOn' | 'note'> | null;
+    }) => {
+      const created = await participantsService.create(organisationId, campId, body);
+
+      if (cashDeposit !== null && created.depositTotal !== null && created.depositTotal > 0) {
+        await participantsService.recordPayment(organisationId, created.id, {
+          kind: 'payment',
+          amount: created.depositTotal,
+          ...cashDeposit,
+        });
+      }
+
+      return created;
+    },
   );
 
 export const useCancelParticipantMutation = (organisationId: string, registrationId: string) =>
@@ -286,13 +314,6 @@ export const useOpenItemsPreviewQuery = (organisationId: string, turnusId: strin
 
 export const useSendOpenItemsReminderMutation = (organisationId: string, turnusId: string) =>
   useMutation({ mutationFn: () => participantsService.sendOpenItemsReminder(organisationId, turnusId) });
-
-export const useTurnusOverviewQuery = (organisationId: string, turnusId: string | null) =>
-  useQuery({
-    queryKey: [...participantsKeys.organisation(organisationId), 'overview', turnusId ?? ''],
-    queryFn:
-      turnusId === null ? skipToken : ({ signal }) => participantsService.overview(organisationId, turnusId, signal),
-  });
 
 export const useEraseRegistrationMutation = (organisationId: string, registrationId: string) =>
   useRegistrationChange(organisationId, () => participantsService.erase(organisationId, registrationId));

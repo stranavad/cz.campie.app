@@ -4,20 +4,21 @@ import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/empty-state';
 import { Alert } from '@/components/ui/alert';
-import { useGuardianDocumentsQuery } from '@/features/portal/api/portal.queries';
 import { DownloadList } from '@/features/portal/components/documents/download-list';
 import { RequirementCard } from '@/features/portal/components/documents/requirement-card';
+import { RequirementRow } from '@/features/portal/components/documents/requirement-row';
+import { useDocumentsPage } from '@/features/portal/components/documents/use-documents-page.hook';
 import { ParticipantSwitch } from '@/features/portal/components/shared/participant-switch';
 import { PortalBackHeader } from '@/features/portal/components/shared/portal-back-header';
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
-import { useSelectedParticipant } from '@/features/portal/components/shared/use-selected-participant.hook';
 import { HttpError } from '@/lib/api';
 
-// A Registration's documents: what each child hands in, and what the camp publishes to download.
+// A Registration's documents: what each child still hands in, in full; the rest as rows; and what the camp
+// publishes to download.
 export function DocumentsPage({ registrationId }: { registrationId: string }) {
   const { t } = useTranslation('portal');
-  const documents = useGuardianDocumentsQuery(registrationId);
-  const { selected, select } = useSelectedParticipant(documents.data?.participants ?? []);
+  const page = useDocumentsPage(registrationId);
+  const { documents, selected } = page;
 
   if (documents.error instanceof HttpError && documents.error.status === 401) {
     return <Navigate to="/organisation/portal/prihlaseni" replace />;
@@ -38,10 +39,10 @@ export function DocumentsPage({ registrationId }: { registrationId: string }) {
     );
   }
 
-  const { downloads, requirements, participants } = documents.data;
+  const { downloads, requirements } = documents.data;
 
   return (
-    <PortalColumn>
+    <PortalColumn className="gap-3">
       <PortalBackHeader
         title={t('documents.title')}
         subtitle={
@@ -54,21 +55,9 @@ export function DocumentsPage({ registrationId }: { registrationId: string }) {
         <EmptyState icon={<FileTextIcon />} title={t('documents.none')} />
       ) : null}
       {requirements.length === 0 ? null : (
-        <ParticipantSwitch
-          participants={participants.map((participant) => ({
-            id: participant.id,
-            firstName: participant.firstName,
-            count: requirements.filter(({ id }) => {
-              const status = participant.uploads[id]?.[0]?.status;
-
-              return status === undefined || status === 'returned';
-            }).length,
-          }))}
-          selectedId={selected?.id}
-          onSelect={select}
-        />
+        <ParticipantSwitch participants={page.switchParticipants} selectedId={selected?.id} onSelect={page.select} />
       )}
-      {requirements.map((requirement) => (
+      {page.toHandIn.map((requirement) => (
         <RequirementCard
           key={`${selected?.id ?? ''}-${requirement.id}`}
           registrationId={registrationId}
@@ -76,6 +65,21 @@ export function DocumentsPage({ registrationId }: { registrationId: string }) {
           participant={selected}
         />
       ))}
+      {selected === undefined || page.handedIn.length === 0 ? null : (
+        <section className="flex flex-col gap-2.5 pt-3">
+          <h2 className="px-1 text-[13px] font-bold text-muted-foreground">{t('documents.others')}</h2>
+          <ul className="flex flex-col gap-2.5">
+            {page.handedIn.map((requirement) => (
+              <RequirementRow
+                key={`${selected.id}-${requirement.id}`}
+                registrationId={registrationId}
+                requirement={requirement}
+                participant={selected}
+              />
+            ))}
+          </ul>
+        </section>
+      )}
       <DownloadList downloads={downloads} />
     </PortalColumn>
   );

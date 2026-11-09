@@ -29,7 +29,12 @@
       "label": "Právní dokumenty",
       "terms": "Obchodní podmínky",
       "dataProcessingAgreement": "Zpracovatelská smlouva",
-      "dataPage": "Kde jsou data a kdo je zpracovává"
+      "dataPage": "Kde jsou data a kdo je zpracovává",
+      "dataPageShort": "Zpracování dat"
+    },
+    "public": {
+      "hasAccount": "Už máte účet?",
+      "logIn": "Přihlásit"
     },
     "menu": {
       "open": "Otevřít menu",
@@ -44,7 +49,11 @@
       "team": "Tým",
       "organisation": "Organizace",
       "auditLog": "Historie",
-      "console": "Konzole"
+      "console": "Konzole",
+      "registered_one": "{{count}} přihlášené dítě ve vybraném turnusu",
+      "registered_few": "{{count}} přihlášené děti ve vybraném turnusu",
+      "registered_many": "{{count}} přihlášeného dítěte ve vybraném turnusu",
+      "registered_other": "{{count}} přihlášených dětí ve vybraném turnusu"
     },
     "role": {
       "owner": "Vlastník",
@@ -229,21 +238,31 @@
     "website": "Web tábora",
     "turnusWebsite": "Více o turnusu",
     "turnusy": "Turnusy",
+    "chooseTurnus": "Vyberte turnus",
     "noTurnusy": "Tábor zatím nevypsal žádný turnus.",
     "dates": "{{start}} - {{end}}",
-    "ages": "Věk {{min}} až {{max}} let",
+    "ages": "{{min}}-{{max}} let",
+    "length_one": "{{count}} den",
+    "length_few": "{{count}} dny",
+    "length_many": "{{count}} dne",
+    "length_other": "{{count}} dní",
+    "lengthRange": "{{min}}-{{max}} dní",
+    "lastPlaces_one": "Poslední místo",
+    "lastPlaces_few": "Poslední {{count}} místa",
+    "lastPlaces_many": "Posledních {{count}} místa",
+    "lastPlaces_other": "Posledních {{count}} míst",
     "earlyBird": "při přihlášení do {{date}}, potom {{base}}",
     "opensAt": "Přihlašování začne {{date}}.",
     "countdown": "Zbývá {{days}} d {{hours}} h {{minutes}} min {{seconds}} s",
     "availability": {
-      "open_one": "Přihlašování otevřené, zbývá {{count}} místo",
-      "open_few": "Přihlašování otevřené, zbývají {{count}} místa",
-      "open_many": "Přihlašování otevřené, zbývá {{count}} místa",
-      "open_other": "Přihlašování otevřené, zbývá {{count}} míst",
-      "not_yet_open": "Přihlašování ještě nezačalo",
-      "closed_manually": "Přihlašování je uzavřené",
-      "closed_by_window": "Přihlašování skončilo",
-      "full": "Obsazeno"
+      "open_one": "{{count}} volné místo",
+      "open_few": "{{count}} volná místa",
+      "open_many": "{{count}} volného místa",
+      "open_other": "{{count}} volných míst",
+      "not_yet_open": "Brzy otevřeme",
+      "closed_manually": "Uzavřeno",
+      "closed_by_window": "Ukončeno",
+      "full": "Plno"
     },
     "openingNow": "Přihlašování právě začíná, stránka se za chvíli obnoví.",
     "agesFrom": "Od {{min}} let",
@@ -266,7 +285,9 @@
   },
   "twoStep": {
     "code": "Kód z aplikace",
-    "codeOrRecovery": "Kód z aplikace nebo záložní kód",
+    "recoveryCode": "Záložní kód",
+    "useRecovery": "Nemám telefon, použít záložní kód",
+    "useApp": "Použít kód z aplikace",
     "submit": {
       "confirm": "Zapnout dvoufázové přihlášení",
       "regenerate": "Vytvořit nové záložní kódy",
@@ -310,7 +331,21 @@
     "totpIntro": "Kromě hesla zadáte kód z ověřovací aplikace v telefonu.",
     "totpStatusOn": "Zapnuto",
     "organisations": "Organizace",
-    "organisationsIntro": "Kde jste správcem a s jakou rolí.",
+    "organisationsIntro": "Kde jste v týmu a s jakým přístupem.",
+    "permission": "{{area}}: {{level}}",
+    "noAccess": "Bez přístupu",
+    "areas": {
+      "registrations": "Přihlášky",
+      "campSettings": "Nastavení táborů",
+      "health": "Zdravotní údaje",
+      "oddily": "Oddíly",
+      "vedouci": "Vedoucí"
+    },
+    "levels": {
+      "none": "bez přístupu",
+      "read": "číst",
+      "write": "upravit"
+    },
     "newRecoveryCodes": "Nové záložní kódy",
     "newRecoveryCodesIntro": "Došly vám záložní kódy, nebo je mohl vidět někdo jiný? Zadejte kód z ověřovací aplikace a dostanete deset nových. Původní kódy tím přestanou platit a pošleme vám o tom e-mail."
   },
@@ -319,21 +354,59 @@
     "toLight": "Přepnout na světlý režim"
   },
   "datePicker": {
-    "placeholder": "Vyberte datum",
+    "placeholder": "např. 15. 6. 2027",
+    "dateTimePlaceholder": "např. 5. 7. 2027 8:30",
+    "open": "Otevřít kalendář",
+    "openWithTime": "Otevřít kalendář a čas",
+    "calendar": "Kalendář",
+    "calendarWithTime": "Kalendář a čas",
+    "title": "Datum",
+    "dateTimeTitle": "Datum a čas",
     "previousMonth": "Předchozí měsíc",
     "nextMonth": "Další měsíc",
+    "monthCaption": "{{month}} {{year}}",
     "month": "Měsíc",
     "year": "Rok",
     "time": "Čas",
-    "timePlaceholder": "Čas",
-    "clear": "Vymazat datum"
+    "hour": "Hodina",
+    "minutes": "Minuty",
+    "minuteOption": ":{{minute}}",
+    "picked": "Vybráno:",
+    "pickDay": "Vyberte den",
+    "apply": "Použít {{date}}",
+    "clear": "Vymazat",
+    "cancel": "Zrušit",
+    "done": "Hotovo"
+  },
+  "sheet": {
+    "close": "Zavřít"
+  },
+  "codeInput": {
+    "digit": "Číslice {{position}} z {{length}}"
+  },
+  "searchInput": {
+    "label": "Hledat"
+  },
+  "filterPill": {
+    "caption": "{{label}}: {{value}}"
   },
   "fileInput": {
     "pick": "Vybrat soubor",
     "none": "Žádný soubor nevybrán"
   },
+  "accentCheck": {
+    "buttonText": "Text na tlačítku bude",
+    "white": "bílý",
+    "dark": "tmavý",
+    "contrast": "kontrast {{ratio}} : 1",
+    "darkShade": "V tmavém režimu použijeme odstín",
+    "automatic": "automaticky"
+  },
   "accentPicker": {
     "pick": "Vybrat vlastní barvu",
+    "custom": "Vlastní barva",
+    "hint": "Například barva z vašeho trička nebo vlajky.",
+    "invalid": "Zadejte barvu ve tvaru #RRGGBB.",
     "swatches": {
       "label": "Připravené barvy",
       "sunny": "Slunečná",

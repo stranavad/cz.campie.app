@@ -5,6 +5,7 @@ import {
   getCampBrandingEndpoint,
   getCampEndpoint,
   getRegistrationFormEndpoint,
+  getRegistrationFormVersionEndpoint,
   listCampsEndpoint,
   listDiscountCodesEndpoint,
   listTurnusyEndpoint,
@@ -97,6 +98,11 @@ export const campsService = {
   ) => apiClient.request(previewCampEmailTextEndpoint, { organisationId, params: { campId, type }, body }),
   getRegistrationForm: (organisationId: string, campId: string, signal?: AbortSignal) =>
     apiClient.request(getRegistrationFormEndpoint, { organisationId, params: { campId }, signal }),
+  getRegistrationFormVersion: (organisationId: string, campId: string, version: number) =>
+    apiClient.request(getRegistrationFormVersionEndpoint, {
+      organisationId,
+      params: { campId, version: String(version) },
+    }),
   saveRegistrationFormDraft: (organisationId: string, campId: string, body: SaveRegistrationFormDraftBody) =>
     apiClient.request(saveRegistrationFormDraftEndpoint, { organisationId, params: { campId }, body }),
   uploadDeclarationFile: (organisationId: string, campId: string, file: File) =>

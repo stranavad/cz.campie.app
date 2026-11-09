@@ -12,8 +12,8 @@ interface ColourPopoverProps {
   onPick: (colour: string) => void;
 }
 
-// A round swatch of the current colour that opens our own colour picker (a shade square and a hue bar),
-// for any colour beyond the ready-made ones.
+// A round dot of the current colour that opens our own colour picker (a shade square and a hue bar), for
+// any colour beyond the ready-made ones. It sits inside the picker's pill, which draws the edge.
 export function ColourPopover({ value, fallback, onPick }: ColourPopoverProps) {
   const { t } = useTranslation();
   const colour = accentColourSchema.safeParse(value).data ?? fallback;
@@ -22,7 +22,7 @@ export function ColourPopover({ value, fallback, onPick }: ColourPopoverProps) {
     <Popover>
       <PopoverTrigger
         aria-label={t('accentPicker.pick')}
-        className="size-11 shrink-0 cursor-pointer rounded-full border border-input p-1 transition-transform duration-150 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 data-popup-open:border-ring"
+        className="size-11 shrink-0 cursor-pointer rounded-full p-1 transition-transform duration-150 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <span aria-hidden="true" className="block size-full rounded-full" style={{ backgroundColor: colour }} />
       </PopoverTrigger>

@@ -6,11 +6,9 @@
   "numberedHeading": "{{number}}. {{heading}}",
   "paragraphNumber": "{{article}}.{{paragraph}}",
   "toc": "Obsah",
-  "nav": {
-    "label": "Právní dokumenty",
-    "terms": "Obchodní podmínky",
-    "dataProcessingAgreement": "Zpracovatelská smlouva",
-    "dataPage": "Zpracování dat"
+  "version": "Verze: {{version}}",
+  "versions": {
+    "draft": "pracovní návrh"
   },
   "terms": {
     "title": "Obchodní podmínky platformy {{productName}}",

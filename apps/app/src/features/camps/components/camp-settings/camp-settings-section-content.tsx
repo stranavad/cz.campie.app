@@ -8,6 +8,7 @@ import { DiscountCodeSection } from '@/features/camps/components/discount-code-s
 import { DocumentTypesSection } from '@/features/camps/components/document-types-section/document-types-section';
 import { EmailTextsSection } from '@/features/camps/components/email-texts-section/email-texts-section';
 import { RegistrationFormSection } from '@/features/camps/components/registration-form-section/registration-form-section';
+import { SiblingDiscountSection } from '@/features/camps/components/sibling-discount-section/sibling-discount-section';
 import { TurnusSection } from '@/features/camps/components/turnus-section/turnus-section';
 
 interface CampSettingsSectionContentProps {
@@ -38,7 +39,12 @@ export function CampSettingsSectionContent({
     case 'emaily':
       return <EmailTextsSection {...props} />;
     case 'slevy':
-      return <DiscountCodeSection {...props} />;
+      return (
+        <>
+          <SiblingDiscountSection {...props} />
+          <DiscountCodeSection {...props} />
+        </>
+      );
     case 'souhlasy':
       return <ConsentsSection {...props} />;
     case 'dokumenty':

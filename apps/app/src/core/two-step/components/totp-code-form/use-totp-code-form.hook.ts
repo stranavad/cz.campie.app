@@ -30,6 +30,8 @@ export function useTotpCodeForm(purpose: TotpCodePurpose, onConfirmed?: (recover
   const verify = useVerifyTotpMutation();
   const regenerate = useRegenerateRecoveryCodesMutation();
   const [failure, setFailure] = useState<TotpCodeFailure | null>(null);
+  // Passing a login can take a recovery code instead of the app's six digits.
+  const [recovery, setRecovery] = useState(false);
   const schema = totpCodeFormSchemas[purpose];
 
   const form = useAppForm({
@@ -54,5 +56,10 @@ export function useTotpCodeForm(purpose: TotpCodePurpose, onConfirmed?: (recover
     },
   });
 
-  return { form, failure };
+  const toggleRecovery = () => {
+    setRecovery(!recovery);
+    form.resetField('code');
+  };
+
+  return { form, failure, recovery, toggleRecovery };
 }

@@ -15,6 +15,9 @@ const badgeVariants = cva(
         danger: 'bg-danger text-danger-foreground',
         brand: 'bg-brand-soft text-foreground',
         outline: 'border border-control text-foreground',
+        // Unfilled steps of a scale, such as access levels: Upravit (neutral), Číst (plain), Bez přístupu (faint).
+        plain: 'text-muted-foreground',
+        faint: 'text-subtle-foreground',
       },
     },
     defaultVariants: { variant: 'neutral' },

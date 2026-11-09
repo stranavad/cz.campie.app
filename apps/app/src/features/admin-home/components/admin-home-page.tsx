@@ -1,5 +1,5 @@
 import { Link, Navigate } from '@tanstack/react-router';
-import { PlusIcon, UserRoundXIcon } from 'lucide-react';
+import { LayoutDashboardIcon, PlusIcon, ShieldCheckIcon, UserRoundXIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/empty-state';
@@ -7,35 +7,48 @@ import { PageHeader } from '@/components/page-header';
 import { Alert } from '@/components/ui/alert';
 import { buttonVariants } from '@/components/ui/button';
 import { TurnusSwitcher } from '@/core/selected-turnus';
+import { OccupancyHero } from '@/features/admin-home/components/occupancy-hero';
 import { OrganisationStatusNotice } from '@/features/admin-home/components/organisation-status-notice';
-import { QuickLinks } from '@/features/admin-home/components/quick-links';
+import { TurnusyOccupancy } from '@/features/admin-home/components/turnusy-occupancy';
 import { useAdminHome } from '@/features/admin-home/components/use-admin-home.hook';
+import { WaitingList } from '@/features/admin-home/components/waiting-list';
 
+// The admin's start of the day: how full the Selected Turnus is, what waits for them, and every Turnus.
 export function AdminHomePage() {
   const { t } = useTranslation('adminHome');
-  const { isLoading, isSignedOut, isError, hasNoMembership, organisation, canCreateRegistration, links, isOperator } =
-    useAdminHome();
+  const page = useAdminHome();
 
-  if (isLoading) {
+  if (page.isLoading) {
     return <p className="text-muted-foreground">{t('loading')}</p>;
   }
 
-  if (isSignedOut) {
+  if (page.isSignedOut) {
     return <Navigate to="/platform/prihlaseni" replace />;
   }
 
   // The Platform operator usually belongs to no Organisation; the console is their home.
-  if (hasNoMembership) {
+  if (page.hasNoMembership) {
     return (
       <>
         <PageHeader title={t('title')} />
-        {isOperator ? null : <EmptyState icon={<UserRoundXIcon />} title={t('noMembership')} />}
-        <QuickLinks links={links} />
+        {page.isOperator ? (
+          <EmptyState
+            icon={<ShieldCheckIcon />}
+            title={t('operator')}
+            action={
+              <Link to="/platform/konzole" className={buttonVariants()}>
+                {t('openConsole')}
+              </Link>
+            }
+          />
+        ) : (
+          <EmptyState icon={<UserRoundXIcon />} title={t('noMembership')} />
+        )}
       </>
     );
   }
 
-  if (isError || organisation === undefined) {
+  if (page.isError || page.organisation === undefined) {
     return <Alert variant="danger">{t('error')}</Alert>;
   }
 
@@ -43,11 +56,10 @@ export function AdminHomePage() {
     <>
       <PageHeader
         title={t('title')}
-        description={organisation.displayName}
         actions={
           <>
             <TurnusSwitcher />
-            {canCreateRegistration ? (
+            {page.canWrite ? (
               <Link to="/platform/prihlasky/nova" className={buttonVariants()}>
                 <PlusIcon aria-hidden="true" />
                 {t('newRegistration')}
@@ -56,8 +68,15 @@ export function AdminHomePage() {
           </>
         }
       />
-      <OrganisationStatusNotice organisation={organisation} />
-      <QuickLinks links={links} />
+      <OrganisationStatusNotice organisation={page.organisation} />
+      {page.turnus === undefined ? null : (
+        <>
+          <OccupancyHero organisationId={page.organisationId} turnus={page.turnus} />
+          <WaitingList organisationId={page.organisationId} turnusId={page.turnus.id} canWrite={page.canWrite} />
+        </>
+      )}
+      {page.canReadCamps ? <TurnusyOccupancy organisationId={page.organisationId} /> : null}
+      {page.hasNothingToShow ? <EmptyState icon={<LayoutDashboardIcon />} title={t('nothing')} /> : null}
     </>
   );
 }

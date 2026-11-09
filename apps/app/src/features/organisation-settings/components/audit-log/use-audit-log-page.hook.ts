@@ -5,8 +5,10 @@ import { AUDIT_ACTOR_KINDS, AUDIT_AREAS } from '@repo/schema/audit';
 import type { AuditLogQuery } from '@repo/schema/organisations';
 import { addDays, czechDate, pragueDateOf } from '@repo/schema/shared';
 
+import { dateFromIso } from '@/components/date-picker/date-picker.helper';
 import { useCurrentMembership } from '@/core/account';
 import { useAuditLogQuery } from '@/features/organisation-settings/api/organisation-settings.queries';
+import type { AuditLogPeriod } from '@/features/organisation-settings/components/audit-log/audit-log-period.constant';
 import { groupByDay } from '@/features/organisation-settings/components/audit-log/group-by-day.helper';
 import { useDebouncedValue } from '@/lib/hooks/use-debounced-value.hook';
 
@@ -16,6 +18,7 @@ export function useAuditLogPage() {
   const [actorKind, setActorKind] = useState('');
   const [actor, setActor] = useState('');
   const [area, setArea] = useState('');
+  const [period, setPeriod] = useState<AuditLogPeriod>('all');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [today] = useState(() => pragueDateOf(new Date()));
@@ -23,12 +26,15 @@ export function useAuditLogPage() {
   const isOwner = membership?.owner === true;
   const knownKind = AUDIT_ACTOR_KINDS.find((kind) => kind === actorKind);
   const knownArea = AUDIT_AREAS.find((known) => known === area);
+  // The last days count today in; a custom range takes the pickers, a date typed wrong filters nothing.
+  const since = period === 'all' ? '' : period === 'custom' ? from : addDays(today, -(Number(period) - 1));
+  const until = period === 'custom' ? to : '';
   const query: Omit<AuditLogQuery, 'after'> = {
     ...(knownKind === undefined ? {} : { actorKind: knownKind }),
     ...(settledActor === '' ? {} : { actor: settledActor }),
     ...(knownArea === undefined ? {} : { area: knownArea }),
-    ...(from === '' ? {} : { from: new Date(`${from}T00:00:00`).toISOString() }),
-    ...(to === '' ? {} : { to: new Date(`${to}T23:59:59`).toISOString() }),
+    ...(dateFromIso(since) === undefined ? {} : { from: new Date(`${since}T00:00:00`).toISOString() }),
+    ...(dateFromIso(until) === undefined ? {} : { to: new Date(`${until}T23:59:59`).toISOString() }),
   };
   const log = useAuditLogQuery(membership?.organisation.id ?? '', query, isOwner);
   const entries = log.data?.pages.flatMap((page) => page.entries) ?? [];
@@ -41,7 +47,7 @@ export function useAuditLogPage() {
     isSignedOut,
     isLoading,
     isOwner,
-    filters: { actorKind, setActorKind, actor, setActor, area, setArea, from, setFrom, to, setTo },
+    filters: { actorKind, setActorKind, actor, setActor, area, setArea, period, setPeriod, from, setFrom, to, setTo },
     days: groupByDay(entries).map((day) => ({ ...day, label: dayLabel(day.date) })),
     isPending: log.isPending,
     isError: log.isError,

@@ -7,41 +7,56 @@ import { ChoiceTile } from '@/features/portal/components/consents/choice-tile';
 
 interface ConsentItemProps {
   item: GuardianConsent['version']['items'][number];
-  number: number;
   answer: boolean | undefined;
   problem: ConsentAnswerErrorCode | undefined;
   onAnswer: (value: boolean) => void;
 }
 
-// One numbered point of a Consent and its answer: agreeing, yes or no, or nothing to answer.
-export function ConsentItem({ item, number, answer, problem, onAnswer }: ConsentItemProps) {
+// One point of a Consent and its answer: agreeing to it, agreeing or not, or only reading it.
+export function ConsentItem({ item, answer, problem, onAnswer }: ConsentItemProps) {
   const { t } = useTranslation('portal');
+  const problemMessage =
+    problem === undefined ? null : (
+      <p className="text-sm font-semibold text-danger-foreground">{t(`consents.problems.${problem}`)}</p>
+    );
+
+  if (item.kind === 'must_agree') {
+    return (
+      <li className="flex flex-col gap-2 border-t border-border-subtle py-3">
+        <label className="flex cursor-pointer items-start gap-2.5 text-[15px]">
+          <Checkbox className="mt-0.5" checked={answer === true} onCheckedChange={(checked) => onAnswer(checked)} />
+          <span className="min-w-0 flex-1 whitespace-pre-line">
+            {item.text} <span className="text-muted-foreground">{t('consents.required')}</span>
+          </span>
+        </label>
+        {problemMessage}
+      </li>
+    );
+  }
+
+  if (item.kind === 'yes_no') {
+    return (
+      <li className="border-t border-border-subtle py-3">
+        <fieldset className="flex min-w-0 flex-col gap-2">
+          <legend className="mb-2 text-[15px] font-semibold whitespace-pre-line">{item.text}</legend>
+          <div className="grid grid-cols-2 gap-2">
+            <ChoiceTile name={item.id} checked={answer === true} onChange={() => onAnswer(true)}>
+              {t('consents.yes')}
+            </ChoiceTile>
+            <ChoiceTile name={item.id} checked={answer === false} onChange={() => onAnswer(false)}>
+              {t('consents.no')}
+            </ChoiceTile>
+          </div>
+          {problemMessage}
+        </fieldset>
+      </li>
+    );
+  }
 
   return (
-    <li className="flex flex-col gap-2.5 border-t border-border-subtle py-3.5">
-      <p className="flex gap-2 text-[15px] whitespace-pre-line">
-        <span className="font-bold tabular-nums">{t('consents.itemNumber', { number })}</span>
-        <span className="min-w-0 flex-1">{item.text}</span>
-      </p>
-      {item.kind === 'must_agree' ? (
-        <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-2xl border border-input px-3.5 has-data-checked:border-foreground has-data-checked:bg-brand-soft">
-          <Checkbox checked={answer === true} onCheckedChange={(checked) => onAnswer(checked)} />
-          <span className="font-semibold">{t('consents.agree')}</span>
-        </label>
-      ) : null}
-      {item.kind === 'yes_no' ? (
-        <div className="grid grid-cols-2 gap-2">
-          <ChoiceTile name={item.id} checked={answer === true} onChange={() => onAnswer(true)}>
-            {t('consents.yes')}
-          </ChoiceTile>
-          <ChoiceTile name={item.id} checked={answer === false} onChange={() => onAnswer(false)}>
-            {t('consents.no')}
-          </ChoiceTile>
-        </div>
-      ) : null}
-      {problem === undefined ? null : (
-        <p className="text-sm font-semibold text-danger-foreground">{t(`consents.problems.${problem}`)}</p>
-      )}
+    <li className="flex flex-col gap-2 border-t border-border-subtle py-3 text-[15px] whitespace-pre-line">
+      {item.text}
+      {problemMessage}
     </li>
   );
 }

@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { CampBranding } from '@repo/schema/camps';
+import type { CampBranding, Turnus } from '@repo/schema/camps';
 
 import { SettingSwitch } from '@/components/setting-switch';
 import { Card, CardDescription, CardTitle } from '@/components/ui/card';
-import { AccentPicker, AccentPreview } from '@/core/branding';
+import { AccentCheck, AccentPicker } from '@/core/branding';
 import { BrandPreview } from '@/features/camps/components/camp-branding-section/brand-preview';
 import { useCampAccentForm } from '@/features/camps/components/camp-branding-section/use-camp-accent-form.hook';
 import { SaveStatus } from '@/features/camps/components/save-status';
@@ -16,12 +16,22 @@ interface CampAccentFormProps {
   campName: string;
   branding: CampBranding;
   canWrite: boolean;
+  // The Camp's Turnusy, shown in the sketch.
+  turnusy: readonly Turnus[];
   // The logo's card, under the colour's.
   logo: ReactNode;
 }
 
 // The Camp's colour beside a live sketch of its public page in the colour being chosen.
-export function CampAccentForm({ organisationId, campId, campName, branding, canWrite, logo }: CampAccentFormProps) {
+export function CampAccentForm({
+  organisationId,
+  campId,
+  campName,
+  branding,
+  canWrite,
+  turnusy,
+  logo,
+}: CampAccentFormProps) {
   const { t } = useTranslation('camps');
   const { form, status, previewColourOf, pick } = useCampAccentForm(organisationId, campId, branding);
 
@@ -62,17 +72,8 @@ export function CampAccentForm({ organisationId, campId, campName, branding, can
                             value={field.state.value}
                             fallback={branding.effective.accentColour}
                             onPick={pick}
-                            textField={
-                              <field.TextField
-                                label={t('branding.accentColour')}
-                                description={t('branding.accentColourHint')}
-                                autoCapitalize="none"
-                                spellCheck={false}
-                                className="font-mono"
-                              />
-                            }
                           />
-                          <AccentPreview accentColour={field.state.value} />
+                          <AccentCheck accentColour={field.state.value} />
                         </div>
                       )}
                     </form.AppField>
@@ -98,6 +99,7 @@ export function CampAccentForm({ organisationId, campId, campName, branding, can
             accentColour={previewColourOf(values)}
             campName={campName}
             logoUrl={branding.effective.logo?.url ?? null}
+            turnusy={turnusy}
             className="lg:sticky lg:top-6 lg:col-span-3"
           />
         )}

@@ -29,7 +29,9 @@ export function LoginForm() {
         </Alert>
       )}
       <form.AppForm>
-        <form.SubmitButton className="mt-1 w-full">{t('submit')}</form.SubmitButton>
+        <form.SubmitButton size="lg" className="mt-1 w-full">
+          {t('submit')}
+        </form.SubmitButton>
       </form.AppForm>
       <Link
         to="/platform/zapomenute-heslo"

@@ -1,38 +1,23 @@
-import { Building2Icon, ClipboardListIcon, HistoryIcon, ShieldCheckIcon, TentIcon, UsersIcon } from 'lucide-react';
-
 import { membershipAllows, useAccountQuery, useCurrentMembership } from '@/core/account';
+import { useSelectedTurnus } from '@/core/selected-turnus';
 
+// The overview's frame: whose Organisation, which Turnus, and which panels this admin may see.
 export function useAdminHome() {
   const { membership, ...state } = useCurrentMembership();
   const account = useAccountQuery();
-  const isOwner = membership?.owner === true;
-  const isOperator = account.data?.operator === true;
-
-  // The areas this admin may open, each a card on the overview, in the sidebar's order.
-  const links = [
-    {
-      to: '/platform/prihlasky',
-      name: 'registrations',
-      icon: ClipboardListIcon,
-      shown: membershipAllows(membership, 'registrations', 'read'),
-    },
-    {
-      to: '/platform/tabory',
-      name: 'camps',
-      icon: TentIcon,
-      shown: membershipAllows(membership, 'campSettings', 'read'),
-    },
-    { to: '/platform/uzivatele', name: 'team', icon: UsersIcon, shown: isOwner },
-    { to: '/platform/nastaveni', name: 'organisation', icon: Building2Icon, shown: isOwner },
-    { to: '/platform/historie', name: 'auditLog', icon: HistoryIcon, shown: isOwner },
-    { to: '/platform/konzole', name: 'console', icon: ShieldCheckIcon, shown: isOperator },
-  ] as const;
+  const { turnusId, turnusy } = useSelectedTurnus();
+  const canReadRegistrations = membershipAllows(membership, 'registrations', 'read');
+  const canReadCamps = membershipAllows(membership, 'campSettings', 'read');
 
   return {
     ...state,
+    organisationId: membership?.organisation.id ?? '',
     organisation: membership?.organisation,
-    canCreateRegistration: membershipAllows(membership, 'registrations', 'write'),
-    links: links.filter((link) => link.shown),
-    isOperator,
+    isOperator: account.data?.operator === true,
+    canWrite: membershipAllows(membership, 'registrations', 'write'),
+    // The Selected Turnus's panels need Registrations read and a Turnus.
+    turnus: canReadRegistrations ? turnusy.find(({ id }) => id === turnusId) : undefined,
+    canReadCamps,
+    hasNothingToShow: !canReadRegistrations && !canReadCamps,
   };
 }

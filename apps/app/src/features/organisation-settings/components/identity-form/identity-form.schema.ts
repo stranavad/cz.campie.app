@@ -2,10 +2,11 @@ import type { z } from 'zod';
 
 import { organisationSettingsFieldsSchema, type OrganisationSettings } from '@repo/schema/organisations';
 
-// The contract's body, every field present: the legal identity, contacts and bank account.
+// The contract's body, every field present: the legal identity and contacts.
 export const identityFormSchema = organisationSettingsFieldsSchema.omit({
   displayName: true,
   accentColour: true,
+  bankAccount: true,
 });
 
 export type IdentityFormValues = z.input<typeof identityFormSchema>;
@@ -21,7 +22,6 @@ export function identityFormValues(settings: OrganisationSettings): IdentityForm
     vatId: settings.vatId ?? '',
     address: settings.address,
     statutoryRepresentative: settings.statutoryRepresentative,
-    bankAccount: settings.bankAccount ?? '',
     contactEmail: settings.contactEmail,
     contactPhone: settings.contactPhone,
     billingEmail: settings.billingEmail,

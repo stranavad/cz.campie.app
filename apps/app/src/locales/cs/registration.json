@@ -1,10 +1,30 @@
 {
   "screenTitle": "Přihláška",
-  "lead": "Vyplňte údaje o dětech a o sobě. Cenu vidíte průběžně dole.",
+  "header": "{{camp}} · {{turnus}}",
+  "steps": {
+    "progress": "Krok {{current}} ze {{total}} · {{names}}",
+    "back": "Zpět na krok {{step}}",
+    "guardians": {
+      "name": "Rodiče",
+      "title": "Kdo dítě přihlašuje?"
+    },
+    "children": {
+      "name": "Děti",
+      "title": "Kdo s námi pojede?"
+    },
+    "questions": {
+      "name": "Otázky",
+      "title": "Ještě pár otázek",
+      "none": "Tábor se na nic dalšího neptá. Pokračujte ke shrnutí."
+    },
+    "summary": {
+      "name": "Shrnutí",
+      "title": "Zkontrolujte přihlášku"
+    }
+  },
   "back": "Zpět na {{camp}}",
   "openPortal": "Otevřít můj portál",
   "turnusOption": "{{name}} ({{start}} - {{end}})",
-  "questions": "Další údaje",
   "health": {
     "title": "Zdravotní údaje",
     "note": "Ukládáme je šifrovaně, uvidí je jen ti, kdo se na táboře starají o zdraví dětí."
@@ -13,7 +33,8 @@
     "total": "celková cena",
     "deposit": "teď záloha {{amount}}",
     "counting": "Počítáme cenu…",
-    "failing": "Cenu teď nelze spočítat"
+    "failing": "Cenu teď nelze spočítat",
+    "breakdown": "{{summary}} · rozpis"
   },
   "noForm": "Tábor zatím nezveřejnil přihlášku.",
   "error": "Přihlášku se nepodařilo načíst. Zkuste stránku načíst znovu.",
@@ -21,7 +42,7 @@
   "pickTurnus": "Vyberte turnus",
   "turnusRequired": "Vyberte turnus, na který dítě přihlašujete.",
   "child": "Dítě {{number}}",
-  "addChild": "Přidat další dítě",
+  "childToFix": "(je potřeba něco opravit)",
   "removeChild": "Odebrat dítě",
   "guardian": "Zákonný zástupce",
   "addSecondGuardian": "Přidat druhého zákonného zástupce",
@@ -54,8 +75,6 @@
     "title": "Cena",
     "total": "Celkem",
     "deposit": "Nejdřív zaplatíte zálohu {{amount}}.",
-    "pickTurnus": "Cenu spočítáme, jakmile vyberete turnus.",
-    "failing": "Cenu se teď nepodařilo spočítat.",
     "child": "(dítě {{number}})",
     "kinds": {
       "base_price": "Základní cena",
@@ -91,16 +110,23 @@
   },
   "submitted": {
     "title": "Přihláška je odeslaná",
-    "placed": "Místo na táboře {{camp}} je vaše.",
+    "placed_one": "{{children}} má místo na táboře {{camp}}, {{turnus}}.",
+    "placed_few": "{{children}} mají místo na táboře {{camp}}, {{turnus}}.",
+    "placed_many": "{{children}} mají místo na táboře {{camp}}, {{turnus}}.",
+    "placed_other": "{{children}} mají místo na táboře {{camp}}, {{turnus}}.",
+    "confirmation": "Potvrzení přihlášky pošleme na {{email}}.",
+    "payDeposit": "Zaplaťte zálohu",
+    "payTotal": "Zaplaťte přihlášku",
+    "amount": "Částka",
     "variableSymbol": "Variabilní symbol",
-    "paymentTitle": "Platební údaje",
+    "email": "Číslo účtu a další platební údaje vám přijdou e-mailem. Variabilní symbol si poznamenejte.",
     "next": {
       "title": "Co bude dál",
-      "payment": "Platební údaje vám přijdou e-mailem. Zaplaťte podle nich, s variabilním symbolem výše.",
-      "portal": "V portálu uvidíte stav přihlášky a platby a doplníte, co tábor ještě potřebuje."
+      "payDeposit": "Zaplaťte zálohu s variabilním symbolem {{variableSymbol}}. Jakmile platba dorazí, uvidíte ji v portálu.",
+      "payTotal": "Zaplaťte přihlášku s variabilním symbolem {{variableSymbol}}. Jakmile platba dorazí, uvidíte ji v portálu.",
+      "portal": "V portálu uvidíte stav přihlášky a platby a doplníte, co tábor ještě potřebuje.",
+      "balance": "Doplatek {{amount}} zaplatíte později, termín najdete v portálu."
     },
-    "depositFirst": "Nejdřív zaplatíte zálohu",
-    "email": "Variabilní symbol si poznamenejte, budete ho potřebovat při platbě.",
     "cardRedirecting": "Přesměrováváme vás na platbu kartou…",
     "cardFailed": "Platbu kartou se teď nepodařilo spustit. Zaplaťte prosím převodem podle údajů v e-mailu, nebo kartou později v portálu."
   },
@@ -108,17 +134,25 @@
     "loading": "Ověřujeme platbu…",
     "unknown": "Tuto platbu neznáme. Pokud jste platili kartou, podívejte se na stav platby v portálu.",
     "website": "Zpět na stránky {{camp}}",
+    "portal": "Zpět do portálu",
+    "retry": "Zkusit znovu v portálu",
     "paid": {
-      "title": "Děkujeme, platba proběhla",
-      "text": "Platbu za přihlášku na {{camp}} jsme přijali. Potvrzení přijde e-mailem."
+      "title": "Zaplaceno, děkujeme",
+      "text": "Platba za přihlášku na {{camp}} je u nás. Potvrzení přijde e-mailem."
     },
     "pending": {
-      "title": "Platbu ověřujeme",
-      "text": "Platba za přihlášku na {{camp}} se ještě zpracovává. Jakmile ji přijmeme, pošleme vám e-mail."
+      "title": "Platba se ještě zpracovává",
+      "text": "Banka platbu za přihlášku na {{camp}} ověřuje. Stránku můžete zavřít, výsledek vám pošleme e-mailem."
     },
     "failed": {
-      "title": "Platba neproběhla",
-      "text": "Platba kartou za přihlášku na {{camp}} se nepodařila. Můžete ji zkusit znovu v portálu, nebo zaplatit převodem podle údajů v e-mailu."
+      "title": "Platba neprošla",
+      "text": "Platba kartou za přihlášku na {{camp}} nebyla dokončena. Zkuste to znovu v portálu, nebo tam zaplaťte převodem přes QR kód."
     }
+  },
+  "addSibling": "Sourozenec",
+  "next": "Pokračovat",
+  "review": {
+    "edit": "Upravit",
+    "editOf": "Upravit: {{section}}"
   }
 }

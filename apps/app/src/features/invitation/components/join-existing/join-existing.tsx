@@ -22,11 +22,11 @@ export function JoinExisting({ token, email }: JoinExistingProps) {
           <output className="block">{t('existingAccount.done')}</output>
         </Alert>
         {isSignedIn ? (
-          <Link to="/platform" className={buttonVariants({ className: 'w-full' })}>
+          <Link to="/platform" className={buttonVariants({ size: 'lg', className: 'w-full' })}>
             {t('existingAccount.continue')}
           </Link>
         ) : (
-          <Link to="/platform/prihlaseni" className={buttonVariants({ className: 'w-full' })}>
+          <Link to="/platform/prihlaseni" className={buttonVariants({ size: 'lg', className: 'w-full' })}>
             {t('existingAccount.logIn')}
           </Link>
         )}
@@ -42,7 +42,7 @@ export function JoinExisting({ token, email }: JoinExistingProps) {
           {t(`failure.${failure}`)}
         </Alert>
       )}
-      <Button disabled={isPending} onClick={join} className="w-full">
+      <Button size="lg" disabled={isPending} onClick={join} className="w-full">
         {t('accept')}
       </Button>
     </div>

@@ -3,25 +3,30 @@ import { useTranslation } from 'react-i18next';
 import type { GuardianEdit } from '@repo/schema/portal';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { RegistrationField } from '@/core/registration-form';
+import type { EditFailure } from '@/features/portal/components/edit/edit-failure';
 import { LockedAnswer } from '@/features/portal/components/edit/locked-answer';
-import { useNewFields } from '@/features/portal/components/edit/use-new-fields.hook';
+import type { useNewFields } from '@/features/portal/components/edit/use-new-fields.hook';
 import { StatusMessage } from '@/features/portal/components/shared/status-message';
 
-// The questions added to the form since the Registration was sent. A frozen answer with a surcharge shows
-// as text: only the camp changes it.
-export function NewFieldsCard({ registrationId, edit }: { registrationId: string; edit: GuardianEdit }) {
+interface NewFieldsCardProps {
+  edit: GuardianEdit;
+  fields: ReturnType<typeof useNewFields>;
+  failure: EditFailure | null;
+}
+
+// The questions added to the form since the Registration was sent, saved with the page. A frozen answer
+// with a surcharge shows as text: only the camp changes it.
+export function NewFieldsCard({ edit, fields, failure }: NewFieldsCardProps) {
   const { t } = useTranslation('portal');
-  const fields = useNewFields(registrationId, edit);
 
   if (!fields.hasFields) {
     return null;
   }
 
   return (
-    <Card>
+    <Card className="p-4.5">
       <fieldset className="flex min-w-0 flex-col gap-5" disabled={!edit.editable}>
         <legend className="mb-4">
           <Badge variant="brand">{t('edit.newFields')}</Badge>
@@ -60,22 +65,7 @@ export function NewFieldsCard({ registrationId, edit }: { registrationId: string
             )}
           </div>
         ))}
-        {fields.failure === null ? null : (
-          <StatusMessage tone="danger">{t(`edit.failure.${fields.failure}`)}</StatusMessage>
-        )}
-        {fields.isSaved ? <StatusMessage tone="success">{t('edit.saved')}</StatusMessage> : null}
-        {edit.editable ? (
-          <Button
-            type="button"
-            variant="brand"
-            size="lg"
-            className="w-full sm:w-auto sm:self-start"
-            disabled={fields.isSaving}
-            onClick={fields.submit}
-          >
-            {t('edit.save')}
-          </Button>
-        ) : null}
+        {failure === null ? null : <StatusMessage tone="danger">{t(`edit.failure.${failure}`)}</StatusMessage>}
       </fieldset>
     </Card>
   );

@@ -9,14 +9,8 @@ import {
   formFields,
   type Answers,
   type AnswerValue,
-  type FormField,
 } from '@repo/schema/form-engine';
-import {
-  SUBMISSION_ERROR_CODES,
-  SUBMISSION_FIELD_ERROR_CODES,
-  type SubmissionErrorCode,
-} from '@repo/schema/registrations';
-import type { FieldError } from '@repo/schema/shared';
+import { SUBMISSION_FIELD_ERROR_CODES } from '@repo/schema/registrations';
 
 import {
   useRegistrationCampQuery,
@@ -25,47 +19,23 @@ import {
   useStartCardPaymentMutation,
   useSubmitRegistrationMutation,
 } from '@/features/registration/api/registration.queries';
+import { REGISTRATION_STEPS } from '@/features/registration/components/registration-step.constant';
+import { firstChildOf, stepOfPath } from '@/features/registration/components/registration-step.helper';
+import {
+  askedAnswers,
+  focusFirstProblem,
+  focusStepHeading,
+  refusalKeyOf,
+  refusalOf,
+  samePath,
+} from '@/features/registration/components/submission.helper';
 import { useLivePrice } from '@/features/registration/components/use-live-price.hook';
 import { HttpError } from '@/lib/api';
-import { readErrorResponse } from '@/lib/api/error-response.helper';
 
-const samePath = (one: readonly (string | number)[], other: readonly (string | number)[]) =>
-  one.length === other.length && one.every((part, index) => part === other[index]);
-
-/**
- * Read why the server refused a submission: its code and the reasons at the fields.
- * @param error what the submission failed with
- */
-function refusalOf(error: Error | null): { code: string | null; fields: readonly FieldError[] } {
-  if (error === null) {
-    return { code: null, fields: [] };
-  }
-
-  const response = error instanceof HttpError ? readErrorResponse(error.details) : null;
-
-  return { code: response?.code ?? 'unknown', fields: response?.fields ?? [] };
-}
-
-/**
- * Name the message of a refusal that no field explains.
- * @param code the error response's code
- */
-function refusalKeyOf(code: string): SubmissionErrorCode | 'requests_throttled' | 'unknown' {
-  return [...SUBMISSION_ERROR_CODES, 'requests_throttled' as const].find((known) => known === code) ?? 'unknown';
-}
-
-/**
- * Keep only the answers to fields the form asks now: a newer version may have removed one.
- * @param answers the answers
- * @param fields the fields asked
- */
-function askedAnswers(answers: Answers, fields: readonly FormField[]): Answers {
-  return Object.fromEntries(Object.entries(answers).filter(([key]) => fields.some((field) => field.key === key)));
-}
-
-// The public form as the guardian fills it in: the Turnus (kept in the address), the children, the
-// guardians, the declarations, the live price, and what is wrong once they ask to check it.
-export function useRegistrationPage(slug: string, turnusId: string | undefined) {
+// The public form as the guardian fills it in, step by step: the guardians (and the Turnus when the link
+// carries none), the children, the Registration's own questions, then a summary with the payment and the
+// declarations. Each step is checked before the next opens; the live price follows every step.
+export function useRegistrationPage(slug: string, turnusId: string | undefined, requestedStep: number) {
   const { t } = useTranslation('registration');
   const { t: tCommon } = useTranslation();
   const navigate = useNavigate();
@@ -75,8 +45,15 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
   const [participants, setParticipants] = useState<Answers[]>([{}]);
   const [registration, setRegistration] = useState<Answers>({});
   const [ticked, setTicked] = useState<readonly string[]>([]);
-  const [isChecking, setChecking] = useState(false);
+  // The furthest step the guardian got to by checked steps: an address naming a later one (a reload, which
+  // empties the form) shows this one instead.
+  const [reached, setReached] = useState(1);
+  // The errors of the steps up to this one are shown: those the guardian asked to leave.
+  const [checkedUpTo, setCheckedUpTo] = useState(0);
+  const [activeChild, setActiveChild] = useState(0);
   const [hasSecondGuardian, setSecondGuardian] = useState(false);
+  // A link to the form without a Turnus asks for one on the first step; one with it names it in the header.
+  const [asksTurnus] = useState(turnusId === undefined);
   // The key of the last sent form: sending the same form again, as after a lost response, reuses it, so
   // one Registration comes of it; a changed form gets a new one.
   const [lastSent, setLastSent] = useState<{ key: string; content: string } | null>(null);
@@ -92,6 +69,7 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
   };
   const refusal = refusalOf(sending.error);
 
+  const step = Math.min(requestedStep, reached);
   const definition = form.data?.definition;
   const turnus = turnusy.data?.find(({ id }) => id === turnusId);
   const participantFields =
@@ -105,7 +83,7 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
   const price = useLivePrice(slug, definition, turnus, submission);
   const localErrors =
     definition === undefined ? [] : checkSubmission(definition, REGISTRATION_FIELD_CATALOGUE, submission).errors;
-  const errors = isChecking ? localErrors : [];
+  const errors = localErrors.filter(({ path }) => stepOfPath(path) <= checkedUpTo);
   const ageProblemOf = (answers: Answers) => {
     const birthDate = answers.birthDate;
 
@@ -116,11 +94,37 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
   const missingDeclarations = (form.data?.declarations ?? []).filter(
     ({ id, mandatory }) => mandatory && !ticked.includes(id),
   );
-  const isComplete =
-    turnus !== undefined &&
-    localErrors.length === 0 &&
-    missingDeclarations.length === 0 &&
-    submission.participants.every((answers) => ageProblemOf(answers) === null);
+  const outOfAge = submission.participants.findIndex((answers) => ageProblemOf(answers) !== null);
+  // The steps something is wrong at, by what this form can tell; the server checks it all again.
+  const problemSteps = [
+    ...(turnus === undefined ? [1] : []),
+    ...localErrors.map(({ path }) => stepOfPath(path)),
+    ...(outOfAge === -1 ? [] : [2]),
+    ...(missingDeclarations.length === 0 ? [] : [4]),
+  ];
+  const childToShow = (paths: readonly (readonly (string | number)[])[]) =>
+    firstChildOf(paths) ?? (outOfAge === -1 ? null : outOfAge);
+  const goTo = (next: number) =>
+    navigate({
+      to: '/organisation/$campSlug/prihlaska',
+      params: { campSlug: slug },
+      search: (previous) => ({ ...previous, krok: next === 1 ? undefined : next }),
+    });
+  // Shows the first step a list of problems names, and the first problem on it.
+  const showProblems = (steps: readonly number[], paths: readonly (readonly (string | number)[])[]) => {
+    const first = Math.min(...steps);
+    const child = childToShow(paths);
+
+    if (first === 2 && child !== null) {
+      setActiveChild(child);
+    }
+
+    if (first < step) {
+      void goTo(first).then(focusFirstProblem);
+    } else {
+      focusFirstProblem();
+    }
+  };
 
   return {
     isLoading: camp.isPending || form.isPending || turnusy.isPending,
@@ -128,20 +132,41 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
     isError: camp.isError || turnusy.isError || (form.isError && !(form.error instanceof HttpError)),
     camp: camp.data,
     form: form.data,
+    step,
+    stepCount: REGISTRATION_STEPS.length,
+    // Back to an earlier step from the summary, at the child to change.
+    edit: (target: number, child?: number) => {
+      if (child !== undefined) {
+        setActiveChild(child);
+      }
+
+      void goTo(target).then(focusStepHeading);
+    },
     turnusy: turnusy.data ?? [],
     turnus,
+    asksTurnus: asksTurnus || turnus === undefined,
+    isTurnusMissing: checkedUpTo >= 1 && turnus === undefined,
     selectTurnus: (id: string) => {
       edited();
       void navigate({
         to: '/organisation/$campSlug/prihlaska',
         params: { campSlug: slug },
-        search: { turnus: id === '' ? undefined : id },
+        search: (previous) => ({ ...previous, turnus: id === '' ? undefined : id }),
         replace: true,
       });
     },
     participantFields,
     registrationFields,
     participants,
+    activeChild: Math.min(activeChild, participants.length - 1),
+    setActiveChild,
+    // The children with something wrong shown, marked on their chips.
+    invalidChildren: participants.flatMap((answers, index) =>
+      [...errors, ...refusal.fields].some(({ path }) => path[0] === 'participants' && path[1] === index) ||
+      (checkedUpTo >= 2 && ageProblemOf(answers) !== null)
+        ? [index]
+        : [],
+    ),
     setParticipantAnswer: (index: number, key: string, value: AnswerValue) => {
       edited();
       setParticipants(participants.map((answers, at) => (at === index ? { ...answers, [key]: value } : answers)));
@@ -149,10 +174,12 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
     addParticipant: () => {
       edited();
       setParticipants([...participants, {}]);
+      setActiveChild(participants.length);
     },
     removeParticipant: (index: number) => {
       edited();
       setParticipants(participants.filter((_, at) => at !== index));
+      setActiveChild(Math.max(0, index - 1));
     },
     canAddParticipant: participants.length < (form.data?.maxParticipants ?? 1),
     registration,
@@ -203,8 +230,7 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
         ? null
         : t(`age.${problem}`, { min: turnus?.minAge, max: turnus?.maxAge, contact: camp.data?.contactEmail ?? '' });
     },
-    isChecking,
-    missingDeclarations: isChecking ? missingDeclarations : [],
+    missingDeclarations: checkedUpTo >= 4 ? missingDeclarations : [],
     // Why the server refused the whole submission, when no field explains it.
     refusalMessage:
       refusal.code === null || refusal.fields.length > 0 ? null : t(`refused.${refusalKeyOf(refusal.code)}`),
@@ -216,38 +242,64 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined) 
     setByCard,
     // Once the Registration is in, a card payment is on its way to Comgate, or failed and leaves bank transfer.
     cardStatus: card.isError ? ('failed' as const) : card.isIdle ? null : ('redirecting' as const),
-    // Sends the form once it checks out here; the server checks it all again.
-    send: () => {
-      setChecking(true);
+    // Opens the next step once this one checks out; else shows what is wrong on it.
+    next: () => {
+      setCheckedUpTo(Math.max(checkedUpTo, step));
 
-      if (!isComplete) {
-        // The send button sits in the bar pinned to the bottom of the phone, far from what is wrong: once
-        // the errors render, take the guardian to the first one.
-        requestAnimationFrame(() => {
-          const first = document.querySelector<HTMLElement>('main [aria-invalid="true"], main [role="alert"]');
-
-          first?.scrollIntoView({ block: 'center' });
-          first?.focus({ preventScroll: true });
-        });
-      }
-
-      if (isComplete && turnus !== undefined && !sending.isPending) {
-        const body = {
-          turnusId: turnus.id,
-          submission,
-          paymentChoice: price.paymentChoice,
-          discountCode: price.discountCode,
-          declarations: (form.data?.declarations ?? []).map(({ id }) => ({ id, accepted: ticked.includes(id) })),
-        };
-        const content = JSON.stringify(body);
-        const key = lastSent?.content === content ? lastSent.key : crypto.randomUUID();
-
-        setLastSent({ key, content });
-        sending.mutate(
-          { ...body, idempotencyKey: key },
-          { onSuccess: () => (cardOffered && byCard ? card.mutate(key) : undefined) },
+      if (problemSteps.includes(step)) {
+        showProblems(
+          [step],
+          localErrors.map(({ path }) => path),
         );
+
+        return;
       }
+
+      setReached(Math.max(reached, step + 1));
+      void goTo(step + 1).then(focusStepHeading);
+    },
+    // Sends the form once it checks out here, else shows the first step with something wrong; the server
+    // checks it all again, and its refusals are shown where they belong.
+    send: () => {
+      setCheckedUpTo(REGISTRATION_STEPS.length);
+
+      if (problemSteps.length > 0) {
+        showProblems(
+          problemSteps,
+          localErrors.map(({ path }) => path),
+        );
+
+        return;
+      }
+
+      if (turnus === undefined || sending.isPending) {
+        return;
+      }
+
+      const body = {
+        turnusId: turnus.id,
+        submission,
+        paymentChoice: price.paymentChoice,
+        discountCode: price.discountCode,
+        declarations: (form.data?.declarations ?? []).map(({ id }) => ({ id, accepted: ticked.includes(id) })),
+      };
+      const content = JSON.stringify(body);
+      const key = lastSent?.content === content ? lastSent.key : crypto.randomUUID();
+
+      setLastSent({ key, content });
+      sending.mutate(
+        { ...body, idempotencyKey: key },
+        {
+          onSuccess: () => (cardOffered && byCard ? card.mutate(key) : undefined),
+          onError: (error) => {
+            const paths = refusalOf(error).fields.map(({ path }) => path);
+
+            showProblems(paths.length === 0 ? [step] : paths.map(stepOfPath), paths);
+          },
+        },
+      );
     },
   };
 }
+
+export type RegistrationPageState = ReturnType<typeof useRegistrationPage>;

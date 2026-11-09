@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { ChevronRightIcon, FileDownIcon } from 'lucide-react';
+import { ChevronRightIcon, FileDownIcon, MailIcon, PhoneIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { GuardianRegistration } from '@repo/schema/portal';
@@ -7,7 +7,8 @@ import type { GuardianRegistration } from '@repo/schema/portal';
 const rowClassName =
   'flex min-h-13 items-center justify-between gap-3 px-5 font-semibold transition-colors hover:bg-muted [&>svg]:size-4.5 [&>svg]:shrink-0 [&>svg]:text-subtle-foreground';
 
-// Where to go next for a Registration: its details, Consents and documents, and each child's Přihláška.
+// Where to go next for a Registration: its details, Consents and documents, each child's Přihláška, and the
+// camp's contact.
 export function RegistrationLinks({ registration }: { registration: GuardianRegistration }) {
   const { t } = useTranslation('portal');
   const params = { registrationId: registration.id };
@@ -49,6 +50,24 @@ export function RegistrationLinks({ registration }: { registration: GuardianRegi
             <FileDownIcon aria-hidden="true" />
           </a>
         ),
+      )}
+      <a href={`mailto:${registration.camp.contactEmail}`} className={rowClassName}>
+        <span className="flex min-w-0 flex-col py-2 leading-snug">
+          {t('writeCamp')}
+          <span className="text-[13px] font-normal wrap-anywhere text-muted-foreground">
+            {registration.camp.contactEmail}
+          </span>
+        </span>
+        <MailIcon aria-hidden="true" />
+      </a>
+      {registration.camp.contactPhone === null ? null : (
+        <a href={`tel:${registration.camp.contactPhone}`} className={rowClassName}>
+          <span className="flex min-w-0 flex-col py-2 leading-snug">
+            {t('callCamp')}
+            <span className="text-[13px] font-normal text-muted-foreground">{registration.camp.contactPhone}</span>
+          </span>
+          <PhoneIcon aria-hidden="true" />
+        </a>
       )}
     </nav>
   );

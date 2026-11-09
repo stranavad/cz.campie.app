@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import {
+  AUDIT_ACTIONS,
   auditChangesOf,
   auditFieldOf,
   auditSubjectOf,
@@ -49,6 +50,8 @@ export function useAuditEntry(entry: ShownAuditEntry) {
 
   return {
     action: action === null ? t('unknownAction') : t(`actions.${action}`),
+    // Where the Owner filters for it; null for an action the catalogue no longer knows.
+    area: action === null ? null : AUDIT_ACTIONS[action].area,
     actor: entry.actor.name === null ? kind : t('actorWithName', { name: entry.actor.name, kind }),
     target: {
       name:

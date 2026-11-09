@@ -9,7 +9,7 @@ export function LoginPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-5 py-4 sm:py-10">
-      <Card className="gap-5 rounded-[28px] sm:p-7">
+      <Card className="gap-4 rounded-[28px] sm:p-7">
         <h1 className="text-card-title">{t('title')}</h1>
         <LoginForm />
       </Card>

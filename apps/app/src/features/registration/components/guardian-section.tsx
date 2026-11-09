@@ -18,8 +18,7 @@ interface GuardianSectionProps {
 
 const isSecondGuardian = (key: string) => (SECOND_GUARDIAN_FIELDS as readonly string[]).includes(key);
 
-// What is asked once per Registration: the guardian, an optional second one, and the Registration's own
-// questions in a card of their own.
+// The guardian and an optional second one: the core fields asked once per Registration.
 export function GuardianSection({
   fields,
   answers,
@@ -38,28 +37,20 @@ export function GuardianSection({
       message={messageAt(['registration', shown.key])}
     />
   );
-  const questions = fields.filter(({ tier }) => tier !== 'core');
+  const core = fields.filter(({ tier }) => tier === 'core');
 
   return (
-    <>
-      <Card>
-        <CardTitle>{t('guardian')}</CardTitle>
-        {fields.filter(({ key, tier }) => tier === 'core' && !isSecondGuardian(key)).map(field)}
-        {hasSecondGuardian ? (
-          fields.filter(({ key }) => isSecondGuardian(key)).map(field)
-        ) : (
-          <Button type="button" variant="dashed" onClick={() => onSecondGuardian(true)}>
-            <PlusIcon aria-hidden="true" />
-            {t('addSecondGuardian')}
-          </Button>
-        )}
-      </Card>
-      {questions.length === 0 ? null : (
-        <Card>
-          <CardTitle>{t('questions')}</CardTitle>
-          {questions.map(field)}
-        </Card>
+    <Card>
+      <CardTitle>{t('guardian')}</CardTitle>
+      {core.filter(({ key }) => !isSecondGuardian(key)).map(field)}
+      {hasSecondGuardian ? (
+        core.filter(({ key }) => isSecondGuardian(key)).map(field)
+      ) : (
+        <Button type="button" variant="dashed" onClick={() => onSecondGuardian(true)}>
+          <PlusIcon aria-hidden="true" />
+          {t('addSecondGuardian')}
+        </Button>
       )}
-    </>
+    </Card>
   );
 }

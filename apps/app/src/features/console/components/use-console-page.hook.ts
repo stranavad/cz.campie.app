@@ -1,5 +1,6 @@
 import { useAccountQuery } from '@/core/account';
-import { useConsoleOrganisationsQuery } from '@/features/console/api/console.queries';
+import { useConsoleOrganisationsQuery, useProblemReportsQuery } from '@/features/console/api/console.queries';
+import { hasMailWarning } from '@/features/console/components/mail-delivery/mail-health.helper';
 import { HttpError } from '@/lib/api';
 
 // What the console shows: the TOTP setup, or the Organisations once this login passed a code.
@@ -16,6 +17,8 @@ export function useConsolePage() {
         : 'enrol';
   const showsOrganisations = account.data?.operator === true && step === 'organisations';
   const organisations = useConsoleOrganisationsQuery(showsOrganisations);
+  const reports = useProblemReportsQuery(showsOrganisations);
+  const list = organisations.data ?? [];
 
   return {
     isSignedOut,
@@ -24,7 +27,13 @@ export function useConsolePage() {
     isLoading: account.isPending || (showsOrganisations && organisations.isPending),
     isError: (account.isError && !isSignedOut) || organisations.isError,
     step,
-    organisations: organisations.data ?? [],
-    pendingCount: (organisations.data ?? []).filter((organisation) => organisation.status === 'pending').length,
+    organisations: list,
+    // What waits for the operator, beside each tab.
+    counts: {
+      organizace: list.filter((organisation) => organisation.status === 'pending').length,
+      hlaseni: (reports.data ?? []).filter((report) => report.resolvedAt === null).length,
+      emaily: list.filter((organisation) => hasMailWarning(organisation.mail)).length,
+      podpora: (account.data?.memberships ?? []).filter((membership) => membership.support !== null).length,
+    },
   };
 }

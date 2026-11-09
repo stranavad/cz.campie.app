@@ -1,85 +1,75 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { GuardianEdit } from '@repo/schema/portal';
 
-import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
-import { useUpdateGuardianContactMutation } from '@/features/portal/api/portal.queries';
-import { editFailureOf } from '@/features/portal/components/edit/edit-failure';
-import { GuardianEmail } from '@/features/portal/components/edit/guardian-email';
+import type { EditFailure } from '@/features/portal/components/edit/edit-failure';
 import { LabelledInput } from '@/features/portal/components/edit/labelled-input';
+import type { GuardianDraft } from '@/features/portal/components/edit/use-edit-form.hook';
 import { StatusMessage } from '@/features/portal/components/shared/status-message';
 
-type Guardian = GuardianEdit['guardians'][number];
-
 interface GuardianCardProps {
-  registrationId: string;
-  guardian: Guardian;
+  guardian: GuardianEdit['guardians'][number];
+  draft: GuardianDraft;
   editable: boolean;
+  contactFailure: EditFailure | null;
+  emailFailure: EditFailure | null;
+  onChange: (draft: GuardianDraft) => void;
 }
 
-// One guardian's contact: name and phone saved at once, a new email only after its confirmation.
-export function GuardianCard({ registrationId, guardian, editable }: GuardianCardProps) {
+// One guardian's contact under their name: name and phone saved as they are, a new email only once the
+// guardian confirms it from the link sent to it.
+export function GuardianCard({ guardian, draft, editable, contactFailure, emailFailure, onChange }: GuardianCardProps) {
   const { t } = useTranslation('portal');
-  const [firstName, setFirstName] = useState(guardian.firstName);
-  const [lastName, setLastName] = useState(guardian.lastName);
-  const [phone, setPhone] = useState(guardian.phone ?? '');
-  const update = useUpdateGuardianContactMutation(registrationId);
-  const failure = editFailureOf(update.error);
 
   return (
-    <Card>
-      <fieldset className="flex min-w-0 flex-col gap-4" disabled={!editable}>
-        <legend className="mb-4 flex flex-col">
-          <span className="text-[13px] font-bold text-muted-foreground">
-            {t('edit.guardian', { number: guardian.position })}
-          </span>
-          <span className="text-heading">
+    <Card className="gap-3.5 p-4.5">
+      <fieldset className="flex min-w-0 flex-col gap-3.5" disabled={!editable}>
+        <legend className="mb-3.5">
+          <h2 className="text-heading break-words">
             {t('participant', { first: guardian.firstName, last: guardian.lastName })}
-          </span>
+          </h2>
         </legend>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-3">
           <LabelledInput
             label={t('edit.firstName')}
-            value={firstName}
+            value={draft.firstName}
             autoComplete="given-name"
-            onChange={(event) => setFirstName(event.target.value)}
+            onChange={(event) => onChange({ ...draft, firstName: event.target.value })}
           />
           <LabelledInput
             label={t('edit.lastName')}
-            value={lastName}
+            value={draft.lastName}
             autoComplete="family-name"
-            onChange={(event) => setLastName(event.target.value)}
+            onChange={(event) => onChange({ ...draft, lastName: event.target.value })}
           />
         </div>
         <LabelledInput
+          label={t('edit.emailLabel')}
+          type="email"
+          value={draft.email}
+          autoComplete="email"
+          onChange={(event) => onChange({ ...draft, email: event.target.value })}
+        />
+        {guardian.pendingEmail === null ? null : (
+          <Alert variant="warning" className="wrap-anywhere">
+            {t('edit.pendingEmail', { email: guardian.email })}
+          </Alert>
+        )}
+        {emailFailure === null ? null : (
+          <StatusMessage tone="danger">{t(`edit.failure.${emailFailure}`)}</StatusMessage>
+        )}
+        <LabelledInput
           label={t('edit.phone')}
           type="tel"
-          value={phone}
+          value={draft.phone}
           autoComplete="tel"
-          onChange={(event) => setPhone(event.target.value)}
+          onChange={(event) => onChange({ ...draft, phone: event.target.value })}
         />
-        {failure === null ? null : <StatusMessage tone="danger">{t(`edit.failure.${failure}`)}</StatusMessage>}
-        {update.isSuccess ? <StatusMessage tone="success">{t('edit.saved')}</StatusMessage> : null}
-        {editable ? (
-          <Button
-            type="button"
-            variant="brand"
-            size="lg"
-            className="w-full sm:w-auto sm:self-start"
-            disabled={update.isPending}
-            onClick={() =>
-              update.mutate({
-                position: guardian.position,
-                body: { firstName, lastName, phone: phone === '' ? null : phone },
-              })
-            }
-          >
-            {t('edit.save')}
-          </Button>
-        ) : null}
-        <GuardianEmail registrationId={registrationId} guardian={guardian} editable={editable} />
+        {contactFailure === null ? null : (
+          <StatusMessage tone="danger">{t(`edit.failure.${contactFailure}`)}</StatusMessage>
+        )}
       </fieldset>
     </Card>
   );

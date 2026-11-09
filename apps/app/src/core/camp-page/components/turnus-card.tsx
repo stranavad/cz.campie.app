@@ -20,20 +20,20 @@ export function TurnusCard({ turnus, action }: TurnusCardProps) {
   const earlyBird = turnus.earlyBirdPrice !== null && turnus.priceNow === turnus.earlyBirdPrice;
   const ages = turnus.minAge === null && turnus.maxAge === null ? null : ageLimits(t, turnus.minAge, turnus.maxAge);
   const details = [turnus.name, turnus.place, ages].filter((detail) => detail !== null && detail !== '').join(' · ');
+  const opensAt = turnus.availability === 'not_yet_open' ? turnus.opensAt : null;
 
   return (
-    <li className="flex flex-col gap-3 rounded-3xl border border-border bg-card p-4 sm:p-5">
+    <li className="flex flex-col gap-2.5 rounded-3xl border border-border bg-card px-4.5 py-4 sm:p-5">
       <div className="flex flex-col gap-0.5">
-        <h3 className="text-heading">
-          {t('campPage.dates', { start: czechDate(turnus.startDate), end: czechDate(turnus.endDate) })}
-        </h3>
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-heading pt-0.5">
+            {t('campPage.dates', { start: czechDate(turnus.startDate), end: czechDate(turnus.endDate) })}
+          </h3>
+          {opensAt === null ? <AvailabilityPill turnus={turnus} /> : null}
+        </div>
         <p className="text-sm text-muted-foreground">{details}</p>
       </div>
-      {turnus.availability === 'not_yet_open' && turnus.opensAt !== null ? (
-        <OpeningCountdown opensAt={turnus.opensAt} />
-      ) : (
-        <AvailabilityPill turnus={turnus} />
-      )}
+      {opensAt === null ? null : <OpeningCountdown opensAt={opensAt} />}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="flex flex-col leading-tight">
           <span className="text-lg font-bold tabular-nums">{czk(turnus.priceNow)}</span>

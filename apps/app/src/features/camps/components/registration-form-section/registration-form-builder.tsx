@@ -25,13 +25,14 @@ export function RegistrationFormBuilder({ organisationId, campId, form, canWrite
   return (
     <div className="flex flex-col gap-4">
       <PublishBar
-        latestVersion={form.latest?.version ?? null}
+        latest={form.latest}
         status={builder.status}
         canWrite={canWrite}
         isSaving={builder.isSaving}
         isPreviewing={builder.isPreviewing}
         onSave={builder.save}
         onPublish={builder.publish}
+        onDiscard={builder.discard}
         onTogglePreview={builder.togglePreview}
       />
       {builder.isPreviewing ? (

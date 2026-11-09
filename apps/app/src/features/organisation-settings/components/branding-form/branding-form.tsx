@@ -31,20 +31,7 @@ export function BrandingForm({ organisationId, settings }: BrandingFormProps) {
       <form.AppField name="accentColour">
         {(field) => (
           <div className="flex flex-col gap-4">
-            <AccentPicker
-              value={field.state.value}
-              fallback={settings.accentColour}
-              onPick={field.handleChange}
-              textField={
-                <field.TextField
-                  label={t('branding.accentColour')}
-                  description={t('branding.accentColourHint')}
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  className="font-mono"
-                />
-              }
-            />
+            <AccentPicker value={field.state.value} fallback={settings.accentColour} onPick={field.handleChange} />
             <AccentPreview accentColour={field.state.value} />
           </div>
         )}

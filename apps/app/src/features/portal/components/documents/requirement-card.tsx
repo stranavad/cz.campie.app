@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { REQUIREMENT_STATUS_BADGES } from '@/features/portal/components/documents/requirement-status.constants';
+import { statusOf } from '@/features/portal/components/documents/requirement-status.helper';
 import { RequirementUploads } from '@/features/portal/components/documents/requirement-uploads';
 
 interface RequirementCardProps {
@@ -17,14 +18,15 @@ interface RequirementCardProps {
   participant: GuardianDocuments['participants'][number] | undefined;
 }
 
-// A document the camp wants handed in: what it is, by when, its blank form, and the child's uploads.
+// A document the child still has to hand in, in full: what it is, by when, its blank form, why it came back,
+// and handing it in.
 export function RequirementCard({ registrationId, requirement, participant }: RequirementCardProps) {
   const { t } = useTranslation('portal');
   const uploads = participant?.uploads[requirement.id] ?? [];
-  const status = uploads[0]?.status ?? 'missing';
+  const status = statusOf(uploads);
 
   return (
-    <Card className="gap-3.5">
+    <Card className="gap-3.5 px-4.5 py-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col leading-snug">
           <h2 className="text-heading">{requirement.name}</h2>
@@ -35,7 +37,9 @@ export function RequirementCard({ registrationId, requirement, participant }: Re
           )}
         </div>
         {participant === undefined ? null : (
-          <Badge variant={REQUIREMENT_STATUS_BADGES[status]}>{t(`documents.statuses.${status}`)}</Badge>
+          <Badge variant={REQUIREMENT_STATUS_BADGES[status]} className="h-6.5 text-xs font-bold">
+            {t(`documents.statuses.${status}`)}
+          </Badge>
         )}
       </div>
       {requirement.description === '' ? null : (
@@ -46,7 +50,7 @@ export function RequirementCard({ registrationId, requirement, participant }: Re
           href={requirement.blankForm.url}
           target="_blank"
           rel="noreferrer"
-          className={buttonVariants({ variant: 'link', className: 'self-start text-sm' })}
+          className={buttonVariants({ variant: 'link', className: 'min-h-11 self-start text-sm' })}
         >
           <FileDownIcon aria-hidden="true" />
           {t('documents.blankForm')}

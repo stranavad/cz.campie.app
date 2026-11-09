@@ -6,10 +6,6 @@
     "description": "Organizaci {{name}} jsme založili. Přihlášky bude moci zveřejnit, jakmile ji schválí provozovatel {{productName}}.",
     "address": "Adresa přihlášek: {{address}}"
   },
-  "approved": {
-    "title": "Organizace je schválena",
-    "description": "Organizace {{name}} může zveřejňovat přihlášky."
-  },
   "suspended": {
     "title": "Organizace je pozastavena",
     "description": "Stránky organizace {{name}} jsou nedostupné a neodcházejí z ní žádné e-maily. Ozvěte se prosím provozovateli {{productName}}."
@@ -17,31 +13,59 @@
   "title": "Dobrý den",
   "newRegistration": "Nová přihláška",
   "noMembership": "Nejste správcem žádné organizace. Pokud vás má některá pozvat, ozvěte se jejímu vlastníkovi.",
-  "links": {
-    "label": "Části administrace",
-    "registrations": {
-      "title": "Přihlášky",
-      "description": "Přihlášky, platby a účastníci turnusů."
+  "operator": "Nejste správcem žádné organizace. Organizace na platformě spravujete v konzoli.",
+  "openConsole": "Otevřít konzoli",
+  "nothing": "K přihláškám ani k táborům nemáte přístup. O oprávnění požádejte vlastníka organizace.",
+  "hero": {
+    "label": "Obsazenost: {{turnus}}",
+    "filledOf": "{{turnus}} je zaplněný z",
+    "percent": "{{percent}} %",
+    "places_one": "{{registered}} z {{count}} dítěte",
+    "places_few": "{{registered}} z {{count}} dětí",
+    "places_many": "{{registered}} z {{count}} dětí",
+    "places_other": "{{registered}} z {{count}} dětí",
+    "left_one": "zbývá {{count}} místo",
+    "left_few": "zbývají {{count}} místa",
+    "left_many": "zbývá {{count}} místa",
+    "left_other": "zbývá {{count}} míst",
+    "full": "obsazeno",
+    "over_one": "{{count}} dítě nad kapacitu",
+    "over_few": "{{count}} děti nad kapacitu",
+    "over_many": "{{count}} dítěte nad kapacitu",
+    "over_other": "{{count}} dětí nad kapacitu",
+    "paidInFull": "Přihlášky zaplacené celé",
+    "received": "Vybráno"
+  },
+  "waiting": {
+    "title": "Čeká na vás",
+    "error": "Seznam se nepodařilo načíst. Zkuste stránku načíst znovu.",
+    "nothing": "Nic nečeká, všechno je vyřízené.",
+    "overdue": {
+      "title": "Platby po splatnosti",
+      "detail": "Nejstarší splatnost {{date}}"
     },
-    "camps": {
-      "title": "Nastavení táborů",
-      "description": "Turnusy, ceny, formulář a vzhled táborů."
+    "unverified": {
+      "title": "Slevy k ověření"
     },
-    "team": {
-      "title": "Tým",
-      "description": "Správci organizace, jejich oprávnění a pozvánky."
+    "unsigned": {
+      "title": "Nepodepsané souhlasy"
     },
-    "organisation": {
-      "title": "Nastavení organizace",
-      "description": "Údaje, platby kartou a bezpečnost."
+    "families_one": "{{count}} rodina",
+    "families_few": "{{count}} rodiny",
+    "families_many": "{{count}} rodiny",
+    "families_other": "{{count}} rodin",
+    "action": {
+      "remind": "Připomenout",
+      "verify": "Ověřit",
+      "show": "Zobrazit"
     },
-    "auditLog": {
-      "title": "Historie změn",
-      "description": "Kdo co změnil a kdy."
-    },
-    "console": {
-      "title": "Konzole provozovatele",
-      "description": "Organizace na platformě, podpora a hlášení problémů."
-    }
+    "actionOf": ": {{item}}"
+  },
+  "turnusy": {
+    "title": "Turnusy",
+    "label": "{{turnus}} · {{start}} - {{end}}",
+    "ofCamp": "{{camp}} · {{label}}",
+    "places": "{{registered}} / {{capacity}}",
+    "full": "Plno · {{registered}} / {{capacity}}"
   }
 }

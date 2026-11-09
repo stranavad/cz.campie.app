@@ -9,11 +9,13 @@ import { Select } from '@/components/ui/select';
 import { useTurnusOptionLabel } from '@/core/selected-turnus';
 import type { useCreateRegistrationPage } from '@/features/participants/components/create/use-create-registration-page.hook';
 
-// The side of the form: which Turnus, whether to email the guardians, and saving.
+// The side of the form: which Turnus, a Deposit paid in cash, whether to email the guardians, and saving.
 export function CreateSummary({ page }: { page: ReturnType<typeof useCreateRegistrationPage> }) {
   const { t } = useTranslation('participants');
   const optionLabel = useTurnusOptionLabel();
   const turnusId = useId();
+  const noteId = useId();
+  const depositHintId = useId();
 
   return (
     <aside className="flex min-w-0 flex-col gap-4 rounded-3xl border border-border bg-card p-5 sm:p-6 lg:sticky lg:top-6 lg:col-span-2">
@@ -35,12 +37,22 @@ export function CreateSummary({ page }: { page: ReturnType<typeof useCreateRegis
           {t('create.noForm')}
         </Alert>
       ) : null}
+      <div className="flex flex-col">
+        <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
+          <Checkbox
+            className="mt-0.5"
+            checked={page.cashDeposit}
+            onCheckedChange={page.setCashDeposit}
+            aria-describedby={depositHintId}
+          />
+          <span className="font-semibold">{t('create.cashDeposit')}</span>
+        </label>
+        <p id={depositHintId} className="-mt-3 pl-8 text-[13px] text-muted-foreground">
+          {t('create.cashDepositHint')}
+        </p>
+      </div>
       <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
-        <Checkbox
-          className="mt-0.5"
-          checked={page.sendConfirmation}
-          onCheckedChange={(checked) => page.setSendConfirmation(checked)}
-        />
+        <Checkbox className="mt-0.5" checked={page.sendConfirmation} onCheckedChange={page.setSendConfirmation} />
         <span className="font-semibold">{t('create.sendConfirmation')}</span>
       </label>
       {page.failed ? (
@@ -49,9 +61,12 @@ export function CreateSummary({ page }: { page: ReturnType<typeof useCreateRegis
           {t('create.failed')}
         </Alert>
       ) : null}
-      <Button type="button" size="lg" disabled={!page.canSubmit} onClick={page.submit}>
+      <Button type="button" size="lg" disabled={!page.canSubmit} onClick={page.submit} aria-describedby={noteId}>
         {t('create.submit')}
       </Button>
+      <p id={noteId} className="text-[13px] text-muted-foreground">
+        {t('create.submitNote')}
+      </p>
     </aside>
   );
 }

@@ -11,7 +11,7 @@ interface IdentityFormProps {
   settings: OrganisationSettings;
 }
 
-// The legal identity and bank account that generated documents and payment instructions carry.
+// The legal identity and contacts that generated documents carry.
 export function IdentityForm({ organisationId, settings }: IdentityFormProps) {
   const { t } = useTranslation('organisationSettings');
   const { form, status } = useIdentityForm(organisationId, settings);
@@ -39,15 +39,6 @@ export function IdentityForm({ organisationId, settings }: IdentityFormProps) {
           <form.AppField name="address">{(field) => <field.TextField label={t('identity.address')} />}</form.AppField>
           <form.AppField name="statutoryRepresentative">
             {(field) => <field.TextField label={t('identity.statutoryRepresentative')} />}
-          </form.AppField>
-          <form.AppField name="bankAccount">
-            {(field) => (
-              <field.TextField
-                label={t('identity.bankAccount')}
-                description={t('identity.bankAccountHint')}
-                placeholder={t('identity.bankAccountSample')}
-              />
-            )}
           </form.AppField>
           <form.AppField name="contactEmail">
             {(field) => (

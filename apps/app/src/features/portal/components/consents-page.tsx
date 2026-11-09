@@ -1,25 +1,21 @@
 import { Navigate } from '@tanstack/react-router';
 import { FileSignatureIcon } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/empty-state';
 import { Alert } from '@/components/ui/alert';
-import { useGuardianConsentsQuery } from '@/features/portal/api/portal.queries';
 import { ConsentRow } from '@/features/portal/components/consents/consent-row';
+import { useConsentsPage } from '@/features/portal/components/consents/use-consents-page.hook';
 import { ParticipantSwitch } from '@/features/portal/components/shared/participant-switch';
 import { PortalBackHeader } from '@/features/portal/components/shared/portal-back-header';
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
-import { useSelectedParticipant } from '@/features/portal/components/shared/use-selected-participant.hook';
 import { HttpError } from '@/lib/api';
 
-// The Consents of a Registration's children: what is signed, and each one to read and sign.
+// The Consents of a Registration's children: the one to sign next open, the rest as rows.
 export function ConsentsPage({ registrationId }: { registrationId: string }) {
   const { t } = useTranslation('portal');
-  const consents = useGuardianConsentsQuery(registrationId);
-  const participants = consents.data?.participants ?? [];
-  const { selected, select } = useSelectedParticipant(participants);
-  const [open, setOpen] = useState<{ participantId: string; consentId: string } | null>(null);
+  const page = useConsentsPage(registrationId);
+  const { consents, selected } = page;
 
   if (consents.error instanceof HttpError && consents.error.status === 401) {
     return <Navigate to="/organisation/portal/prihlaseni" replace />;
@@ -30,7 +26,7 @@ export function ConsentsPage({ registrationId }: { registrationId: string }) {
   }
 
   return (
-    <PortalColumn>
+    <PortalColumn className="gap-3">
       <PortalBackHeader
         title={t('consents.title')}
         subtitle={
@@ -42,15 +38,7 @@ export function ConsentsPage({ registrationId }: { registrationId: string }) {
           {t('error')}
         </Alert>
       ) : null}
-      <ParticipantSwitch
-        participants={participants.map((participant) => ({
-          id: participant.id,
-          firstName: participant.firstName,
-          count: participant.consents.filter((consent) => consent.state === 'unsigned').length,
-        }))}
-        selectedId={selected?.id}
-        onSelect={select}
-      />
+      <ParticipantSwitch participants={page.switchParticipants} selectedId={selected?.id} onSelect={page.select} />
       {consents.isSuccess && (selected === undefined || selected.consents.length === 0) ? (
         <EmptyState icon={<FileSignatureIcon />} title={t('consents.none')} />
       ) : null}
@@ -60,8 +48,8 @@ export function ConsentsPage({ registrationId }: { registrationId: string }) {
           registrationId={registrationId}
           participantId={selected.id}
           consent={consent}
-          isOpen={open?.participantId === selected.id && open.consentId === consent.consentId}
-          onOpen={() => setOpen({ participantId: selected.id, consentId: consent.consentId })}
+          isOpen={page.isOpen(consent.consentId)}
+          onOpen={() => page.open(selected.id, consent.consentId)}
         />
       ))}
     </PortalColumn>

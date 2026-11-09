@@ -1,11 +1,11 @@
 import { Link } from '@tanstack/react-router';
-import { EyeIcon, PlusIcon } from 'lucide-react';
+import { EyeIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { CampSummary } from '@repo/schema/camps';
 
 import { PageHeader } from '@/components/page-header';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import type { CampSettingsSection } from '@/features/camps/components/camp-settings/camp-settings-section.constants';
 import { CampWindowBadge } from '@/features/camps/components/camp-settings/camp-window-badge';
 import { CampSwitcher } from '@/features/camps/components/camp-switcher';
@@ -20,7 +20,8 @@ interface CampSettingsHeaderProps {
   onCreate: () => void;
 }
 
-// The Camp being set up, a way to another Camp, its window state, its public page and a new Camp.
+// The Camp being set up, its window state and its public page. Another Camp, or a new one, is picked in the
+// switcher above the title, so nothing competes with the page's own actions. Each tab saves its own parts.
 export function CampSettingsHeader({
   organisationId,
   camps,
@@ -31,12 +32,18 @@ export function CampSettingsHeader({
   onCreate,
 }: CampSettingsHeaderProps) {
   const { t } = useTranslation('camps');
+  const canCreate = canWrite && !isCreating;
 
   return (
     <PageHeader
       eyebrow={
-        camps.length > 1 ? (
-          <CampSwitcher camps={camps} selectedId={selected.id} section={section} />
+        camps.length > 1 || canCreate ? (
+          <CampSwitcher
+            camps={camps}
+            selectedId={selected.id}
+            section={section}
+            onCreate={canCreate ? onCreate : undefined}
+          />
         ) : (
           <span className="text-sm font-semibold text-muted-foreground">{t('switcher')}</span>
         )
@@ -45,22 +52,14 @@ export function CampSettingsHeader({
       status={<CampWindowBadge organisationId={organisationId} campId={selected.id} />}
       description={canWrite ? undefined : t('readOnly')}
       actions={
-        <>
-          <Link
-            to="/platform/tabory/nahled"
-            search={{ tabor: selected.id }}
-            className={buttonVariants({ variant: 'outline' })}
-          >
-            <EyeIcon aria-hidden="true" />
-            {t('settings.preview')}
-          </Link>
-          {canWrite && !isCreating ? (
-            <Button variant="outline" onClick={onCreate}>
-              <PlusIcon aria-hidden="true" />
-              {t('create.open')}
-            </Button>
-          ) : null}
-        </>
+        <Link
+          to="/platform/tabory/nahled"
+          search={{ tabor: selected.id }}
+          className={buttonVariants({ variant: 'outline' })}
+        >
+          <EyeIcon aria-hidden="true" />
+          {t('settings.preview')}
+        </Link>
       }
     />
   );

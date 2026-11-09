@@ -41,7 +41,9 @@ export function NewAccountForm({ token, email }: NewAccountFormProps) {
         </Alert>
       )}
       <form.AppForm>
-        <form.SubmitButton className="mt-1 w-full">{t('accept')}</form.SubmitButton>
+        <form.SubmitButton size="lg" className="mt-1 w-full">
+          {t('accept')}
+        </form.SubmitButton>
       </form.AppForm>
     </form>
   );

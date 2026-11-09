@@ -1,5 +1,4 @@
-import { Link } from '@tanstack/react-router';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import { Alert } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
@@ -44,17 +43,6 @@ export function SignupForm() {
           </form.SubmitButton>
         </form.AppForm>
       </form>
-      <p className="text-center text-sm text-muted-foreground">
-        <Trans
-          t={t}
-          i18nKey="logIn"
-          components={{
-            a: (
-              <Link to="/platform/prihlaseni" className="font-semibold text-foreground underline underline-offset-4" />
-            ),
-          }}
-        />
-      </p>
     </Card>
   );
 }

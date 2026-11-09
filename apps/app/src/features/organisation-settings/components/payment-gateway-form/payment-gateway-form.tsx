@@ -2,19 +2,23 @@ import { CreditCardIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { IconTile } from '@/components/icon-tile';
-import { SettingsSection } from '@/components/settings-section';
 import { Button } from '@/components/ui/button';
 import { FormMessage } from '@/features/organisation-settings/components/form-message';
 import { usePaymentGatewayForm } from '@/features/organisation-settings/components/payment-gateway-form/use-payment-gateway-form.hook';
 
-// The Organisation's own Comgate account for card payments; without it, bank transfer only.
+// The Organisation's own Comgate account for card payments, inside the Platby section; without it, bank
+// transfer only.
 export function PaymentGatewayForm({ organisationId }: { organisationId: string }) {
   const { t } = useTranslation('organisationSettings');
   const gateway = usePaymentGatewayForm(organisationId);
   const isConfigured = gateway.merchantId !== null;
 
   return (
-    <SettingsSection title={t('paymentGateway.title')} description={t('paymentGateway.intro')}>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <h3 className="font-bold">{t('paymentGateway.title')}</h3>
+        <p className="text-sm text-muted-foreground">{t('paymentGateway.intro')}</p>
+      </div>
       {gateway.isLoading ? null : (
         <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-muted p-3 pr-4">
           <IconTile tone={isConfigured ? 'success' : 'neutral'} className={isConfigured ? undefined : 'bg-card'}>
@@ -71,6 +75,6 @@ export function PaymentGatewayForm({ organisationId }: { organisationId: string 
           </gateway.form.SubmitButton>
         </gateway.form.AppForm>
       </form>
-    </SettingsSection>
+    </div>
   );
 }

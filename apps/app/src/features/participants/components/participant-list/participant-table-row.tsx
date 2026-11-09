@@ -10,7 +10,7 @@ import { DueLine } from '@/features/participants/components/participant-list/due
 import { PaymentStatusBadge } from '@/features/participants/components/payment-status-badge';
 import { cn } from '@/lib/utils';
 
-// One child in the table: who, the guardian, money and the checklist.
+// One child in the table: who (and whether answers are owed), the guardian, money, Consents and documents.
 export function ParticipantTableRow({ row }: { row: ParticipantRow }) {
   const { t } = useTranslation('participants');
   const name = t('name', { first: row.firstName, last: row.lastName });
@@ -34,6 +34,9 @@ export function ParticipantTableRow({ row }: { row: ParticipantRow }) {
                 ? t('row.ageCancelled', { age: t('age', { count: row.ageOnStart }) })
                 : t('age', { count: row.ageOnStart })}
             </span>
+            {row.missingAnswers ? (
+              <span className="text-[13px] font-medium text-warning-foreground">{t('filters.missingAnswers')}</span>
+            ) : null}
           </span>
         </Link>
       </TableCell>
@@ -62,17 +65,9 @@ export function ParticipantTableRow({ row }: { row: ParticipantRow }) {
         {row.missingDocument ? (
           <Badge variant="danger">{t('row.documentMissing')}</Badge>
         ) : (
-          <Badge variant="success">{t('row.fine')}</Badge>
+          <Badge>{t('row.fine')}</Badge>
         )}
       </TableCell>
-      <TableCell>
-        {row.missingAnswers ? (
-          <Badge variant="warning">{t('filters.missingAnswers')}</Badge>
-        ) : (
-          <span className="text-muted-foreground">{t('row.fine')}</span>
-        )}
-      </TableCell>
-      <TableCell className="text-muted-foreground tabular-nums">{row.variableSymbol}</TableCell>
     </TableRow>
   );
 }

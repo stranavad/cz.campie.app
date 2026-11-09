@@ -1,6 +1,6 @@
 {
-  "title": "Nastavení organizace",
-  "intro": "Údaje, vzhled, platby a bezpečnost pro všechny tábory organizace.",
+  "title": "Organizace",
+  "intro": "Údaje, vzhled, platby a bezpečnost pro všechny tábory organizace. Každá část se ukládá zvlášť.",
   "loading": "Načítáme…",
   "error": "Nastavení se nepodařilo načíst. Zkuste stránku načíst znovu.",
   "notOwner": "Nastavení organizace upravují jen vlastníci.",
@@ -13,16 +13,13 @@
   "failure": "Změny se nepodařilo uložit. Zkuste to prosím znovu.",
   "identity": {
     "title": "Údaje organizace",
-    "intro": "Tyto údaje se tisknou na přihlášky a další dokumenty a uvádějí se v platebních údajích.",
+    "intro": "Tyto údaje se tisknou na přihlášky a další dokumenty a vidí je rodiče u vašich táborů.",
     "legalName": "Název organizace",
     "ico": "IČO",
     "vatId": "DIČ",
     "vatIdHint": "Jen pokud je organizace plátcem DPH.",
     "address": "Sídlo",
     "statutoryRepresentative": "Statutární zástupce",
-    "bankAccount": "Číslo účtu",
-    "bankAccountSample": "123456789/0100",
-    "bankAccountHint": "Na tento účet budou rodiče posílat platby. Ve tvaru předčíslí-číslo/kód banky.",
     "contactEmail": "Kontaktní e-mail",
     "contactPhone": "Telefon",
     "billingEmail": "Fakturační e-mail",
@@ -32,11 +29,20 @@
     "title": "Vzhled",
     "intro": "Logo, barva a název, se kterými rodiče uvidí vaše stránky, e-maily a dokumenty. Každý tábor si je může nastavit zvlášť.",
     "displayName": "Zobrazovaný název",
-    "displayNameHint": "Pod tímto názvem uvidí organizaci rodiče.",
-    "accentColour": "Barva",
-    "accentColourHint": "Barvu textu k ní zvolíme sami, aby byl vždy čitelný."
+    "displayNameHint": "Pod tímto názvem uvidí organizaci rodiče."
   },
   "logoNone": "Organizace zatím nemá logo.",
+  "payments": {
+    "title": "Platby",
+    "intro": "Účet pro platby převodem a QR kódem a platební brána pro platby kartou.",
+    "bankAccount": "Bankovní účet",
+    "bankAccountSample": "123456789/0100",
+    "bankAccountHint": "Na tento účet budou rodiče posílat platby. Ve tvaru předčíslí-číslo/kód banky.",
+    "variableSymbol": "Variabilní symbol",
+    "variableSymbolValue": "Přidělí se každé přihlášce",
+    "variableSymbolHint": "Osm číslic, generuje se automaticky a nedá se změnit.",
+    "saveBankAccount": "Uložit účet"
+  },
   "paymentGateway": {
     "title": "Platby kartou (Comgate)",
     "intro": "Zadejte klíče vlastního účtu Comgate a rodiče budou moci platit kartou. Bez nich zůstává platba převodem.",
@@ -52,7 +58,7 @@
     "removed": "Platby kartou jsou vypnuté."
   },
   "supportAccess": {
-    "title": "Přístup podpory",
+    "title": "Přístup podpory {{productName}}",
     "intro": "Když potřebujete pomoc, můžete na omezenou dobu pustit podporu platformy do své organizace. Bez vašeho svolení podpora k datům účastníků přístup nemá. Vše, co podpora udělá, se zapisuje do historie.",
     "duration": "Na jak dlouho",
     "hours_one": "{{count}} hodinu",
@@ -60,10 +66,9 @@
     "hours_other": "{{count}} hodin",
     "allowWrites": "Povolit i změny (jinak jen čtení)",
     "grant": "Povolit přístup",
-    "activeReadOnly": "Podpora má přístup jen pro čtení do {{until}}.",
-    "activeWrites": "Podpora má přístup se změnami do {{until}}.",
+    "activeReadOnly": "Aktivní do {{until}}, jen pro čtení.",
+    "activeWrites": "Aktivní do {{until}}, se změnami.",
     "revoke": "Ukončit přístup",
-    "activeBadge": "Aktivní",
     "historyTitle": "Dosavadní přístupy",
     "history": "{{from}} až {{until}}, {{kind}}",
     "kindReadOnly": "jen čtení",
@@ -75,24 +80,39 @@
     "today": "Dnes",
     "yesterday": "Včera",
     "actorKind": "Kdo",
-    "anyone": "Kdokoli",
-    "actor": "E-mail",
+    "anyone": "všichni",
     "area": "Oblast",
-    "anyArea": "Všechny oblasti",
+    "anyArea": "vše",
     "from": "Od",
     "to": "Do",
     "loadFailed": "Historii se nepodařilo načíst.",
     "none": "Nic neodpovídá.",
-    "more": "Načíst další"
+    "more": "Načíst další",
+    "search": "Hledat v historii podle e-mailu",
+    "searchPlaceholder": "Hledat e-mail správce nebo rodiče",
+    "period": "Období",
+    "periods": {
+      "all": "Celá historie",
+      "7": "Posledních 7 dní",
+      "30": "Posledních 30 dní",
+      "90": "Posledních 90 dní",
+      "custom": "Vlastní období"
+    },
+    "by": "· {{actor}}",
+    "changes_one": "{{count}} změna",
+    "changes_few": "{{count}} změny",
+    "changes_many": "{{count}} změny",
+    "changes_other": "{{count}} změn"
   },
   "twoStep": {
-    "title": "Dvoufázové přihlášení",
-    "intro": "Můžete vyžadovat, aby se všichni správci organizace přihlašovali i kódem z ověřovací aplikace v telefonu. Kdo ho ještě nemá, nastaví si ho při příštím přihlášení dřív, než se dostane k čemukoli jinému - pokud ho nemáte vy, hned teď.",
-    "on": "Všichni správci organizace se přihlašují i kódem z ověřovací aplikace.",
-    "required": "Vyžadováno",
-    "notRequired": "Nevyžadováno",
+    "intro": "Kromě hesla zadají všichni členové týmu i kód z ověřovací aplikace v telefonu. Kdo ho ještě nemá, nastaví si ho při příštím přihlášení dřív, než se dostane k čemukoli jinému - pokud ho nemáte vy, hned teď.",
+    "on": "Členové týmu se bez kódu z ověřovací aplikace nepřihlásí.",
     "require": "Vyžadovat dvoufázové přihlášení",
-    "stopRequiring": "Přestat vyžadovat",
-    "failure": "Změnu se nepodařilo uložit. Zkuste to prosím znovu."
+    "failure": "Změnu se nepodařilo uložit. Zkuste to prosím znovu.",
+    "without_zero": "Všichni členové ho mají.",
+    "without_one": "{{count}} člen ho zatím nemá.",
+    "without_few": "{{count}} členové ho zatím nemají.",
+    "without_many": "{{count}} člena ho zatím nemá.",
+    "without_other": "{{count}} členů ho zatím nemá."
   }
 }

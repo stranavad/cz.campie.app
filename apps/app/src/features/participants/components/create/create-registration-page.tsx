@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CampQuestions } from '@/features/participants/components/create/camp-questions';
 import { CreateDeclarations } from '@/features/participants/components/create/create-declarations';
 import { CreateSummary } from '@/features/participants/components/create/create-summary';
 import { FormSection } from '@/features/participants/components/create/form-section';
@@ -42,15 +43,15 @@ export function CreateRegistrationPage() {
             <>
               <FormSection
                 title={t('create.guardian')}
-                fields={page.asked(definition, 'registration')}
+                fields={page.asked(definition, 'registration', 'own')}
                 answers={page.registration}
                 onChange={page.setRegistration}
               />
               {page.children.map((answers, index) => (
                 <FormSection
                   key={index}
-                  title={t('create.child', { number: index + 1 })}
-                  fields={page.asked(definition, 'participant')}
+                  title={page.children.length > 1 ? t('create.child', { number: index + 1 }) : t('create.onlyChild')}
+                  fields={page.asked(definition, 'participant', 'own')}
                   answers={answers}
                   onChange={(changed) => page.setChild(index, changed)}
                 />
@@ -61,6 +62,14 @@ export function CreateRegistrationPage() {
                   {t('create.addChild')}
                 </Button>
               ) : null}
+              <CampQuestions
+                registrationFields={page.asked(definition, 'registration', 'questions')}
+                childFields={page.asked(definition, 'participant', 'questions')}
+                registration={page.registration}
+                onRegistration={page.setRegistration}
+                childAnswers={page.children}
+                onChild={page.setChild}
+              />
               <CreateDeclarations declarations={page.declarations} ticked={page.ticked} onTick={page.tick} />
             </>
           )}

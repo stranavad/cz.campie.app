@@ -1,7 +1,8 @@
 import { useProblemReportsQuery, useResolveProblemReportMutation } from '@/features/console/api/console.queries';
 
 export function useProblemReports() {
-  const reports = useProblemReportsQuery();
+  // Shown only once the console is open, so the reports may load.
+  const reports = useProblemReportsQuery(true);
   const resolve = useResolveProblemReportMutation();
   const list = reports.data ?? [];
 

@@ -2,44 +2,23 @@ import { formOptions } from '@tanstack/react-form';
 import { z } from 'zod';
 
 import { campFieldsSchema, type Camp, type UpdateCampBody } from '@repo/schema/camps';
-import { czkSchema } from '@repo/schema/shared';
 
-// The contract's fields, every one present: the form saves the Camp whole. The Sibling discount is typed
-// as text and checked as the contract's whole CZK.
-// The notification recipients are typed one per line and checked as the contract's list. An empty lock
-// date is none.
-export const campFormSchema = campFieldsSchema.extend({
-  siblingDiscountAmount: z.string().refine((text) => czkSchema.safeParse(amountOf(text)).success, 'czk_invalid'),
-  notificationEmails: z
-    .string()
-    .refine(
-      (text) => campFieldsSchema.shape.notificationEmails.safeParse(emailsOf(text)).success,
-      'notification_emails_invalid',
-    ),
-  contactEditLockDate: z.string(),
+// The Camp's identity, contact, modules and lock date, saved together from the first tab; the Sibling
+// discount and the team's addresses are saved from their own tabs. An empty lock date is none.
+const campBasicsSchema = campFieldsSchema.pick({
+  name: true,
+  slug: true,
+  websiteUrl: true,
+  contactName: true,
+  contactEmail: true,
+  contactPhone: true,
+  modules: true,
+  contactEditLockDate: true,
 });
 
-/**
- * Read typed recipients, one per line, blank lines skipped.
- * @param text the input's text
- */
-function emailsOf(text: string): string[] {
-  return text
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line !== '');
-}
+export const campFormSchema = campBasicsSchema.extend({ contactEditLockDate: z.string() });
 
 export type CampFormValues = z.input<typeof campFormSchema>;
-
-/**
- * Read a typed amount. A number input that holds something it cannot read reports it empty, so empty is
- * invalid rather than no discount; none is 0.
- * @param text the input's text
- */
-function amountOf(text: string): number {
-  return text.trim() === '' ? Number.NaN : Number(text);
-}
 
 /**
  * Turn checked inputs into the change the API takes.
@@ -47,10 +26,8 @@ function amountOf(text: string): number {
  * @throws {ZodError} when the inputs break the contract's rules
  */
 export function campChangeOf(values: CampFormValues): UpdateCampBody {
-  return campFieldsSchema.parse({
+  return campBasicsSchema.parse({
     ...values,
-    siblingDiscountAmount: amountOf(values.siblingDiscountAmount),
-    notificationEmails: emailsOf(values.notificationEmails),
     contactEditLockDate: values.contactEditLockDate === '' ? null : values.contactEditLockDate,
   });
 }
@@ -68,9 +45,6 @@ export function campFormValues(camp: Camp): CampFormValues {
     contactEmail: camp.contactEmail ?? '',
     contactPhone: camp.contactPhone ?? '',
     modules: camp.modules,
-    siblingDiscountAmount: String(camp.siblingDiscountAmount),
-    siblingDiscountAppliesTo: camp.siblingDiscountAppliesTo,
-    notificationEmails: camp.notificationEmails.join('\n'),
     contactEditLockDate: camp.contactEditLockDate ?? '',
   };
 }
@@ -92,9 +66,6 @@ const CAMP_FORM_BLANK: CampFormValues = {
     oddily: false,
     vedouci: false,
   },
-  siblingDiscountAmount: '0',
-  siblingDiscountAppliesTo: 'every_child',
-  notificationEmails: '',
   contactEditLockDate: '',
 };
 

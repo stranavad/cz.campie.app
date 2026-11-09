@@ -1,4 +1,4 @@
-import { CircleCheckIcon, ClockIcon, OctagonPauseIcon } from 'lucide-react';
+import { ClockIcon, OctagonPauseIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { Account } from '@repo/schema/admins';
@@ -13,14 +13,19 @@ interface OrganisationStatusNoticeProps {
 
 const LOOKS = {
   pending: { panel: 'bg-warning text-warning-foreground', tone: 'warning', icon: ClockIcon },
-  approved: { panel: 'bg-brand-soft text-foreground', tone: 'brand', icon: CircleCheckIcon },
   suspended: { panel: 'bg-danger text-danger-foreground', tone: 'danger', icon: OctagonPauseIcon },
 } as const;
 
-// What the Organisation's status means for the Owner: waiting for the operator, live, or suspended.
+// What the Organisation's status means for the Owner: waiting for the operator, or suspended.
 export function OrganisationStatusNotice({ organisation }: OrganisationStatusNoticeProps) {
   const { t } = useTranslation('adminHome');
   const { status, displayName } = organisation;
+
+  // A live Organisation needs no notice.
+  if (status === 'approved') {
+    return null;
+  }
+
   const { panel, tone, icon: Icon } = LOOKS[status];
 
   return (

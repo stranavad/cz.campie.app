@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import type { RegistrationDetail } from '@repo/schema/registrations';
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSelectedTurnus } from '@/core/selected-turnus';
 import {
   useAddParticipantMutation,
   useEditAnswersMutation,
@@ -13,7 +12,6 @@ import {
 import { AnswersEditor } from '@/features/participants/components/editing/answers-editor';
 import { EditorTile } from '@/features/participants/components/editing/editor-tile';
 import { GuardianEditor } from '@/features/participants/components/editing/guardian-editor';
-import { MoveRegistration } from '@/features/participants/components/editing/move-registration';
 
 interface AdminActionsProps {
   organisationId: string;
@@ -22,16 +20,14 @@ interface AdminActionsProps {
   canWriteHealth: boolean;
 }
 
-// What an admin with Registrations write changes on a Registration: guardians, answers, a new child and the
-// Turnus, each change of price shown before it is saved.
+// What an admin with Registrations write changes on a Registration: guardians, answers and a new child, each
+// change of price shown before it is saved. Moving to another Turnus is in the header's menu.
 export function AdminActions({ organisationId, detail, canWriteHealth }: AdminActionsProps) {
   const { t } = useTranslation('participants');
   const previewAnswers = usePreviewAnswersMutation(organisationId, detail.id);
   const editAnswers = useEditAnswersMutation(organisationId, detail.id);
   const previewParticipant = usePreviewParticipantMutation(organisationId, detail.id);
   const addParticipant = useAddParticipantMutation(organisationId, detail.id);
-  const { turnusy } = useSelectedTurnus();
-  const others = turnusy.filter(({ id, campId }) => campId === detail.camp.id && id !== detail.turnus.id);
   const editor = { definition: detail.latestDefinition, withHealth: canWriteHealth };
   const answersOf = (participant: RegistrationDetail['participants'][number]) => ({
     firstName: participant.firstName,
@@ -110,9 +106,6 @@ export function AdminActions({ organisationId, detail, canWriteHealth }: AdminAc
           failed={addParticipant.isError}
         />
       </EditorTile>
-      {others.length === 0 ? null : (
-        <MoveRegistration organisationId={organisationId} registrationId={detail.id} others={others} />
-      )}
     </Card>
   );
 }

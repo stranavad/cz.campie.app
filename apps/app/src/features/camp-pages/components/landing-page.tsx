@@ -34,15 +34,15 @@ export function LandingPage() {
         <h1 className="text-title">{page.organisation?.displayName ?? t('title')}</h1>
         <p className="text-muted-foreground">{t('lead')}</p>
       </section>
-      <section className="flex flex-col gap-3">
-        <h2 className="text-heading px-1">{t('title')}</h2>
-        {page.camps.length === 0 ? <EmptyState icon={<TentIcon />} title={t('empty')} /> : null}
-        <ul className="grid gap-3.5 sm:grid-cols-2">
+      {page.camps.length === 0 ? (
+        <EmptyState icon={<TentIcon />} title={t('empty')} />
+      ) : (
+        <ul aria-label={t('title')} className="grid gap-3.5 sm:grid-cols-2">
           {page.camps.map((camp) => (
             <CampCard key={camp.id} camp={camp} />
           ))}
         </ul>
-      </section>
+      )}
     </div>
   );
 }

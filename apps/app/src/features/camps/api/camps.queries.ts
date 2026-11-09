@@ -185,6 +185,27 @@ export const useSaveRegistrationFormMutation = (organisationId: string, campId: 
   });
 };
 
+// Puts a published version back as the draft, dropping every edit since; its PDFs stay the uploads they were.
+export const useDiscardRegistrationFormDraftMutation = (organisationId: string, campId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (version: number) => {
+      const published = await campsService.getRegistrationFormVersion(organisationId, campId, version);
+
+      return campsService.saveRegistrationFormDraft(organisationId, campId, {
+        definition: published.definition,
+        maxParticipants: published.maxParticipants,
+        declarations: published.declarations.map(({ file, ...declaration }) => ({
+          ...declaration,
+          fileId: file?.id ?? null,
+        })),
+      });
+    },
+    onSuccess: (form) => queryClient.setQueryData(campsKeys.registrationForm(organisationId, campId), form),
+  });
+};
+
 export const useUploadDeclarationFileMutation = (organisationId: string, campId: string) =>
   useMutation({ mutationFn: (file: File) => campsService.uploadDeclarationFile(organisationId, campId, file) });
 

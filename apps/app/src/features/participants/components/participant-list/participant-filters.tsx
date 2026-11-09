@@ -1,74 +1,77 @@
-import { SearchIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { PAYMENT_STATUSES, type PaymentStatus } from '@repo/schema/pricing';
-
-import { Input } from '@/components/ui/input';
-import { SegmentedControl, SegmentedControlItem } from '@/components/ui/segmented-control';
-import { FilterChip } from '@/features/participants/components/participant-list/filter-chip';
-import type { ParticipantFlag } from '@/features/participants/components/use-participants-page.hook';
+import { FilterPill } from '@/components/filter-pill';
+import { SearchInput } from '@/components/search-input';
+import { SegmentedControl, SegmentedControlCount, SegmentedControlItem } from '@/components/ui/segmented-control';
+import {
+  CHECK_FILTERS,
+  type CheckFilter,
+  type PaymentTab,
+} from '@/features/participants/schemas/participants-search.schema';
+import { cn } from '@/lib/utils';
 
 interface ParticipantFiltersProps {
-  search: string;
-  onSearch: (search: string) => void;
-  paymentStatus: PaymentStatus | '';
-  onPaymentStatus: (status: PaymentStatus | '') => void;
-  flags: Record<ParticipantFlag, boolean>;
-  onToggleFlag: (flag: ParticipantFlag) => void;
+  text: string;
+  onText: (text: string) => void;
+  tab: PaymentTab;
+  onTab: (tab: PaymentTab) => void;
+  // Undefined while the Turnus loads.
+  countOf: (tab: PaymentTab) => number | undefined;
+  check: CheckFilter | null;
+  onCheck: (check: CheckFilter | null) => void;
 }
 
-const FLAGS = [
+// In the design's order; a rare status shows only when someone has it.
+const TABS = [
+  'all',
+  'paid',
+  'overpaid',
+  'deposit_paid',
+  'partly_paid',
+  'unpaid',
   'overdue',
-  'unsignedConsent',
-  'missingDocument',
-  'missingAnswers',
-  'unverified',
-] as const satisfies readonly ParticipantFlag[];
+] as const satisfies readonly PaymentTab[];
+const RARE: readonly PaymentTab[] = ['overpaid', 'deposit_paid'];
 
-// The payment status as one choice, the search, and the checklist filters that each narrow the list.
+// The payment status as tabs with counts, the search, and the checklist as one quieter filter.
 export function ParticipantFilters(props: ParticipantFiltersProps) {
   const { t } = useTranslation('participants');
+  const shown = TABS.filter((tab) => !RARE.includes(tab) || tab === props.tab || (props.countOf(tab) ?? 0) > 0);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <SegmentedControl aria-label={t('paymentStatus')}>
-          <SegmentedControlItem selected={props.paymentStatus === ''} onClick={() => props.onPaymentStatus('')}>
-            {t('anyStatus')}
-          </SegmentedControlItem>
-          {PAYMENT_STATUSES.map((status) => (
+    <div className="flex flex-wrap items-center gap-2">
+      <SegmentedControl aria-label={t('paymentStatus')}>
+        {shown.map((tab) => {
+          const count = props.countOf(tab);
+
+          return (
             <SegmentedControlItem
-              key={status}
-              selected={props.paymentStatus === status}
-              onClick={() => props.onPaymentStatus(status)}
+              key={tab}
+              selected={props.tab === tab}
+              onClick={() => props.onTab(tab)}
+              className={cn(tab === 'overdue' && (count ?? 0) > 0 && 'text-danger-foreground')}
             >
-              {t(`status.${status}`)}
+              {t(`tabs.${tab}`)}
+              {count === undefined ? null : <SegmentedControlCount>{count}</SegmentedControlCount>}
             </SegmentedControlItem>
-          ))}
-        </SegmentedControl>
-        <div className="relative w-full sm:ml-auto sm:w-80">
-          <SearchIcon
-            aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-4 size-4.5 -translate-y-1/2 text-subtle-foreground"
-          />
-          <Input
-            type="search"
-            aria-label={t('search')}
-            placeholder={t('search')}
-            className="rounded-full pl-11"
-            value={props.search}
-            onChange={(event) => props.onSearch(event.target.value)}
-          />
-        </div>
-      </div>
-      <fieldset className="flex flex-wrap gap-2">
-        <legend className="sr-only">{t('filters.label')}</legend>
-        {FLAGS.map((flag) => (
-          <FilterChip key={flag} selected={props.flags[flag]} onClick={() => props.onToggleFlag(flag)}>
-            {t(`filters.${flag}`)}
-          </FilterChip>
-        ))}
-      </fieldset>
+          );
+        })}
+      </SegmentedControl>
+      <FilterPill
+        label={t('filters.label')}
+        value={props.check ?? 'any'}
+        onValueChange={(value) => props.onCheck(value === 'any' ? null : value)}
+        options={[
+          { value: 'any', label: t('filters.any') },
+          ...CHECK_FILTERS.map((check) => ({ value: check, label: t(`filters.${check}`) })),
+        ]}
+      />
+      <SearchInput
+        className="w-full sm:ml-auto sm:w-80"
+        placeholder={t('search')}
+        value={props.text}
+        onChange={(event) => props.onText(event.target.value)}
+      />
     </div>
   );
 }

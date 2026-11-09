@@ -22,7 +22,7 @@ export function NewPasswordForm({ token }: NewPasswordFormProps) {
         <Alert variant="success" className="font-semibold">
           <output className="block">{t('new.done')}</output>
         </Alert>
-        <Link to="/platform/prihlaseni" className={buttonVariants({ className: 'w-full' })}>
+        <Link to="/platform/prihlaseni" className={buttonVariants({ size: 'lg', className: 'w-full' })}>
           {t('new.logIn')}
         </Link>
       </div>
@@ -35,7 +35,7 @@ export function NewPasswordForm({ token }: NewPasswordFormProps) {
         <Alert variant="danger" role="alert">
           {t('new.failure.password_reset_invalid')}
         </Alert>
-        <Link to="/platform/zapomenute-heslo" className={buttonVariants({ className: 'w-full' })}>
+        <Link to="/platform/zapomenute-heslo" className={buttonVariants({ size: 'lg', className: 'w-full' })}>
           {t('new.requestAgain')}
         </Link>
       </div>
@@ -67,7 +67,9 @@ export function NewPasswordForm({ token }: NewPasswordFormProps) {
         </Alert>
       )}
       <form.AppForm>
-        <form.SubmitButton className="mt-1 w-full">{t('new.submit')}</form.SubmitButton>
+        <form.SubmitButton size="lg" className="mt-1 w-full">
+          {t('new.submit')}
+        </form.SubmitButton>
       </form.AppForm>
     </form>
   );

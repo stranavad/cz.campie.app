@@ -12,11 +12,13 @@ interface DateFieldProps {
   // The earliest and latest days to offer, as `YYYY-MM-DD`.
   min?: string;
   max?: string;
+  // Why the days outside them cannot be picked, shown under the calendar.
+  unavailableHint?: string;
   className?: string;
 }
 
-// A `YYYY-MM-DD` string field, picked from our calendar.
-export function DateField({ label, description, clearable, min, max, className }: DateFieldProps) {
+// A `YYYY-MM-DD` string field, typed in Czech or picked from our calendar.
+export function DateField({ label, description, clearable, min, max, unavailableHint, className }: DateFieldProps) {
   const { field, errors, isInvalid } = useFieldErrors();
   const id = useId();
 
@@ -31,6 +33,7 @@ export function DateField({ label, description, clearable, min, max, className }
         clearable={clearable}
         min={min}
         max={max}
+        unavailableHint={unavailableHint}
         className={className}
         aria-invalid={isInvalid}
       />

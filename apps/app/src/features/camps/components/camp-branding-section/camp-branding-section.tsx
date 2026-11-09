@@ -16,7 +16,7 @@ interface CampBrandingSectionProps {
 // A Camp's own logo and colour over its Organisation's.
 export function CampBrandingSection({ organisationId, campId, campName, canWrite }: CampBrandingSectionProps) {
   const { t } = useTranslation('camps');
-  const { branding, setLogo, removeLogo } = useCampBrandingSection(organisationId, campId);
+  const { branding, turnusy, setLogo, removeLogo } = useCampBrandingSection(organisationId, campId);
 
   if (branding.isPending) {
     return <p className="text-muted-foreground">{t('loading')}</p>;
@@ -33,12 +33,14 @@ export function CampBrandingSection({ organisationId, campId, campName, canWrite
       campName={campName}
       branding={branding.data}
       canWrite={canWrite}
+      turnusy={turnusy}
       logo={
         <Card>
           <LogoField
             logo={branding.data.logo}
             emptyText={t('branding.organisationLogo')}
             disabled={!canWrite}
+            titleAs="card"
             setLogo={setLogo}
             removeLogo={removeLogo}
           />

@@ -20,14 +20,14 @@ export function EmailVerificationPage({ token }: EmailVerificationPageProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col py-4 sm:py-10">
-      <Card className="gap-5 rounded-[28px] sm:p-7">
+      <Card className="gap-4 rounded-[28px] sm:p-7">
         <h1 className="text-card-title">{t('title')}</h1>
         {verify.isSuccess ? (
           <>
             <Alert variant="success" className="font-semibold">
               <output className="block">{t('done')}</output>
             </Alert>
-            <Link to="/platform" className={buttonVariants({ className: 'w-full' })}>
+            <Link to="/platform" className={buttonVariants({ size: 'lg', className: 'w-full' })}>
               {t('continue')}
             </Link>
           </>
@@ -39,7 +39,7 @@ export function EmailVerificationPage({ token }: EmailVerificationPageProps) {
                 {t(isLinkInvalid ? 'failure.email_verification_invalid' : 'failure.unexpected')}
               </Alert>
             ) : null}
-            <Button disabled={verify.isPending || token === ''} onClick={() => verify.mutate({ token })}>
+            <Button size="lg" disabled={verify.isPending || token === ''} onClick={() => verify.mutate({ token })}>
               {t('submit')}
             </Button>
           </>

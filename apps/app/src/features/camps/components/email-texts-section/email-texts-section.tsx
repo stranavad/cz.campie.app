@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { EmailTextForm } from '@/features/camps/components/email-texts-section/email-text-form';
 import { EmailTextList } from '@/features/camps/components/email-texts-section/email-text-list';
+import { NotificationEmailsCard } from '@/features/camps/components/email-texts-section/notification-emails-card';
 import { useEmailTextsSection } from '@/features/camps/components/email-texts-section/use-email-texts-section.hook';
 
 interface EmailTextsSectionProps {
@@ -11,10 +12,10 @@ interface EmailTextsSectionProps {
   canWrite: boolean;
 }
 
-// The Camp's emails: the list beside the one opened to edit.
+// The Camp's emails: the list and the team's addresses beside the one opened to edit.
 export function EmailTextsSection({ organisationId, campId, canWrite }: EmailTextsSectionProps) {
   const { t } = useTranslation('camps');
-  const { emails, opened, editorRef, open } = useEmailTextsSection(organisationId, campId);
+  const { emails, camp, opened, editorRef, open } = useEmailTextsSection(organisationId, campId);
 
   return (
     <div className="flex flex-col gap-4">
@@ -23,7 +24,12 @@ export function EmailTextsSection({ organisationId, campId, canWrite }: EmailTex
       {emails.isError ? <p className="text-destructive">{t('error')}</p> : null}
       {emails.data === undefined ? null : (
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-          <EmailTextList emails={emails.data} opened={opened?.type ?? null} onOpen={open} />
+          <div className="flex min-w-0 flex-col gap-4">
+            <EmailTextList emails={emails.data} opened={opened?.type ?? null} onOpen={open} />
+            {camp === undefined ? null : (
+              <NotificationEmailsCard organisationId={organisationId} camp={camp} canWrite={canWrite} />
+            )}
+          </div>
           {opened === undefined ? null : (
             <Card ref={editorRef} className="scroll-mt-4">
               <EmailTextForm

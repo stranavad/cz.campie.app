@@ -2,12 +2,15 @@ import { useState } from 'react';
 
 import type { Camp } from '@repo/schema/camps';
 
+import { config } from '@/config';
+import { useCurrentMembership } from '@/core/account';
 import { useAppForm } from '@/core/form';
 import { useUpdateCampMutation } from '@/features/camps/api/camps.queries';
 import { campChangeOf, campFormOptions, campFormValues } from '@/features/camps/components/camp-form/camp-form.schema';
 import { HttpError } from '@/lib/api';
 
 export function useCampForm(organisationId: string, camp: Camp) {
+  const { membership } = useCurrentMembership();
   const update = useUpdateCampMutation(organisationId, camp.id);
   const [status, setStatus] = useState<'saved' | 'failed' | null>(null);
 
@@ -33,5 +36,10 @@ export function useCampForm(organisationId: string, camp: Camp) {
     },
   });
 
-  return { form, status };
+  return {
+    form,
+    status,
+    // Where the Camp's page lives, up to its slug.
+    pagesAddress: `${membership?.organisation.subdomain ?? ''}.${config.platformDomain}/`,
+  };
 }

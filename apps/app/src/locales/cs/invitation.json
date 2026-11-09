@@ -1,8 +1,8 @@
 {
   "title": "Pozvánka do správy organizace",
+  "titleFor": "Pozvánka do týmu {{organisation}}",
   "loading": "Načítáme pozvánku…",
   "error": "Pozvánku se nepodařilo načíst. Zkuste stránku načíst znovu.",
-  "organisation": "Organizace",
   "forEmail": "Pozvánka platí pro e-mail {{email}}.",
   "accept": "Přijmout pozvánku",
   "newAccount": {

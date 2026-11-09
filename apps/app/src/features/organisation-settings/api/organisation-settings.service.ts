@@ -1,3 +1,4 @@
+import { listMembersEndpoint } from '@repo/schema/admins';
 import {
   getOrganisationSettingsEndpoint,
   getPaymentGatewaySettingsEndpoint,
@@ -29,6 +30,8 @@ export const organisationSettingsService = {
   requireTotp: (organisationId: string, required: boolean) =>
     apiClient.request(requireTotpEndpoint, { organisationId, body: { required } }),
   removeLogo: (organisationId: string) => apiClient.request(removeOrganisationLogoEndpoint, { organisationId }),
+  members: (organisationId: string, signal?: AbortSignal) =>
+    apiClient.request(listMembersEndpoint, { organisationId, signal }),
   paymentGateway: (organisationId: string, signal?: AbortSignal) =>
     apiClient.request(getPaymentGatewaySettingsEndpoint, { organisationId, signal }),
   setPaymentGatewayKeys: (organisationId: string, body: SetPaymentGatewayKeysBody) =>

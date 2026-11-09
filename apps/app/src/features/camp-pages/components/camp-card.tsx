@@ -22,7 +22,7 @@ export function CampCard({ camp }: CampCardProps) {
         params={{ campSlug: camp.slug }}
         className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-border bg-card transition-colors hover:border-control"
       >
-        <span className="flex h-32 items-center justify-center bg-brand text-brand-foreground">
+        <span className="flex h-37.5 items-center justify-center bg-brand text-brand-foreground">
           {camp.logoUrl === null ? (
             <TentIcon aria-hidden="true" className="size-10" />
           ) : (
@@ -34,7 +34,7 @@ export function CampCard({ camp }: CampCardProps) {
             />
           )}
         </span>
-        <span className="flex flex-1 flex-col gap-4 p-5">
+        <span className="flex flex-1 flex-col gap-2.5 p-4.5">
           <span className="font-display text-2xl leading-tight font-extrabold tracking-[-0.02em] break-words">
             {camp.name}
           </span>

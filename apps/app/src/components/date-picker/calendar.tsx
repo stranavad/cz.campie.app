@@ -13,15 +13,24 @@ interface CalendarProps {
   onSelect: (date: Date) => void;
   min?: Date;
   max?: Date;
+  // A month and a year select instead of the month's name, for dates years back such as a birth date.
+  yearSelect?: boolean;
+  // Why the crossed-out days cannot be picked, shown under the days.
+  unavailableHint?: string;
 }
 
-const MONTH_NAMES = Array.from({ length: 12 }, (_, month) =>
-  new Intl.DateTimeFormat('cs-CZ', { month: 'long' }).format(new Date(2000, month, 1)),
-);
+const MONTH_NAMES = Array.from({ length: 12 }, (_, month) => {
+  const name = new Intl.DateTimeFormat('cs-CZ', { month: 'long' }).format(new Date(2000, month, 1));
 
-// One month of days, Monday first. The month and the year are our own selects, so a birth date ten years
-// back is two picks away instead of a hundred clicks.
-export function Calendar({ selected, onSelect, min, max }: CalendarProps) {
+  return name.charAt(0).toUpperCase() + name.slice(1);
+});
+
+// The selected day takes the picker's action colour; today, when not picked, gets a ring.
+const SELECTED =
+  '[&>button]:bg-primary [&>button]:font-bold [&>button]:text-primary-foreground [&>button]:hover:bg-primary/85 in-data-[actions=brand]:[&>button]:bg-brand in-data-[actions=brand]:[&>button]:text-brand-foreground in-data-[actions=brand]:[&>button]:hover:bg-brand/85';
+
+// One month of days, Monday first, between the previous and next month arrows.
+export function Calendar({ selected, onSelect, min, max, yearSelect = false, unavailableHint }: CalendarProps) {
   const { t } = useTranslation();
   // Read once, when the calendar opens.
   const [today] = useState(() => new Date());
@@ -43,42 +52,50 @@ export function Calendar({ selected, onSelect, min, max }: CalendarProps) {
         <Button
           type="button"
           variant="ghost"
-          size="icon-sm"
+          size="icon"
+          className="sm:size-10"
           aria-label={t('datePicker.previousMonth')}
           disabled={isFirst}
           onClick={() => show(month.getFullYear(), month.getMonth() - 1)}
         >
-          <ChevronLeftIcon aria-hidden="true" />
+          <ChevronLeftIcon aria-hidden="true" className="size-5" />
         </Button>
-        <div className="flex min-w-0 flex-1 justify-center gap-1">
-          <Select
-            variant="chip"
-            aria-label={t('datePicker.month')}
-            value={month.getMonth()}
-            onValueChange={(monthIndex) => show(month.getFullYear(), monthIndex)}
-            options={MONTH_NAMES.map((name, index) => ({ value: index, label: name }))}
-          />
-          <Select
-            variant="chip"
-            aria-label={t('datePicker.year')}
-            value={month.getFullYear()}
-            onValueChange={(year) => show(year, month.getMonth())}
-            options={Array.from({ length: lastYear - firstYear + 1 }, (_, index) => {
-              const year = lastYear - index;
+        {yearSelect ? (
+          <div className="grid min-w-0 flex-1 grid-cols-[2fr_1fr] gap-2">
+            <Select
+              aria-label={t('datePicker.month')}
+              className="h-11 px-3 font-semibold sm:h-10"
+              value={month.getMonth()}
+              onValueChange={(monthIndex) => show(month.getFullYear(), monthIndex)}
+              options={MONTH_NAMES.map((name, index) => ({ value: index, label: name }))}
+            />
+            <Select
+              aria-label={t('datePicker.year')}
+              className="h-11 px-3 font-semibold tabular-nums sm:h-10"
+              value={month.getFullYear()}
+              onValueChange={(year) => show(year, month.getMonth())}
+              options={Array.from({ length: lastYear - firstYear + 1 }, (_, index) => {
+                const year = lastYear - index;
 
-              return { value: year, label: String(year) };
-            })}
-          />
-        </div>
+                return { value: year, label: String(year) };
+              })}
+            />
+          </div>
+        ) : (
+          <span aria-live="polite" className="min-w-0 flex-1 text-center font-display text-lg font-bold">
+            {t('datePicker.monthCaption', { month: MONTH_NAMES[month.getMonth()], year: month.getFullYear() })}
+          </span>
+        )}
         <Button
           type="button"
           variant="ghost"
-          size="icon-sm"
+          size="icon"
+          className="sm:size-10"
           aria-label={t('datePicker.nextMonth')}
           disabled={isLast}
           onClick={() => show(month.getFullYear(), month.getMonth() + 1)}
         >
-          <ChevronRightIcon aria-hidden="true" />
+          <ChevronRightIcon aria-hidden="true" className="size-5" />
         </Button>
       </div>
       <DayPicker
@@ -87,10 +104,12 @@ export function Calendar({ selected, onSelect, min, max }: CalendarProps) {
         locale={cs}
         weekStartsOn={1}
         showOutsideDays
-        fixedWeeks
         hideNavigation
         selected={selected}
-        onSelect={onSelect}
+        onSelect={(date) => {
+          setMonth(clampMonth(date, start, end));
+          onSelect(date);
+        }}
         month={month}
         onMonthChange={setMonth}
         startMonth={start}
@@ -103,18 +122,20 @@ export function Calendar({ selected, onSelect, min, max }: CalendarProps) {
           month_caption: 'sr-only',
           month_grid: 'w-full border-collapse',
           weekdays: 'flex',
-          weekday: 'flex-1 pb-1 text-center text-xs font-semibold text-subtle-foreground',
+          weekday: 'flex h-7 flex-1 items-center justify-center text-xs font-bold text-subtle-foreground capitalize',
           week: 'flex',
-          day: 'group/day flex flex-1 justify-center p-0.5',
+          day: 'flex flex-1 justify-center p-px',
           day_button:
-            'flex size-10 cursor-pointer items-center justify-center rounded-full text-sm tabular-nums transition-colors outline-none hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring disabled:cursor-not-allowed disabled:hover:bg-transparent sm:size-9',
-          today: 'font-bold [&>button]:text-brand-text',
-          selected: 'font-bold [&>button]:bg-primary [&>button]:text-primary-foreground [&>button]:hover:bg-primary/85',
-          outside: '[&>button]:text-subtle-foreground/70',
-          disabled: '[&>button]:opacity-35',
+            'flex size-11 cursor-pointer items-center justify-center rounded-full text-[15px] font-medium tabular-nums transition-colors outline-none hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring disabled:cursor-not-allowed disabled:hover:bg-transparent sm:size-10 sm:text-sm',
+          today:
+            '[&:not([data-selected])>button]:inset-ring-[1.5px] [&:not([data-selected])>button]:inset-ring-foreground',
+          selected: SELECTED,
+          outside: '[&>button]:text-subtle-foreground',
+          disabled: '[&>button]:text-subtle-foreground [&>button]:line-through',
           hidden: 'invisible',
         }}
       />
+      {unavailableHint === undefined ? null : <p className="text-xs text-muted-foreground">{unavailableHint}</p>}
     </div>
   );
 }

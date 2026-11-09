@@ -10,7 +10,8 @@ interface EmailTextListProps {
   onOpen: (type: EmailType) => void;
 }
 
-// The Camp's emails, each with whether it is sent and in whose wording; one is opened at a time.
+// The Camp's emails, each with when it goes out and, unless sent in the default wording, how; one is opened
+// at a time.
 export function EmailTextList({ emails, opened, onOpen }: EmailTextListProps) {
   const { t } = useTranslation('camps');
 
@@ -27,7 +28,12 @@ export function EmailTextList({ emails, opened, onOpen }: EmailTextListProps) {
         >
           <span>{t(`emails.types.${email.type}`)}</span>
           <span className="text-[13px] font-normal text-muted-foreground">
-            {email.enabled ? (email.customised ? t('emails.own') : t('emails.default')) : t('emails.off')}
+            {[
+              t(`emails.when.${email.type}`),
+              email.enabled ? (email.customised ? t('emails.own') : null) : t('emails.off'),
+            ]
+              .filter((part) => part !== null)
+              .join(' · ')}
           </span>
         </button>
       ))}

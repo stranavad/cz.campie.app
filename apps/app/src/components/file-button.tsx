@@ -1,4 +1,5 @@
 import { UploadIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { buttonVariants, type ButtonVariantProps } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -11,6 +12,10 @@ type FileButtonProps = ButtonVariantProps & {
   onFile: (file: File) => void;
   // The id of a hint about types and size.
   describedBy?: string;
+  // Opens the phone's camera straight away, as the input's `capture`.
+  capture?: 'environment' | 'user';
+  // In place of the upload arrow.
+  icon?: ReactNode;
   className?: string;
 };
 
@@ -23,6 +28,8 @@ export function FileButton({
   accept,
   onFile,
   describedBy,
+  capture,
+  icon = <UploadIcon aria-hidden="true" />,
   variant = 'outline',
   size,
   className,
@@ -38,11 +45,12 @@ export function FileButton({
         ),
       })}
     >
-      <UploadIcon aria-hidden="true" />
+      {icon}
       {label}
       <input
         type="file"
         accept={accept}
+        capture={capture}
         aria-describedby={describedBy}
         className="sr-only"
         disabled={disabled}

@@ -15,10 +15,11 @@ interface CampFormFieldsProps {
   canWrite: boolean;
 }
 
-// One form across the cards, saved whole: the Camp's identity and contact beside its modules and rules.
+// One form across the cards, saved together: the Camp's identity and contact beside its modules and lock
+// date. The Sibling discount is saved on the discounts tab, the team's addresses on the e-mails tab.
 export function CampFormFields({ organisationId, camp, canWrite }: CampFormFieldsProps) {
   const { t } = useTranslation('camps');
-  const { form, status } = useCampForm(organisationId, camp);
+  const { form, status, pagesAddress } = useCampForm(organisationId, camp);
 
   return (
     <form
@@ -31,7 +32,7 @@ export function CampFormFields({ organisationId, camp, canWrite }: CampFormField
     >
       <div className="grid items-start gap-4 lg:grid-cols-5">
         <div className="flex min-w-0 flex-col gap-4 lg:col-span-3">
-          <CampDetailsCard form={form} canWrite={canWrite} />
+          <CampDetailsCard form={form} canWrite={canWrite} pagesAddress={pagesAddress} />
           <CampContactCard form={form} canWrite={canWrite} />
         </div>
         <div className="flex min-w-0 flex-col gap-4 lg:col-span-2">

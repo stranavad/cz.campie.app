@@ -31,7 +31,6 @@ import {
   getRegistrationDetailEndpoint,
   getRegistrationHistoryEndpoint,
   getTurnusFormEndpoint,
-  getTurnusOverviewEndpoint,
   listParticipantsEndpoint,
   moveRegistrationEndpoint,
   previewAddParticipantEndpoint,
@@ -171,8 +170,6 @@ export const participantsService = {
     apiClient.request(previewOpenItemsReminderEndpoint, { organisationId, params: { turnusId }, signal }),
   sendOpenItemsReminder: (organisationId: string, turnusId: string) =>
     apiClient.request(sendOpenItemsReminderEndpoint, { organisationId, params: { turnusId } }),
-  overview: (organisationId: string, turnusId: string, signal?: AbortSignal) =>
-    apiClient.request(getTurnusOverviewEndpoint, { organisationId, params: { turnusId }, signal }),
   erase: (organisationId: string, registrationId: string) =>
     apiClient.request(eraseRegistrationEndpoint, { organisationId, params: { registrationId } }),
 };

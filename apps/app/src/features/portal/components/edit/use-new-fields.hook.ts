@@ -3,30 +3,24 @@ import { useTranslation } from 'react-i18next';
 
 import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
 import { formFields, type Answers, type AnswerValue, type FieldScope, type FormField } from '@repo/schema/form-engine';
-import type { GuardianEdit } from '@repo/schema/portal';
-
-import { useAnswerNewFieldsMutation } from '@/features/portal/api/portal.queries';
-import { editFailureOf } from '@/features/portal/components/edit/edit-failure';
+import type { AnswerNewFieldsBody, GuardianEdit } from '@repo/schema/portal';
 
 /**
- * The answers to the questions added since the Registration was sent, and saving only what changed.
- * @param registrationId the guardian's Registration
- * @param edit what the guardian may change on it
+ * The answers to the questions added since the Registration was sent, and only what changed, to save.
+ * @param edit what the guardian may change on the Registration
  */
-export function useNewFields(registrationId: string, edit: GuardianEdit) {
+export function useNewFields(edit: GuardianEdit) {
   const { t } = useTranslation('portal');
   const [registration, setRegistration] = useState<Answers>(edit.registrationAnswers);
   const [participants, setParticipants] = useState(() =>
     edit.participants.map(({ id, answers }) => ({ participantId: id, answers })),
   );
-  const save = useAnswerNewFieldsMutation(registrationId);
   const fieldsOf = (scope: FieldScope) =>
     formFields(edit.definition, REGISTRATION_FIELD_CATALOGUE, scope).filter(({ key }) =>
       edit.newFieldIds.includes(key),
     );
   const isLocked = (participantId: string | null, fieldId: string) =>
     edit.lockedAnswers.some((locked) => locked.participantId === participantId && locked.fieldId === fieldId);
-  // Only what this page changed is sent, so it never clears what someone else answered meanwhile.
   const changed = (answers: Answers, initial: Answers, scope: FieldScope, participantId: string | null) =>
     Object.fromEntries(
       fieldsOf(scope)
@@ -34,6 +28,14 @@ export function useNewFields(registrationId: string, edit: GuardianEdit) {
         .filter(({ key }) => JSON.stringify(answers[key] ?? null) !== JSON.stringify(initial[key] ?? null))
         .map(({ key }) => [key, answers[key] ?? null]),
     );
+  // Only what this page changed is sent, so it never clears what someone else answered meanwhile.
+  const changes: AnswerNewFieldsBody = {
+    registration: changed(registration, edit.registrationAnswers, 'registration', null),
+    participants: participants.map(({ participantId, answers }, index) => ({
+      participantId,
+      answers: changed(answers, edit.participants[index]?.answers ?? {}, 'participant', participantId),
+    })),
+  };
   const show = (field: FormField, value: AnswerValue | undefined) => {
     if (typeof value === 'boolean') {
       return t(value ? 'edit.yes' : 'edit.no');
@@ -50,6 +52,9 @@ export function useNewFields(registrationId: string, edit: GuardianEdit) {
   };
 
   return {
+    hasChanges:
+      Object.keys(changes.registration).length > 0 ||
+      changes.participants.some(({ answers }) => Object.keys(answers).length > 0),
     hasFields: fieldsOf('registration').length > 0 || fieldsOf('participant').length > 0,
     registrationFields: fieldsOf('registration'),
     participantFields: fieldsOf('participant'),
@@ -64,16 +69,6 @@ export function useNewFields(registrationId: string, edit: GuardianEdit) {
           at === index ? { ...other, answers: { ...other.answers, [key]: value } } : other,
         ),
       ),
-    submit: () =>
-      save.mutate({
-        registration: changed(registration, edit.registrationAnswers, 'registration', null),
-        participants: participants.map(({ participantId, answers }, index) => ({
-          participantId,
-          answers: changed(answers, edit.participants[index]?.answers ?? {}, 'participant', participantId),
-        })),
-      }),
-    isSaving: save.isPending,
-    isSaved: save.isSuccess,
-    failure: editFailureOf(save.error),
+    changes,
   };
 }

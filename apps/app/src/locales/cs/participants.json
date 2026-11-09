@@ -17,9 +17,7 @@
     "guardian": "Rodič",
     "payment": "Platba",
     "consents": "Souhlasy",
-    "documents": "Dokumenty",
-    "answers": "Údaje",
-    "variableSymbol": "Var. symbol"
+    "documents": "Dokumenty"
   },
   "count_one": "{{count}} účastník",
   "count_few": "{{count}} účastníci",
@@ -38,7 +36,6 @@
   "turnus": "Turnus",
   "search": "Hledat jméno, e-mail nebo variabilní symbol",
   "paymentStatus": "Platba",
-  "anyStatus": "Všechny",
   "status": {
     "unpaid": "Nezaplaceno",
     "partly_paid": "Částečně zaplaceno",
@@ -57,9 +54,9 @@
     "error": "Přihlášku se nepodařilo načíst.",
     "back": "Přihlášky · {{turnus}}",
     "title": "Přihláška {{symbol}}",
-    "subtitle": "Přihláška {{symbol}} · {{camp}} - {{turnus}} · odesláno {{date}} · formulář verze {{version}}",
+    "subtitle": "Přihláška {{symbol}} · {{camp}} - {{turnus}} · odesláno {{date}} · {{children}} · formulář verze {{version}}",
     "edit": "Upravit",
-    "guardians": "Zákonní zástupci",
+    "guardians": "Rodiče a přístupy",
     "guardianName": "{{first}} {{last}}",
     "birthDate": "Datum narození",
     "ageLine": "{{age}} v den začátku turnusu",
@@ -81,7 +78,6 @@
     "total": "Celkem",
     "payments": "Platby",
     "paymentsReceived": "Přijaté platby",
-    "balanceOf": "zbývá doplatit z celkových {{total}}",
     "paidShare": "Zaplacená část ceny",
     "source": {
       "manual": "Platba {{date}}: {{note}}",
@@ -89,9 +85,6 @@
       "correction": "Oprava platby {{date}}: {{note}}"
     },
     "paid": "Zaplaceno",
-    "balance": "Zbývá",
-    "dueNow": "k úhradě {{amount}} do {{date}}",
-    "dueNowUndated": "k úhradě {{amount}}",
     "overdue": "Po splatnosti.",
     "declarations": "Prohlášení",
     "accepted": "Souhlasí: {{text}}",
@@ -117,7 +110,15 @@
     },
     "emailUndeliverable": "Posíláme sem jen odkazy pro přihlášení. Po opravě adresy se značka zruší.",
     "clearUndeliverable": "Zrušit značku nedoručitelnosti",
-    "clearUndeliverableFailed": "Značku se nepodařilo zrušit."
+    "clearUndeliverableFailed": "Značku se nepodařilo zrušit.",
+    "fold": "Sbalit",
+    "unfold": "Rozbalit",
+    "moreActions": "Další akce: přesunout, zrušit, smazat údaje",
+    "left": "zbývá doplatit",
+    "leftBy": "zbývá doplatit do {{date}}",
+    "leftDeposit": "zbývá doplatit, záloha {{amount}} do {{date}}",
+    "settled": "zaplaceno celé",
+    "overpaidBy": "přeplaceno"
   },
   "edit": {
     "title": "Úpravy přihlášky",
@@ -147,11 +148,12 @@
     "move": "Přesunout do jiného turnusu",
     "pickTurnus": "Vyberte turnus",
     "turnusOption": "{{name}} ({{date}})",
-    "moveButton": "Přesunout"
+    "moveButton": "Přesunout",
+    "moveNote": "Přesune se celá přihláška se všemi dětmi, i nad kapacitu a mimo věkové limity. Ceny zůstanou stejné."
   },
   "create": {
     "title": "Nová přihláška",
-    "intro": "Přihláška z telefonu nebo papíru. Platí i mimo přihlašovací období, nad kapacitu a mimo věkové limity.",
+    "intro": "Přihláška z telefonu nebo z papíru do zvoleného turnusu. Formulář je stejný jako pro rodiče.",
     "noForm": "Tábor zatím nemá zveřejněný formulář.",
     "guardian": "Zákonný zástupce",
     "child": "Dítě {{number}}",
@@ -160,23 +162,31 @@
     "sendConfirmation": "Poslat zákonným zástupcům potvrzovací e-mail s přihláškou",
     "summary": "Souhrn",
     "submit": "Založit přihlášku",
-    "open": "Nová přihláška"
+    "open": "Nová přihláška",
+    "onlyChild": "Dítě",
+    "questions": "Otázky tábora",
+    "cashDeposit": "Záloha zaplacena v hotovosti",
+    "cashDepositHint": "Zapíše se jako platba s dnešním datem, pokud má turnus zálohu.",
+    "cashDepositNote": "Záloha v hotovosti",
+    "submitNote": "Přihláška se uloží i mimo přihlašovací období, nad kapacitu a mimo věkové limity. Povinná pole jsou stejná jako pro rodiče."
   },
   "controls": {
-    "title": "Zrušení a přístupy",
-    "regenerate": "Vytvořit PDF znovu",
+    "title": "Zrušit přihlášku",
     "regenerating": "PDF se vytváří, za chvíli bude v detailu.",
     "cancel": "Zrušit",
     "cancelAll": "Zrušit všechny děti",
     "cancelNote": "Zrušení uvolní místo a nemění peníze. Storno poplatky a vratky zapište ručně.",
-    "guardian": "Zástupce: {{email}}",
     "removeGuardian": "Odebrat zástupce",
     "accessEmails": "Další e-maily s přístupem do portálu",
     "newAccessEmail": "E-mail",
     "add": "Přidat",
     "remove": "Odebrat",
     "addFailed": "E-mail se nepodařilo přidat; možná ho přihláška už má.",
-    "confirm": "Opravdu? Potvrdit"
+    "confirm": "Opravdu? Potvrdit",
+    "cancelOpen": "Zrušit přihlášku…",
+    "close": "Zavřít",
+    "regenerateOf": "Vytvořit PDF znovu: {{name}}",
+    "accessEmail": "Další přístup"
   },
   "export": {
     "start": "Exportovat vše do Excelu",
@@ -288,24 +298,14 @@
     "intro": "Půjde rodičům dětí, kterým chybí podpis souhlasu, dokument nebo údaje v přihlášce. Platby připomíná zvláštní tlačítko.",
     "switchedOff": "Tábor má připomínku chybějících věcí vypnutou, nic se neodešle. Zapnout ji můžete v nastavení e-mailů tábora."
   },
-  "overview": {
-    "places": "Obsazená místa",
-    "placesValue": "{{registered}} z {{capacity}}",
-    "expected": "Celkem k úhradě",
-    "received": "Přijato",
-    "outstanding": "Zbývá doplatit",
-    "overpaid": "Přeplaceno",
-    "overdue": "Přihlášky po splatnosti",
-    "byStatus": "Přihlášky podle platby",
-    "statusCount": "{{status}}: {{registrations}}"
-  },
   "filters": {
-    "label": "Další filtry",
+    "label": "Kontrola",
     "unverified": "Neověřená sleva",
     "overdue": "Po splatnosti",
     "unsignedConsent": "Nepodepsaný souhlas",
     "missingDocument": "Chybí dokument",
-    "missingAnswers": "Chybí údaje"
+    "missingAnswers": "Chybí údaje",
+    "any": "vše"
   },
   "erase": {
     "title": "Smazat osobní údaje",
@@ -318,5 +318,28 @@
     "done": "Osobní údaje přihlášky jsou smazané.",
     "failed": "Smazání se nepodařilo."
   },
-  "emailUndeliverable": "E-mail nedoručitelný"
+  "emailUndeliverable": "E-mail nedoručitelný",
+  "tabs": {
+    "all": "Všechny",
+    "paid": "Zaplaceno",
+    "overpaid": "Přeplaceno",
+    "deposit_paid": "Záloha",
+    "partly_paid": "Částečně",
+    "unpaid": "Nezaplaceno",
+    "overdue": "Po splatnosti"
+  },
+  "children_one": "{{count}} dítě",
+  "children_few": "{{count}} děti",
+  "children_many": "{{count}} dítěte",
+  "children_other": "{{count}} dětí",
+  "checklist": {
+    "label": "Co dítěti chybí",
+    "consents": "Souhlasy {{signed}} / {{total}}",
+    "document": {
+      "missing": "Chybí: {{name}}",
+      "pending": "{{name}}: ke kontrole",
+      "returned": "{{name}}: vráceno rodičům"
+    },
+    "unanswered": "Chybí odpověď: {{label}}"
+  }
 }

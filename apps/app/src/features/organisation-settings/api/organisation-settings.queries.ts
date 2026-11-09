@@ -55,6 +55,14 @@ export const useRequireTotpMutation = (organisationId: string) =>
     organisationSettingsService.requireTotp(organisationId, required),
   );
 
+// Owners only, like the settings themselves.
+export const useMembersQuery = (organisationId: string, enabled: boolean) =>
+  useQuery({
+    queryKey: organisationSettingsKeys.members(organisationId),
+    queryFn: ({ signal }) => organisationSettingsService.members(organisationId, signal),
+    enabled,
+  });
+
 export const usePaymentGatewayQuery = (organisationId: string) =>
   useQuery({
     queryKey: organisationSettingsKeys.paymentGateway(organisationId),

@@ -25,7 +25,12 @@ export function CampPageView({ camp, turnusy, actionOf }: CampPageViewProps) {
     <div className="flex flex-col gap-6 pt-1 pb-8" {...brandAttributes(camp.accentColour)}>
       <CampHero camp={camp} turnusy={turnusy} />
       <section className="flex flex-col gap-3">
-        <h2 className="text-heading px-1 text-2xl">{t('campPage.turnusy')}</h2>
+        <h2 className="text-heading px-1 text-2xl">
+          {/* An invitation while there is something to register for, else just the list. */}
+          {turnusy.some(({ availability }) => availability === 'open')
+            ? t('campPage.chooseTurnus')
+            : t('campPage.turnusy')}
+        </h2>
         {turnusy.length === 0 ? <EmptyState icon={<CalendarXIcon />} title={t('campPage.noTurnusy')} /> : null}
         <ul className="flex flex-col gap-3">
           {turnusy.map((turnus) => (
