@@ -15,6 +15,7 @@ x-node: &node
     - node-modules:/repo/node_modules
     - api-node-modules:/repo/apps/api/node_modules
     - app-node-modules:/repo/apps/app/node_modules
+    - web-node-modules:/repo/apps/web/node_modules
     - schema-node-modules:/repo/packages/schema/node_modules
     - oxlint-config-node-modules:/repo/packages/oxlint-config/node_modules
     - api-dist:/repo/apps/api/dist
@@ -220,6 +221,7 @@ volumes:
   node-modules:
   api-node-modules:
   app-node-modules:
+  web-node-modules:
   schema-node-modules:
   oxlint-config-node-modules:
   api-dist:

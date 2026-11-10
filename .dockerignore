@@ -15,3 +15,6 @@ docs
 compose.yaml
 deploy
 Dockerfile
+# The marketing website deploys to Cloudflare, not in an image; only its manifest, for the frozen install.
+apps/web/*
+!apps/web/package.json

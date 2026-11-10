@@ -19,6 +19,7 @@ FROM node AS manifests
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json apps/api/
 COPY apps/app/package.json apps/app/
+COPY apps/web/package.json apps/web/
 COPY packages/schema/package.json packages/schema/
 COPY packages/oxlint-config/package.json packages/oxlint-config/
 
