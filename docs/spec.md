@@ -285,6 +285,17 @@ The data model is designed for all three stages from the start, so later modules
 193. As a future translator, I want every interface string in translation files, so that adding Slovak or English is not a rewrite.
 194. As a future self-hoster, I want the local setup to be the basis of a self-hosted deployment, so that hosting it myself needs no special build.
 
+### Invoice requests (stage 1)
+
+195. As an admin, I want a Camp switch that offers guardians an Invoice request, so that families whose company pays can register without a workaround.
+196. As a guardian, I want to ask for part or all of the price to be invoiced to my employer or another company, entering its billing details and the amount, so that the company pays its share and I pay only the rest.
+197. As a guardian, I want the QR code and the amount I owe to cover only my share, with the invoiced part shown separately, so that I do not pay what the company pays.
+198. As a guardian, I want to add, change or remove an Invoice request in the portal until the camp has invoiced it, so that I can arrange it with my employer after registering.
+199. As a guardian, I want to download the invoices the camp uploaded, so that I can pass them to my employer.
+200. As an admin, I want to see and filter Registrations with an Invoice request still to invoice, and export their billing details, so that I can issue the invoices in my accounting program.
+201. As an admin, I want to edit an Invoice request at any time, mark it invoiced and upload the invoice and any corrective documents, so that the paperwork lives with the Registration.
+202. As an admin, I want to record whether a payment came from the guardian or the company, so that each party's balance is right.
+
 ## Implementation Decisions
 
 ### Architecture
@@ -381,6 +392,21 @@ One engine serves both the registration form and the Health record.
 - The Přihláška and the portal show the amount due now with its date and QR code, and, only when it differs, the full outstanding balance as a second option with its own QR code.
 - Overdue is derived when an amount due now is unpaid past its date. It drives a list filter, the reminder target and the Turnus overview, and never cancels anything automatically.
 
+### Invoice requests
+
+- A Camp switch, off by default, offers guardians an Invoice request on the form and in the portal. Switching it off hides the offer and keeps existing Invoice requests; admins may add one regardless of the switch.
+- Campie issues no invoices. The camp issues them in its own accounting program, using the Registration's Variable symbol, and uploads them.
+- One Invoice request per Registration, for one company. It is a fixed platform section next to the payment choice, not form-builder fields: company name, IČO (required, checked with the mod 11 checksum), DIČ, street, city and postcode (required), billing email, and a note or order number (optional). The amount to invoice is whole CZK, prefilled with the total; a guardian enters more than 0 and at most the total, an admin anything from 0.
+- States: "K vyfakturování" and "Vyfakturováno" with its date and an optional invoice number, both set by an admin. Paid by the company is derived from the ledger, not a state.
+- A guardian may add, change or remove the Invoice request in the portal while it is not invoiced; afterwards only an admin may change it. An admin may change it at any time and remove it until it has a file. The amount is never changed automatically, not by Price adjustments nor by cancelling a Participant. Every change is an audit entry.
+- Invoice files are PDFs attached to the Invoice request, any number of them (invoice, corrective document, a second invoice). They are only ever added: neither admins nor cleanup nor erasure remove or replace one. Uploading the first sets "Vyfakturováno" with today's date when none is set. Guardians download them in the portal; no email is sent. Each upload is an audit entry.
+- Each ledger entry has a payer, guardian or company. Company is allowed only on manual and correcting entries of a Registration with an Invoice request; gateway entries are always the guardian's.
+- The guardian's share is the total minus the amount to invoice, never below zero. The amount due now, its Deposit phase, Overdue, payment reminders and the QR platba are computed from the guardian's share and the guardian's payments only; the Deposit is capped at that share and not offered when the share is zero. The company's share only shows what is left to pay, with no due date, and is never Overdue or reminded.
+- The payment status of the Registration still covers the whole total and every payment, so paid means paid by both.
+- The confirmation email, the Přihláška and the portal show the guardian's share with its QR code and a line "Fakturováno firmě {name}: {amount} Kč"; with a zero share no QR code is shown.
+- Admins see the Invoice request in the Registration detail, an invoice column and filter in the Registration list, its fields in the export catalogue and the payer in the payments export. The new Registration notification to the camp mentions it.
+- Admins with Registrations write create and change Invoice requests and upload files; Registrations read sees them.
+
 ### Identity, permissions and audit
 
 - Admins: invitation by email, self-set password, reset by email, minimum strength, limit on failed attempts.
@@ -399,6 +425,7 @@ One engine serves both the registration form and the Health record.
 ### Post-Turnus cleanup
 
 - After a Turnus ends, the Owner runs a cleanup and chooses which categories to clear: Health records with attachments, the registration form's health note, Parent-uploaded document files, Internal documents, stored generated PDFs, Participants' rodné číslo, signed Consents, and the Camp health log. The first six are preselected; signed Consents (proof) and the Camp health log (liability) are not.
+- Invoice files are not a cleanup category and are never cleared.
 - Cleanup can run again later to clear more categories. The Turnus records what was cleared, when and by whom; cleared document requirements show as Cleared rather than open.
 - The reminder email goes to the Owner three months after the Turnus ends.
 
@@ -406,7 +433,7 @@ One engine serves both the registration form and the Health record.
 
 - Removing a Registration offers two choices. **Cancel all** cancels every Participant and keeps all data (Registrations write). **Erase** anonymises it (Owner only).
 - Erasure deletes every stored file (uploads, Přihlášky, signed Consent PDFs, Internal documents) and all form answers, declarations, Consent signatures, health data, guardians, access emails and notes. Registered Participants are cancelled first, freeing their places.
-- Erasure keeps a tombstone for accounting: the Registration's Turnus, Variable symbol, Participant count, price lines, Price adjustments with blanked notes and the full payment ledger including gateway transaction identifiers and payment notes. The payment form therefore tells admins to keep names and personal data out of a payment's note. Names read "Smazáno" with the erasure date.
+- Erasure keeps a tombstone for accounting: the Registration's Turnus, Variable symbol, Participant count, price lines, Price adjustments with blanked notes and the full payment ledger including gateway transaction identifiers, payers and payment notes, and the Invoice request with its billing details, amount, state, invoice files and blanked note. Invoice files are accounting documents and are kept although they may name the child; this is the one deliberate exception to erasure removing every file. The payment form therefore tells admins to keep names and personal data out of a payment's note. Names read "Smazáno" with the erasure date.
 - Audit entries about an erased Registration stay, with value diffs and IP addresses scrubbed and the guardian actor shown as an erased guardian; the erasure itself is a new entry.
 
 ### Encryption
@@ -423,7 +450,7 @@ One engine serves both the registration form and the Health record.
 - Files are encrypted by the application with the Organisation's key before they reach storage, so storage holds only ciphertext.
 - A download is requested through the API, which checks permission and returns a short-lived link to its own download endpoint. That endpoint decrypts and streams the file. This keeps click-to-open behaviour (including on phones) while never exposing a storage address.
 - Uploads go through the API with type and size checks: PDF, JPG and PNG, with Domino's size limit.
-- Erasing a Registration or deleting a Leader document removes the stored objects.
+- Erasing a Registration or deleting a Leader document removes the stored objects, except invoice files, which are never removed.
 
 ### Consents
 
@@ -507,7 +534,7 @@ There is no browser-level seam in v1.
 - **Guardian access.** Sessions bound to one Organisation; equal rights of both guardians; access emails; no reach into other families.
 - **Placement.** Concurrent submissions for the last place yield exactly one success; window, manual close and age limits; admin bypass.
 - **Price freeze and form versions.** Changing a price list or publishing a new form leaves existing Registrations untouched.
-- **Payments.** Ledger and derived status; gateway notification verified with the right Organisation's keys and idempotent; keys never returned.
+- **Payments.** Ledger and derived status; guardian and company shares under an Invoice request; gateway notification verified with the right Organisation's keys and idempotent; keys never returned.
 - **Consents.** Must-agree enforcement, yes/no items, version binding, superseding, withdrawal, stored evidence, generated PDF handed to storage.
 - **Documents.** Pending, Approved, Returned and the email on return; Internal documents invisible to guardians.
 - **Encryption.** The sensitive list is ciphertext in the database and in storage; downloads work only through an authorised short-lived link.
@@ -528,7 +555,7 @@ There is no browser-level seam in v1.
 - Embedding the form in the camp's own website, custom domains, a WordPress plugin, custom CSS
 - Billing of Organisations: subscriptions, invoices to camps, plan limits
 - A second payment gateway, bank statement import, and automatic bank matching (Fio matching is the first candidate after the pilot)
-- Invoices (faktury) to guardians and accounting exports
+- Issuing invoices (faktury) in Campie, an accounting-program integration and accounting exports; Invoice requests only collect billing details and hold the invoices the camp uploads
 - Conditional logic in forms, free layout, file-upload fields in the registration form, per-Turnus form or requirement differences
 - Prices by age, instalment plans beyond Deposit plus balance, currencies other than CZK, VAT handling
 - A properly modelled child attending several Turnusy; the child is entered twice
@@ -598,3 +625,4 @@ The pricing function, the React to PDF pipeline, the Consent signing flow and it
 - The pricing model, including whether modules are priced separately.
 - Whether Fio payment matching joins v1, which depends on the pilot camps' banks.
 - Backend hosting.
+- Which amount the Potvrzení o účasti states for a Registration with an Invoice request (the full price or the guardian's share); decided in E11.

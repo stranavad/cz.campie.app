@@ -133,6 +133,15 @@ The redesign canvas ("Campie - návrhy designu") is implemented frontend-first; 
 | 79  | Portal: guardian name and confirmed email                           | E5      | done   | 39, 41, 71         |
 | 80  | Console signup date, weekly mail stats and subdomain check          | E1      | done   | 17, 21, 22, 68     |
 
+## Invoice requests (stage 1a, before registration opens)
+
+A guardian asks for part of the price to be invoiced to a company; the camp invoices in its own program and uploads the invoices.
+
+| #   | Issue                                    | Episode | Status          | Blocked by |
+| --- | ---------------------------------------- | ------- | --------------- | ---------- |
+| 81  | Invoice request and payment shares       | E4      | in-progress     | 49, 50, 78 |
+| 82  | Admin Invoice requests and invoice files | E6      | ready-for-agent | 81         |
+
 ## Stage 2 - around May 2027 (to be broken down)
 
 - **E10 Health record**: preset via form engine with medications, per-Camp config, complete-by date, guardian fill and states, admin read/write/reopen/on paper, view audit, Health gating, health note behaviour.

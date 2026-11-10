@@ -86,6 +86,10 @@ _Avoid_: Correction, manual discount
 A ledger entry that reverses or reduces an earlier payment, used for refunds; payments are never deleted.
 _Avoid_: Refund entry, negative payment
 
+**Invoice request**:
+A Guardian's request that the camp invoice a stated part of a Registration's price to a company with the given billing details; the camp issues the invoice itself.
+_Avoid_: Employer payment, faktura, invoice
+
 ### Availability
 
 **Registration window**:
