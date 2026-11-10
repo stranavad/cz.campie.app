@@ -56,8 +56,11 @@ services:
       - traefik.http.routers.${DEPLOYMENT_NAME}-http.middlewares=${DEPLOYMENT_NAME}-https
       - traefik.http.middlewares.${DEPLOYMENT_NAME}-https.redirectscheme.scheme=https
       - traefik.http.middlewares.${DEPLOYMENT_NAME}-https.redirectscheme.permanent=true
-      # The bare platform domain only redirects to the main host. The explicit priority beats production's
-      # subdomain rule, which also matches a deployment's bare domain (dev.campie.cz) and is longer.
+      # The bare platform domain only redirects to the main host, for a deployment whose bare domain points
+      # here: campie.cz's DNS points at the marketing website on Cloudflare (apps/web) instead, so in
+      # production this serves only a request that reaches the server by other means. The explicit priority
+      # beats production's subdomain rule, which also matches a deployment's bare domain (staging.campie.cz)
+      # and is longer.
       - traefik.http.routers.${DEPLOYMENT_NAME}-bare.rule=Host(`${PLATFORM_DOMAIN}`)
       - traefik.http.routers.${DEPLOYMENT_NAME}-bare.priority=1000
       - traefik.http.routers.${DEPLOYMENT_NAME}-bare.entrypoints=websecure

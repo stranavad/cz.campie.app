@@ -15,6 +15,8 @@ This starts the whole platform in Docker Compose: PostgreSQL, Redis, RustFS (S3)
 
 The frontend takes port 80. The services are published for tools and for running the apps on the host with `pnpm dev`, on their usual ports prefixed with 1: PostgreSQL 15432, Redis 16379, RustFS 19000 (console 19001), Gotenberg 13000.
 
+The marketing website on `campie.cz` lives in `apps/web` and runs on its own with `pnpm --filter web dev`; it is not part of the Docker Compose stack.
+
 `pnpm build`, `pnpm check-types`, `pnpm lint` and `pnpm test` run the same checks as CI. How the repository is organised and how to work in it: [`AGENTS.md`](AGENTS.md).
 
 ## License

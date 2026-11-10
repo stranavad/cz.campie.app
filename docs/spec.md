@@ -337,6 +337,7 @@ The file storage port needs only put, get, delete and existence; see Files below
 - Organisation status is pending approval, approved or suspended. Publishing is blocked unless approved. Suspension takes public pages offline and stops outgoing email.
 - Subdomains are lowercase letters, digits and hyphens, checked against a reserved list (`www`, `app`, `api`, `admin`, `mail`, `static`, `cdn`, `status`, `help`, `docs`, `blog`, `campie`), and fixed after approval. While an Organisation is pending, the operator may change its subdomain or reject it; rejection deletes the Organisation and frees the subdomain.
 - The product is **Campie** at `campie.cz` (repository `cz.campie.app`). Name and domain are still configuration, not code, so a self-hoster can change them. Locally the platform runs on `*.localhost`.
+- The bare platform domain `campie.cz` serves the marketing website (`apps/web`, static on Cloudflare Workers), outside the platform: it holds no Organisation data and links to the main host for signup and login.
 
 ### Form engine
 

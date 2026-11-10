@@ -25,6 +25,7 @@ Each workspace has its own `AGENTS.md` (with `CLAUDE.md` as a symlink); load it 
 | ------------------------ | ------------------------------------------------------ | ---------------------------------------------------------------------- |
 | `apps/api`               | backend (NestJS, Drizzle, PostgreSQL with RLS)         | [`apps/api/AGENTS.md`](apps/api/AGENTS.md)                             |
 | `apps/app`               | frontend (React, Vite, TanStack)                       | [`apps/app/AGENTS.md`](apps/app/AGENTS.md)                             |
+| `apps/web`               | marketing website on the bare domain (Astro, static)   | [`apps/web/AGENTS.md`](apps/web/AGENTS.md)                             |
 | `packages/schema`        | contracts and pure domain modules, shared by both apps | [`packages/schema/AGENTS.md`](packages/schema/AGENTS.md)               |
 | `packages/oxlint-config` | shared Oxlint rule groups                              | [`packages/oxlint-config/AGENTS.md`](packages/oxlint-config/AGENTS.md) |
 
@@ -45,6 +46,7 @@ Every "Port from Domino" path in an issue is relative to that repository. Read i
 - Every external service sits behind a port with a production and a local adapter chosen by configuration: database (Neon / pg), storage (Tigris / RustFS via AWS SDK), mail (Resend / log), payment gateway (Comgate / fake), PDF (Gotenberg / fake), key provider, clock.
 - Cookie sessions behind a same-origin `/api` proxy (ADR-0001). One frontend serves the Organisation subdomains (public pages, guardian portal) and the main host (signup, admin, operator console).
 - Product name and domain are configuration; locally the platform runs on `*.localhost` via Docker Compose.
+- The marketing website (`apps/web`) is a static Astro site with one small Cloudflare Worker for the contact form, deployed to Cloudflare on the bare domain `campie.cz`, outside the platform.
 
 ## Commands
 
