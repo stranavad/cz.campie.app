@@ -35,8 +35,16 @@ async function verifyTurnstile(token: string, ip: string, env: Env, deps: Contac
   try {
     const response = await deps.fetch(TURNSTILE_VERIFY_URL, { method: 'POST', body });
     const result: unknown = await response.json();
-    return typeof result === 'object' && result !== null && 'success' in result && result.success === true;
+    if (typeof result === 'object' && result !== null && 'success' in result && result.success === true) {
+      return true;
+    }
+    // Cloudflare's reason (e.g. invalid-input-secret, timeout-or-duplicate), never the token.
+    const codes =
+      typeof result === 'object' && result !== null && 'error-codes' in result ? result['error-codes'] : null;
+    console.error(`Turnstile rejected: ${JSON.stringify(codes)}`);
+    return false;
   } catch {
+    console.error('Turnstile unreachable');
     return false;
   }
 }
