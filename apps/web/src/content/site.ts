@@ -21,10 +21,9 @@ export const site = {
     name: 'David Stráňava',
     ico: '21766941',
   },
-  // Fill in before the first deploy: the Turnstile widget's site key for campie.cz and dev.campie.cz, from
-  // the Cloudflare dashboard (it is public, the secret lives in the Worker). A production or dev build
-  // fails while it is empty; local builds use Cloudflare's test key instead (lib/site-env.ts).
-  turnstileSiteKey: '',
+  // The Turnstile widget's site key for campie.cz and dev.campie.cz (public; the secret lives in the
+  // Worker). Local builds use Cloudflare's test key instead (lib/site-env.ts).
+  turnstileSiteKey: '0x4AAAAAAF7zqIpjfDkS6doX',
   themeColor: {
     light: '#163A2B',
     dark: '#12291E',
