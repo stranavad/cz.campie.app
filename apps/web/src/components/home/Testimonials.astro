@@ -1,7 +1,12 @@
 ---
+import { Image } from 'astro:assets';
+
+import dejv from '../../assets/dejv-portrait.jpg';
 import { home } from '../../content/home.ts';
 
 const { testimonials } = home;
+// Each author's portrait, in the order of testimonials.items. The name sits beside it, so the alt is empty.
+const photos = [dejv];
 ---
 
 <section id={testimonials.id} class="section-y bg-paper text-ink">
@@ -12,14 +17,23 @@ const { testimonials } = home;
       <p class="lead max-w-[56ch] text-muted">{testimonials.lead}</p>
     </div>
     <div class="flex flex-wrap items-stretch gap-x-8 gap-y-7">
-      {testimonials.items.map((item) => (
+      {testimonials.items.map((item, i) => (
         <figure class="card m-0 flex max-w-[860px] flex-[3_1_420px] -rotate-[0.6deg] flex-col justify-between gap-5 p-[clamp(20px,2.8cqw,32px)]">
           <blockquote class="m-0">
             <p class="m-0 text-[clamp(20px,2cqw,26px)] leading-[1.3] font-bold">„{item.quote}“</p>
           </blockquote>
-          <figcaption class="flex flex-col text-[15px]">
-            <strong>{item.name}</strong>
-            <span class="text-muted">{item.role}</span>
+          <figcaption class="flex items-center gap-3 text-[15px]">
+            <Image
+              src={photos[i]}
+              alt=""
+              widths={[52, 104]}
+              sizes="52px"
+              class="block size-[52px] flex-none rounded-full bg-chip object-cover"
+            />
+            <span class="flex flex-col">
+              <strong>{item.name}</strong>
+              <span class="text-muted">{item.role}</span>
+            </span>
           </figcaption>
         </figure>
       ))}
