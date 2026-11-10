@@ -1,0 +1,34 @@
+---
+import { home } from '../../content/home.ts';
+import ParentPhone from '../illustrations/ParentPhone.astro';
+
+const { parents } = home;
+---
+
+<section id={parents.id} class="section-y bg-paper text-ink">
+  <div class="wrap flex flex-wrap items-start gap-x-14 gap-y-8">
+    <div class="flex min-w-0 flex-[1_1_280px] flex-col gap-[22px]">
+      <div class="flex flex-col gap-3.5">
+        <span class="eyebrow">{parents.eyebrow}</span>
+        <h2 class="h-section max-w-[12ch]">{parents.title}</h2>
+      </div>
+      <p class="card m-0 px-5 py-[18px] text-base font-semibold">{parents.note}</p>
+      <p class="m-0 rounded-3xl border-[1.5px] border-dashed border-line px-5 py-4 text-[15px] leading-[1.45] font-medium">
+        {parents.aside}
+      </p>
+    </div>
+    <ol class="m-0 flex min-w-0 flex-[3_1_660px] list-none flex-wrap gap-5 p-0">
+      {parents.steps.map((step, index) => (
+        <li class="flex min-w-0 flex-[1_1_216px] flex-col items-start gap-3.5">
+          <ParentPhone step={index} label={step.label} />
+          <span class="flex items-start gap-3">
+            <span class="flex size-8 flex-none items-center justify-center rounded-full bg-fire text-[15px] font-bold text-ink-fixed">
+              {index + 1}
+            </span>
+            <span class="text-base leading-[1.45]">{step.text}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>

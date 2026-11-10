@@ -1,0 +1,107 @@
+---
+// A guardian signing a Consent on the phone (the platform's consent page in the guardian portal), the top
+// 390 x 760 px of it. Demo values.
+const items = [
+  { text: 'Fotografie dítěte na webu a sociálních sítích tábora', yes: true },
+  { text: 'Zasílání novinek o dalších akcích', yes: false },
+];
+const radio = 'flex h-[46px] items-center gap-2.5 rounded-[14px] border border-app-input-border px-3';
+const dot = 'size-[18px] flex-none rounded-full border-2';
+---
+
+<div class="flex h-[760px] w-[390px] flex-col bg-app-bg font-sans text-base leading-normal text-app-text">
+  <div class="flex items-center gap-2 px-3 py-2.5">
+    <span class="flex size-11 items-center justify-center rounded-full border border-app-btn-border bg-app-surface">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="m15 18-6-6 6-6"></path>
+      </svg>
+    </span>
+    <span class="font-bold">Souhlasy</span>
+  </div>
+
+  <div class="mx-4 mt-2 flex gap-1 rounded-full bg-app-chip p-1">
+    <span class="flex h-[42px] flex-1 items-center justify-center rounded-full bg-app-surface font-bold">
+      Anička · 1 zbývá
+    </span>
+    <span class="flex h-[42px] flex-1 items-center justify-center rounded-full font-medium text-app-nav">
+      Tomáš · hotovo
+    </span>
+  </div>
+
+  <div class="mx-4 mt-4 flex flex-col gap-3.5 rounded-[28px] border border-app-border bg-app-surface px-[18px] py-5">
+    <span class="flex items-center justify-between gap-2">
+      <span class="font-display text-[22px] leading-[1.15] font-bold">Souhlas se zpracováním údajů</span>
+      <span class="inline-flex h-[26px] items-center rounded-full bg-app-warn px-2.5 text-xs font-bold whitespace-nowrap text-app-warn-fg">
+        Nová verze
+      </span>
+    </span>
+    <span class="flex flex-col gap-2 rounded-2xl bg-app-raised px-3.5 py-3.5">
+      <span class="h-2 rounded-full bg-app-border"></span>
+      <span class="h-2 w-11/12 rounded-full bg-app-border"></span>
+      <span class="h-2 w-3/4 rounded-full bg-app-border"></span>
+      <span class="h-2 w-5/6 rounded-full bg-app-border"></span>
+    </span>
+    <span class="text-sm font-bold underline">Přečíst celý text</span>
+    {items.map((item) => (
+      <span class="flex flex-col gap-2 border-t border-app-line pt-3">
+        <span class="text-[15px] font-semibold">{item.text}</span>
+        <span class="grid grid-cols-2 gap-2">
+          <span class={radio}>
+            <span class:list={[dot, item.yes ? 'border-[6px] border-app-primary' : 'border-app-input-border']} />
+            Souhlasím
+          </span>
+          <span class={radio}>
+            <span class:list={[dot, item.yes ? 'border-app-input-border' : 'border-[6px] border-app-primary']} />
+            Nesouhlasím
+          </span>
+        </span>
+      </span>
+    ))}
+    <span class="flex items-start gap-2.5 border-t border-app-line pt-3 text-[15px]">
+      <span class="mt-0.5 flex size-5 flex-none items-center justify-center rounded bg-app-primary text-app-primary-fg">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20 6 9 17l-5-5"></path>
+        </svg>
+      </span>
+      <span>
+        <strong>Souhlasím se zpracováním osobních údajů</strong> dítěte pro účely tábora.
+        <span class="text-app-muted">(nutné)</span>
+      </span>
+    </span>
+    <span class="grid grid-cols-[3fr_2fr] gap-2">
+      <span class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold">Podepisuje</span>
+        <span class="flex h-12 items-center rounded-[14px] border border-app-input-border bg-app-input px-3">
+          Jana Nováková
+        </span>
+      </span>
+      <span class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold">Místo</span>
+        <span class="flex h-12 items-center rounded-[14px] border border-app-input-border bg-app-input px-3">
+          Praha
+        </span>
+      </span>
+    </span>
+    <span class="flex h-[52px] items-center justify-center rounded-full bg-app-accent font-bold text-stone">
+      Podepsat
+    </span>
+  </div>
+</div>

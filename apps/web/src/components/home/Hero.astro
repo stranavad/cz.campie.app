@@ -1,0 +1,48 @@
+---
+import { home } from '../../content/home.ts';
+import { href } from '../../lib/href.ts';
+import ArrowLink from '../ArrowLink.astro';
+import ChildChecklist from '../illustrations/ChildChecklist.astro';
+import ScreenFrame from '../illustrations/ScreenFrame.astro';
+import AdminOverview from '../screens/AdminOverview.astro';
+import PhoneCamp from '../screens/PhoneCamp.astro';
+
+const { hero } = home;
+---
+
+<section class="on-forest overflow-hidden bg-forest pt-[clamp(28px,4cqw,56px)] text-cream">
+  <div class="wrap flex flex-col items-center gap-[clamp(18px,2cqw,26px)] text-center">
+    <h1 class="h-hero">
+      {hero.titleLines[0]}
+      <br />
+      <span class="text-fire">{hero.titleLines[1]}</span>
+    </h1>
+    <p class="m-0 max-w-[48ch] text-[clamp(18px,1.6cqw,22px)]">{hero.lead}</p>
+    <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5">
+      <a href={href(hero.primary.href)} class="btn">
+        {hero.primary.label}
+      </a>
+      <ArrowLink cta={hero.secondary} class="text-cream" />
+    </div>
+    <div class="relative mt-[clamp(12px,2cqw,28px)] flex w-full justify-center">
+      <ScreenFrame
+        kind="window"
+        label={hero.adminLabel}
+        class="hidden h-[435px] w-[870px] rounded-t-[20px] border-b-0 lg:block"
+      >
+        <div class="origin-top-left scale-[0.68]">
+          <AdminOverview />
+        </div>
+      </ScreenFrame>
+      <ChildChecklist label={hero.checklistLabel} class="mt-1 mb-11 w-[240px] -rotate-2 lg:hidden" />
+      <ChildChecklist label={hero.checklistLabel} class="absolute top-14 left-0 hidden w-[214px] -rotate-4 lg:flex" />
+      <div class="absolute right-0 -bottom-9 hidden rotate-3 lg:flex">
+        <ScreenFrame kind="phone" label={hero.phoneLabel} class="h-[360px] w-[195px]">
+          <div class="origin-top-left scale-50">
+            <PhoneCamp />
+          </div>
+        </ScreenFrame>
+      </div>
+    </div>
+  </div>
+</section>

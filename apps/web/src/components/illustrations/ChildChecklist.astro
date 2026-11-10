@@ -1,0 +1,35 @@
+---
+// The hero's card: one child's checklist, three things done and one to go. Demo values.
+import Icon from '../Icon.astro';
+
+interface Props {
+  label: string;
+  class?: string;
+}
+
+const { label, class: className } = Astro.props;
+const done = ['Přihláška', 'Záloha', 'Souhlasy'];
+---
+
+<div
+  role="img"
+  aria-label={label}
+  class:list={[
+    'card flex flex-col gap-2.5 p-[18px] text-left font-mono text-[13px] leading-[1.55] font-medium',
+    className,
+  ]}
+>
+  <span class="border-b border-strong pb-2 font-semibold uppercase">Anička N. · 1. turnus</span>
+  {done.map((item) => (
+    <span class="flex items-center gap-2.5">
+      <span class="flex size-[22px] flex-none items-center justify-center rounded-full border-2 border-fire bg-fire text-ink-fixed">
+        <Icon name="check" size={12} stroke={3.5} />
+      </span>
+      {item}
+    </span>
+  ))}
+  <span class="flex items-center gap-2.5">
+    <span class="size-[22px] flex-none rounded-full border-2 border-strong"></span>Potvrzení od lékaře
+  </span>
+  <span class="border-t border-dashed border-strong pt-2">Zbývá 1 věc</span>
+</div>

@@ -1,0 +1,95 @@
+---
+// A Camp's public page on a parent's phone, with its Turnusy (the platform's camp page), the top
+// 390 x 720 px of it. Demo values.
+import { icons } from '../../content/icons.ts';
+
+const turnusy = [
+  {
+    name: '1. turnus',
+    dates: '5.-18. 7.',
+    age: '7-12 let',
+    price: '6 900 Kč',
+    status: '12 volných',
+    statusTone: 'bg-app-ok text-app-ok-fg',
+    cta: 'Přihlásit',
+    ctaTone: 'border-app-accent bg-app-accent text-stone',
+  },
+  {
+    name: '2. turnus',
+    dates: '19. 7.-1. 8.',
+    age: '10-15 let',
+    price: '7 200 Kč',
+    status: 'Plno',
+    statusTone: 'bg-app-neutral text-app-neutral-fg',
+    cta: 'Obsazeno',
+    ctaTone: 'border-app-btn-border bg-app-surface text-app-text',
+  },
+];
+const chips = ['Máchovo jezero', '7-15 let', '14 dní'];
+---
+
+<div class="flex h-[720px] w-[390px] flex-col bg-app-bg font-sans text-base leading-normal text-app-text">
+  <div class="flex items-center justify-between px-4 py-3.5">
+    <span class="flex items-center gap-2.5">
+      <span class="flex size-10 items-center justify-center rounded-full bg-app-accent text-stone">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d={icons.camp}></path>
+        </svg>
+      </span>
+      <span class="font-bold">Tábor Jezero</span>
+    </span>
+    <span class="flex h-10 items-center rounded-full border border-app-btn-border bg-app-surface px-3.5 text-sm font-semibold">
+      Můj portál
+    </span>
+  </div>
+
+  <div class="mx-3 mt-1 flex flex-col gap-3 rounded-[32px] bg-app-accent px-5 pt-6 pb-5 text-stone">
+    <span class="font-display text-[40px] leading-none font-extrabold tracking-[-0.03em]">Letní tábor Jezero</span>
+    <span>Čtrnáct dní u vody a v lese, stany s podsadou a večery u ohně.</span>
+    <span class="h-[140px] rounded-[22px] bg-white/45"></span>
+    <span class="flex flex-wrap gap-1.5">
+      {chips.map((chip) => (
+        <span class="inline-flex h-8 items-center rounded-full bg-white px-3 text-sm font-semibold text-stone">
+          {chip}
+        </span>
+      ))}
+    </span>
+  </div>
+
+  <div class="flex flex-col gap-3 px-4 pt-6">
+    <span class="mx-1 font-display text-2xl font-bold tracking-[-0.02em]">Vyberte turnus</span>
+    {turnusy.map((turnus) => (
+      <div class="flex flex-col gap-2.5 rounded-3xl border border-app-border bg-app-surface px-[18px] py-4">
+        <span class="flex items-center justify-between gap-2">
+          <span class="font-display text-xl font-bold">{turnus.dates}</span>
+          <span
+            class:list={[
+              'inline-flex h-[26px] items-center rounded-full px-2.5 text-xs font-bold whitespace-nowrap',
+              turnus.statusTone,
+            ]}
+          >
+            {turnus.status}
+          </span>
+        </span>
+        <span class="text-sm text-app-muted">
+          {turnus.name} · {turnus.age} · záloha 2 000 Kč
+        </span>
+        <span class="flex items-center justify-between gap-3">
+          <span class="text-lg font-bold">{turnus.price}</span>
+          <span class:list={['flex h-12 items-center rounded-full border px-5 font-bold', turnus.ctaTone]}>
+            {turnus.cta}
+          </span>
+        </span>
+      </div>
+    ))}
+  </div>
+</div>

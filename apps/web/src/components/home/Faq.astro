@@ -1,0 +1,32 @@
+---
+import { home } from '../../content/home.ts';
+import { toHtml } from '../../lib/inline.ts';
+import Icon from '../Icon.astro';
+
+const { faq } = home;
+---
+
+<section id={faq.id} class="section-y bg-paper text-ink">
+  <div class="wrap flex flex-wrap items-start gap-x-14 gap-y-8">
+    <div class="flex min-w-0 flex-[1_1_260px] flex-col gap-3.5">
+      <span class="eyebrow">{faq.eyebrow}</span>
+      <h2 class="h-section max-w-[11ch]">{faq.title}</h2>
+    </div>
+    <div class="flex min-w-0 flex-[2_1_600px] flex-col gap-2.5">
+      {faq.items.map((item, index) => (
+        <details class="group rounded-[18px] border border-line bg-card px-5 text-ink" open={index === 0}>
+          <summary class="flex min-h-14 cursor-pointer items-center justify-between gap-4 text-[17px] font-bold">
+            {item.question}
+            <span class="flex flex-none transition-transform group-open:rotate-180">
+              <Icon name="chevron" size={18} stroke={2.5} />
+            </span>
+          </summary>
+          <p
+            class="m-0 max-w-[60ch] pb-[18px] text-base text-muted [&_a]:text-ink [&_a]:underline"
+            set:html={toHtml(item.answer)}
+          />
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

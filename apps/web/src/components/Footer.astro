@@ -1,0 +1,25 @@
+---
+import { footer } from '../content/site.ts';
+import { href } from '../lib/href.ts';
+import Logo from './Logo.astro';
+---
+
+<footer class="on-forest flex-[1_0_auto] bg-forest pt-9 pb-11 text-cream">
+  <div class="wrap flex flex-wrap items-start gap-x-14 gap-y-5">
+    <div class="flex flex-[1_1_260px] flex-col gap-2">
+      <Logo />
+      <span class="text-sm text-sage">{footer.license}</span>
+      <span class="text-sm text-sage">{footer.contactLine}</span>
+    </div>
+    <nav aria-label={footer.navLabel} class="flex flex-[2_1_420px] flex-wrap gap-x-6">
+      {footer.links.map((item) => (
+        <a
+          href={href(item.href)}
+          class="inline-flex min-h-11 items-center text-[15px] text-cream underline underline-offset-4"
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+</footer>

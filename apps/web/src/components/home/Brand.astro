@@ -1,0 +1,22 @@
+---
+import { home } from '../../content/home.ts';
+import CheckList from '../CheckList.astro';
+import CampBrands from '../illustrations/CampBrands.astro';
+
+const { brand } = home;
+---
+
+<section class="on-forest section-y bg-forest text-cream">
+  <div class="wrap flex flex-wrap items-center gap-x-14 gap-y-8">
+    <div class="flex min-w-0 flex-[1_1_300px] flex-col gap-[22px]">
+      <div class="flex flex-col gap-3.5">
+        <span class="eyebrow">{brand.eyebrow}</span>
+        <h2 class="h-section max-w-[13ch]">{brand.title}</h2>
+      </div>
+      <CheckList items={brand.items} />
+    </div>
+    <div class="flex min-w-0 flex-[2_1_640px] flex-col gap-[18px]">
+      <CampBrands label={brand.phonesLabel} />
+    </div>
+  </div>
+</section>

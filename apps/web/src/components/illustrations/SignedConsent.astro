@@ -1,0 +1,25 @@
+---
+// A signed Consent as its PDF shows it: the guardian's answers and the signature. Demo values.
+interface Props {
+  label: string;
+}
+
+const answers = [
+  ['Ošetření dítěte', 'Ano'],
+  ['Fotky pro kroniku', 'Ano'],
+  ['Fotky na web', 'Ne'],
+];
+---
+
+<div role="img" aria-label={Astro.props.label} class="card flex w-[250px] max-w-full flex-col gap-2 p-5 text-sm">
+  <span class="text-xs font-bold tracking-[0.06em] text-muted uppercase">Podepsaný souhlas · PDF</span>
+  <strong class="text-base leading-[1.25]">Souhlas se zpracováním údajů a s focením</strong>
+  {answers.map(([question, answer]) => (
+    <span class="flex justify-between gap-3 border-t border-line1 pt-2">
+      <span>{question}</span>
+      <strong>{answer}</strong>
+    </span>
+  ))}
+  <span class="pt-1.5 font-hand text-[28px] leading-none font-semibold">Jana Nováková</span>
+  <span class="text-[13px] text-muted">Podepsáno online · Mladá Boleslav · 10. 2. 2027</span>
+</div>

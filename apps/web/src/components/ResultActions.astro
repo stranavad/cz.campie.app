@@ -1,0 +1,19 @@
+---
+// The way on from a page that only reports something: the 404 and the contact form's results.
+import type { Cta } from '../content/types.ts';
+import { href } from '../lib/href.ts';
+
+interface Props {
+  cta: Cta;
+}
+
+const { cta } = Astro.props;
+---
+
+<section class="section-y bg-paper text-ink">
+  <div class="wrap">
+    <a href={href(cta.href)} class="btn">
+      {cta.label}
+    </a>
+  </div>
+</section>

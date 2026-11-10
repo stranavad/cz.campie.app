@@ -1,0 +1,95 @@
+---
+// Three Camps, each on its own subdomain in its own colours: phones on wide screens, a compact list on
+// narrow ones. Demo values.
+interface Props {
+  label: string;
+}
+
+const camps = [
+  {
+    name: 'Tábor Včeličky',
+    initial: 'V',
+    host: 'vcelicky.campie.cz',
+    brand: 'bg-camp text-stone',
+    badge: 'bg-stone text-camp',
+    second: 'Poslední místa',
+  },
+  {
+    name: 'Tábor Kometa',
+    initial: 'K',
+    host: 'kometa.campie.cz',
+    brand: 'bg-blue text-white',
+    badge: 'bg-white text-blue',
+    second: 'Volno',
+  },
+  {
+    name: 'Tábor Sosna',
+    initial: 'S',
+    host: 'sosna.campie.cz',
+    brand: 'bg-pink text-white',
+    badge: 'bg-white text-pink',
+    second: 'Obsazeno',
+  },
+];
+const row =
+  'flex min-h-11 items-center justify-between gap-2 rounded-xl border border-scr-line bg-scr-card px-3 text-[13px] font-semibold';
+---
+
+<div
+  role="img"
+  aria-label={Astro.props.label}
+  class="hidden grid-flow-col gap-5 overflow-x-auto pb-2 [grid-auto-columns:minmax(216px,1fr)] lg:grid"
+>
+  {camps.map((camp) => (
+    <div class="flex justify-center pr-1.5 pb-2">
+      <div class="h-[380px] w-[204px] flex-none overflow-hidden rounded-[30px] border-[6px] border-bezel bg-scr">
+        <div class="flex h-full flex-col gap-2.5 px-3.5 py-[22px] text-left text-scr-ink">
+          <span class="flex h-[26px] items-center justify-center rounded-full bg-scr-chip font-code text-[11px] font-semibold">
+            {camp.host}
+          </span>
+          <span class:list={['flex min-h-[104px] flex-col justify-between gap-2.5 rounded-[18px] p-3.5', camp.brand]}>
+            <span
+              class:list={[
+                'flex size-[34px] items-center justify-center rounded-full font-display text-[17px] font-extrabold',
+                camp.badge,
+              ]}
+            >
+              {camp.initial}
+            </span>
+            <span class="font-display text-[22px] leading-[1.05] font-extrabold tracking-[-0.03em]">{camp.name}</span>
+          </span>
+          <span class="pt-0.5 text-xs font-bold">Vyberte turnus</span>
+          <span class={row}>
+            1. turnus<span class="text-xs font-medium whitespace-nowrap text-scr-muted">Volno</span>
+          </span>
+          <span class={row}>
+            2. turnus<span class="text-xs font-medium whitespace-nowrap text-scr-muted">{camp.second}</span>
+          </span>
+          <span
+            class:list={['mt-auto flex h-11 items-center justify-center rounded-full text-sm font-bold', camp.brand]}
+          >
+            Přihlásit dítě
+          </span>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+<div role="img" aria-label={Astro.props.label} class="flex flex-col gap-2.5 lg:hidden">
+  {camps.map((camp) => (
+    <span class:list={['flex min-h-[68px] items-center gap-3 rounded-[20px] px-4 text-left', camp.brand]}>
+      <span
+        class:list={[
+          'flex size-[38px] flex-none items-center justify-center rounded-full font-display text-lg font-extrabold',
+          camp.badge,
+        ]}
+      >
+        {camp.initial}
+      </span>
+      <span class="flex min-w-0 flex-col">
+        <span class="font-display text-xl leading-[1.1] font-extrabold tracking-[-0.03em]">{camp.name}</span>
+        <span class="font-code text-[13px] font-semibold">{camp.host}</span>
+      </span>
+    </span>
+  ))}
+</div>

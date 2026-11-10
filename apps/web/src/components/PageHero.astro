@@ -1,0 +1,17 @@
+---
+import type { PageHero } from '../content/types.ts';
+
+interface Props {
+  hero: PageHero;
+}
+
+const { hero } = Astro.props;
+---
+
+<section class="on-forest bg-forest py-[clamp(28px,3.6cqw,52px)] text-cream">
+  <div class="wrap flex flex-col gap-3.5">
+    <span class="eyebrow">{hero.eyebrow}</span>
+    <h1 class="h-page max-w-[18ch]">{hero.title}</h1>
+    <p class="lead max-w-[56ch] text-sage">{hero.lead}</p>
+  </div>
+</section>

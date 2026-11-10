@@ -1,0 +1,11 @@
+---
+import PageHero from '../components/PageHero.astro';
+import ResultActions from '../components/ResultActions.astro';
+import { notFound } from '../content/site.ts';
+import Base from '../layouts/Base.astro';
+---
+
+<Base page="notFound">
+  <PageHero hero={notFound.hero} />
+  <ResultActions cta={notFound.back} />
+</Base>

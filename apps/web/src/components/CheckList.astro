@@ -1,0 +1,19 @@
+---
+import { toHtml } from '../lib/inline.ts';
+import Check from './Check.astro';
+
+interface Props {
+  items: readonly string[];
+}
+
+const { items } = Astro.props;
+---
+
+<ul class="m-0 flex list-none flex-col gap-3.5 p-0 text-[17px]">
+  {items.map((item) => (
+    <li class="flex items-start gap-3">
+      <Check />
+      <span set:html={toHtml(item)} />
+    </li>
+  ))}
+</ul>

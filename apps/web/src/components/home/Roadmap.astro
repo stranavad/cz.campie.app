@@ -1,0 +1,44 @@
+---
+import { home } from '../../content/home.ts';
+import { href } from '../../lib/href.ts';
+
+const { roadmap } = home;
+---
+
+<section id={roadmap.id} class="on-forest section-y bg-forest text-cream">
+  <div class="wrap flex flex-col gap-[clamp(24px,2.8cqw,40px)]">
+    <div class="flex flex-col gap-3.5">
+      <span class="eyebrow">{roadmap.eyebrow}</span>
+      <h2 class="h-section max-w-[16ch]">{roadmap.title}</h2>
+      <p class="lead max-w-[56ch] text-sage">{roadmap.lead}</p>
+    </div>
+    <ol class="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(230px,100%),1fr))] gap-5 p-0">
+      {roadmap.items.map((item) => (
+        <li class="flex flex-col gap-2 rounded-3xl bg-cream/8 p-5">
+          <span
+            class:list={[
+              'inline-flex h-7 items-center self-start rounded-full border px-3 font-mono text-[13px] font-semibold uppercase',
+              'current' in item
+                ? 'border-fire bg-fire-soft text-sm tracking-[0.04em] text-night'
+                : 'border-cream text-cream',
+            ]}
+          >
+            {item.when}
+          </span>
+          <h3 class="h-card text-[23px] leading-[1.1]">{item.title}</h3>
+          <p class="m-0 text-[15px] leading-normal text-sage">{item.text}</p>
+        </li>
+      ))}
+    </ol>
+    <p class="m-0 text-sm text-sage">{roadmap.disclaimer}</p>
+    <div class="flex flex-wrap items-center gap-x-7 gap-y-4 rounded-3xl border-[1.5px] border-cream/35 px-6 py-[22px]">
+      <div class="flex min-w-0 flex-[1_1_320px] flex-col gap-1.5">
+        <h3 class="h-card text-[23px] leading-[1.1] text-cream">{roadmap.missing.title}</h3>
+        <p class="m-0 text-[15px] leading-normal text-sage">{roadmap.missing.text}</p>
+      </div>
+      <a href={href(roadmap.missing.cta.href)} class="btn">
+        {roadmap.missing.cta.label}
+      </a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,24 @@
+---
+import { ctaBand } from '../content/site.ts';
+import { href } from '../lib/href.ts';
+import ArrowLink from './ArrowLink.astro';
+---
+
+<section class="section-y bg-paper text-ink">
+  <div class="wrap">
+    <div class="flex flex-wrap items-center gap-x-14 gap-y-5 rounded-[clamp(24px,3cqw,32px)] border border-line bg-card px-[clamp(20px,3.4cqw,44px)] py-[clamp(24px,3.4cqw,44px)] text-ink">
+      <h2 class="h-card flex-[1_1_400px] text-[clamp(28px,3.2cqw,44px)] leading-[1.02] text-balance">
+        {ctaBand.title}
+      </h2>
+      <div class="flex flex-[1_1_320px] flex-col gap-[18px]">
+        <p class="m-0 text-[17px] text-muted">{ctaBand.text}</p>
+        <div class="flex flex-wrap items-center gap-x-[22px] gap-y-2.5">
+          <a href={href(ctaBand.primary.href)} class="btn">
+            {ctaBand.primary.label}
+          </a>
+          <ArrowLink cta={ctaBand.secondary} class="text-ink" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

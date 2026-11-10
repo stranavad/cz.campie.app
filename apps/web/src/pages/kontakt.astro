@@ -1,0 +1,95 @@
+---
+import { contact } from '../content/contact.ts';
+import Base from '../layouts/Base.astro';
+import { turnstileSiteKey } from '../lib/site-env.ts';
+
+const field = 'flex flex-col gap-1.5 text-sm font-semibold';
+const input =
+  'box-border h-12 w-full rounded-[14px] border border-line2 bg-card px-3.5 font-sans text-base font-normal text-ink';
+---
+
+<Base page="contact">
+  <script slot="head" is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <section class="bg-paper pt-[clamp(28px,3.6cqw,56px)] pb-[clamp(44px,4.4cqw,64px)] text-ink">
+    <div class="wrap flex flex-wrap items-start gap-x-14 gap-y-8">
+      <div class="flex min-w-0 flex-[1_1_320px] flex-col gap-[22px]">
+        <div class="flex flex-col gap-3.5">
+          <span class="eyebrow">{contact.hero.eyebrow}</span>
+          <h1 class="h-page max-w-[12ch]">{contact.hero.title}</h1>
+          <p class="lead max-w-[56ch] text-muted">{contact.hero.lead}</p>
+        </div>
+        <p class="m-0 text-xl font-bold">
+          <a href={`mailto:${contact.email}`} class="text-ink underline-offset-4">
+            {contact.email}
+          </a>
+        </p>
+        <div class="flex flex-col gap-1 border-t border-line1 pt-5">
+          <strong>{contact.about.title}</strong>
+          <span>{contact.about.name}</span>
+          <span class="text-muted">{contact.about.text}</span>
+          <span class="text-muted">{contact.about.ico}</span>
+        </div>
+      </div>
+      <div class="flex min-w-0 flex-[1_1_420px] flex-col gap-[18px]">
+        <form
+          method="post"
+          action="/api/kontakt"
+          aria-label={contact.form.label}
+          data-contact-form
+          class="card flex flex-col gap-4 p-[clamp(20px,2.6cqw,32px)]"
+        >
+          <label class={field}>
+            {contact.form.name}
+            <input name="name" type="text" autocomplete="name" required maxlength="100" class={input} />
+          </label>
+          <label class={field}>
+            {contact.form.organisation}
+            <input name="organisation" type="text" autocomplete="organization" maxlength="150" class={input} />
+          </label>
+          <label class={field}>
+            {contact.form.email}
+            <input name="email" type="email" autocomplete="email" required maxlength="254" class={input} />
+          </label>
+          <label class={field}>
+            {contact.form.message}
+            <textarea
+              name="message"
+              rows="5"
+              required
+              minlength="10"
+              maxlength="5000"
+              class:list={[input, 'h-[132px] resize-y py-3']}
+            ></textarea>
+          </label>
+          <div aria-hidden="true" class="absolute -left-[9999px] size-px overflow-hidden">
+            <label>
+              {contact.form.trap}
+              <input name="web" type="text" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+          <div
+            class="cf-turnstile"
+            data-sitekey={turnstileSiteKey}
+            data-theme="auto"
+            data-language="cs"
+            data-size="flexible"
+            data-appearance="interaction-only"
+          ></div>
+          <noscript>
+            <p class="m-0 text-[15px] text-muted">{contact.form.noscript}</p>
+          </noscript>
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+            <button type="submit" class="btn cursor-pointer font-sans disabled:cursor-wait disabled:opacity-70">
+              {contact.form.submit}
+            </button>
+            <p data-status role="status" aria-live="polite" class="m-0 text-[15px] font-semibold"></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import '../scripts/contact-form.ts';
+</script>

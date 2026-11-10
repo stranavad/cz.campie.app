@@ -1,0 +1,90 @@
+---
+// The three small phone screens beside the parents' steps: the form with its price, the confirmation
+// with the QR code, the portal's list of what is left. Demo values.
+import { qrCodePath } from '../../content/icons.ts';
+import Icon from '../Icon.astro';
+
+interface Props {
+  step: number;
+  label: string;
+}
+
+const { step, label } = Astro.props;
+const row =
+  'flex min-h-10 items-center justify-between gap-2 rounded-xl border border-scr-line bg-scr-card px-3 text-[13px] font-semibold';
+const title = 'font-display text-[22px] leading-[1.05] font-extrabold tracking-[-0.03em]';
+const task =
+  'flex min-h-12 items-center gap-2.5 rounded-xl border border-scr-line bg-scr-card px-3 text-[13px] leading-[1.25] font-semibold';
+---
+
+<div
+  role="img"
+  aria-label={label}
+  class="hidden h-[400px] w-[204px] flex-none overflow-hidden rounded-[30px] border-[6px] border-strong bg-scr-card lg:block"
+>
+  <div class="flex h-full flex-col gap-2.5 bg-scr px-4 pt-[26px] pb-6 text-left text-scr-ink normal-case">
+    <span class="flex items-center gap-1.5 text-xs font-bold">
+      <span class="size-2.5 rounded-full bg-camp"></span>Tábor Jezero
+    </span>
+    {step === 0 && (
+      <>
+        <span class={title}>Přihláška</span>
+        <span class="flex min-h-11 items-center justify-between gap-2 rounded-xl bg-camp px-3 text-[13px] font-bold text-ink-fixed">
+          1. turnus · 5.-18. 7.
+          <Icon name="check" stroke={3} />
+        </span>
+        <span class={row}>
+          Anička<span class="font-medium whitespace-nowrap text-scr-muted">6 900 Kč</span>
+        </span>
+        <span class={row}>
+          Tomáš<span class="font-medium whitespace-nowrap text-scr-muted">6 900 Kč</span>
+        </span>
+        <span class="inline-flex min-h-[26px] items-center self-start rounded-full bg-ok px-2.5 py-1 text-xs leading-[1.3] font-bold whitespace-nowrap text-ok-fg">
+          Sourozenec −500 Kč
+        </span>
+        <span class="mt-auto flex items-baseline justify-between text-[13px] font-semibold">
+          Celkem<span class="font-display text-2xl font-extrabold tracking-[-0.03em]">13 300 Kč</span>
+        </span>
+        <span class="flex h-11 items-center justify-center rounded-full bg-scr-btn text-sm font-bold text-scr-btn-fg">
+          Odeslat přihlášku
+        </span>
+      </>
+    )}
+    {step === 1 && (
+      <>
+        <span class="flex size-11 items-center justify-center rounded-full bg-ok text-ok-fg">
+          <Icon name="check" size={22} stroke={3} />
+        </span>
+        <span class={title}>Přihláška je odeslaná</span>
+        <span class="text-[13px] leading-[1.4] text-scr-muted">Anička a Tomáš mají místo v 1. turnusu.</span>
+        <span class="mt-auto flex flex-col items-center gap-2 rounded-2xl border border-scr-line bg-scr-card p-3.5">
+          <svg width="104" height="104" viewBox="0 0 13 13" class="fill-scr-ink">
+            <path d={qrCodePath} />
+          </svg>
+          <span class="text-[13px] font-bold">Záloha 4 000 Kč</span>
+        </span>
+        <span class="flex h-10 items-center justify-center rounded-xl bg-scr-chip2 text-[13px] font-semibold">
+          Přihláška.pdf
+        </span>
+      </>
+    )}
+    {step === 2 && (
+      <>
+        <span class={title}>Co ještě zbývá</span>
+        <span class:list={[task, 'text-scr-faint']}>
+          <span class="flex size-[22px] flex-none items-center justify-center rounded-full border-2 border-pine bg-pine text-white">
+            <Icon name="check" size={12} stroke={3.5} />
+          </span>
+          Záloha zaplacena
+        </span>
+        {['Doplatit 9 300 Kč', 'Podepsat souhlas', 'Nahrát potvrzení od lékaře'].map((item) => (
+          <span class:list={[task, 'text-scr-ink']}>
+            <span class="size-[22px] flex-none rounded-full border-2 border-scr-line2 bg-scr-card" />
+            {item}
+          </span>
+        ))}
+        <span class="mt-auto text-center text-xs text-scr-muted">Bez hesla, stačí odkaz z e-mailu</span>
+      </>
+    )}
+  </div>
+</div>

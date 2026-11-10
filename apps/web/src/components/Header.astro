@@ -1,0 +1,64 @@
+---
+import { header } from '../content/site.ts';
+import { href } from '../lib/href.ts';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+
+interface Props {
+  // The path of the page shown, to mark its navigation link.
+  current: string | null;
+}
+
+const { current } = Astro.props;
+const linkClass =
+  'flex h-11 items-center whitespace-nowrap px-2.5 text-[15px] font-semibold text-cream no-underline underline-offset-[6px] hover:underline aria-[current=page]:underline';
+---
+
+<header class="on-forest relative bg-forest text-cream">
+  <div class="wrap flex items-center gap-2 py-3.5">
+    <Logo />
+    <nav aria-label={header.navLabel} class="ml-5 hidden items-center lg:flex">
+      {header.nav.map((item) => (
+        <a href={item.href} aria-current={item.href === current ? 'page' : undefined} class={linkClass}>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+    <span class="flex-1"></span>
+    <a href={href(header.login.href)} class:list={[linkClass, 'hidden lg:flex']}>
+      {header.login.label}
+    </a>
+    <a href={href(header.signup.href)} class="btn hidden h-10 px-4 text-[15px] lg:inline-flex">
+      {header.signup.label}
+    </a>
+    <details data-menu class="group lg:hidden">
+      <summary
+        aria-label={header.menuLabel}
+        class="flex size-11 cursor-pointer items-center justify-center rounded-full text-cream"
+      >
+        <Icon name="menu" size={24} class="group-open:hidden" />
+        <Icon name="close" size={24} class="hidden group-open:block" />
+      </summary>
+      <div class="absolute inset-x-0 top-full z-20 border-t border-cream/15 bg-forest shadow-lg">
+        <nav aria-label={header.navLabel} class="wrap flex flex-col pt-2 pb-5">
+          {[...header.nav, ...header.menuExtras].map((item) => (
+            <a
+              href={href(item.href)}
+              aria-current={item.href === current ? 'page' : undefined}
+              class="flex min-h-12 items-center border-b border-cream/15 text-[17px] font-semibold text-cream no-underline underline-offset-[6px] aria-[current=page]:underline"
+            >
+              {item.label}
+            </a>
+          ))}
+          <a href={href(header.signup.href)} class="btn mt-4 self-start">
+            {header.signup.label}
+          </a>
+        </nav>
+      </div>
+    </details>
+  </div>
+</header>
+
+<script>
+  import '../scripts/menu.ts';
+</script>

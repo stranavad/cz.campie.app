@@ -1,0 +1,15 @@
+---
+import { header } from '../content/site.ts';
+import Icon from './Icon.astro';
+---
+
+<a
+  href="/"
+  aria-label={header.homeLabel}
+  class="flex min-h-11 items-center gap-2 font-display text-[22px] font-extrabold tracking-[-0.03em] text-cream no-underline"
+>
+  <span class="flex size-8 flex-none items-center justify-center rounded-full bg-fire text-ink-fixed">
+    <Icon name="tent" stroke={2.5} />
+  </span>
+  campie
+</a>

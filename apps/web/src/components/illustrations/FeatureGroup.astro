@@ -1,0 +1,102 @@
+---
+// The tilted cards beside the groups of Co umí: the setup, the parent's side, the season. Demo values.
+import { qrCodePath } from '../../content/icons.ts';
+import Icon from '../Icon.astro';
+
+interface Props {
+  kind: 'setup' | 'parents' | 'season';
+  label: string;
+}
+
+const { kind, label } = Astro.props;
+const caption = 'font-mono text-xs font-semibold tracking-[0.02em] text-muted uppercase';
+const fields = [
+  { label: 'Rodné číslo', on: true },
+  { label: 'Velikost trička', on: true },
+  { label: 'Doprava autobusem', on: false },
+  { label: 'Kamarád do oddílu', on: true },
+];
+const bars = [
+  { label: 'Místa', value: '38 ze 40', width: 'w-[95%]' },
+  { label: 'Platby', value: '186 400 Kč', width: 'w-[71%]' },
+  { label: 'Souhlasy', value: '35 z 38', width: 'w-[92%]' },
+];
+const tilt = { setup: '-rotate-2', parents: 'rotate-[1.5deg]', season: '-rotate-[1.5deg]' };
+---
+
+<div
+  role="img"
+  aria-label={label}
+  class:list={['card mt-2 hidden w-full max-w-[290px] flex-col gap-3 p-5 text-sm lg:flex', tilt[kind]]}
+>
+  {kind === 'setup' && (
+    <>
+      <span class={caption}>Barva tábora</span>
+      <span class="flex gap-2.5 px-0.5 pt-0.5 pb-1.5">
+        <span class="size-[34px] rounded-full border-[3px] border-card bg-camp ring-2 ring-ink-fixed" />
+        <span class="size-[34px] rounded-full border-[3px] border-card bg-blue" />
+        <span class="size-[34px] rounded-full border-[3px] border-card bg-pink" />
+        <span class="size-[34px] rounded-full border-[3px] border-card bg-forest" />
+        <span class="flex size-[34px] items-center justify-center rounded-full border-[1.5px] border-dashed border-line2 text-muted">
+          <Icon name="plus" size={14} stroke={2.5} />
+        </span>
+      </span>
+      <span class={caption}>Přihláška</span>
+      <span class="flex flex-col">
+        {fields.map((field) => (
+          <span class="flex min-h-[38px] items-center justify-between gap-2.5 border-t border-line font-semibold">
+            {field.label}
+            <span
+              class:list={[
+                'flex h-6 w-[42px] flex-none rounded-full p-[3px]',
+                field.on ? 'justify-end bg-fire' : 'bg-toggle',
+              ]}
+            >
+              <span class="size-[18px] rounded-full bg-card" />
+            </span>
+          </span>
+        ))}
+      </span>
+    </>
+  )}
+  {kind === 'parents' && (
+    <>
+      <span class={caption}>Záloha · 1. turnus</span>
+      <span class="flex items-center gap-3.5">
+        <svg width="84" height="84" viewBox="0 0 13 13" class="flex-none fill-ink">
+          <path d={qrCodePath} />
+        </svg>
+        <span class="flex flex-col gap-1.5">
+          <span class="h-card text-[26px] leading-none">4 000 Kč</span>
+          <span class="inline-flex h-[26px] items-center gap-1.5 self-start rounded-full bg-fire px-2.5 text-xs font-bold text-ink-fixed">
+            <Icon name="check" size={12} stroke={3.5} />
+            Zaplaceno
+          </span>
+        </span>
+      </span>
+      <span class="flex flex-col gap-0.5 border-t border-dashed border-strong pt-3">
+        <span class={caption}>Souhlas podepsán</span>
+        <span class="font-hand text-[30px] leading-[1.1] font-semibold">Jana Nováková</span>
+      </span>
+    </>
+  )}
+  {kind === 'season' && (
+    <>
+      <span class={caption}>1. turnus · přehled</span>
+      {bars.map((bar) => (
+        <span class="flex flex-col gap-1.5">
+          <span class="flex justify-between gap-2 font-bold">
+            {bar.label}
+            <span class="font-mono text-xs font-medium whitespace-nowrap">{bar.value}</span>
+          </span>
+          <span class="flex h-3 rounded-full bg-chip">
+            <span class:list={['rounded-full bg-bar', bar.width]} />
+          </span>
+        </span>
+      ))}
+      <span class="mt-1 flex h-10 items-center justify-center rounded-full bg-fire text-sm font-bold text-ink-fixed">
+        Připomenout všem
+      </span>
+    </>
+  )}
+</div>

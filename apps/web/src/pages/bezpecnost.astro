@@ -1,0 +1,23 @@
+---
+import ArrowLink from '../components/ArrowLink.astro';
+import FeatureList from '../components/FeatureList.astro';
+import PageHero from '../components/PageHero.astro';
+import { security } from '../content/security.ts';
+import Base from '../layouts/Base.astro';
+---
+
+<Base page="security">
+  <PageHero hero={security.hero} />
+  <section class="bg-paper pt-[clamp(28px,3.4cqw,48px)] pb-[clamp(40px,4cqw,56px)] text-ink">
+    <div class="wrap">
+      <div class="flex max-w-[920px] flex-col gap-6">
+        <FeatureList items={security.items} heading="h2" />
+        <div class="flex flex-wrap gap-x-7 gap-y-1">
+          {security.links.map((link) => (
+            <ArrowLink cta={link} class="text-ink" />
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,20 @@
+---
+import { home } from '../../content/home.ts';
+
+const { pains } = home;
+---
+
+<section class="section-y bg-paper text-ink">
+  <div class="wrap flex flex-col gap-[clamp(24px,2.8cqw,40px)]">
+    <h2 class="h-section">{pains.title}</h2>
+    <ul class="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(230px,100%),1fr))] gap-6 p-0 [&>:nth-child(1)]:-rotate-[1.5deg] [&>:nth-child(2)]:rotate-1 [&>:nth-child(3)]:-rotate-[0.8deg] [&>:nth-child(4)]:rotate-[1.6deg]">
+      {pains.items.map((item) => (
+        <li class="card flex flex-col gap-3 px-5 pt-5 pb-[22px]">
+          <span class="size-3.5 self-center rounded-full bg-fire" />
+          <p class="m-0 text-lg leading-[1.35] font-semibold">{item}</p>
+        </li>
+      ))}
+    </ul>
+    <p class="h-card m-0 text-[clamp(24px,2.6cqw,34px)] leading-[1.05]">{pains.closing}</p>
+  </div>
+</section>

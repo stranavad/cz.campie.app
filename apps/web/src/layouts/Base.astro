@@ -1,0 +1,69 @@
+---
+import '../styles/global.css';
+
+import bricolageLatinExt from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-ext-wdth-normal.woff2?url';
+import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wdth-normal.woff2?url';
+import figtreeLatin from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
+
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import type { PageKey } from '../content/seo.ts';
+import { header, site } from '../content/site.ts';
+import { OG_IMAGE_SIZE, pageMeta, pagePath, speculationRules } from '../lib/seo.ts';
+
+interface Props {
+  page: PageKey;
+}
+
+const { page } = Astro.props;
+const meta = pageMeta(page);
+---
+
+<!doctype html>
+<html lang={site.language}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{meta.title}</title>
+    <meta name="description" content={meta.description} />
+    <meta name="robots" content={meta.robots} />
+    {meta.canonical && <link rel="canonical" href={meta.canonical} />}
+    <link rel="preload" href={bricolageLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={bricolageLatinExt} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={figtreeLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content={site.themeColor.light} media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content={site.themeColor.dark} media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={site.locale} />
+    {meta.canonical && <meta property="og:url" content={meta.canonical} />}
+    <meta property="og:title" content={meta.og.title} />
+    <meta property="og:description" content={meta.description} />
+    <meta property="og:image" content={meta.og.image} />
+    <meta property="og:image:width" content={String(OG_IMAGE_SIZE.width)} />
+    <meta property="og:image:height" content={String(OG_IMAGE_SIZE.height)} />
+    <meta property="og:image:alt" content={meta.og.title} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {meta.jsonLd && <script type="application/ld+json" is:inline set:html={meta.jsonLd} />}
+    <script type="speculationrules" is:inline set:html={speculationRules} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a
+      href="#obsah"
+      class="sr-only z-30 rounded-full bg-fire px-5 py-3 font-bold text-ink-fixed focus:not-sr-only focus:absolute focus:top-3 focus:left-3"
+    >
+      {header.skipLink}
+    </a>
+    <div class="flex min-h-dvh flex-col @container">
+      <Header current={pagePath(page)} />
+      <main id="obsah" class="bg-paper">
+        <slot />
+      </main>
+      <Footer />
+    </div>
+  </body>
+</html>

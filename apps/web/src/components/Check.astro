@@ -1,0 +1,20 @@
+---
+// The orange tick in front of a list item.
+import Icon from './Icon.astro';
+
+interface Props {
+  size?: 'sm' | 'md';
+}
+
+const { size = 'md' } = Astro.props;
+---
+
+{size === 'md' ? (
+  <span class="flex size-[26px] flex-none items-center justify-center rounded-full bg-fire text-ink-fixed">
+    <Icon name="check" size={14} stroke={3} />
+  </span>
+) : (
+  <span class="mt-px flex size-[22px] flex-none items-center justify-center rounded-full bg-fire text-ink-fixed">
+    <Icon name="check" size={12} stroke={3.5} />
+  </span>
+)}

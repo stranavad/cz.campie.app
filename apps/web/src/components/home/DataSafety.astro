@@ -1,0 +1,20 @@
+---
+import { home } from '../../content/home.ts';
+import ArrowLink from '../ArrowLink.astro';
+
+const { dataSafety } = home;
+---
+
+<section class="bg-paper py-[clamp(32px,2.8cqw,40px)] text-ink">
+  <div class="wrap flex flex-wrap items-start gap-x-14 gap-y-8">
+    <div class="flex min-w-0 flex-[1_1_240px] flex-col gap-[22px]">
+      <h2 class="h-card text-[clamp(24px,2.4cqw,30px)] leading-[1.08]">{dataSafety.title}</h2>
+      <ArrowLink cta={dataSafety.link} class="self-start text-ink" />
+    </div>
+    <ul class="m-0 grid min-w-0 flex-[3_1_600px] list-none grid-cols-[repeat(auto-fit,minmax(min(210px,100%),1fr))] gap-x-6 gap-y-3.5 p-0">
+      {dataSafety.points.map((point) => (
+        <li class="border-t border-line1 pt-3 text-[15px] leading-normal text-muted">{point}</li>
+      ))}
+    </ul>
+  </div>
+</section>

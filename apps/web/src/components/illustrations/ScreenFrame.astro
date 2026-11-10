@@ -1,0 +1,23 @@
+---
+// A screen of the platform drawn at its real size and scaled down into a frame: a browser window or a
+// phone. The drawing is an image to assistive technology, described by `label`.
+interface Props {
+  label: string;
+  kind: 'window' | 'phone';
+  class?: string;
+}
+
+const { label, kind, class: className } = Astro.props;
+---
+
+<div
+  role="img"
+  aria-label={label}
+  class:list={[
+    'pointer-events-none flex-none overflow-hidden bg-scr-card text-left select-none',
+    kind === 'window' ? 'border border-line' : 'rounded-[30px] border-[6px] border-strong',
+    className,
+  ]}
+>
+  <slot />
+</div>

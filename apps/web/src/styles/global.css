@@ -1,0 +1,370 @@
+@import 'tailwindcss';
+@import './fonts.css';
+
+/*
+ * Theme tokens, light and dark, exactly as the design's palettes. The dark theme follows the system
+ * setting; there is no toggle. Components use only the utilities mapped in @theme below.
+ */
+:root {
+  color-scheme: light dark;
+
+  --paper: #f6f0e1;
+  --forest: #163a2b;
+  --card: #fffdf6;
+  --chip: #efe7d3;
+  --toggle: #cfc4ab;
+  --ink: #16201a;
+  --muted: #4b5548;
+  --line: #e2d8c2;
+  --line1: #ddd2ba;
+  --line2: #cfc4ab;
+  --strong: #16201a;
+  --bezel: #fffdf6;
+  --bar: #163a2b;
+  --camp: #f4b63f;
+  --ok: #dcfce7;
+  --ok-fg: #14532d;
+
+  /* The small phone screens drawn on the page. */
+  --scr: #fafaf9;
+  --scr-card: #ffffff;
+  --scr-chip: #f0eeeb;
+  --scr-chip2: #f5f5f4;
+  --scr-line: #eceae7;
+  --scr-line2: #d6d3d1;
+  --scr-ink: #1c1917;
+  --scr-muted: #57534e;
+  --scr-faint: #78716c;
+  --scr-btn: #1c1917;
+  --scr-btn-fg: #ffffff;
+
+  /* The admin and parent screens of the platform, in its own palette, with the demo camp's accent. */
+  --app-bg: #fafaf9;
+  --app-side: #ffffff;
+  --app-surface: #ffffff;
+  --app-raised: #f5f5f4;
+  --app-border: #eceae7;
+  --app-line: #f5f5f4;
+  --app-text: #1c1917;
+  --app-nav: #44403c;
+  --app-muted: #57534e;
+  --app-subtle: #736c66;
+  --app-chip: #f5f5f4;
+  --app-btn-border: #e7e5e4;
+  --app-input: #ffffff;
+  --app-input-border: #d6d3d1;
+  --app-primary: #1c1917;
+  --app-primary-fg: #ffffff;
+  --app-accent: #f4b63f;
+  --app-soft: #fdf3e0;
+  --app-soft-icon: #ab7f2c;
+  --app-soft-muted: #44403c;
+  --app-ok: #dcfce7;
+  --app-ok-fg: #14532d;
+  --app-warn: #fef3c7;
+  --app-warn-fg: #78350f;
+  --app-bad: #fee2e2;
+  --app-bad-fg: #991b1b;
+  --app-neutral: #f5f5f4;
+  --app-neutral-fg: #44403c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0d1411;
+    --forest: #12291e;
+    --card: #17211c;
+    --chip: #232f28;
+    --toggle: #3d4a43;
+    --ink: #eee8da;
+    --muted: #a5b0a1;
+    --line: #28352e;
+    --line1: #28352e;
+    --line2: #3d4c43;
+    --strong: #3a4a41;
+    --bezel: #33443a;
+    --bar: #f26b21;
+    --camp: #b8862b;
+    --ok: #173a26;
+    --ok-fg: #8fe3ae;
+
+    --scr: #0f1613;
+    --scr-card: #1a241f;
+    --scr-chip: #232e28;
+    --scr-chip2: #232e28;
+    --scr-line: #2c3832;
+    --scr-line2: #4a564f;
+    --scr-ink: #ece7dd;
+    --scr-muted: #a9b2ac;
+    --scr-faint: #838d87;
+    --scr-btn: #eee8da;
+    --scr-btn-fg: #16201a;
+
+    --app-bg: #151311;
+    --app-side: #1c1a17;
+    --app-surface: #1f1c19;
+    --app-raised: #2a2622;
+    --app-border: #2e2a26;
+    --app-line: #2a2622;
+    --app-text: #f5f1ea;
+    --app-nav: #d6d0c8;
+    --app-muted: #b5ada3;
+    --app-subtle: #a39b91;
+    --app-chip: #2a2622;
+    --app-btn-border: #3a3530;
+    --app-input: #1a1815;
+    --app-input-border: #4a443d;
+    --app-primary: #f5f1ea;
+    --app-primary-fg: #1c1917;
+    --app-accent: #b8862b;
+    --app-soft: #3e311d;
+    --app-soft-icon: #b8862b;
+    --app-soft-muted: #d6d0c8;
+    --app-ok: #143021;
+    --app-ok-fg: #86efac;
+    --app-warn: #3a2a0a;
+    --app-warn-fg: #fcd34d;
+    --app-bad: #3b1515;
+    --app-bad-fg: #fca5a5;
+    --app-neutral: #2a2622;
+    --app-neutral-fg: #d6d0c8;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-forest: var(--forest);
+  --color-card: var(--card);
+  --color-chip: var(--chip);
+  --color-toggle: var(--toggle);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line1: var(--line1);
+  --color-line2: var(--line2);
+  --color-strong: var(--strong);
+  --color-bezel: var(--bezel);
+  --color-bar: var(--bar);
+  --color-camp: var(--camp);
+  --color-ok: var(--ok);
+  --color-ok-fg: var(--ok-fg);
+
+  --color-scr: var(--scr);
+  --color-scr-card: var(--scr-card);
+  --color-scr-chip: var(--scr-chip);
+  --color-scr-chip2: var(--scr-chip2);
+  --color-scr-line: var(--scr-line);
+  --color-scr-line2: var(--scr-line2);
+  --color-scr-ink: var(--scr-ink);
+  --color-scr-muted: var(--scr-muted);
+  --color-scr-faint: var(--scr-faint);
+  --color-scr-btn: var(--scr-btn);
+  --color-scr-btn-fg: var(--scr-btn-fg);
+
+  --color-app-bg: var(--app-bg);
+  --color-app-side: var(--app-side);
+  --color-app-surface: var(--app-surface);
+  --color-app-raised: var(--app-raised);
+  --color-app-border: var(--app-border);
+  --color-app-line: var(--app-line);
+  --color-app-text: var(--app-text);
+  --color-app-nav: var(--app-nav);
+  --color-app-muted: var(--app-muted);
+  --color-app-subtle: var(--app-subtle);
+  --color-app-chip: var(--app-chip);
+  --color-app-btn-border: var(--app-btn-border);
+  --color-app-input: var(--app-input);
+  --color-app-input-border: var(--app-input-border);
+  --color-app-primary: var(--app-primary);
+  --color-app-primary-fg: var(--app-primary-fg);
+  --color-app-accent: var(--app-accent);
+  --color-app-soft: var(--app-soft);
+  --color-app-soft-icon: var(--app-soft-icon);
+  --color-app-soft-muted: var(--app-soft-muted);
+  --color-app-ok: var(--app-ok);
+  --color-app-ok-fg: var(--app-ok-fg);
+  --color-app-warn: var(--app-warn);
+  --color-app-warn-fg: var(--app-warn-fg);
+  --color-app-bad: var(--app-bad);
+  --color-app-bad-fg: var(--app-bad-fg);
+  --color-app-neutral: var(--app-neutral);
+  --color-app-neutral-fg: var(--app-neutral-fg);
+}
+
+/* The same in both themes. */
+@theme {
+  --color-fire: #f26b21;
+  --color-fire-soft: #fa8f4e;
+  --color-cream: #f6f0e1;
+  --color-ink-fixed: #16201a;
+  --color-night: #0a0f0c;
+  --color-sage: #c9d3c4;
+  --color-blue: #1d4ed8;
+  --color-pink: #be185d;
+  --color-pine: #2f7d5b;
+  --color-stone: #1c1917;
+
+  --font-sans: 'Figtree Variable', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-code: ui-monospace, monospace;
+  --font-hand: 'Caveat', cursive;
+}
+
+@layer base {
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    margin: 0;
+    background: var(--forest);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-fire);
+    outline-offset: 2px;
+  }
+
+  /* On the forest green the ring is cream, which reads better there. */
+  .on-forest :focus-visible {
+    outline-color: var(--color-cream);
+  }
+
+  /* Anchored sections clear the edge of the viewport when jumped to. */
+  [id] {
+    scroll-margin-top: 16px;
+  }
+
+  code {
+    font-family: var(--font-code);
+    font-size: 0.9em;
+    font-weight: 600;
+  }
+
+  strong {
+    font-weight: 700;
+  }
+
+  summary {
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+/* The design's recurring pieces. */
+
+@utility wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  box-sizing: border-box;
+  padding-inline: clamp(20px, 3.4cqw, 40px);
+}
+
+@utility section-y {
+  padding-block: clamp(44px, 3.6cqw, 52px);
+}
+
+@utility h-hero {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 75%;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  font-size: clamp(50px, 9cqw, 132px);
+  line-height: 0.88;
+}
+
+@utility h-section {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4.2cqw, 58px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+@utility h-page {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6cqw, 84px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+@utility h-card {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+@utility eyebrow {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--color-fire-soft);
+  color: var(--color-night);
+}
+
+@utility lead {
+  margin: 0;
+  font-size: clamp(17px, 1.4cqw, 19px);
+}
+
+@utility card {
+  box-sizing: border-box;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+}
+
+@utility btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 24px;
+  border-radius: 999px;
+  border: 1px solid var(--color-fire);
+  background: var(--color-fire);
+  color: var(--color-ink-fixed);
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@utility link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

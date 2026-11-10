@@ -1,0 +1,29 @@
+---
+import { home } from '../../content/home.ts';
+import CheckList from '../CheckList.astro';
+import ScreenFrame from '../illustrations/ScreenFrame.astro';
+import SignedConsent from '../illustrations/SignedConsent.astro';
+import PhoneConsents from '../screens/PhoneConsents.astro';
+
+const { consents } = home;
+---
+
+<section class="section-y bg-paper text-ink">
+  <div class="wrap flex flex-wrap items-center gap-x-14 gap-y-8">
+    <div class="flex min-w-0 flex-[1_1_480px] flex-wrap items-end gap-x-6 gap-y-5">
+      <ScreenFrame kind="phone" label={consents.screenLabel} class="hidden h-[380px] w-[195px] lg:block">
+        <div class="origin-top-left scale-50">
+          <PhoneConsents />
+        </div>
+      </ScreenFrame>
+      <SignedConsent label={consents.cardLabel} />
+    </div>
+    <div class="flex min-w-0 flex-[1_1_380px] flex-col gap-[18px]">
+      <div class="flex flex-col gap-3.5">
+        <span class="eyebrow">{consents.eyebrow}</span>
+        <h2 class="h-section max-w-[14ch]">{consents.title}</h2>
+      </div>
+      <CheckList items={consents.items} />
+    </div>
+  </div>
+</section>

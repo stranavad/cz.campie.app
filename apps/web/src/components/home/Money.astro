@@ -1,0 +1,25 @@
+---
+import { home } from '../../content/home.ts';
+import CheckList from '../CheckList.astro';
+import ScreenFrame from '../illustrations/ScreenFrame.astro';
+import AdminRegistrations from '../screens/AdminRegistrations.astro';
+
+const { money } = home;
+---
+
+<section class="section-y bg-paper text-ink">
+  <div class="wrap flex flex-wrap items-center gap-x-14 gap-y-8">
+    <div class="flex min-w-0 flex-[1_1_340px] flex-col gap-[22px]">
+      <div class="flex flex-col gap-3.5">
+        <span class="eyebrow">{money.eyebrow}</span>
+        <h2 class="h-section max-w-[15ch]">{money.title}</h2>
+      </div>
+      <CheckList items={money.items} />
+    </div>
+    <ScreenFrame kind="window" label={money.screenLabel} class="hidden h-[450px] w-[640px] rounded-2xl lg:block">
+      <div class="origin-top-left scale-50">
+        <AdminRegistrations />
+      </div>
+    </ScreenFrame>
+  </div>
+</section>

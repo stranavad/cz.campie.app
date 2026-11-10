@@ -1,0 +1,29 @@
+---
+// A card of features: a ticked title beside each text.
+import type { Feature } from '../content/types.ts';
+import { toHtml } from '../lib/inline.ts';
+import Check from './Check.astro';
+
+interface Props {
+  items: readonly Feature[];
+  // h3 under a section's h2; h2 where the list is the page's only content.
+  heading: 'h2' | 'h3';
+}
+
+const { items, heading: Heading } = Astro.props;
+---
+
+<div class="card flex flex-col px-[clamp(16px,2cqw,26px)] py-1.5">
+  {items.map((item) => (
+    <div class="flex flex-wrap gap-x-6 gap-y-1 border-line1 py-4 [&:not(:first-child)]:border-t">
+      <Heading class="m-0 flex flex-[1_1_190px] items-start gap-2.5 text-[17px] font-bold">
+        <Check size="sm" />
+        <span>{item.title}</span>
+      </Heading>
+      <p
+        class="m-0 flex-[3_1_300px] text-[clamp(15px,1.2cqw,16px)] leading-normal text-muted [&_a]:text-ink [&_a]:underline [&_strong]:text-ink"
+        set:html={toHtml(item.text)}
+      />
+    </div>
+  ))}
+</div>

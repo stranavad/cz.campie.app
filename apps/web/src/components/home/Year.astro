@@ -1,0 +1,46 @@
+---
+import { home } from '../../content/home.ts';
+import YearStep from '../illustrations/YearStep.astro';
+
+const { year } = home;
+---
+
+<section class="on-forest section-y bg-forest text-cream">
+  <div class="wrap flex flex-col gap-[clamp(24px,2.8cqw,40px)]">
+    <div class="flex flex-col gap-3.5">
+      <span class="eyebrow">{year.eyebrow}</span>
+      <h2 class="h-section max-w-[24ch]">{year.title}</h2>
+    </div>
+    <ol class="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(320px,100%),1fr))] gap-x-[18px] gap-y-5 p-0">
+      {year.steps.map((step, index) => (
+        <li class="card flex min-h-[212px] min-w-0 items-center gap-[18px] p-6">
+          <div class="flex min-w-0 flex-1 flex-col gap-2 self-start">
+            <span class="flex items-center gap-2 font-mono text-[13px] font-semibold uppercase">
+              <span class="flex size-7 flex-none items-center justify-center rounded-full bg-fire text-ink-fixed">
+                {index + 1}
+              </span>
+              {step.season}
+            </span>
+            <h3 class="h-card mt-1 text-[26px] leading-[1.06]">{step.title}</h3>
+            <p class="m-0 text-base leading-[1.45] text-muted">{step.text}</p>
+            {'chips' in step && (
+              <span class="flex flex-wrap gap-1.5 pt-1">
+                {step.chips.map((chip) => (
+                  <span class="inline-flex h-[34px] items-center rounded-xl bg-chip px-3 text-[13px] font-semibold whitespace-nowrap">
+                    {chip}
+                  </span>
+                ))}
+              </span>
+            )}
+            {'planned' in step && (
+              <span class="inline-flex h-[26px] items-center self-start rounded-full border border-dashed border-strong px-2.5 text-xs font-bold whitespace-nowrap text-ink">
+                {year.plannedLabel}
+              </span>
+            )}
+          </div>
+          {'illustration' in step && <YearStep kind={step.illustration.kind} label={step.illustration.label} />}
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>

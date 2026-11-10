@@ -1,0 +1,11 @@
+---
+import PageHero from '../../components/PageHero.astro';
+import ResultActions from '../../components/ResultActions.astro';
+import { contactFailed } from '../../content/contact.ts';
+import Base from '../../layouts/Base.astro';
+---
+
+<Base page="contactFailed">
+  <PageHero hero={contactFailed.hero} />
+  <ResultActions cta={contactFailed.back} />
+</Base>

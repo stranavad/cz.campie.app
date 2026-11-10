@@ -1,0 +1,134 @@
+---
+// The admin overview of a Turnus (the platform's "Přehled"), the top 1280 x 640 px of it. Demo values.
+import { icons } from '../../content/icons.ts';
+import AdminSidebar from './AdminSidebar.astro';
+
+const tones = {
+  bad: 'bg-app-bad text-app-bad-fg',
+  warn: 'bg-app-warn text-app-warn-fg',
+  neutral: 'bg-app-neutral text-app-neutral-fg',
+};
+const todo = [
+  {
+    n: 3,
+    title: 'Platby po splatnosti',
+    sub: 'Záloha měla přijít do 31. 1. 2027',
+    action: 'Připomenout',
+    tone: tones.bad,
+  },
+  { n: 5, title: 'Dokumenty ke kontrole', sub: 'Potvrzení od lékaře', action: 'Zkontrolovat', tone: tones.warn },
+  { n: 2, title: 'Slevy k ověření', sub: 'Sourozenec na jiném turnusu', action: 'Ověřit', tone: tones.neutral },
+  { n: 6, title: 'Nepodepsané souhlasy', sub: '4 rodiny', action: 'Připomenout', tone: tones.neutral },
+];
+const recent = [
+  { initials: 'JN', name: 'Novákovi', kids: 'Anna, Tomáš', when: 'dnes 9:12' },
+  { initials: 'ED', name: 'Dvořákovi', kids: 'Eliška', when: 'včera' },
+  { initials: 'MS', name: 'Svobodovi', kids: 'Matěj', when: '6. 2.' },
+  { initials: 'KP', name: 'Procházkovi', kids: 'Klára (papírová)', when: '5. 2.' },
+];
+const stats = [
+  { label: 'Zaplaceno celé', value: '24' },
+  { label: 'Vybráno', value: '186 400 Kč' },
+  { label: 'Po splatnosti', value: '3' },
+];
+---
+
+<div class="flex h-[640px] w-[1280px] bg-app-bg font-sans text-[15px] leading-normal text-app-text">
+  <AdminSidebar active="overview" />
+  <div class="flex min-w-0 flex-1 flex-col gap-6 px-10 pt-8 pb-12">
+    <div class="flex items-center gap-4">
+      <span class="flex-1 font-display text-[36px] leading-[1.1] font-extrabold tracking-[-0.03em]">
+        Dobrý den, Jano
+      </span>
+      <span class="flex h-11 items-center gap-2 rounded-full border border-app-btn-border bg-app-surface px-4 font-semibold">
+        <span class="size-2 rounded-full bg-app-accent"></span>1. turnus · 5.-18. 7.
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d={icons.chevron}></path>
+        </svg>
+      </span>
+      <span class="flex h-11 items-center gap-2 rounded-full bg-app-primary px-[18px] font-bold text-app-primary-fg">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d={icons.plus}></path>
+        </svg>
+        Nová přihláška
+      </span>
+    </div>
+
+    <div class="flex items-center gap-10 rounded-[28px] bg-app-soft p-7">
+      <div class="flex flex-[1_1_260px] flex-col gap-1.5">
+        <span class="text-sm font-semibold text-app-soft-muted">1. turnus je zaplněný z</span>
+        <span class="font-display text-[64px] leading-[0.95] font-extrabold tracking-[-0.04em]">76 %</span>
+        <span class="text-app-soft-muted">38 z 50 dětí · zbývá 12 míst</span>
+      </div>
+      <div class="grid flex-[2_1_360px] grid-cols-3 gap-3">
+        {stats.map((stat) => (
+          <div class="flex flex-col rounded-[20px] bg-app-surface px-[18px] py-4">
+            <span class="text-[13px] text-app-muted">{stat.label}</span>
+            <span class="font-display text-[30px] leading-[1.2] font-bold">{stat.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="flex items-start gap-4">
+      <div class="min-w-0 flex-[3_1_480px] rounded-3xl border border-app-border bg-app-surface p-2">
+        <div class="px-4 pt-4 pb-2 font-display text-[22px] font-bold tracking-[-0.02em]">Čeká na vás</div>
+        {todo.map((item, index) => (
+          <div class:list={['flex items-center gap-3.5 px-4 py-3.5', index > 0 && 'border-t border-app-line']}>
+            <span
+              class:list={[
+                'flex h-10 min-w-10 flex-none items-center justify-center rounded-[14px] px-2.5 font-display text-lg font-bold',
+                item.tone,
+              ]}
+            >
+              {item.n}
+            </span>
+            <span class="flex flex-1 flex-col leading-[1.3]">
+              <span class="font-semibold">{item.title}</span>
+              <span class="text-[13px] text-app-muted">{item.sub}</span>
+            </span>
+            <span class="flex h-10 items-center rounded-full border border-app-btn-border bg-app-surface px-4 text-sm font-semibold">
+              {item.action}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div class="flex min-w-0 flex-[2_1_320px] flex-col gap-3 rounded-3xl border border-app-border bg-app-surface p-6">
+        <div class="flex items-baseline justify-between">
+          <span class="font-display text-[22px] font-bold tracking-[-0.02em]">Nové přihlášky</span>
+          <span class="text-sm font-semibold text-app-muted underline">Všechny</span>
+        </div>
+        {recent.map((row) => (
+          <div class="flex min-h-11 items-center gap-3">
+            <span class="flex size-9 items-center justify-center rounded-full bg-app-chip text-[13px] font-bold">
+              {row.initials}
+            </span>
+            <span class="flex flex-1 flex-col leading-[1.3]">
+              <span class="font-semibold">{row.name}</span>
+              <span class="text-[13px] text-app-muted">{row.kids}</span>
+            </span>
+            <span class="text-[13px] text-app-subtle">{row.when}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>

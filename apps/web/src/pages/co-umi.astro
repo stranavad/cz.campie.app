@@ -1,0 +1,27 @@
+---
+import CtaBand from '../components/CtaBand.astro';
+import FeatureList from '../components/FeatureList.astro';
+import FeatureGroup from '../components/illustrations/FeatureGroup.astro';
+import PageHero from '../components/PageHero.astro';
+import { features } from '../content/features.ts';
+import Base from '../layouts/Base.astro';
+---
+
+<Base page="features">
+  <PageHero hero={features.hero} />
+  {features.groups.map((group) => (
+    <section class="bg-paper py-[clamp(28px,3.4cqw,48px)] text-ink">
+      <div class="wrap flex flex-wrap items-start gap-x-14 gap-y-8">
+        <div class="flex min-w-0 flex-[1_1_260px] flex-col gap-[22px]">
+          <h2 class="h-card text-[clamp(28px,3cqw,42px)] leading-[1.02] text-balance">{group.title}</h2>
+          <p class="m-0 text-base text-muted">{group.lead}</p>
+          <FeatureGroup kind={group.illustration.kind} label={group.illustration.label} />
+        </div>
+        <div class="flex min-w-0 flex-[3_1_620px] flex-col gap-[18px]">
+          <FeatureList items={group.items} heading="h3" />
+        </div>
+      </div>
+    </section>
+  ))}
+  <CtaBand />
+</Base>

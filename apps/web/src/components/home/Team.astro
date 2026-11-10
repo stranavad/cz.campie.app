@@ -1,0 +1,72 @@
+---
+import { home } from '../../content/home.ts';
+
+const { team } = home;
+// Each role card's colours and tilt, in the order of team.roles.
+const looks = [
+  { tab: 'bg-forest', avatar: 'bg-forest text-cream', tilt: '-rotate-3' },
+  { tab: 'bg-fire', avatar: 'bg-fire text-ink-fixed', tilt: 'rotate-[1.5deg]' },
+  { tab: 'bg-camp', avatar: 'bg-camp text-ink-fixed', tilt: 'rotate-[4deg]' },
+];
+---
+
+<section class="section-y bg-paper text-ink">
+  <div class="wrap flex flex-wrap items-center gap-x-14 gap-y-8">
+    <div class="flex min-w-0 flex-[1_1_300px] flex-col gap-3.5">
+      <h2 class="h-section max-w-[10ch]">{team.title}</h2>
+      <p class="lead max-w-[34ch] text-muted">{team.lead}</p>
+    </div>
+    <ul class="m-0 hidden min-w-0 flex-[2_1_520px] list-none flex-wrap items-start justify-center gap-5 p-0 pb-3 lg:flex">
+      {team.roles.map((role, index) => (
+        <li class:list={['flex w-[204px] flex-none flex-col items-center', looks[index]?.tilt]}>
+          <span class="h-11 w-[18px] rounded-t bg-fire" />
+          <div class="card flex w-full flex-col overflow-hidden">
+            <span class:list={['flex h-16 justify-center pt-2.5', looks[index]?.tab]}>
+              <span class="h-2.5 w-11 rounded-full bg-paper" />
+            </span>
+            <span class="mt-[-32px] ml-4 flex size-16 rounded-full border-4 border-card bg-card">
+              <span
+                class:list={[
+                  'flex flex-1 items-center justify-center rounded-full font-display text-2xl font-extrabold',
+                  looks[index]?.avatar,
+                ]}
+              >
+                {role.name.charAt(0)}
+              </span>
+            </span>
+            <div class="flex flex-col gap-2 px-4 pt-2.5 pb-[18px]">
+              <span class="font-mono text-xs font-semibold tracking-[0.02em] text-muted uppercase">{role.role}</span>
+              <h3 class="h-card text-[28px] leading-none">{role.name}</h3>
+              <span class="flex flex-wrap gap-1.5 pt-1.5">
+                {role.chips.map((chip) => (
+                  <span class="inline-flex h-[30px] items-center rounded-full bg-chip px-3 text-[13px] font-bold whitespace-nowrap">
+                    {chip}
+                  </span>
+                ))}
+              </span>
+              {'note' in role && <span class="text-[13px] text-muted">{role.note}</span>}
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+    <ul class="card m-0 flex flex-[1_1_100%] list-none flex-col px-[18px] py-1 lg:hidden">
+      {team.roles.map((role, index) => (
+        <li class="flex items-center gap-3.5 border-line py-3.5 [&:not(:first-child)]:border-t">
+          <span
+            class:list={[
+              'flex size-[46px] flex-none items-center justify-center rounded-full font-display text-xl font-extrabold',
+              looks[index]?.avatar,
+            ]}
+          >
+            {role.name.charAt(0)}
+          </span>
+          <span class="flex min-w-0 flex-col gap-0.5">
+            <span class="font-mono text-xs font-semibold text-muted uppercase">{role.role}</span>
+            <span class="text-base leading-[1.3] font-bold">{role.summary}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

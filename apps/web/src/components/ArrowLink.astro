@@ -1,0 +1,17 @@
+---
+import type { Cta } from '../content/types.ts';
+import { href } from '../lib/href.ts';
+import Icon from './Icon.astro';
+
+interface Props {
+  cta: Cta;
+  class?: string;
+}
+
+const { cta, class: className } = Astro.props;
+---
+
+<a href={href(cta.href)} class:list={['link-arrow', className]}>
+  {cta.label}
+  <Icon name="arrow" />
+</a>
