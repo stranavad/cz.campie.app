@@ -3,12 +3,14 @@ import { Injectable } from '@nestjs/common';
 import { ageOnStart } from '@repo/schema/camps';
 import type { ChecklistItem } from '@repo/schema/checklist';
 import type { PaymentStatus } from '@repo/schema/pricing';
-import type {
-  ParticipantListQuery,
-  ParticipantRow,
-  RecentRegistration,
-  SelectedTurnus,
-  TurnusOverview,
+import {
+  invoiceStateOf,
+  type InvoiceFilter,
+  type ParticipantListQuery,
+  type ParticipantRow,
+  type RecentRegistration,
+  type SelectedTurnus,
+  type TurnusOverview,
 } from '@repo/schema/registrations';
 
 import { MembershipRepository } from '../../../../repositories/admins/membership/membership.repository.ts';
@@ -18,6 +20,7 @@ import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.r
 import { DocumentUploadRepository } from '../../../../repositories/documents/document-upload/document-upload.repository.ts';
 import { UndeliverableEmailRepository } from '../../../../repositories/emails/undeliverable-email/undeliverable-email.repository.ts';
 import { ClaimedDiscountVerificationRepository } from '../../../../repositories/registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
+import { InvoiceRequestRepository } from '../../../../repositories/registrations/invoice-request/invoice-request.repository.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { ChecklistService } from '../../checklist/services/checklist.service.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
@@ -70,6 +73,23 @@ function signalsOf(
   };
 }
 
+/**
+ * Tell whether a row's Invoice request passes the list's invoice filter.
+ * @param invoice the row's Invoice request, or null without one
+ * @param filter the filter chosen
+ */
+function invoiceMatches(invoice: ParticipantRow['invoice'], filter: InvoiceFilter): boolean {
+  switch (filter) {
+    case 'none':
+      return invoice === null;
+    case 'company_open':
+      return invoice !== null && invoice.companyBalance > 0;
+    case 'to_invoice':
+    case 'invoiced':
+      return invoice?.state === filter;
+  }
+}
+
 // How many of the newest Registrations the admin's overview shows.
 const RECENT_REGISTRATIONS = 5;
 
@@ -89,6 +109,7 @@ export class ParticipantListService {
     private readonly verifications: ClaimedDiscountVerificationRepository,
     private readonly checklists: ChecklistService,
     private readonly uploads: DocumentUploadRepository,
+    private readonly invoiceRequests: InvoiceRequestRepository,
   ) {}
 
   /**
@@ -179,6 +200,7 @@ export class ParticipantListService {
       [...guardians.values()].flatMap((named) => named.map(({ email }) => email)),
     );
     const balances = await this.ledger.balancesOf(registrations);
+    const invoices = await this.invoiceRequests.listByRegistrations(ids);
     const versions = new Map(
       (await this.forms.listVersionsByIds([...new Set(registrations.map((r) => r.formVersionId))])).map((version) => [
         version.id,
@@ -234,6 +256,7 @@ export class ParticipantListService {
         return [];
       }
 
+      const invoice = invoices.get(registration.id);
       const claimed =
         version === undefined
           ? []
@@ -262,6 +285,10 @@ export class ParticipantListService {
           status: participant.status,
           unverifiedClaimedDiscount: claimed.some(({ verifiedAt }) => verifiedAt === null),
           ...signals.shown,
+          invoice:
+            invoice === undefined
+              ? null
+              : { state: invoiceStateOf(invoice), companyBalance: balance.company?.balance ?? 0 },
         },
       ];
     });
@@ -271,7 +298,8 @@ export class ParticipantListService {
           (query.paymentStatus === undefined || row.paymentStatus === query.paymentStatus) &&
           (query.overdue !== true || row.overdue) &&
           (query.unverifiedClaimedDiscount !== true || row.unverifiedClaimedDiscount) &&
-          (query.missingAnswers !== true || row.missingAnswers),
+          (query.missingAnswers !== true || row.missingAnswers) &&
+          (query.invoice === undefined || invoiceMatches(row.invoice, query.invoice)),
       )
       .sort(
         (one, other) =>

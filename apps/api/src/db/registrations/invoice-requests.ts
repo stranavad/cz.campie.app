@@ -25,6 +25,7 @@ export const invoiceRequests = p.snakeCase.table.withRLS(
     invoiceNumber: p.text(),
   },
   (table) => [
+    p.unique('invoice_requests_organisation_id_id_key').on(table.organisationId, table.id),
     p.unique('invoice_requests_registration_id_key').on(table.registrationId),
     p.foreignKey({
       name: 'invoice_requests_registrations_fkey',

@@ -224,11 +224,13 @@
     "change": "Upravit",
     "remove": "Zrušit žádost",
     "save": "Uložit",
+    "files": "Faktury ke stažení",
     "cancel": "Zrušit",
     "failure": {
       "invoice_request_unavailable": "Tábor platbu fakturou už nenabízí.",
       "invoice_amount_above_total": "Fakturovat lze nejvýše celkovou cenu.",
       "invoice_request_invoiced": "Tábor už fakturu vystavil, žádost nelze změnit.",
+      "invoice_request_has_files": "Tábor už fakturu nahrál, žádost nelze zrušit.",
       "unexpected": "Změnu se nepodařilo uložit. Zkuste to prosím znovu."
     }
   }

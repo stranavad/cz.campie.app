@@ -7,6 +7,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { createElement } from 'react';
 
 import {
   ageProblem,
@@ -70,6 +71,7 @@ import {
 import { CampEmailService } from '../../../camps/camp-email/services/camp-email.service.ts';
 import { DiscountCodeService } from '../../../camps/discount-code/services/discount-code.service.ts';
 import { changedSensitive, ensureHealthWritable, sealAnswers } from '../../answers/sealed-answers.helper.ts';
+import { InvoiceRequestNotice } from '../../invoice-request/invoice-request-notice.email.tsx';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
 import { generatePrihlaskyJob } from '../../prihlaska/generate-prihlasky.job.ts';
 import { notifyTeamJob } from '../notify-team.job.ts';
@@ -388,6 +390,7 @@ export class RegistrationService {
     const registration = await this.registrations.getByIdOrThrow(registrationId);
     const children = await this.registrations.listParticipants(registrationId);
     const turnus = await this.turnusy.getByIdOrThrow(registration.turnusId);
+    const invoiceRequest = await this.invoiceRequests.getByRegistration(registrationId);
 
     await this.campEmails.send(turnus.campId, 'new_registration_notification', {
       values: {
@@ -396,6 +399,13 @@ export class RegistrationService {
         variabilni_symbol: registration.variableSymbol,
       },
       to: [],
+      details:
+        invoiceRequest === null
+          ? undefined
+          : createElement(InvoiceRequestNotice, {
+              companyName: invoiceRequest.companyName,
+              amount: invoiceRequest.amount,
+            }),
     });
   }
 

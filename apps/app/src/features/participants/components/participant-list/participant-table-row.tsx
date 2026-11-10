@@ -10,6 +10,7 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { hasUnsignedConsent, PaymentStatusBadge } from '@/core/participant-list';
 import { DOCUMENTS_STATUS_VARIANT } from '@/features/participants/components/participant-list/documents-status.constant';
 import { DueLine } from '@/features/participants/components/participant-list/due-line';
+import { InvoiceCell } from '@/features/participants/components/participant-list/invoice-cell';
 import { cn } from '@/lib/utils';
 
 interface ParticipantTableRowProps {
@@ -82,6 +83,9 @@ export function ParticipantTableRow({ row }: ParticipantTableRowProps) {
         ) : (
           <Badge variant={DOCUMENTS_STATUS_VARIANT[row.documents]}>{t(`row.documents.${row.documents}`)}</Badge>
         )}
+      </TableCell>
+      <TableCell>
+        <InvoiceCell invoice={row.invoice} />
       </TableCell>
     </TableRow>
   );

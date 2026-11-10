@@ -5,6 +5,7 @@ import {
   createAdmin,
   createCamp,
   createOrganisation,
+  FAKE_INVOICE_REQUEST,
   signIn,
   submitRegistration,
   type RequestHeaders,
@@ -123,6 +124,70 @@ describe('participant export', () => {
     expect(await query(`SELECT action FROM audit_entries WHERE action = 'export.create'`)).toHaveLength(1);
   });
 
+  it('carries the billing details and state of an Invoice request, empty without one', async () => {
+    const [registration] = await query<{ id: string }>('SELECT id FROM registrations');
+    await http()
+      .put(`/api/registrations/${registration?.id}/invoice-request`)
+      .set(owner)
+      .send({ ...FAKE_INVOICE_REQUEST, invoicedOn: '2027-04-11', invoiceNumber: 'FV-2027-7' });
+    await submitRegistration(app(), organisationId, campId, {
+      turnusId,
+      children: [{ firstName: 'Jan', lastName: 'Zkušební', birthDate: '2015-02-01' }],
+    });
+
+    const [headers, ...rows] = await exportSheet({
+      columns: [
+        'lastName',
+        'invoiceCompanyName',
+        'invoiceIco',
+        'invoiceDic',
+        'invoiceStreet',
+        'invoiceCity',
+        'invoicePostcode',
+        'invoiceEmail',
+        'invoiceNote',
+        'invoiceAmount',
+        'invoiceState',
+        'invoicedOn',
+        'invoiceNumber',
+      ],
+    });
+
+    expect(headers).toEqual([
+      'Příjmení',
+      'Firma k fakturaci',
+      'IČO firmy',
+      'DIČ firmy',
+      'Ulice firmy',
+      'Město firmy',
+      'PSČ firmy',
+      'Fakturační e-mail',
+      'Poznámka k faktuře',
+      'Částka k fakturaci',
+      'Stav faktury',
+      'Vyfakturováno',
+      'Číslo faktury',
+    ]);
+    expect(rows).toEqual([
+      [
+        'Testovací',
+        'Fiktivní firma s.r.o.',
+        '12345679',
+        'CZ12345679',
+        'Smyšlená 1',
+        'Praha',
+        '11000',
+        'faktury@example.com',
+        'Objednávka 42',
+        6000,
+        'Vyfakturováno',
+        '11. 4. 2027',
+        'FV-2027-7',
+      ],
+      ['Zkušební'],
+    ]);
+  });
+
   it('shows an export only to the admin who started it, and a repeated start waits for it', async () => {
     const started = await http().post(`/api/turnusy/${turnusId}/exports`).set(owner);
     const again = await http().post(`/api/turnusy/${turnusId}/exports`).set(owner);
@@ -207,8 +272,12 @@ describe('participant export', () => {
         .post(`/api/registrations/${registration?.id}/payments`)
         .set(owner)
         .send({ paidOn: '2027-04-12', note: 'Převodem', ...body });
-    await pay({ kind: 'payment', amount: 3000 });
-    await pay({ kind: 'correction', amount: 500, note: 'Vratka' });
+    await http()
+      .put(`/api/registrations/${registration?.id}/invoice-request`)
+      .set(owner)
+      .send({ ...FAKE_INVOICE_REQUEST, invoicedOn: null, invoiceNumber: null });
+    await pay({ kind: 'payment', amount: 3000, payer: 'company' });
+    await pay({ kind: 'correction', amount: 500, note: 'Vratka', payer: 'company' });
     await query(
       `INSERT INTO payments (organisation_id, registration_id, source, amount, paid_on, note, recorded_at, gateway_transaction_id)
        VALUES ($1, $2, 'gateway', 1000, '2027-04-13', 'Platba kartou', now(), 'AB12-CD34-EF56')`,
@@ -222,14 +291,15 @@ describe('participant export', () => {
       'Datum',
       'Částka',
       'Druh',
+      'Plátce',
       'Poznámka',
       'Transakce platební brány',
       'Zapsáno',
     ]);
-    expect(rows.map((row) => row.slice(0, 6))).toEqual([
-      [registration?.variable_symbol, '12. 4. 2027', 3000, 'Platba', 'Převodem', undefined],
-      [registration?.variable_symbol, '12. 4. 2027', -500, 'Oprava', 'Vratka', undefined],
-      [registration?.variable_symbol, '13. 4. 2027', 1000, 'Platba kartou', 'Platba kartou', 'AB12-CD34-EF56'],
+    expect(rows.map((row) => row.slice(0, 7))).toEqual([
+      [registration?.variable_symbol, '12. 4. 2027', 3000, 'Platba', 'Firma', 'Převodem', undefined],
+      [registration?.variable_symbol, '12. 4. 2027', -500, 'Oprava', 'Firma', 'Vratka', undefined],
+      [registration?.variable_symbol, '13. 4. 2027', 1000, 'Platba kartou', 'Rodič', 'Platba kartou', 'AB12-CD34-EF56'],
     ]);
   });
 

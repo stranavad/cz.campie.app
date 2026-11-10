@@ -14,6 +14,7 @@ import { InvoiceRequestRepository } from '../../../../repositories/registrations
 import type { RegistrationEntity } from '../../../../repositories/registrations/registration/registration.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { campContactOf } from '../../../camps/camp/camp-contact.ts';
+import { InvoiceRequestService } from '../../../registrations/invoice-request/services/invoice-request.service.ts';
 import { LedgerService } from '../../../registrations/ledger/services/ledger.service.ts';
 
 // A guardian's Registrations in the portal. Access follows the guardian emails on each Registration at the
@@ -30,6 +31,7 @@ export class GuardianRegistrationService {
     private readonly organisations: OrganisationRepository,
     private readonly ledgers: LedgerService,
     private readonly invoiceRequests: InvoiceRequestRepository,
+    private readonly invoices: InvoiceRequestService,
     private readonly files: FileService,
     private readonly unitOfWork: UnitOfWork,
     config: ConfigService<Env, true>,
@@ -87,6 +89,7 @@ export class GuardianRegistrationService {
     const camp = await this.camps.getByIdOrThrow(turnus.campId);
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
     const participants = await this.registrations.listParticipants(registration.id);
+    const invoiceRequest = await this.invoiceRequests.getByRegistration(registration.id);
     const prihlasky = await this.files.links(
       participants.flatMap(({ prihlaskaFileId: id }) => (id === null ? [] : [id])),
     );
@@ -133,7 +136,8 @@ export class GuardianRegistrationService {
       status: ledger.status,
       overdue: ledger.overdue,
       payment: await this.ledgers.paymentInstructionsOf(registration.id),
-      invoiceRequest: (await this.invoiceRequests.getByRegistration(registration.id))?.toDto() ?? null,
+      invoiceRequest: invoiceRequest?.toDto() ?? null,
+      invoiceFiles: await this.invoices.filesOf(invoiceRequest),
     };
   }
 }

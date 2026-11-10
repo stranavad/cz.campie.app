@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { PaymentStatusBadge } from '@/core/participant-list';
 import { DueLine } from '@/features/participants/components/participant-list/due-line';
+import { InvoiceCell } from '@/features/participants/components/participant-list/invoice-cell';
 import { ParticipantIssues } from '@/features/participants/components/participant-list/participant-issues';
 import { cn } from '@/lib/utils';
 
@@ -44,6 +45,7 @@ export function ParticipantCard({ row }: ParticipantCardProps) {
             {isCancelled ? <Badge>{t('cancelled')}</Badge> : null}
             <PaymentStatusBadge status={row.paymentStatus} />
             <DueLine amount={row.amountDue.amount} overdue={row.overdue} />
+            {row.invoice === null ? null : <InvoiceCell invoice={row.invoice} />}
           </span>
           <ParticipantIssues row={row} />
         </span>

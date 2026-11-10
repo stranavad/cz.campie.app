@@ -489,7 +489,8 @@
     "email": "Fakturační e-mail (nepovinné)",
     "note": "Poznámka nebo číslo objednávky (nepovinné)",
     "amount": "Částka k fakturaci v Kč",
-    "amountHint": "Zbytek ceny zaplatíte vy. Fakturu vystaví tábor."
+    "amountHint": "Zbytek ceny zaplatíte vy. Fakturu vystaví tábor.",
+    "uploadedAt": "nahráno {{date}}"
   },
   "transfer": {
     "howToPay": "Jak zaplatit",

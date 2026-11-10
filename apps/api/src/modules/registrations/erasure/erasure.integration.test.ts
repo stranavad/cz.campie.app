@@ -160,7 +160,7 @@ describe('erasing a Registration', () => {
     ).toEqual([{ actor_identity: null, ip_address: null }]);
   });
 
-  it('keeps the Invoice request for accounting with its note blanked', async () => {
+  it('keeps the Invoice request and its files for accounting, with its note blanked', async () => {
     const [{ campId }] = await query<{ campId: string }>('SELECT id AS "campId" FROM camps');
     await offerInvoiceRequests(app(), organisationId, campId);
     registrationId = (
@@ -168,11 +168,20 @@ describe('erasing a Registration', () => {
         invoiceRequest: { ...FAKE_INVOICE_REQUEST, amount: 1000 },
       })
     ).id;
+    await http()
+      .post(`/api/registrations/${registrationId}/invoice-request/files`)
+      .set(owner)
+      .attach('file', Buffer.from('%PDF-1.7 faktura'), 'faktura.pdf');
+    const [invoice] = await query<{ file_id: string }>('SELECT file_id FROM invoice_files');
 
     expect((await erase()).status).toBe(204);
-    expect(await query('SELECT company_name, ico, amount, note FROM invoice_requests')).toEqual([
-      { company_name: 'Fiktivní firma s.r.o.', ico: '12345679', amount: 1000, note: null },
+    await jobs().drain();
+
+    expect(await query('SELECT company_name, ico, amount, note, invoiced_on::text FROM invoice_requests')).toEqual([
+      { company_name: 'Fiktivní firma s.r.o.', ico: '12345679', amount: 1000, note: null, invoiced_on: '2027-04-10' },
     ]);
+    expect(await query('SELECT id FROM files WHERE id = $1', [invoice?.file_id])).toHaveLength(1);
+    expect([...files().objects.keys()].some((key) => key.endsWith(`/${invoice?.file_id}`))).toBe(true);
   });
 
   it('takes no new Price adjustment note after the erasure', async () => {

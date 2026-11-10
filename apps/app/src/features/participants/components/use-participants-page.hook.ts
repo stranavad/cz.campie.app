@@ -7,6 +7,7 @@ import { useSelectedTurnus } from '@/core/selected-turnus';
 import { useParticipantsQuery } from '@/features/participants/api/participants.queries';
 import type {
   CheckFilter,
+  InvoiceTab,
   ParticipantsPanel,
   ParticipantsSearch,
   PaymentTab,
@@ -39,6 +40,7 @@ export function useParticipantsPage(search: ParticipantsSearch, onSearch: (searc
   const [text, setText] = useState('');
   const tab = search.platba ?? 'all';
   const checks = search.kontrola ?? [];
+  const invoice = search.faktura ?? 'all';
   // A link may name a tool the admin can't use; it stays closed.
   const panel = search.panel === undefined || (!canWrite && WRITE_PANELS.includes(search.panel)) ? null : search.panel;
   const settledText = useDebouncedValue(text.trim(), 300);
@@ -46,6 +48,7 @@ export function useParticipantsPage(search: ParticipantsSearch, onSearch: (searc
     ...(settledText === '' ? {} : { search: settledText }),
     ...(tab === 'all' ? {} : tab === 'overdue' ? { overdue: true } : { paymentStatus: tab }),
     ...checks.reduce<ParticipantListQuery>((query, check) => ({ ...query, ...CHECK_QUERY[check] }), {}),
+    ...(invoice === 'all' ? {} : { invoice }),
   });
   // The whole Turnus, unfiltered, for the tabs' counts; the same entry as the list without filters.
   const everyone = useParticipantsQuery(organisationId, turnusId, {});
@@ -74,6 +77,8 @@ export function useParticipantsPage(search: ParticipantsSearch, onSearch: (searc
 
       onSearch({ ...search, kontrola: next.length === 0 ? undefined : next });
     },
+    invoice,
+    setInvoice: (next: InvoiceTab) => onSearch({ ...search, faktura: next === 'all' ? undefined : next }),
     rows: participants.data ?? [],
     isListLoading: turnusId !== null && participants.isPending,
     isEmpty: participants.data?.length === 0,

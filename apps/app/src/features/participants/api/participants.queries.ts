@@ -3,6 +3,7 @@ import { keepPreviousData, skipToken, useMutation, useQuery, useQueryClient } fr
 import type {
   AddParticipantBody,
   AddPriceAdjustmentBody,
+  AdminInvoiceRequestBody,
   CreateRegistrationBody,
   EditAnswersBody,
   EditGuardianBody,
@@ -58,6 +59,19 @@ const useRegistrationChange = <Variables, Result>(
 export const useRecordPaymentMutation = (organisationId: string, registrationId: string) =>
   useRegistrationChange(organisationId, (body: RecordPaymentBody) =>
     participantsService.recordPayment(organisationId, registrationId, body),
+  );
+
+export const useSaveInvoiceRequestMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, (body: AdminInvoiceRequestBody) =>
+    participantsService.saveInvoiceRequest(organisationId, registrationId, body),
+  );
+
+export const useRemoveInvoiceRequestMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, () => participantsService.removeInvoiceRequest(organisationId, registrationId));
+
+export const useUploadInvoiceFileMutation = (organisationId: string, registrationId: string) =>
+  useRegistrationChange(organisationId, (file: File) =>
+    participantsService.uploadInvoiceFile(organisationId, registrationId, file),
   );
 
 export const useAddPriceAdjustmentMutation = (organisationId: string, registrationId: string) =>

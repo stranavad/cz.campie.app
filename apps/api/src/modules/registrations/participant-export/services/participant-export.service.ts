@@ -16,6 +16,7 @@ import {
 import type { Balance, PaymentStatus } from '@repo/schema/pricing';
 import {
   FIXED_EXPORT_COLUMNS,
+  invoiceStateOf,
   type ExportOptions,
   type ExportPreset,
   type FixedExportColumn,
@@ -37,6 +38,8 @@ import { CampRepository } from '../../../../repositories/camps/camp/camp.reposit
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
 import type { TurnusEntity } from '../../../../repositories/camps/turnus/turnus.entity.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
+import type { InvoiceRequestEntity } from '../../../../repositories/registrations/invoice-request/invoice-request.entity.ts';
+import { InvoiceRequestRepository } from '../../../../repositories/registrations/invoice-request/invoice-request.repository.ts';
 import {
   ParticipantExportRepository,
   type ExportPresetRow,
@@ -69,6 +72,8 @@ interface Row {
   readonly first: GuardianFields | undefined;
   readonly second: GuardianFields | undefined;
   readonly balance: Balance;
+  // The Registration's Invoice request, or null without one.
+  readonly invoice: InvoiceRequestEntity | null;
   readonly turnus: TurnusEntity;
   // The answers beyond the core, the encrypted ones opened when a column of them is chosen.
   readonly registrationAnswers: Answers;
@@ -84,6 +89,8 @@ const PAYMENT_HEADERS = {
   overpaid: 'Přeplaceno',
 } as const satisfies Record<PaymentStatus, string>;
 const SOURCE_HEADERS = { manual: 'Platba', gateway: 'Platba kartou', correction: 'Oprava' } as const;
+const PAYER_HEADERS = { guardian: 'Rodič', company: 'Firma' } as const;
+const INVOICE_STATE_HEADERS = { to_invoice: 'K vyfakturování', invoiced: 'Vyfakturováno' } as const;
 
 const nameOf = (guardian: GuardianFields | undefined) =>
   guardian === undefined ? null : `${guardian.firstName} ${guardian.lastName}`;
@@ -120,6 +127,28 @@ const FIXED: Readonly<Record<FixedExportColumn, { readonly header: string; reado
     cell: ({ balance }) => (balance.amountDue.dueDate === null ? null : czechDate(balance.amountDue.dueDate)),
   },
   overdue: { header: 'Po splatnosti', cell: ({ balance }) => (balance.overdue ? 'Ano' : 'Ne') },
+  invoiceCompanyName: { header: 'Firma k fakturaci', cell: ({ invoice }) => invoice?.companyName ?? null },
+  invoiceIco: { header: 'IČO firmy', cell: ({ invoice }) => invoice?.ico ?? null },
+  invoiceDic: { header: 'DIČ firmy', cell: ({ invoice }) => invoice?.dic ?? null },
+  invoiceStreet: { header: 'Ulice firmy', cell: ({ invoice }) => invoice?.street ?? null },
+  invoiceCity: { header: 'Město firmy', cell: ({ invoice }) => invoice?.city ?? null },
+  invoicePostcode: { header: 'PSČ firmy', cell: ({ invoice }) => invoice?.postcode ?? null },
+  invoiceEmail: { header: 'Fakturační e-mail', cell: ({ invoice }) => invoice?.email ?? null },
+  invoiceNote: { header: 'Poznámka k faktuře', cell: ({ invoice }) => invoice?.note ?? null },
+  invoiceAmount: { header: 'Částka k fakturaci', cell: ({ invoice }) => invoice?.amount ?? null },
+  invoiceState: {
+    header: 'Stav faktury',
+    cell: ({ invoice }) => (invoice === null ? null : INVOICE_STATE_HEADERS[invoiceStateOf(invoice)]),
+  },
+  invoicedOn: {
+    header: 'Vyfakturováno',
+    cell: ({ invoice }) => {
+      const invoicedOn = invoice?.invoicedOn ?? null;
+
+      return invoicedOn === null ? null : czechDate(invoicedOn);
+    },
+  },
+  invoiceNumber: { header: 'Číslo faktury', cell: ({ invoice }) => invoice?.invoiceNumber ?? null },
 };
 
 // Where the form's columns sit among the export's own: after the guardians, before the money.
@@ -164,6 +193,7 @@ export class ParticipantExportService {
     private readonly exports: ParticipantExportRepository,
     private readonly registrations: RegistrationRepository,
     private readonly payments: PaymentRepository,
+    private readonly invoiceRequests: InvoiceRequestRepository,
     private readonly ledger: LedgerService,
     private readonly turnusy: TurnusRepository,
     private readonly camps: CampRepository,
@@ -502,6 +532,7 @@ export class ParticipantExportService {
     );
     const guardians = await this.registrations.listGuardiansOf(ids);
     const balances = await this.ledger.balancesOf(registrations);
+    const invoices = await this.invoiceRequests.listByRegistrations(ids);
     // Encrypted answers are opened only when a column of them is chosen; health columns are already left out
     // above without Health read, so health answers opened beside them never reach the file.
     const answersOf = formEntries.some(({ sealed }) => sealed)
@@ -528,6 +559,7 @@ export class ParticipantExportService {
           first,
           second,
           balance,
+          invoice: invoices.get(registration.id) ?? null,
           turnus,
           registrationAnswers: registrationAnswers.get(registration.id) ?? {},
           participantAnswers: answersOf(participant),
@@ -545,12 +577,22 @@ export class ParticipantExportService {
    */
   private async paymentsSheet(from: string, to: string): Promise<{ headers: string[]; rows: Cell[][] }> {
     return {
-      headers: ['Variabilní symbol', 'Datum', 'Částka', 'Druh', 'Poznámka', 'Transakce platební brány', 'Zapsáno'],
+      headers: [
+        'Variabilní symbol',
+        'Datum',
+        'Částka',
+        'Druh',
+        'Plátce',
+        'Poznámka',
+        'Transakce platební brány',
+        'Zapsáno',
+      ],
       rows: (await this.payments.listPaidWithin(from, to)).map((payment) => [
         payment.variableSymbol,
         czechDate(payment.paidOn),
         payment.amount,
         SOURCE_HEADERS[payment.source],
+        PAYER_HEADERS[payment.payer],
         payment.note,
         payment.gatewayTransactionId,
         czechDateTime(payment.recordedAt.toISOString()),

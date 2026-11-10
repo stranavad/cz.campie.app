@@ -7,6 +7,7 @@ import { answerValueSchema, formDefinitionShape } from '@repo/schema/form-engine
 import { PAYMENT_CHOICES } from '@repo/schema/pricing';
 import { calendarDateSchema, defineEndpoint } from '@repo/schema/shared';
 
+import { invoiceFileSchema, invoiceRequestSchema } from '../invoice-request/invoice-request.resource.ts';
 import { ledgerSchema, registrationParamsSchema } from '../ledger/ledger.resource.ts';
 import { PARTICIPANT_STATUSES } from '../registration/participant-status.ts';
 import { REGISTRATION_SOURCES } from '../registration/registration-source.ts';
@@ -74,6 +75,9 @@ export const registrationDetailSchema = z.object({
   registrationAnswers: z.array(answerRowSchema),
   priceLines: z.array(priceLineSchema),
   ledger: ledgerSchema,
+  invoiceRequest: invoiceRequestSchema.nullable(),
+  // The invoices the camp uploaded to the Invoice request, oldest first; never removed.
+  invoiceFiles: z.array(invoiceFileSchema),
   declarations: z.array(
     z.object({
       text: z.string(),

@@ -68,6 +68,8 @@ export function ParticipantsPage({ search, onSearch }: ParticipantsPageProps) {
             countOf={page.countOf}
             checks={page.checks}
             onToggleCheck={page.toggleCheck}
+            invoice={page.invoice}
+            onInvoice={page.setInvoice}
           />
           <ParticipantList
             rows={page.rows}

@@ -3,7 +3,12 @@ import { z } from 'zod';
 import { priceLineSchema } from '@repo/schema/camps';
 import { fileLinkSchema } from '@repo/schema/files';
 import { PAYMENT_STATUSES } from '@repo/schema/pricing';
-import { invoiceRequestSchema, PARTICIPANT_STATUSES, registrationPaymentSchema } from '@repo/schema/registrations';
+import {
+  invoiceFileSchema,
+  invoiceRequestSchema,
+  PARTICIPANT_STATUSES,
+  registrationPaymentSchema,
+} from '@repo/schema/registrations';
 import { calendarDateSchema } from '@repo/schema/shared';
 
 const amount = z.number().int();
@@ -59,6 +64,8 @@ export const guardianRegistrationSchema = z.object({
   overdue: z.boolean(),
   payment: registrationPaymentSchema,
   invoiceRequest: invoiceRequestSchema.nullable(),
+  // The invoices the camp uploaded, oldest first, to pass on to the company.
+  invoiceFiles: z.array(invoiceFileSchema),
 });
 
 export type GuardianRegistration = z.infer<typeof guardianRegistrationSchema>;

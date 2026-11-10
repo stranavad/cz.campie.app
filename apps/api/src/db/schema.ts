@@ -28,6 +28,7 @@ export { declarationAnswers } from './registrations/declaration-answers.ts';
 export { guardianEmailChanges } from './registrations/guardian-email-changes.ts';
 export { exportKind, exportStatus, participantExports } from './registrations/participant-exports.ts';
 export { participants, participantStatus } from './registrations/participants.ts';
+export { invoiceFiles } from './registrations/invoice-files.ts';
 export { invoiceRequests } from './registrations/invoice-requests.ts';
 export { payer, paymentSource, payments } from './registrations/payments.ts';
 export { cardPayments } from './registrations/card-payments.ts';

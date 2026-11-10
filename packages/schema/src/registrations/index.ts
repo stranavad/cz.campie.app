@@ -18,3 +18,4 @@ export * from './erasure/erasure.contracts.ts';
 export * from './registration-payment/registration-payment.resource.ts';
 export * from './prihlaska/submitted-prihlasky.contract.ts';
 export * from './invoice-request/invoice-request.resource.ts';
+export * from './invoice-request/invoice-request.contracts.ts';

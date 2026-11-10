@@ -61,6 +61,7 @@ export const AUDIT_ACTIONS = {
   'internal_document.create': { area: 'documents', targets: ['participant'] },
   'internal_document.remove': { area: 'documents', targets: ['participant'] },
   'internal_document.view': { area: 'documents', targets: ['participant'] },
+  'invoice_file.create': { area: 'payments', targets: ['registration'] },
   'invoice_request.create': { area: 'payments', targets: ['registration'] },
   'invoice_request.remove': { area: 'payments', targets: ['registration'] },
   'invoice_request.update': { area: 'payments', targets: ['registration'] },

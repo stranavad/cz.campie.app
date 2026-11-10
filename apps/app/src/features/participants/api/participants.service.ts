@@ -41,13 +41,17 @@ import {
   removeAccessEmailEndpoint,
   removeExportPresetEndpoint,
   removeGuardianEndpoint,
+  removeInvoiceRequestEndpoint,
   saveExportPresetEndpoint,
+  saveInvoiceRequestEndpoint,
   sendPaymentRemindersEndpoint,
   startParticipantExportEndpoint,
   startPaymentsExportEndpoint,
+  uploadInvoiceFileEndpoint,
   verifyClaimedDiscountEndpoint,
   type AddParticipantBody,
   type AddPriceAdjustmentBody,
+  type AdminInvoiceRequestBody,
   type CreateRegistrationBody,
   type EditAnswersBody,
   type EditGuardianBody,
@@ -65,6 +69,12 @@ export const participantsService = {
     apiClient.request(getRegistrationDetailEndpoint, { organisationId, params: { registrationId }, signal }),
   history: (organisationId: string, registrationId: string, signal?: AbortSignal) =>
     apiClient.request(getRegistrationHistoryEndpoint, { organisationId, params: { registrationId }, signal }),
+  saveInvoiceRequest: (organisationId: string, registrationId: string, body: AdminInvoiceRequestBody) =>
+    apiClient.request(saveInvoiceRequestEndpoint, { organisationId, params: { registrationId }, body }),
+  removeInvoiceRequest: (organisationId: string, registrationId: string) =>
+    apiClient.request(removeInvoiceRequestEndpoint, { organisationId, params: { registrationId } }),
+  uploadInvoiceFile: (organisationId: string, registrationId: string, file: File) =>
+    apiClient.request(uploadInvoiceFileEndpoint, { organisationId, params: { registrationId }, file }),
   recordPayment: (organisationId: string, registrationId: string, body: RecordPaymentBody) =>
     apiClient.request(recordPaymentEndpoint, { organisationId, params: { registrationId }, body }),
   addPriceAdjustment: (organisationId: string, registrationId: string, body: AddPriceAdjustmentBody) =>

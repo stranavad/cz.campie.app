@@ -49,7 +49,9 @@ export function useInvoiceRequestCard(registration: GuardianRegistration) {
       }
     },
   });
-  const isInvoiced = invoiceRequest !== null && invoiceRequest.invoicedOn !== null;
+  // An uploaded invoice keeps it the camp's even when it cleared the date.
+  const isInvoiced =
+    invoiceRequest !== null && (invoiceRequest.invoicedOn !== null || registration.invoiceFiles.length > 0);
 
   return {
     invoiceRequest,

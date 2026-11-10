@@ -16,7 +16,7 @@ export function ParticipantTable({ rows }: ParticipantTableProps) {
   return (
     <Table
       containerClassName="hidden md:block"
-      className="min-w-[56rem]"
+      className="min-w-[62rem]"
       footer={<TableFooter>{t('count', { count: rows.length })}</TableFooter>}
     >
       <TableHeader>
@@ -27,6 +27,7 @@ export function ParticipantTable({ rows }: ParticipantTableProps) {
           <TableHead>{t('columns.submittedAt')}</TableHead>
           <TableHead>{t('columns.consents')}</TableHead>
           <TableHead>{t('columns.documents')}</TableHead>
+          <TableHead>{t('columns.invoice')}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

@@ -18,6 +18,7 @@ import { DeclarationsCard } from '@/features/participants/components/registratio
 import { DetailSkeleton } from '@/features/participants/components/registration-detail/detail-skeleton';
 import { GuardiansCard } from '@/features/participants/components/registration-detail/guardians-card';
 import { HistoryCard } from '@/features/participants/components/registration-detail/history-card';
+import { InvoiceRequestCard } from '@/features/participants/components/registration-detail/invoice-request-card';
 import { MoreActions } from '@/features/participants/components/registration-detail/more-actions';
 import { ParticipantCards } from '@/features/participants/components/registration-detail/participant-cards';
 import { PaymentsCard } from '@/features/participants/components/registration-detail/payments-card';
@@ -122,6 +123,7 @@ export function RegistrationDetailPage({ registrationId }: RegistrationDetailPag
         </div>
         <div className="flex min-w-0 flex-col gap-4 lg:col-span-2">
           <PaymentsCard {...shared} detail={detail} canWrite={page.canWrite} />
+          <InvoiceRequestCard organisationId={page.organisationId} detail={detail} canWrite={page.canWrite} />
           <HistoryCard history={page.history} />
         </div>
       </div>

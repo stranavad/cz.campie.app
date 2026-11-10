@@ -1,6 +1,6 @@
 # 82 - Admin Invoice requests and invoice files
 
-Status: ready-for-agent
+Status: in-progress
 Stage: 1a
 Episode: E6 Admin Registrations
 Blocked by: 81
@@ -37,3 +37,5 @@ Admins work with Invoice requests in the Registration evidence: they see them in
 - Internal documents (issue 58) are deliberately not reused: they belong to a Participant, are hidden from guardians and are cleared by cleanup and erasure.
 
 ## Comments
+
+- 2026-11-10: Implemented. Admins save an Invoice request with `PUT /registrations/:id/invoice-request` (billing details, any amount from 0, `invoicedOn` and `invoiceNumber`), whatever the Camp switch says, on public and admin-created Registrations alike; the admin create body still takes none, an admin adds one on the new Registration afterwards. `invoice_files` is its own Organisation table with a non-cascading foreign key, and the app role has no UPDATE, DELETE or TRUNCATE on it (custom migration), so cleanup and erasure cannot remove one. Only the first upload sets the date (when empty); a date an admin cleared afterwards stays cleared. Once a file exists the guardian may no longer change or remove the Invoice request, even with the date cleared. The admin card edits the billing details and the state ("Označit jako vyfakturované") as two small forms. Post-Turnus cleanup does not exist yet, so its criterion is covered only by the database privilege; its issue must keep invoice files out of every category. Not checked in a browser yet.

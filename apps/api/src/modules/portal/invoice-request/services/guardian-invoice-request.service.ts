@@ -104,7 +104,7 @@ export class GuardianInvoiceRequestService {
    * @param email the signed-in guardian's email
    * @param registrationId Registration id
    * @throws {NotFoundException} when no Registration of the Organisation with this id names the guardian
-   * @throws {ConflictException} invoice_request_invoiced once the camp has invoiced it
+   * @throws {ConflictException} invoice_request_invoiced once the camp has invoiced it or uploaded an invoice
    */
   private async editable(
     email: string,
@@ -117,7 +117,11 @@ export class GuardianInvoiceRequestService {
     const registration = await this.registrations.lockByIdOrThrow(registrationId);
     const invoiceRequest = await this.invoiceRequests.getByRegistration(registrationId);
 
-    if (invoiceRequest !== null && invoiceRequest.invoicedOn !== null) {
+    // An uploaded invoice keeps it the camp's even when an admin cleared the date.
+    if (
+      invoiceRequest !== null &&
+      (invoiceRequest.invoicedOn !== null || (await this.invoiceRequests.listFiles(invoiceRequest.id)).length > 0)
+    ) {
       const code: InvoiceRequestErrorCode = 'invoice_request_invoiced';
 
       throw new ConflictException({ code, message: 'The camp has invoiced it already' });

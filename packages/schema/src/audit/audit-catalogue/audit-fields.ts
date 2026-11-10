@@ -134,6 +134,7 @@ export const AUDIT_FIELDS = {
     lastName: text('lastName'),
     birthDate: date('birthDate'),
   },
+  invoice_file: { uploadedAt: datetime('uploadedAt') },
   invoice_request: {
     companyName: text('companyName'),
     ico: text('ico'),

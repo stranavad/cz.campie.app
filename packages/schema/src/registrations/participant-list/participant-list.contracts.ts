@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { PAYMENT_STATUSES } from '@repo/schema/pricing';
 import { calendarDateSchema, defineEndpoint } from '@repo/schema/shared';
 
+import { INVOICE_STATES } from '../invoice-request/invoice-request.resource.ts';
 import { PARTICIPANT_STATUSES } from '../registration/participant-status.ts';
 
 // The Turnus an admin looks at, remembered per admin and Organisation, and the Turnusy to switch between.
@@ -44,6 +45,12 @@ const flag = z
   .transform((value) => value === 'true')
   .optional();
 
+// The list's invoice filter: no Invoice request, one still to invoice, one invoiced, or one whose company
+// still owes part of its share.
+export const INVOICE_FILTERS = ['none', ...INVOICE_STATES, 'company_open'] as const;
+
+export type InvoiceFilter = (typeof INVOICE_FILTERS)[number];
+
 export const participantListQuerySchema = z.object({
   // Child or guardian name, email or Variable symbol, in any case and with or without diacritics.
   search: z.string().trim().max(100).optional(),
@@ -55,6 +62,7 @@ export const participantListQuerySchema = z.object({
   unsignedConsent: flag,
   missingDocument: flag,
   missingAnswers: flag,
+  invoice: z.enum(INVOICE_FILTERS).optional(),
 });
 
 export type ParticipantListQuery = z.output<typeof participantListQuerySchema>;
@@ -92,6 +100,8 @@ export const participantRowSchema = z.object({
   // Null while the Camp has documents off, and for a Cancelled child.
   documents: z.enum(DOCUMENTS_STATUSES).nullable(),
   missingAnswers: z.boolean(),
+  // The Registration's Invoice request: its state and what the company has left to pay; null without one.
+  invoice: z.object({ state: z.enum(INVOICE_STATES), companyBalance: z.number().int() }).nullable(),
 });
 
 export type ParticipantRow = z.infer<typeof participantRowSchema>;

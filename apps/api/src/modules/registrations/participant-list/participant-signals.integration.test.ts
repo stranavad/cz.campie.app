@@ -296,6 +296,7 @@ describe('participant list signals', () => {
       'firstName',
       'guardianEmail',
       'guardianName',
+      'invoice',
       'lastName',
       'missingAnswers',
       'overdue',

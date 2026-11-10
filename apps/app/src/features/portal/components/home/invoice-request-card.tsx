@@ -7,7 +7,7 @@ import { PaymentRow } from '@/components/payment-row';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { InvoiceRequestFields } from '@/core/invoice-request';
+import { InvoiceFileList, InvoiceRequestFields } from '@/core/invoice-request';
 import { useInvoiceRequestCard } from '@/features/portal/components/home/use-invoice-request-card.hook';
 
 interface InvoiceRequestCardProps {
@@ -67,6 +67,12 @@ export function InvoiceRequestCard({ registration }: InvoiceRequestCardProps) {
                     })
             }
           />
+        </div>
+      )}
+      {registration.invoiceFiles.length === 0 ? null : (
+        <div className="flex flex-col gap-1.5">
+          <h4 className="text-[13px] font-bold text-muted-foreground">{t('files')}</h4>
+          <InvoiceFileList files={registration.invoiceFiles} />
         </div>
       )}
       {card.isInvoiced ? <p className="text-[13px] text-muted-foreground">{t('locked')}</p> : null}

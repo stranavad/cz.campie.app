@@ -3,6 +3,7 @@ export { RegistrationDetailPage } from '@/features/participants/components/regis
 export { CreateRegistrationPage } from '@/features/participants/components/create/create-registration-page';
 export {
   CHECK_FILTERS,
+  INVOICE_TABS,
   PARTICIPANTS_PANELS,
   PAYMENT_TABS,
 } from '@/features/participants/components/participants-search.constant';

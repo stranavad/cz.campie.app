@@ -1,15 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
-import { invoiceRequests } from '../../../db/schema.ts';
+import { invoiceFiles, invoiceRequests } from '../../../db/schema.ts';
 import { InvoiceRequestEntity, type InvoiceRequestInsertModel } from './invoice-request.entity.ts';
 
-// The billing details and amount; the state is the camp's to set.
-export type SaveInvoiceRequest = Omit<
-  InvoiceRequestInsertModel,
-  'id' | 'organisationId' | 'registrationId' | 'invoicedOn' | 'invoiceNumber'
->;
+// The billing details and amount, and the state only when the camp sets it.
+export type SaveInvoiceRequest = Omit<InvoiceRequestInsertModel, 'id' | 'organisationId' | 'registrationId'>;
+
+export type InvoiceFileRow = typeof invoiceFiles.$inferSelect;
 
 // One Invoice request per Registration.
 @Injectable()
@@ -65,6 +64,52 @@ export class InvoiceRequestRepository {
     }
 
     return new InvoiceRequestEntity(row);
+  }
+
+  /**
+   * Mark an Invoice request invoiced on a date unless it has one already.
+   * @param id Invoice request id
+   * @param invoicedOn the Prague calendar date
+   * @returns the Invoice request after, or null when it had a date
+   */
+  public async markInvoiced(id: string, invoicedOn: string): Promise<InvoiceRequestEntity | null> {
+    const [row] = await this.unitOfWork.db
+      .update(invoiceRequests)
+      .set({ invoicedOn })
+      .where(and(eq(invoiceRequests.id, id), isNull(invoiceRequests.invoicedOn)))
+      .returning();
+
+    return row === undefined ? null : new InvoiceRequestEntity(row);
+  }
+
+  /**
+   * Attach a stored file to an Invoice request in the current Organisation.
+   * @param input the Invoice request, file, uploader and time
+   * @throws {Error} when the database returns no row
+   */
+  public async addFile(input: Omit<InvoiceFileRow, 'id' | 'organisationId'>): Promise<InvoiceFileRow> {
+    const [row] = await this.unitOfWork.db
+      .insert(invoiceFiles)
+      .values({ ...input, organisationId: this.unitOfWork.organisationId })
+      .returning();
+
+    if (row === undefined) {
+      throw new Error('The invoice file was not saved');
+    }
+
+    return row;
+  }
+
+  /**
+   * List the files of an Invoice request, oldest first.
+   * @param invoiceRequestId Invoice request id
+   */
+  public async listFiles(invoiceRequestId: string): Promise<InvoiceFileRow[]> {
+    return this.unitOfWork.db
+      .select()
+      .from(invoiceFiles)
+      .where(eq(invoiceFiles.invoiceRequestId, invoiceRequestId))
+      .orderBy(asc(invoiceFiles.uploadedAt), asc(invoiceFiles.id));
   }
 
   /**

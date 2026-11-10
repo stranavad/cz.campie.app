@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { fileLinkSchema } from '@repo/schema/files';
 import { icoSchema, vatIdSchema } from '@repo/schema/organisations';
 import { calendarDateSchema, czkSchema, emailSchema } from '@repo/schema/shared';
 
@@ -46,12 +47,45 @@ export const invoiceRequestSchema = invoiceRequestFieldsSchema.extend({
 
 export type InvoiceRequest = z.infer<typeof invoiceRequestSchema>;
 
+// What an admin saves: the company, any amount from zero, and the state, set or cleared at any time.
+export const adminInvoiceRequestBodySchema = invoiceRequestFieldsSchema.extend({
+  amount: czkSchema,
+  invoicedOn: calendarDateSchema.nullable(),
+  invoiceNumber: optional(z.string().trim().max(100)),
+});
+
+export type AdminInvoiceRequestBody = z.infer<typeof adminInvoiceRequestBodySchema>;
+
+// An invoice or corrective document the camp uploaded to an Invoice request, with a short-lived link.
+export const invoiceFileSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  uploadedAt: z.iso.datetime(),
+  file: fileLinkSchema,
+});
+
+export type InvoiceFile = z.infer<typeof invoiceFileSchema>;
+
+// Where an Invoice request stands: still to invoice (no date yet) or invoiced.
+export const INVOICE_STATES = ['to_invoice', 'invoiced'] as const;
+
+export type InvoiceState = (typeof INVOICE_STATES)[number];
+
+/**
+ * Tell where an Invoice request stands.
+ * @param invoiceRequest its date of invoicing
+ */
+export function invoiceStateOf({ invoicedOn }: { invoicedOn: string | null }): InvoiceState {
+  return invoicedOn === null ? 'to_invoice' : 'invoiced';
+}
+
 // Why an Invoice request was refused: the Camp does not offer one, the amount is above the total (at the
-// amount field), or the camp has invoiced it already.
+// amount field), the camp has invoiced it already, or it holds invoice files, which are never removed.
 export const INVOICE_REQUEST_ERROR_CODES = [
   'invoice_request_unavailable',
   'invoice_amount_above_total',
   'invoice_request_invoiced',
+  'invoice_request_has_files',
 ] as const;
 
 export type InvoiceRequestErrorCode = (typeof INVOICE_REQUEST_ERROR_CODES)[number];

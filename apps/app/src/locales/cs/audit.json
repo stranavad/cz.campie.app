@@ -71,6 +71,7 @@
       "remove": "Smazání interního dokumentu účastníka",
       "view": "Zobrazení interního dokumentu účastníka"
     },
+    "invoice_file": { "create": "Nahrání faktury" },
     "invoice_request": {
       "create": "Žádost o fakturu",
       "remove": "Zrušení žádosti o fakturu",

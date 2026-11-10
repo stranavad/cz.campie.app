@@ -2,8 +2,14 @@ import { useTranslation } from 'react-i18next';
 
 import { SearchInput } from '@/components/search-input';
 import { SegmentedControl, SegmentedControlCount, SegmentedControlItem } from '@/components/ui/segmented-control';
+import { Select } from '@/components/ui/select';
 import { CheckFilters } from '@/features/participants/components/participant-list/check-filters';
-import type { CheckFilter, PaymentTab } from '@/features/participants/components/participants-search.constant';
+import {
+  INVOICE_TABS,
+  type CheckFilter,
+  type InvoiceTab,
+  type PaymentTab,
+} from '@/features/participants/components/participants-search.constant';
 import { cn } from '@/lib/utils';
 
 interface ParticipantFiltersProps {
@@ -15,6 +21,8 @@ interface ParticipantFiltersProps {
   countOf: (tab: PaymentTab) => number | undefined;
   checks: readonly CheckFilter[];
   onToggleCheck: (check: CheckFilter) => void;
+  invoice: InvoiceTab;
+  onInvoice: (invoice: InvoiceTab) => void;
 }
 
 // In the design's order; a rare status shows only when someone has it.
@@ -54,6 +62,15 @@ export function ParticipantFilters(props: ParticipantFiltersProps) {
         })}
       </SegmentedControl>
       <CheckFilters checks={props.checks} onToggle={props.onToggleCheck} />
+      <Select
+        variant="chip"
+        aria-label={t('invoiceFilter.label')}
+        value={props.invoice}
+        onValueChange={props.onInvoice}
+        options={INVOICE_TABS.map((value) => ({ value, label: t(`invoiceFilter.${value}`) }))}
+      >
+        {t('invoiceFilter.chosen', { value: t(`invoiceFilter.${props.invoice}`) })}
+      </Select>
       <SearchInput
         className="w-full sm:ml-auto sm:w-80"
         placeholder={t('search')}

@@ -41,6 +41,18 @@ export const FIXED_EXPORT_COLUMNS = [
   'amountDueNow',
   'dueDate',
   'overdue',
+  'invoiceCompanyName',
+  'invoiceIco',
+  'invoiceDic',
+  'invoiceStreet',
+  'invoiceCity',
+  'invoicePostcode',
+  'invoiceEmail',
+  'invoiceNote',
+  'invoiceAmount',
+  'invoiceState',
+  'invoicedOn',
+  'invoiceNumber',
 ] as const;
 
 export type FixedExportColumn = (typeof FIXED_EXPORT_COLUMNS)[number];

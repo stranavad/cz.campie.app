@@ -18,7 +18,8 @@
     "payment": "Platba",
     "submittedAt": "Přihlášeno",
     "consents": "Souhlasy",
-    "documents": "Dokumenty"
+    "documents": "Dokumenty",
+    "invoice": "Faktura"
   },
   "count_one": "{{count}} účastník",
   "count_few": "{{count}} účastníci",
@@ -57,6 +58,42 @@
   "age_many": "{{count}} roku",
   "age_other": "{{count}} let",
   "detail": {
+    "invoice": {
+      "title": "Faktura",
+      "none": "Rodina o fakturu nežádala. Žádost můžete přidat i bez zapnuté platby fakturou.",
+      "company": "Firma",
+      "ids": "IČO a DIČ",
+      "ico": "IČO {{ico}}",
+      "icoDic": "IČO {{ico}}, DIČ {{dic}}",
+      "address": "Adresa",
+      "email": "Fakturační e-mail",
+      "note": "Poznámka",
+      "amount": "Fakturovat",
+      "companyLeft": "Firmě zbývá zaplatit",
+      "state": "Stav",
+      "toInvoice": "K vyfakturování",
+      "invoiced": "Vyfakturováno {{date}}",
+      "invoicedNumber": "Vyfakturováno {{date}}, faktura {{number}}",
+      "invoicedOn": "Vyfakturováno dne",
+      "invoicedOnHint": "Smazáním vrátíte žádost do stavu K vyfakturování.",
+      "invoiceNumber": "Číslo faktury (nepovinné)",
+      "add": "Přidat žádost o fakturu",
+      "change": "Upravit",
+      "markInvoiced": "Označit jako vyfakturované",
+      "changeState": "Upravit stav",
+      "upload": "Nahrát fakturu (PDF)",
+      "remove": "Odebrat žádost",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "failure": {
+        "invoice_request_unavailable": "Žádost o fakturu nelze přidat.",
+        "invoice_amount_above_total": "Částka je vyšší než celková cena.",
+        "invoice_request_invoiced": "Žádost je už vyfakturovaná.",
+        "invoice_request_has_files": "K žádosti už je nahraná faktura, proto ji nelze odebrat.",
+        "file_type_not_allowed": "Nahrajte fakturu jako PDF.",
+        "unexpected": "Změnu se nepodařilo uložit. Zkuste to prosím znovu."
+      }
+    },
     "error": "Přihlášku se nepodařilo načíst.",
     "back": "Přihlášky · {{turnus}}",
     "title": "Přihláška {{symbol}}",
@@ -258,7 +295,19 @@
       "paymentStatus": "Stav platby",
       "amountDueNow": "K úhradě nyní",
       "dueDate": "Splatnost",
-      "overdue": "Po splatnosti"
+      "overdue": "Po splatnosti",
+      "invoiceCompanyName": "Firma k fakturaci",
+      "invoiceIco": "IČO firmy",
+      "invoiceDic": "DIČ firmy",
+      "invoiceStreet": "Ulice firmy",
+      "invoiceCity": "Město firmy",
+      "invoicePostcode": "PSČ firmy",
+      "invoiceEmail": "Fakturační e-mail",
+      "invoiceNote": "Poznámka k faktuře",
+      "invoiceAmount": "Částka k fakturaci",
+      "invoiceState": "Stav faktury",
+      "invoicedOn": "Vyfakturováno",
+      "invoiceNumber": "Číslo faktury"
     }
   },
   "reminders": {
@@ -325,6 +374,20 @@
     "open": "Připomenout chybějící věci",
     "intro": "Půjde rodičům dětí, kterým chybí podpis souhlasu, dokument nebo údaje v přihlášce. Platby připomíná zvláštní tlačítko.",
     "switchedOff": "Tábor má připomínku chybějících věcí vypnutou, nic se neodešle. Zapnout ji můžete v nastavení e-mailů tábora."
+  },
+  "invoiceFilter": {
+    "label": "Faktura",
+    "chosen": "Faktura: {{value}}",
+    "all": "vše",
+    "none": "bez faktury",
+    "to_invoice": "k vyfakturování",
+    "invoiced": "vyfakturováno",
+    "company_open": "firma nedoplatila"
+  },
+  "invoiceState": {
+    "to_invoice": "K vyfakturování",
+    "invoiced": "Vyfakturováno",
+    "companyLeft": "firmě zbývá {{amount}}"
   },
   "filters": {
     "label": "Kontrola",

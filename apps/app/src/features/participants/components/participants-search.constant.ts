@@ -1,4 +1,5 @@
 import { PAYMENT_STATUSES } from '@repo/schema/pricing';
+import { INVOICE_FILTERS } from '@repo/schema/registrations';
 
 // The list's payment tabs: every Registration, one payment status, or those past their due date.
 export const PAYMENT_TABS = ['all', ...PAYMENT_STATUSES, 'overdue'] as const;
@@ -10,6 +11,11 @@ export const CHECK_FILTERS = ['unsignedConsent', 'missingDocument', 'missingAnsw
 
 export type CheckFilter = (typeof CHECK_FILTERS)[number];
 
+// The invoice filter: every Registration, or one Invoice request state.
+export const INVOICE_TABS = ['all', ...INVOICE_FILTERS] as const;
+
+export type InvoiceTab = (typeof INVOICE_TABS)[number];
+
 // The tools opened under the page header, one at a time.
 export const PARTICIPANTS_PANELS = ['reminders', 'export', 'consents'] as const;
 
@@ -19,5 +25,6 @@ export type ParticipantsPanel = (typeof PARTICIPANTS_PANELS)[number];
 export interface ParticipantsSearch {
   platba?: PaymentTab;
   kontrola?: readonly CheckFilter[];
+  faktura?: InvoiceTab;
   panel?: ParticipantsPanel;
 }

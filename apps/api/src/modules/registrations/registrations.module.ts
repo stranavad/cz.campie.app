@@ -18,6 +18,8 @@ import { ErasureController } from './erasure/erasure.controller.ts';
 import { ErasureService } from './erasure/services/erasure.service.ts';
 import { EmailChangeConfirmedHandler } from './guardian-email/guardian-email-notice.handler.ts';
 import { GuardianEmailNoticeService } from './guardian-email/services/guardian-email-notice.service.ts';
+import { InvoiceRequestController } from './invoice-request/invoice-request.controller.ts';
+import { InvoiceRequestService } from './invoice-request/services/invoice-request.service.ts';
 import { LedgerController } from './ledger/ledger.controller.ts';
 import { SendPaymentReceivedHandler } from './ledger/send-payment-received.handler.ts';
 import { LedgerService } from './ledger/services/ledger.service.ts';
@@ -57,6 +59,7 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     GuardianChecklistController,
     OpenItemsReminderController,
     ErasureController,
+    InvoiceRequestController,
   ],
   providers: [
     RegistrationService,
@@ -75,6 +78,7 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     ChecklistService,
     ErasureService,
     OpenItemsReminderService,
+    InvoiceRequestService,
     SendOpenItemsReminderHandler,
     SendPaymentReminderHandler,
     ExportParticipantsHandler,
@@ -86,6 +90,13 @@ import { VariableSymbols } from './registration/services/variable-symbols.ts';
     SendConfirmationHandler,
     SendPaymentReceivedHandler,
   ],
-  exports: [RegistrationService, PrihlaskaService, LedgerService, CardPaymentService, ParticipantExportService],
+  exports: [
+    RegistrationService,
+    PrihlaskaService,
+    LedgerService,
+    CardPaymentService,
+    ParticipantExportService,
+    InvoiceRequestService,
+  ],
 })
 export class RegistrationsModule {}

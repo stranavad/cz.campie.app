@@ -29,12 +29,14 @@ import { RegistrationFormRepository } from '../../../../repositories/camps/regis
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { UndeliverableEmailRepository } from '../../../../repositories/emails/undeliverable-email/undeliverable-email.repository.ts';
 import { ClaimedDiscountVerificationRepository } from '../../../../repositories/registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
+import { InvoiceRequestRepository } from '../../../../repositories/registrations/invoice-request/invoice-request.repository.ts';
 import {
   RegistrationRepository,
   type StoredAnswers,
 } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { AuditEntryService } from '../../../organisations/audit-log/services/audit-entry.service.ts';
 import { answerOpener, withoutHealth } from '../../answers/sealed-answers.helper.ts';
+import { InvoiceRequestService } from '../../invoice-request/services/invoice-request.service.ts';
 import { LedgerService } from '../../ledger/services/ledger.service.ts';
 import { answeredDefinition, claimedDiscountsOf } from '../../payment/claimed-discounts.helper.ts';
 
@@ -50,6 +52,8 @@ export class RegistrationDetailService {
     private readonly verifications: ClaimedDiscountVerificationRepository,
     private readonly undeliverable: UndeliverableEmailRepository,
     private readonly ledgers: LedgerService,
+    private readonly invoiceRequests: InvoiceRequestRepository,
+    private readonly invoices: InvoiceRequestService,
     private readonly files: FileService,
     private readonly auditEntries: AuditEntryRepository,
     private readonly readable: AuditEntryService,
@@ -96,6 +100,7 @@ export class RegistrationDetailService {
       answerRows(scope, version.definition, latest.definition, published, answers).filter(
         ({ key }) => admin.health.read || sensitive.get(key) !== 'health',
       );
+    const invoiceRequest = await this.invoiceRequests.getByRegistration(registrationId);
     const prihlasky = await this.files.links(
       participants.flatMap(({ prihlaskaFileId: id }) => (id === null ? [] : [id])),
     );
@@ -137,6 +142,8 @@ export class RegistrationDetailService {
       registrationAnswers: rowsOf('registration', registrationAnswers),
       priceLines: await this.registrations.listPriceLines(registrationId),
       ledger: await this.ledgers.get(registrationId),
+      invoiceRequest: invoiceRequest?.toDto() ?? null,
+      invoiceFiles: await this.invoices.filesOf(invoiceRequest),
       declarations: version.declarations.map(({ id, text, mandatory }) => {
         const answer = answered.find(({ declarationId }) => declarationId === id);
 
