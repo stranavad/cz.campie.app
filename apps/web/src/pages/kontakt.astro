@@ -1,5 +1,8 @@
 ---
+import { Image } from 'astro:assets';
+
 import { contactLimits, honeypotField } from '../../worker/contact.schema.ts';
+import photo from '../assets/dejv.jpg';
 import { contact } from '../content/contact.ts';
 import Base from '../layouts/Base.astro';
 import { turnstileSiteKey } from '../lib/site-env.ts';
@@ -24,11 +27,25 @@ const input =
             {contact.email}
           </a>
         </p>
-        <div class="flex flex-col gap-1 border-t border-line1 pt-5">
-          <strong>{contact.about.title}</strong>
-          <span>{contact.about.name}</span>
-          <span class="text-muted">{contact.about.text}</span>
-          <span class="text-muted">{contact.about.ico}</span>
+        <div class="flex flex-wrap items-center gap-x-8 gap-y-7 border-t border-line1 pt-8">
+          <figure class="mt-1.5 mr-0 mb-2 ml-1.5 w-[220px] flex-none -rotate-[1.5deg] rounded-md border border-line bg-card px-2.5 pt-2.5 shadow-[0_10px_24px_-14px] shadow-ink-fixed/35">
+            <Image
+              src={photo}
+              alt={contact.about.photoAlt}
+              widths={[200, 400]}
+              sizes="200px"
+              class="block aspect-[4/5] h-auto w-full rounded-[3px] object-cover"
+            />
+            <figcaption class="px-1 pt-2 pb-2.5 text-center font-hand text-[22px] leading-[1.1] font-semibold text-muted">
+              {contact.about.photoCaption}
+            </figcaption>
+          </figure>
+          <div class="flex flex-[1_1_200px] flex-col gap-1">
+            <strong>{contact.about.title}</strong>
+            <span>{contact.about.name}</span>
+            <span class="text-muted">{contact.about.text}</span>
+            <span class="text-muted">{contact.about.ico}</span>
+          </div>
         </div>
       </div>
       <div class="flex min-w-0 flex-[1_1_420px] flex-col gap-[18px]">

@@ -12,7 +12,9 @@ export const contact = {
   email: site.email,
   about: {
     title: 'Kdo za Campie stojí',
-    name: site.operator.name,
+    name: 'David „Dejv“ Stráňava',
+    photoAlt: 'David Stráňava visí na laně pod střechou, v ruce kanystr s vodou a vodní pistoli',
+    photoCaption: 'Dejv na táboře',
     text: 'Campie vzniklo na táboře, ne v kanceláři.',
     ico: `IČO: ${site.operator.ico}`,
   },

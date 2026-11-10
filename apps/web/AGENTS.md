@@ -27,7 +27,7 @@ In `apps/web`, or from the root `pnpm --filter web <script>`.
 | Styling | Tailwind CSS 4, theme tokens in `src/styles/global.css`, dark theme from the system setting |
 | Fonts   | Fontsource files, `@font-face` by hand in `src/styles/fonts.css`, latin and latin-ext only  |
 | Worker  | `worker/`: plain `fetch` handler, Zod, Turnstile, Resend over HTTP, a rate limit binding    |
-| Images  | Open Graph cards and icons rendered at build time with Satori and sharp (`src/lib/og.ts`)   |
+| Images  | Open Graph cards and icons with Satori and sharp (`src/lib/og.ts`); photos in `src/assets/` |
 | Hosting | Cloudflare Workers with static assets (`wrangler.jsonc`)                                    |
 
 ## Where things live
