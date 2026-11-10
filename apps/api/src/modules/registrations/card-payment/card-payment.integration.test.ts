@@ -5,6 +5,8 @@ import {
   createCamp,
   createGuardianSession,
   createOrganisation,
+  FAKE_INVOICE_REQUEST,
+  offerInvoiceRequests,
   organisationHost,
   submitRegistration,
   type RequestHeaders,
@@ -114,6 +116,23 @@ describe('card payments through Comgate', () => {
         .set(await ownerOf(organisationA));
       expect(await offered()).toBe(false);
       expect((await startAfterSubmission()).body.code).toBe('card_payment_unavailable');
+    });
+
+    it("charges the card only the guardian's share under an Invoice request", async () => {
+      const guardian = (await createGuardianSession(app(), organisationA, guardianEmail)).headers;
+      const [{ campId }] = await query<{ campId: string }>('SELECT id AS "campId" FROM camps');
+      await offerInvoiceRequests(app(), organisationA, campId);
+      await http()
+        .put(`/api/portal/registrations/${registrationId}/invoice-request`)
+        .set(guardian)
+        .send({ ...FAKE_INVOICE_REQUEST, amount: 5000 });
+      const pay = (amount: string) =>
+        http().post(`/api/portal/registrations/${registrationId}/card-payment`).set(guardian).send({ amount });
+
+      expect((await pay('due_now')).status).toBe(201);
+      expect(payments().created.at(-1)?.input.amountCzk).toBe(1500);
+      expect((await pay('balance')).status).toBe(201);
+      expect(payments().created.at(-1)?.input.amountCzk).toBe(1500);
     });
 
     it('lets a guardian pay the amount due now or everything outstanding from the portal', async () => {

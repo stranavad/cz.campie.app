@@ -71,6 +71,11 @@
       "remove": "Smazání interního dokumentu účastníka",
       "view": "Zobrazení interního dokumentu účastníka"
     },
+    "invoice_request": {
+      "create": "Žádost o fakturu",
+      "remove": "Zrušení žádosti o fakturu",
+      "update": "Úprava žádosti o fakturu"
+    },
     "invitation": {
       "accept": "Přijetí pozvánky",
       "create": "Pozvání správce",
@@ -241,6 +246,17 @@
     "paidOn": "Zaplaceno",
     "recordedAt": "Zapsáno",
     "gatewayTransactionId": "Číslo transakce",
+    "payer": "Plátce",
+    "companyName": "Firma",
+    "dic": "DIČ",
+    "street": "Ulice",
+    "city": "Město",
+    "postcode": "PSČ",
+    "billingEmail": "Fakturační e-mail",
+    "invoiceNote": "Poznámka k faktuře",
+    "invoicedAmount": "Částka k fakturaci",
+    "invoicedOn": "Vyfakturováno",
+    "invoiceNumber": "Číslo faktury",
     "merchantId": "Číslo obchodníka",
     "secret": "Heslo k bráně",
     "overdueOnly": "Jen po splatnosti",
@@ -283,6 +299,7 @@
       "consents": "Souhlasy",
       "documents": "Dokumenty",
       "generatedDocuments": "Generované dokumenty",
+      "invoiceRequests": "Platba fakturou",
       "healthRecord": "Zdravotní záznam",
       "campHealthLog": "Zdravotní deník",
       "oddily": "Oddíly",
@@ -313,6 +330,7 @@
     },
     "organisationStatus": { "pending": "Čeká na schválení", "approved": "Schválená", "suspended": "Pozastavená" },
     "participantStatus": { "registered": "Platí", "cancelled": "Zrušená" },
+    "payer": { "guardian": "Rodič", "company": "Firma" },
     "paymentSource": { "manual": "Zapsaná ručně", "gateway": "Platební brána", "correction": "Opravná platba" },
     "paymentChoice": { "full": "Celá částka najednou", "deposit": "Nejdřív záloha" },
     "undeliverableReason": { "bounce": "Nedoručitelná adresa", "complaint": "Označeno jako nevyžádaná pošta" }

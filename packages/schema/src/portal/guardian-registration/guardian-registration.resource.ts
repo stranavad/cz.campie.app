@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { priceLineSchema } from '@repo/schema/camps';
 import { fileLinkSchema } from '@repo/schema/files';
 import { PAYMENT_STATUSES } from '@repo/schema/pricing';
-import { PARTICIPANT_STATUSES, registrationPaymentSchema } from '@repo/schema/registrations';
+import { invoiceRequestSchema, PARTICIPANT_STATUSES, registrationPaymentSchema } from '@repo/schema/registrations';
 import { calendarDateSchema } from '@repo/schema/shared';
 
 const amount = z.number().int();
@@ -23,6 +23,8 @@ export const guardianRegistrationSchema = z.object({
     // The modules guardians use in the portal, while the Camp has them on.
     consents: z.boolean(),
     documents: z.boolean(),
+    // Whether the guardian may add an Invoice request.
+    invoiceRequests: z.boolean(),
   }),
   turnus: z.object({
     id: z.uuid(),
@@ -56,6 +58,7 @@ export const guardianRegistrationSchema = z.object({
   status: z.enum(PAYMENT_STATUSES),
   overdue: z.boolean(),
   payment: registrationPaymentSchema,
+  invoiceRequest: invoiceRequestSchema.nullable(),
 });
 
 export type GuardianRegistration = z.infer<typeof guardianRegistrationSchema>;

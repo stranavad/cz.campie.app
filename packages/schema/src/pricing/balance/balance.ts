@@ -6,13 +6,20 @@ export const PAYMENT_STATUSES = ['unpaid', 'partly_paid', 'deposit_paid', 'paid'
 
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
+// Who a ledger entry's money came from: the guardian, or the company an Invoice request names.
+export const PAYERS = ['guardian', 'company'] as const;
+
+export type Payer = (typeof PAYERS)[number];
+
 export interface BalanceInput extends DueDates {
   // The price lines frozen at submission.
   readonly lines: readonly { readonly amount: number }[];
   // Price adjustments, plus or minus.
   readonly adjustments: readonly { readonly amount: number }[];
   // Ledger entries: payments positive, Correcting payments negative.
-  readonly payments: readonly { readonly amount: number }[];
+  readonly payments: readonly { readonly amount: number; readonly payer: Payer }[];
+  // The amount an Invoice request asks to invoice to a company; null without one.
+  readonly invoiced: number | null;
   // Owed first when the Deposit was chosen; null when paying in full.
   readonly depositTotal: number | null;
 }
@@ -24,25 +31,44 @@ export interface Balance {
   // What is left to pay; negative when overpaid.
   readonly balance: number;
   readonly status: PaymentStatus;
+  // Of the guardian's share and the guardian's payments only.
   readonly amountDue: AmountDue;
   // The amount due now is unpaid past its date, whether partly paid or not at all.
   readonly overdue: boolean;
+  // What the guardian owes: the total less the amount invoiced, never below zero; the whole total without
+  // an Invoice request.
+  readonly guardian: { readonly share: number; readonly paid: number; readonly balance: number };
+  // What is left for the company to pay, with no due date; null without an Invoice request.
+  readonly company: { readonly invoiced: number; readonly paid: number; readonly balance: number } | null;
 }
 
 const sum = (entries: readonly { readonly amount: number }[]) =>
   entries.reduce((total, { amount }) => total + amount, 0);
 
 /**
+ * Tell the guardian's share of a total: what is not invoiced to a company, never below zero.
+ * @param total the Registration's total
+ * @param invoiced the amount to invoice, or null without an Invoice request
+ */
+export function guardianShareOf(total: number, invoiced: number | null): number {
+  return Math.max(total - (invoiced ?? 0), 0);
+}
+
+/**
  * Derive a Registration's total, payments, status and amount due now from its lines, Price adjustments,
- * ledger and stored due dates, as of a Prague calendar date.
- * @param input the lines, adjustments, ledger, Deposit and due dates
+ * ledger, Invoice request and stored due dates, as of a Prague calendar date. The amount due now and
+ * Overdue follow the guardian's share and payments; the status covers the whole total and every payment.
+ * @param input the lines, adjustments, ledger, amount invoiced, Deposit and due dates
  * @param today the Prague calendar date now, YYYY-MM-DD
  */
 export function balanceOf(input: BalanceInput, today: string): Balance {
   const total = Math.max(sum(input.lines) + sum(input.adjustments), 0);
   const paid = sum(input.payments);
-  const amountDue = amountDueNow({ ...input, total, paid });
+  const share = guardianShareOf(total, input.invoiced);
+  const guardianPaid = sum(input.payments.filter(({ payer }) => payer === 'guardian'));
+  const amountDue = amountDueNow({ ...input, total: share, paid: guardianPaid });
   const deposits = input.depositTotal === null ? null : Math.min(input.depositTotal, total);
+  const companyPaid = paid - guardianPaid;
 
   return {
     total,
@@ -51,6 +77,11 @@ export function balanceOf(input: BalanceInput, today: string): Balance {
     status: statusOf(total, paid, deposits),
     amountDue,
     overdue: amountDue.amount > 0 && amountDue.dueDate !== null && today > amountDue.dueDate,
+    guardian: { share, paid: guardianPaid, balance: share - guardianPaid },
+    company:
+      input.invoiced === null
+        ? null
+        : { invoiced: input.invoiced, paid: companyPaid, balance: input.invoiced - companyPaid },
   };
 }
 

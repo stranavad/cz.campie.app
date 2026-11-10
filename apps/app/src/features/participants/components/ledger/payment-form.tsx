@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { PAYERS, type Payer } from '@repo/schema/pricing';
 import { pragueDateOf } from '@repo/schema/shared';
 
 import { DatePicker } from '@/components/date-picker/date-picker';
@@ -13,12 +14,15 @@ import { amountOf, failureOf } from '@/features/participants/components/ledger/l
 interface PaymentFormProps {
   organisationId: string;
   registrationId: string;
+  hasCompany: boolean;
 }
 
-// A payment received, or a Correcting payment that returns money.
-export function PaymentForm({ organisationId, registrationId }: PaymentFormProps) {
+// A payment received, or a Correcting payment that returns money; from the guardian, or from the company an
+// Invoice request names.
+export function PaymentForm({ organisationId, registrationId, hasCompany }: PaymentFormProps) {
   const { t } = useTranslation('participants');
   const [kind, setKind] = useState<'payment' | 'correction'>('payment');
+  const [payer, setPayer] = useState<Payer>('guardian');
   const [amount, setAmount] = useState('');
   // Today in Prague, read once when the form appears.
   const [paidOn, setPaidOn] = useState(() => pragueDateOf(new Date()));
@@ -39,7 +43,7 @@ export function PaymentForm({ organisationId, registrationId }: PaymentFormProps
 
         if (parsed !== null) {
           pay.mutate(
-            { kind, amount: parsed, paidOn, note },
+            { kind, amount: parsed, paidOn, note, payer: hasCompany ? payer : 'guardian' },
             {
               onSuccess: () => {
                 setAmount('');
@@ -61,6 +65,16 @@ export function PaymentForm({ organisationId, registrationId }: PaymentFormProps
           ]}
         />
       </label>
+      {hasCompany ? (
+        <label className="flex flex-col gap-1.5 font-semibold">
+          {t('detail.payer')}
+          <Select
+            value={payer}
+            onValueChange={setPayer}
+            options={PAYERS.map((value) => ({ value, label: t(`detail.payers.${value}`) }))}
+          />
+        </label>
+      ) : null}
       <div className="grid gap-3 min-[400px]:grid-cols-2">
         <label className="flex min-w-0 flex-col gap-1.5 font-semibold">
           {t('detail.amount')}

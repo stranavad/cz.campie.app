@@ -5,6 +5,8 @@ import {
   createCamp,
   createGuardianSession,
   createOrganisation,
+  FAKE_INVOICE_REQUEST,
+  offerInvoiceRequests,
   submitRegistration,
   type RequestHeaders,
 } from '../../../testing/fixtures.ts';
@@ -156,6 +158,21 @@ describe('erasing a Registration', () => {
     expect(
       await query(`SELECT actor_identity, ip_address FROM audit_entries WHERE action = 'guardian_login_link.use'`),
     ).toEqual([{ actor_identity: null, ip_address: null }]);
+  });
+
+  it('keeps the Invoice request for accounting with its note blanked', async () => {
+    const [{ campId }] = await query<{ campId: string }>('SELECT id AS "campId" FROM camps');
+    await offerInvoiceRequests(app(), organisationId, campId);
+    registrationId = (
+      await submitRegistration(app(), organisationId, campId, {
+        invoiceRequest: { ...FAKE_INVOICE_REQUEST, amount: 1000 },
+      })
+    ).id;
+
+    expect((await erase()).status).toBe(204);
+    expect(await query('SELECT company_name, ico, amount, note FROM invoice_requests')).toEqual([
+      { company_name: 'Fiktivní firma s.r.o.', ico: '12345679', amount: 1000, note: null },
+    ]);
   });
 
   it('takes no new Price adjustment note after the erasure', async () => {

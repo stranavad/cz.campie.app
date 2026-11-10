@@ -8,11 +8,13 @@ import { PaymentForm } from '@/features/participants/components/ledger/payment-f
 interface LedgerFormsProps {
   organisationId: string;
   registrationId: string;
+  // Whether an Invoice request names a company that may pay.
+  hasCompany: boolean;
 }
 
 // Adds a payment, a Correcting payment or a Price adjustment; entries are never changed afterwards. One form
 // is open at a time, under the two buttons that open it.
-export function LedgerForms({ organisationId, registrationId }: LedgerFormsProps) {
+export function LedgerForms({ organisationId, registrationId, hasCompany }: LedgerFormsProps) {
   const { t } = useTranslation('participants');
   const [open, setOpen] = useState<'payment' | 'adjustment' | null>(null);
   const toggle = (form: 'payment' | 'adjustment') => setOpen(open === form ? null : form);
@@ -38,7 +40,9 @@ export function LedgerForms({ organisationId, registrationId }: LedgerFormsProps
           {t('detail.addAdjustment')}
         </Button>
       </div>
-      {open === 'payment' ? <PaymentForm organisationId={organisationId} registrationId={registrationId} /> : null}
+      {open === 'payment' ? (
+        <PaymentForm organisationId={organisationId} registrationId={registrationId} hasCompany={hasCompany} />
+      ) : null}
       {open === 'adjustment' ? (
         <AdjustmentForm organisationId={organisationId} registrationId={registrationId} />
       ) : null}

@@ -6,6 +6,7 @@ import type { Permissions } from '@repo/schema/admins';
 import type { TurnusBody } from '@repo/schema/camps';
 import { CURRENT_LEGAL_VERSIONS } from '@repo/schema/organisations';
 import type { PaymentChoice } from '@repo/schema/pricing';
+import type { InvoiceRequestBody } from '@repo/schema/registrations';
 import { ACCESS_HEADERS, slugify, type FullName } from '@repo/schema/shared';
 
 import type { Env } from '../core/config/env.schema.ts';
@@ -110,6 +111,41 @@ export async function createCamp(
   return camp.id;
 }
 
+/**
+ * Switch a Camp's Invoice requests on or off, as an admin would, leaving its other modules.
+ * @param app the running test app
+ * @param organisationId the Organisation
+ * @param campId the Camp
+ * @param offered whether guardians may ask for one
+ */
+export async function offerInvoiceRequests(
+  app: INestApplication,
+  organisationId: string,
+  campId: string,
+  offered = true,
+): Promise<void> {
+  await app.get(UnitOfWork).run(organisationId, async () => {
+    const camp = await app.get(CampRepository).getByIdOrThrow(campId);
+
+    await app
+      .get(CampService)
+      .update({ kind: 'system' }, campId, { modules: { ...camp.toDto().modules, invoiceRequests: offered } });
+  });
+}
+
+// A made-up company's billing details, with an IČO whose check digit holds.
+export const FAKE_INVOICE_REQUEST = {
+  companyName: 'Fiktivní firma s.r.o.',
+  ico: '12345679',
+  dic: 'CZ12345679',
+  street: 'Smyšlená 1',
+  city: 'Praha',
+  postcode: '11000',
+  email: 'faktury@example.com',
+  note: 'Objednávka 42',
+  amount: 6000,
+} as const;
+
 // A Turnus that takes Registrations whenever a test runs, for children of any age.
 export const OPEN_TURNUS = {
   name: 'Turnus 1',
@@ -152,6 +188,8 @@ export async function submitRegistration(
     paymentChoice?: PaymentChoice;
     // The answers asked once beyond the guardians, such as transport.
     answers?: Readonly<Record<string, string>>;
+    // Part of the price invoiced to a company; the Camp must offer it.
+    invoiceRequest?: InvoiceRequestBody;
     // Each child's answers, the core ones included.
     children?: readonly Readonly<Record<string, string | boolean>>[];
   } = {},
@@ -161,6 +199,7 @@ export async function submitRegistration(
     secondGuardian = false,
     turnus: change = {},
     paymentChoice = 'full',
+    invoiceRequest = null,
     children = [{ firstName: 'Ema', lastName: 'Testovací', birthDate: '2016-05-01' }],
   } = options;
 
@@ -199,6 +238,7 @@ export async function submitRegistration(
         },
         paymentChoice,
         discountCode,
+        invoiceRequest,
         declarations: form.declarations.map(({ id }) => ({ id, accepted: true })),
       },
       '203.0.113.7',

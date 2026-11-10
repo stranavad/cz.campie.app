@@ -26,6 +26,8 @@ export const publicCampSchema = z.object({
   photoUrl: z.string().nullable(),
   // Whether the Organisation takes card payments, so the form offers the choice.
   cardPayments: z.boolean(),
+  // Whether the form offers an Invoice request.
+  invoiceRequests: z.boolean(),
   // Per child in whole CZK, null when the Camp has none; the form shows it before a sibling is added, the
   // price preview gives the lines.
   siblingDiscount: z.object({ amount: z.number().int(), appliesTo: z.enum(SIBLING_DISCOUNT_MODES) }).nullable(),

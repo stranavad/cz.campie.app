@@ -103,7 +103,8 @@ export class PaymentReminderService {
   }
 
   /**
-   * Find a Turnus's Registrations with a Registered child and a balance, and the Overdue ones among them.
+   * Find a Turnus's Registrations with a Registered child and the guardian's share unpaid, and the Overdue
+   * ones among them.
    * @param turnusId Turnus id
    */
   private async targetsOf(turnusId: string): Promise<Targets> {
@@ -114,7 +115,10 @@ export class PaymentReminderService {
       participants.filter(({ status }) => status === 'registered').map(({ registrationId }) => registrationId),
     );
     const balances = await this.ledger.balancesOf(registrations);
-    const withBalance = registrations.filter(({ id }) => active.has(id) && (balances.get(id)?.balance ?? 0) > 0);
+    // A company's share is never reminded.
+    const withBalance = registrations.filter(
+      ({ id }) => active.has(id) && (balances.get(id)?.guardian.balance ?? 0) > 0,
+    );
 
     return {
       campId: turnus.campId,

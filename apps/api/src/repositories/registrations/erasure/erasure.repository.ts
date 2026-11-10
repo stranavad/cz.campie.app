@@ -9,6 +9,7 @@ import {
   documentUploads,
   guardianEmailChanges,
   internalDocuments,
+  invoiceRequests,
   participants,
   registrationAccessEmails,
   registrationGuardians,
@@ -17,7 +18,7 @@ import {
 
 // What erasing a Registration deletes and blanks across its tables, leaving the accounting tombstone:
 // the Registration's Turnus and Variable symbol, its Participants as "Smazáno", price lines, Price
-// adjustments and the payment ledger.
+// adjustments, the payment ledger and the Invoice request.
 @Injectable()
 export class ErasureRepository {
   constructor(private readonly unitOfWork: UnitOfWork) {}
@@ -83,6 +84,8 @@ export class ErasureRepository {
     await db.delete(guardianEmailChanges).where(eq(guardianEmailChanges.registrationId, registrationId));
     await db.delete(registrationAccessEmails).where(eq(registrationAccessEmails.registrationId, registrationId));
     await db.delete(registrationGuardians).where(eq(registrationGuardians.registrationId, registrationId));
+    // The Invoice request is accounting; only its note may name a person.
+    await db.update(invoiceRequests).set({ note: null }).where(eq(invoiceRequests.registrationId, registrationId));
     await db
       .update(participants)
       .set({

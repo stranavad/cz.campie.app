@@ -7,6 +7,8 @@ import {
   createCamp,
   createGuardianSession,
   createOrganisation,
+  FAKE_INVOICE_REQUEST,
+  offerInvoiceRequests,
   OPEN_TURNUS,
   organisationHost,
   type RequestHeaders,
@@ -45,7 +47,7 @@ const useSubmitted = (env: Record<string, string> = {}) => {
         .send({ ...OPEN_TURNUS, ...turnus })
     ).body.id;
 
-  const send = (turnusId: string, paymentChoice: 'full' | 'deposit', idempotencyKey: string) => {
+  const send = (turnusId: string, paymentChoice: 'full' | 'deposit', idempotencyKey: string, extra: object = {}) => {
     return http()
       .post('/api/public-camps/letni-tabor/registrations')
       .set({ Host: state.host, 'x-csrf-protection': '1' })
@@ -67,11 +69,16 @@ const useSubmitted = (env: Record<string, string> = {}) => {
         paymentChoice,
         discountCode: null,
         declarations: [],
+        ...extra,
       });
   };
 
-  const submit = async (turnus: object, paymentChoice: 'full' | 'deposit', idempotencyKey = randomUUID()) =>
-    send(await turnusOf(turnus), paymentChoice, idempotencyKey);
+  const submit = async (
+    turnus: object,
+    paymentChoice: 'full' | 'deposit',
+    idempotencyKey = randomUUID(),
+    extra: object = {},
+  ) => send(await turnusOf(turnus), paymentChoice, idempotencyKey, extra);
 
   const portalPayment = async (registrationId: string) =>
     (
@@ -233,5 +240,80 @@ describe('Přihlášky after a submission, past the limit', () => {
 
     expect(refused.status).toBe(429);
     expect(refused.body.code).toBe('requests_throttled');
+  });
+});
+
+describe('an Invoice request at submission', () => {
+  const { app, jobs, mail, state, submit: submitWith, portalPayment } = useSubmitted();
+  const submit = (turnus: object, paymentChoice: 'full' | 'deposit', extra: object) =>
+    submitWith(turnus, paymentChoice, randomUUID(), extra);
+
+  // Two children at 6 500, so 13 000 in all.
+  const INVOICE = { ...FAKE_INVOICE_REQUEST, postcode: '110 00', amount: 10_000 };
+
+  const offerInvoices = () => offerInvoiceRequests(app(), state.organisationId, state.campId);
+
+  it('is refused while the Camp does not offer it', async () => {
+    const refused = await submit({}, 'full', { invoiceRequest: INVOICE });
+
+    expect(refused.status).toBe(400);
+    expect(refused.body.fields).toEqual([{ path: ['invoiceRequest'], code: 'invoice_request_unavailable' }]);
+  });
+
+  it('is refused with field errors for a wrong IČO, a missing field, nothing to invoice or more than the total', async () => {
+    await offerInvoices();
+
+    const invalid = await submit({}, 'full', {
+      invoiceRequest: { ...INVOICE, ico: '12345678', street: '', amount: 0 },
+    });
+    const tooMuch = await submit({}, 'full', { invoiceRequest: { ...INVOICE, amount: 13_001 } });
+
+    expect(invalid.status).toBe(400);
+    expect(invalid.body.fields).toEqual([
+      { path: ['invoiceRequest', 'ico'], code: 'ico_invalid' },
+      { path: ['invoiceRequest', 'street'], code: 'invoice_field_required' },
+      { path: ['invoiceRequest', 'amount'], code: 'invoice_amount_zero' },
+    ]);
+    expect(tooMuch.status).toBe(400);
+    expect(tooMuch.body.fields).toEqual([
+      { path: ['invoiceRequest', 'amount'], code: 'invoice_amount_above_total', params: { max: 13_000 } },
+    ]);
+  });
+
+  it('asks the guardian for their share only, with the invoiced line, in the response, the portal and the email', async () => {
+    await brandOrganisation(app(), state.organisationId, { bankAccount: ACCOUNT });
+    await offerInvoices();
+
+    const submitted = await submit(WITH_DEPOSIT, 'deposit', { invoiceRequest: INVOICE });
+
+    expect(submitted.status).toBe(201);
+    expect(submitted.body.payment).toMatchObject({
+      phase: 'deposit',
+      amount: 3000,
+      qrPlatba: expect.stringContaining('*AM:3000.00*'),
+      balance: null,
+      invoiced: { companyName: 'Fiktivní firma s.r.o.', amount: 10_000 },
+    });
+    expect(submitted.body.payment).toEqual(await portalPayment(submitted.body.id));
+
+    await jobs().drain();
+    const confirmation = mail().sent.find(({ to }) => to.includes(JANA));
+
+    expect(confirmation?.text).toMatch(/Záloha k úhradě: 3\s000\sKč/);
+    expect(confirmation?.text).toMatch(/Fakturováno firmě Fiktivní firma s\.r\.o\.: 10\s000\sKč/);
+  });
+
+  it('gives no QR platba when the company pays everything', async () => {
+    await brandOrganisation(app(), state.organisationId, { bankAccount: ACCOUNT });
+    await offerInvoices();
+
+    const submitted = await submit({}, 'full', { invoiceRequest: { ...INVOICE, amount: 13_000 } });
+
+    expect(submitted.body.payment).toMatchObject({
+      phase: 'settled',
+      amount: 0,
+      qrPlatba: null,
+      invoiced: { amount: 13_000 },
+    });
   });
 });

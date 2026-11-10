@@ -68,6 +68,7 @@ const CAMP_FORM_BLANK: CampFormValues = {
     campHealthLog: false,
     oddily: false,
     vedouci: false,
+    invoiceRequests: false,
   },
   contactEditLockDate: '',
 };

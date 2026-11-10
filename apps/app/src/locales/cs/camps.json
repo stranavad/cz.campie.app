@@ -66,9 +66,11 @@
     "intro": "Rodiče uvidí jen zapnuté části. Vypnutý modul data skryje, nesmaže je.",
     "consents": "Souhlasy",
     "documents": "Dokumenty",
+    "invoiceRequests": "Platba fakturou",
     "descriptions": {
       "consents": "Rodiče podepíší souhlasy v portálu",
-      "documents": "Soubory ke stažení a dokumenty, které rodiče odevzdají ke kontrole"
+      "documents": "Soubory ke stažení a dokumenty, které rodiče odevzdají ke kontrole",
+      "invoiceRequests": "Rodiče mohou požádat o fakturu na firmu za část nebo celou cenu; fakturu vystavíte ve svém účetním programu"
     }
   },
   "branding": {

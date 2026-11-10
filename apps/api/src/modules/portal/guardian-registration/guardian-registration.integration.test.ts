@@ -106,6 +106,7 @@ describe('guardian portal Registrations', () => {
         'balance',
         'camp',
         'id',
+        'invoiceRequest',
         'overdue',
         'paid',
         'participants',

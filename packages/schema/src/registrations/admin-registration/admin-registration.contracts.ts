@@ -13,7 +13,7 @@ import {
 
 const answersSchema = z.record(z.string().max(100), answerValueSchema);
 
-export const createRegistrationBodySchema = submitRegistrationBodySchema.extend({
+export const createRegistrationBodySchema = submitRegistrationBodySchema.omit({ invoiceRequest: true }).extend({
   // Whether the guardians get the confirmation email, as after a public submission.
   sendConfirmation: z.boolean().default(true),
   // The Deposit was paid in cash at the desk: recorded as one payment of the Deposit total, dated today, with

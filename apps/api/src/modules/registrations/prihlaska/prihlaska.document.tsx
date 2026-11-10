@@ -140,10 +140,16 @@ function Qr({ svg, caption }: { svg: string; caption: string }) {
 }
 
 function Payment({ payment }: { payment: PrihlaskaPayment }) {
+  const invoiced =
+    payment.invoiced === null ? null : (
+      <Fact label={`Fakturováno firmě ${payment.invoiced.companyName}`}>{czk(payment.invoiced.amount)}</Fact>
+    );
+
   if (payment.account === null) {
     return (
       <>
         <Fact label="Variabilní symbol">{payment.variableSymbol}</Fact>
+        {invoiced}
         <p className="note">Číslo účtu pro platbu pošle pořadatel tábora.</p>
       </>
     );
@@ -166,6 +172,7 @@ function Payment({ payment }: { payment: PrihlaskaPayment }) {
             <Fact label="Nebo vše najednou">{czk(payment.balance.outstanding)}</Fact>
           </>
         )}
+        {invoiced}
       </div>
       <div className="qrs">
         {payment.qrSvg === null ? null : (

@@ -30,6 +30,7 @@ import type {
   AdminRegistrationErrorCode,
   CreateRegistrationBody,
   GetSubmittedPrihlaskyBody,
+  InvoiceRequestBody,
   NewRegistrationPrice,
   RegistrationSource,
   SubmissionErrorCode,
@@ -58,6 +59,7 @@ import type { RegistrationFormVersionEntity } from '../../../../repositories/cam
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
 import type { TurnusEntity } from '../../../../repositories/camps/turnus/turnus.entity.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
+import { InvoiceRequestRepository } from '../../../../repositories/registrations/invoice-request/invoice-request.repository.ts';
 import type { RegistrationEntity } from '../../../../repositories/registrations/registration/registration.entity.ts';
 import {
   RegistrationRepository,
@@ -92,6 +94,10 @@ const REFUSED_AVAILABILITY: Readonly<Record<Exclude<TurnusAvailability, 'open'>,
   closed_manually: 'turnus_closed_manually',
   full: 'turnus_full',
 };
+
+// What a guardian's and an admin's Registration share: the answers, the payment choice, the code and the
+// declarations.
+type AnswersBody = Omit<SubmitRegistrationBody, 'invoiceRequest'>;
 
 interface Place {
   readonly camp: CampEntity;
@@ -128,6 +134,7 @@ export class RegistrationService {
     private readonly discountCodes: DiscountCodeService,
     private readonly campEmails: CampEmailService,
     private readonly ledger: LedgerService,
+    private readonly invoiceRequests: InvoiceRequestRepository,
     private readonly variableSymbols: VariableSymbols,
     private readonly rateLimiter: RateLimiter,
     private readonly unitOfWork: UnitOfWork,
@@ -150,9 +157,10 @@ export class RegistrationService {
    * the Turnus row stays locked until the unit of work ends, so placements in it run one at a time, and
    * the code's row too, so its limit holds. A second submission with the same idempotency key returns the
    * first Registration. Counts against the submission limit of the address, and of the Organisation once
-   * the answers check out, so a flood of nonsense cannot lock the Organisation's families out.
+   * the answers check out, so a flood of nonsense cannot lock the Organisation's families out. An Invoice
+   * request needs the Camp to offer one and asks at most the total.
    * @param slug the Camp's slug or a former one
-   * @param body the Turnus, the answers, the payment choice, the code and the declarations
+   * @param body the Turnus, the answers, the payment choice, the code, the declarations and the Invoice request
    * @param ipAddress where the request comes from
    * @throws {BadRequestException} submission_invalid with the reasons in `fields`
    */
@@ -169,6 +177,10 @@ export class RegistrationService {
     const { camp, form, turnus } = await this.placeOf(slug, body.turnusId);
     await this.ensureRoom(turnus, body.submission.participants.length, now);
     const { submission, errors } = this.checkAnswers(form, turnus, body, true);
+
+    if (body.invoiceRequest !== null && !camp.modules.includes('invoiceRequests')) {
+      errors.push({ path: ['invoiceRequest'], code: 'invoice_request_unavailable' satisfies SubmissionFieldErrorCode });
+    }
 
     if (errors.length > 0) {
       const code = await this.discountCodeOf(camp.id, body.discountCode, { lock: false, pastLimits: false });
@@ -194,6 +206,17 @@ export class RegistrationService {
       submittedAt: now,
     });
 
+    // The guardian invoices at most what the children cost, by the server's price.
+    if (body.invoiceRequest !== null && body.invoiceRequest.amount > price.total) {
+      throw invalid([
+        {
+          path: ['invoiceRequest', 'amount'],
+          code: 'invoice_amount_above_total' satisfies SubmissionFieldErrorCode,
+          params: { max: price.total },
+        },
+      ]);
+    }
+
     const actor: Actor = {
       kind: 'guardian',
       identity: requiredTextOf(submission.registration, 'guardianEmail'),
@@ -209,6 +232,7 @@ export class RegistrationService {
       actor,
       source: 'public',
       sendConfirmation: true,
+      invoiceRequest: body.invoiceRequest,
     });
   }
 
@@ -317,6 +341,7 @@ export class RegistrationService {
       actor,
       source: 'admin',
       sendConfirmation: body.sendConfirmation,
+      invoiceRequest: null,
     });
 
     if (cashDeposit === null) {
@@ -328,6 +353,7 @@ export class RegistrationService {
       amount: cashDeposit,
       paidOn: pragueDateOf(now),
       note: CASH_DEPOSIT_NOTE,
+      payer: 'guardian',
     });
 
     // How to pay the rest once the Deposit is in, as a replay of the same key tells it.
@@ -441,7 +467,7 @@ export class RegistrationService {
    */
   private async priceForAdmin(
     { camp, form, turnus }: Place,
-    body: SubmitRegistrationBody,
+    body: AnswersBody,
     lockCode: boolean,
   ): Promise<{
     submission: Submission;
@@ -526,7 +552,7 @@ export class RegistrationService {
   private checkAnswers(
     form: RegistrationFormVersionEntity,
     turnus: TurnusEntity,
-    body: SubmitRegistrationBody,
+    body: AnswersBody,
     byGuardian: boolean,
   ): { submission: Submission; errors: FieldError[] } {
     const { value, errors: formErrors } = checkSubmission(
@@ -599,15 +625,17 @@ export class RegistrationService {
 
   /**
    * Store a checked and priced submission: the Registration under a free Variable symbol, its guardians,
-   * Participants, price lines, code use and declaration answers; audit it and enqueue what follows.
+   * Participants, price lines, code use, declaration answers and Invoice request; audit it and enqueue what
+   * follows.
    * @param place the form and the Turnus, locked
    * @param body the submission
    * @param checked the checked answers, the price, the code, the instant, who submits and from where, whether
-   * it came from the public form or an admin, and whether the guardians get the confirmation email
+   * it came from the public form or an admin, whether the guardians get the confirmation email, and the
+   * Invoice request
    */
   private async store(
     { form, turnus }: Omit<Place, 'camp'>,
-    body: SubmitRegistrationBody,
+    body: AnswersBody,
     checked: {
       submission: Submission;
       price: RegistrationPrice;
@@ -617,9 +645,10 @@ export class RegistrationService {
       actor: Actor;
       source: RegistrationSource;
       sendConfirmation: boolean;
+      invoiceRequest: InvoiceRequestBody | null;
     },
   ): Promise<SubmittedRegistration> {
-    const { submission, price, code, now, ipAddress, actor, source, sendConfirmation } = checked;
+    const { submission, price, code, now, ipAddress, actor, source, sendConfirmation, invoiceRequest } = checked;
     // The rodné číslo and health data are sealed here and never reach the audit entry but by name.
     const sensitive = sensitiveKeys([form.definition], REGISTRATION_FIELD_CATALOGUE);
     const cipher = await this.encryption.cipher();
@@ -663,6 +692,9 @@ export class RegistrationService {
       await this.discountCodes.recordUse(code.id, registration.id, now);
     }
 
+    const invoiced =
+      invoiceRequest === null ? null : (await this.invoiceRequests.save(registration.id, invoiceRequest)).toDto();
+
     // What was submitted, as the history shows it; the address is the entry's own, not repeated inside.
     await this.audit.record(actor, {
       action: source === 'admin' ? 'registration.create' : 'registration.submit',
@@ -683,6 +715,7 @@ export class RegistrationService {
             declarationId,
             accepted: ticked,
           })),
+          ...(invoiced === null ? {} : { invoiceRequest: invoiced }),
           // Only an admin chooses; a guardian's submission is always confirmed.
           ...(source === 'admin' ? { sendConfirmation } : {}),
         },
@@ -740,7 +773,7 @@ function dueDatesFor(turnus: TurnusEntity, submittedAt: Date): DueDates {
  * @param body the submission
  * @param declarationId the declaration
  */
-function accepted(body: SubmitRegistrationBody, declarationId: string): boolean {
+function accepted(body: AnswersBody, declarationId: string): boolean {
   return body.declarations.some(({ id, accepted: ticked }) => id === declarationId && ticked);
 }
 

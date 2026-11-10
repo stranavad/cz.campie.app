@@ -17,14 +17,18 @@ export function PaymentLines({ ledger }: PaymentLinesProps) {
     <div className="flex flex-col gap-1">
       <h3 className="text-[13px] font-medium text-muted-foreground">{t('detail.paymentsReceived')}</h3>
       <dl className="flex flex-col text-sm">
-        {ledger.payments.map((payment) => (
-          <LedgerRow
-            key={payment.id}
-            label={t(`detail.source.${payment.source}`, { date: czechDate(payment.paidOn), note: payment.note })}
-            value={czk(payment.amount)}
-            className={payment.amount > 0 ? 'text-success-foreground' : undefined}
-          />
-        ))}
+        {ledger.payments.map((payment) => {
+          const entry = t(`detail.source.${payment.source}`, { date: czechDate(payment.paidOn), note: payment.note });
+
+          return (
+            <LedgerRow
+              key={payment.id}
+              label={payment.payer === 'company' ? t('detail.byCompany', { entry }) : entry}
+              value={czk(payment.amount)}
+              className={payment.amount > 0 ? 'text-success-foreground' : undefined}
+            />
+          );
+        })}
         <LedgerRow label={t('detail.paid')} value={czk(ledger.paid)} isTotal />
       </dl>
     </div>

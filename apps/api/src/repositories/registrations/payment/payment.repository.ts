@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { and, asc, eq, gte, inArray, isNotNull, lte, sum } from 'drizzle-orm';
 
+import type { Payer } from '@repo/schema/pricing';
+
 import { UnitOfWork } from '../../../core/database/unit-of-work.ts';
 import { payments, registrations } from '../../../db/schema.ts';
 import { PaymentEntity, type PaymentInsertModel } from './payment.entity.ts';
 
 export type CreatePayment = Omit<PaymentInsertModel, 'id' | 'organisationId' | 'gatewayTransactionId'>;
-export type CreateGatewayPayment = Omit<CreatePayment, 'source'> & { gatewayTransactionId: string };
+export type CreateGatewayPayment = Omit<CreatePayment, 'source' | 'payer'> & { gatewayTransactionId: string };
 
 // The ledger is append-only: entries are added and read, never changed or removed.
 @Injectable()
@@ -107,21 +109,30 @@ export class PaymentRepository {
   }
 
   /**
-   * Sum the entries of each of Registrations, in one query.
+   * Sum the entries of each of Registrations by payer, in one query.
    * @param registrationIds Registration ids
-   * @returns the sum by Registration id; one without entries is missing
+   * @returns the sums by Registration id; one without entries is missing
    */
-  public async sumOf(registrationIds: readonly string[]): Promise<Map<string, number>> {
+  public async sumOf(registrationIds: readonly string[]): Promise<Map<string, { amount: number; payer: Payer }[]>> {
     if (registrationIds.length === 0) {
       return new Map();
     }
 
     const rows = await this.unitOfWork.db
-      .select({ registrationId: payments.registrationId, total: sum(payments.amount).mapWith(Number) })
+      .select({
+        registrationId: payments.registrationId,
+        payer: payments.payer,
+        total: sum(payments.amount).mapWith(Number),
+      })
       .from(payments)
       .where(inArray(payments.registrationId, [...registrationIds]))
-      .groupBy(payments.registrationId);
+      .groupBy(payments.registrationId, payments.payer);
+    const sums = new Map<string, { amount: number; payer: Payer }[]>();
 
-    return new Map(rows.map(({ registrationId, total }) => [registrationId, total ?? 0]));
+    for (const { registrationId, payer, total } of rows) {
+      sums.set(registrationId, [...(sums.get(registrationId) ?? []), { amount: total ?? 0, payer }]);
+    }
+
+    return sums;
   }
 }

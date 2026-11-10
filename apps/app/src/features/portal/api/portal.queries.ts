@@ -9,6 +9,7 @@ import type {
   GuardianEdit,
   StartPortalCardPaymentBody,
 } from '@repo/schema/portal';
+import type { InvoiceRequestBody } from '@repo/schema/registrations';
 
 import { portalKeys } from '@/features/portal/api/portal.keys';
 import { portalService } from '@/features/portal/api/portal.service';
@@ -80,6 +81,25 @@ export const useRequestEmailChangeMutation = (registrationId: string) => {
     mutationFn: ({ position, email }: { position: number; email: string }) =>
       portalService.requestEmailChange(registrationId, position, email),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: portalKeys.edit(registrationId) }),
+  });
+};
+
+// The overview shows the Invoice request and the payment it changes.
+export const useSaveInvoiceRequestMutation = (registrationId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: InvoiceRequestBody) => portalService.saveInvoiceRequest(registrationId, body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: portalKeys.registrations() }),
+  });
+};
+
+export const useRemoveInvoiceRequestMutation = (registrationId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => portalService.removeInvoiceRequest(registrationId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: portalKeys.registrations() }),
   });
 };
 

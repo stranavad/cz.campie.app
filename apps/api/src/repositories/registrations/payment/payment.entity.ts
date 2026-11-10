@@ -1,5 +1,6 @@
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
+import type { Payer } from '@repo/schema/pricing';
 import type { PaymentEntry, PaymentSource } from '@repo/schema/registrations';
 
 import type { payments } from '../../../db/schema.ts';
@@ -11,6 +12,7 @@ export class PaymentEntity {
   public readonly id: string;
   public readonly registrationId: string;
   public readonly source: PaymentSource;
+  public readonly payer: Payer;
   public readonly amount: number;
   public readonly paidOn: string;
   public readonly note: string;
@@ -21,6 +23,7 @@ export class PaymentEntity {
     this.id = row.id;
     this.registrationId = row.registrationId;
     this.source = row.source;
+    this.payer = row.payer;
     this.amount = row.amount;
     this.paidOn = row.paidOn;
     this.note = row.note;
@@ -32,6 +35,7 @@ export class PaymentEntity {
     return {
       id: this.id,
       source: this.source,
+      payer: this.payer,
       amount: this.amount,
       paidOn: this.paidOn,
       note: this.note,

@@ -12,7 +12,8 @@ interface TransferDetailsProps {
 }
 
 // Paying by transfer: what to pay now and by when, the account and variable symbol, and the QR platby to
-// scan, for the amount due now and, while Deposits are owed, everything at once.
+// scan, for the amount due now and, while Deposits are owed, everything at once; and what an Invoice request
+// leaves to a company.
 export function TransferDetails({ payment, variableSymbol }: TransferDetailsProps) {
   const { t } = useTranslation('common', { keyPrefix: 'transfer' });
   const nowLabel = t(payment.phase === 'deposit' ? 'depositNow' : 'amountNow');
@@ -38,6 +39,12 @@ export function TransferDetails({ payment, variableSymbol }: TransferDetailsProp
         )}
         {payment.account === null ? null : <PaymentRow label={t('account')} value={payment.account} />}
         <PaymentRow label={t('variableSymbolLabel')} value={variableSymbol} />
+        {payment.invoiced === null ? null : (
+          <PaymentRow
+            label={t('invoiced', { company: payment.invoiced.companyName })}
+            value={czk(payment.invoiced.amount)}
+          />
+        )}
       </div>
       {payment.account === null ? <p className="text-sm text-muted-foreground">{t('noAccount')}</p> : null}
       <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">

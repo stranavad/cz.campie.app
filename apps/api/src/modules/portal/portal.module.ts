@@ -14,6 +14,8 @@ import { GuardianRegistrationService } from './guardian-registration/services/gu
 import { GuardianSessionController } from './guardian-session/guardian-session.controller.ts';
 import { LoginLinkRequestedHandler } from './guardian-session/login-link-requested.handler.ts';
 import { GuardianLoginService } from './guardian-session/services/guardian-login.service.ts';
+import { GuardianInvoiceRequestController } from './invoice-request/guardian-invoice-request.controller.ts';
+import { GuardianInvoiceRequestService } from './invoice-request/services/guardian-invoice-request.service.ts';
 
 @Module({
   imports: [CampsModule, RegistrationsModule, MailNotificationsModule],
@@ -23,12 +25,14 @@ import { GuardianLoginService } from './guardian-session/services/guardian-login
     GuardianEditController,
     PublicEmailChangeController,
     PortalCardPaymentController,
+    GuardianInvoiceRequestController,
   ],
   providers: [
     GuardianLoginService,
     GuardianRegistrationService,
     GuardianEditService,
     GuardianEmailChangeService,
+    GuardianInvoiceRequestService,
     LoginLinkRequestedHandler,
     EmailChangeRequestedHandler,
   ],

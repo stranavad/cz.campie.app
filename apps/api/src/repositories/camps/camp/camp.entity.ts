@@ -101,6 +101,7 @@ export class CampEntity {
       ...contact,
       ...appearance,
       cardPayments,
+      invoiceRequests: this.modules.includes('invoiceRequests'),
       siblingDiscount: this.toSiblingDiscount(),
     };
   }

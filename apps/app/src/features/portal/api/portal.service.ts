@@ -21,8 +21,10 @@ import {
   endGuardianSessionEndpoint,
   getGuardianEditEndpoint,
   listGuardianRegistrationsEndpoint,
+  removeGuardianInvoiceRequestEndpoint,
   requestGuardianEmailChangeEndpoint,
   requestLoginLinkEndpoint,
+  saveGuardianInvoiceRequestEndpoint,
   startGuardianSessionEndpoint,
   startPortalCardPaymentEndpoint,
   updateGuardianContactEndpoint,
@@ -33,6 +35,7 @@ import {
   type StartGuardianSessionBody,
   type StartPortalCardPaymentBody,
 } from '@repo/schema/portal';
+import type { InvoiceRequestBody } from '@repo/schema/registrations';
 
 import { apiClient } from '@/lib/api';
 
@@ -58,6 +61,10 @@ export const portalService = {
   confirmEmailChange: (token: string) => apiClient.request(confirmGuardianEmailChangeEndpoint, { body: { token } }),
   answerNewFields: (registrationId: string, body: AnswerNewFieldsBody) =>
     apiClient.request(answerNewFieldsEndpoint, { params: { registrationId }, body }),
+  saveInvoiceRequest: (registrationId: string, body: InvoiceRequestBody) =>
+    apiClient.request(saveGuardianInvoiceRequestEndpoint, { params: { registrationId }, body }),
+  removeInvoiceRequest: (registrationId: string) =>
+    apiClient.request(removeGuardianInvoiceRequestEndpoint, { params: { registrationId } }),
   startCardPayment: (registrationId: string, amount: StartPortalCardPaymentBody['amount']) =>
     apiClient.request(startPortalCardPaymentEndpoint, { params: { registrationId }, body: { amount } }),
   consents: (registrationId: string, signal?: AbortSignal) =>

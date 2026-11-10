@@ -7,7 +7,7 @@ import { campFormOptions } from '@/features/camps/components/camp-form/camp-form
 
 // The modules whose features exist so far; the others (health record, health log, Oddíly, Vedoucí,
 // generated documents) come with their stages and stay as saved until then.
-const SWITCHABLE_MODULES = ['consents', 'documents'] as const;
+const SWITCHABLE_MODULES = ['consents', 'documents', 'invoiceRequests'] as const;
 
 // The parts of the Camp guardians see, switched on or off.
 export const CampModulesCard = withForm({

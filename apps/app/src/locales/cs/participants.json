@@ -94,6 +94,7 @@
       "gateway": "Platba kartou {{date}}",
       "correction": "Oprava platby {{date}}: {{note}}"
     },
+    "byCompany": "{{entry}} (platí firma)",
     "paid": "Zaplaceno",
     "overdue": "Po splatnosti.",
     "declarations": "Prohlášení",
@@ -104,6 +105,8 @@
     "kind": "Druh",
     "payment": "Platba",
     "correction": "Oprava platby (vrácení)",
+    "payer": "Plátce",
+    "payers": { "guardian": "Rodič", "company": "Firma z žádosti o fakturu" },
     "amount": "Částka v Kč",
     "paidOn": "Datum platby",
     "note": "Poznámka",
@@ -113,7 +116,7 @@
     "adjustmentAmount": "Částka v Kč (záporná je sleva)",
     "add": "Přidat",
     "failure": {
-      "correction_exceeds_paid": "Oprava nesmí být vyšší než zaplacená částka.",
+      "correction_exceeds_paid": "Oprava nesmí být vyšší než částka, kterou plátce zaplatil.",
       "price_adjustment_below_zero": "Cena by klesla pod nulu.",
       "unexpected": "Zápis se nepodařil. Zkontrolujte údaje.",
       "invalid_amount": "Zadejte celou částku v Kč."

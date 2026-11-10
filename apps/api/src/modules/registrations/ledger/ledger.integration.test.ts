@@ -5,6 +5,8 @@ import {
   createAdmin,
   createCamp,
   createOrganisation,
+  FAKE_INVOICE_REQUEST,
+  offerInvoiceRequests,
   OPEN_TURNUS,
   signIn,
   submitRegistration,
@@ -222,6 +224,55 @@ describe('payment ledger', () => {
         /permission denied/,
       );
     }
+  });
+
+  it('refuses a company payment on a Registration without an Invoice request', async () => {
+    const refused = await pay({ amount: 1000, payer: 'company' });
+
+    expect(refused.status).toBe(409);
+    expect(refused.body.code).toBe('company_payment_unavailable');
+    expect((await ledger()).body.payments).toEqual([]);
+  });
+
+  it("records the company's payments apart from the guardian's, so each share shows what is left", async () => {
+    await offerInvoiceRequests(app(), organisationId, campId);
+    registrationId = (
+      await submitRegistration(app(), organisationId, campId, {
+        turnus: WITH_DEPOSIT,
+        paymentChoice: 'deposit',
+        invoiceRequest: { ...FAKE_INVOICE_REQUEST, amount: 4000 },
+      })
+    ).id;
+
+    const paid = await pay({ amount: 4000, payer: 'company' });
+
+    expect(paid.status).toBe(201);
+    expect(paid.body).toMatchObject({
+      payments: [{ source: 'manual', payer: 'company', amount: 4000 }],
+      status: 'deposit_paid',
+      amountDue: { phase: 'deposit', amount: 2000 },
+      guardian: { share: 2500, paid: 0, balance: 2500 },
+      company: { invoiced: 4000, paid: 4000, balance: 0 },
+    });
+
+    const overCorrected = await pay({ kind: 'correction', amount: 1, note: 'Vráceno', payer: 'guardian' });
+    expect(overCorrected.body.code).toBe('correction_exceeds_paid');
+
+    expect((await pay({ amount: 2500 })).body).toMatchObject({
+      status: 'paid',
+      amountDue: { phase: 'settled', amount: 0 },
+      guardian: { balance: 0 },
+    });
+  });
+
+  it("keeps every gateway entry the guardian's", async () => {
+    await expect(
+      query(
+        `INSERT INTO payments (organisation_id, registration_id, source, payer, amount, paid_on, note, recorded_at, gateway_transaction_id)
+         VALUES ($1, $2, 'gateway', 'company', 100, '2027-04-10', 'Platba kartou', now(), 'TX-1')`,
+        [organisationId, registrationId],
+      ),
+    ).rejects.toThrow(/payments_gateway_payer/);
   });
 
   it('takes Registrations read to see the ledger and write to add to it', async () => {

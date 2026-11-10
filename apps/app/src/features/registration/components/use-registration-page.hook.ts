@@ -16,6 +16,7 @@ import {
 } from '@/features/registration/components/registration-step.constant';
 import { firstChildOf, stepNumberOf, stepOfPath } from '@/features/registration/components/registration-step.helper';
 import { askedAnswers, samePath } from '@/features/registration/components/submission.helper';
+import { useInvoiceRequest } from '@/features/registration/components/use-invoice-request.hook';
 import { useLivePrice } from '@/features/registration/components/use-live-price.hook';
 import { useRegistrationAnswers } from '@/features/registration/components/use-registration-answers.hook';
 import { useRegistrationSteps } from '@/features/registration/components/use-registration-steps.hook';
@@ -54,6 +55,10 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
     participants: answers.participants.map((participant) => askedAnswers(participant, participantFields)),
   };
   const price = useLivePrice(slug, definition, turnus, submission);
+  const invoice = useInvoiceRequest(price.price?.total, submit.markEdited);
+  const invoiceOffered = camp.data?.invoiceRequests === true;
+  // A company paying everything leaves no Deposit to offer.
+  const paymentChoice = invoiceOffered && invoice.coversTotal ? 'full' : price.paymentChoice;
   const localErrors =
     definition === undefined ? [] : checkSubmission(definition, REGISTRATION_FIELD_CATALOGUE, submission).errors;
   const errors = localErrors.filter(({ path }) => stepOfPath(path) <= steps.checkedUpTo);
@@ -130,6 +135,8 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
         : [],
     ),
     ...price,
+    depositAvailable: price.depositAvailable && !(invoiceOffered && invoice.coversTotal),
+    paymentChoice,
     setCodeInput: (code: string) => {
       submit.markEdited();
       price.setCodeInput(code);
@@ -154,6 +161,7 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
     submitted: submit.submitted,
     submittedKey: submit.submittedKey,
     cardOffered,
+    invoice: invoiceOffered ? invoice : null,
     byCard: submit.byCard,
     setByCard: submit.setByCard,
     cardStatus: submit.cardStatus,
@@ -184,19 +192,26 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
         return;
       }
 
-      submit.send(
-        {
-          turnusId: turnus.id,
-          submission,
-          paymentChoice: price.paymentChoice,
-          discountCode: price.discountCode,
-          declarations: (form.data?.declarations ?? []).map(({ id }) => ({
-            id,
-            accepted: answers.ticked.includes(id),
-          })),
-        },
-        (paths) => showProblems(paths.length === 0 ? [step] : paths.map(stepOfPath), paths),
-      );
+      void (invoiceOffered ? invoice.checked() : Promise.resolve(null)).then((invoiceRequest) => {
+        if (invoiceRequest === undefined) {
+          return;
+        }
+
+        submit.send(
+          {
+            turnusId: turnus.id,
+            submission,
+            paymentChoice,
+            discountCode: price.discountCode,
+            declarations: (form.data?.declarations ?? []).map(({ id }) => ({
+              id,
+              accepted: answers.ticked.includes(id),
+            })),
+            invoiceRequest,
+          },
+          (paths) => showProblems(paths.length === 0 ? [step] : paths.map(stepOfPath), paths),
+        );
+      });
     },
   };
 }

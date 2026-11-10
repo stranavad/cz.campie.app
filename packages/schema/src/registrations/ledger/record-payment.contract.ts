@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { PAYERS } from '@repo/schema/pricing';
 import { calendarDateSchema, czkSchema, defineEndpoint } from '@repo/schema/shared';
 
 import { ledgerSchema, registrationParamsSchema } from './ledger.resource.ts';
@@ -12,6 +13,8 @@ export const recordPaymentBodySchema = z
     amount: czkSchema.min(1),
     paidOn: calendarDateSchema,
     note: z.string().trim().max(500),
+    // Company only on a Registration with an Invoice request.
+    payer: z.enum(PAYERS).default('guardian'),
   })
   // A Correcting payment's note is the only record of why money went back.
   .refine(({ kind, note }) => kind === 'payment' || note !== '', {
@@ -21,8 +24,9 @@ export const recordPaymentBodySchema = z
 
 export type RecordPaymentBody = z.infer<typeof recordPaymentBodySchema>;
 
-// Why an entry was refused: a Correcting payment may take back at most what was paid.
-export const RECORD_PAYMENT_ERROR_CODES = ['correction_exceeds_paid'] as const;
+// Why an entry was refused: a Correcting payment may take back at most what was paid, and a company pays only
+// a Registration with an Invoice request.
+export const RECORD_PAYMENT_ERROR_CODES = ['correction_exceeds_paid', 'company_payment_unavailable'] as const;
 
 export type RecordPaymentErrorCode = (typeof RECORD_PAYMENT_ERROR_CODES)[number];
 

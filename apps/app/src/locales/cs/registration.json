@@ -58,6 +58,11 @@
     "methodCard": "Kartou online",
     "cardNote": "Po odeslání přihlášky vás přesměrujeme na platební bránu Comgate."
   },
+  "invoice": {
+    "title": "Platba fakturou",
+    "wanted": "Část ceny zaplatí firma",
+    "wantedHint": "Například zaměstnavatel. Tábor firmě vystaví fakturu, vy zaplatíte jen zbytek."
+  },
   "code": {
     "applied": "Slevový kód jsme započítali.",
     "expired": "Platnost tohoto kódu skončila.",
@@ -106,7 +111,9 @@
     "discount_code_inactive": "Tento kód už neplatí.",
     "discount_code_unknown": "Takový kód neznáme. Zkontrolujte ho prosím.",
     "turnus_busy": "Právě se přihlašuje mnoho lidí najednou. Zkuste prosím přihlášku odeslat znovu.",
-    "idempotency_key_reused": "Přihlášku se nepodařilo odeslat. Načtěte prosím stránku znovu."
+    "idempotency_key_reused": "Přihlášku se nepodařilo odeslat. Načtěte prosím stránku znovu.",
+    "invoice_request_unavailable": "Tábor platbu fakturou nenabízí. Zrušte prosím žádost o fakturu.",
+    "invoice_amount_above_total": "Fakturovat lze nejvýše celkovou cenu, {{max}} Kč."
   },
   "submitted": {
     "title": "Přihláška je odeslaná",

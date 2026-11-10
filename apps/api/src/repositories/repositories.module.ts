@@ -32,6 +32,7 @@ import { CardPaymentRepository } from './registrations/card-payment/card-payment
 import { ClaimedDiscountVerificationRepository } from './registrations/claimed-discount-verification/claimed-discount-verification.repository.ts';
 import { ErasureRepository } from './registrations/erasure/erasure.repository.ts';
 import { GuardianEmailChangeRepository } from './registrations/guardian-email-change/guardian-email-change.repository.ts';
+import { InvoiceRequestRepository } from './registrations/invoice-request/invoice-request.repository.ts';
 import { ParticipantExportRepository } from './registrations/participant-export/participant-export.repository.ts';
 import { PaymentRepository } from './registrations/payment/payment.repository.ts';
 import { PriceAdjustmentRepository } from './registrations/price-adjustment/price-adjustment.repository.ts';
@@ -75,6 +76,7 @@ const REPOSITORIES = [
   DiscountCodeRepository,
   RegistrationFormRepository,
   RegistrationRepository,
+  InvoiceRequestRepository,
   PaymentRepository,
   PriceAdjustmentRepository,
   GuardianEmailChangeRepository,

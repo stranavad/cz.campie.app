@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import * as p from 'drizzle-orm/pg-core';
 
+import { PAYERS } from '@repo/schema/pricing';
 import { PAYMENT_SOURCES } from '@repo/schema/registrations';
 
 import { id } from '../helpers/ids.ts';
@@ -8,6 +9,7 @@ import { organisationId, organisationPolicy } from '../helpers/organisation.ts';
 import { registrations } from './registrations.ts';
 
 export const paymentSource = p.pgEnum('payment_source', PAYMENT_SOURCES);
+export const payer = p.pgEnum('payer', PAYERS);
 
 // The ledger: the API may add and read entries but never change or remove one, and an erased Registration
 // keeps them, so its foreign key never cascades.
@@ -18,6 +20,7 @@ export const payments = p.snakeCase.table.withRLS(
     organisationId: organisationId(),
     registrationId: p.uuid().notNull(),
     source: paymentSource().notNull(),
+    payer: payer().notNull().default('guardian'),
     amount: p.integer().notNull(),
     paidOn: p.date({ mode: 'string' }).notNull(),
     note: p.text().notNull(),
@@ -42,6 +45,8 @@ export const payments = p.snakeCase.table.withRLS(
       'payments_gateway_transaction',
       sql`(${table.source} = 'gateway') = (${table.gatewayTransactionId} IS NOT NULL)`,
     ),
+    // A card payment is always the guardian's.
+    p.check('payments_gateway_payer', sql`${table.source} <> 'gateway' OR ${table.payer} = 'guardian'`),
     p
       .uniqueIndex('payments_gateway_transaction_id_key')
       .on(table.organisationId, table.gatewayTransactionId)

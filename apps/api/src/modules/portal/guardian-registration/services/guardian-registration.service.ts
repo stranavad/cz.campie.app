@@ -10,6 +10,7 @@ import { CampRepository } from '../../../../repositories/camps/camp/camp.reposit
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { UndeliverableEmailRepository } from '../../../../repositories/emails/undeliverable-email/undeliverable-email.repository.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
+import { InvoiceRequestRepository } from '../../../../repositories/registrations/invoice-request/invoice-request.repository.ts';
 import type { RegistrationEntity } from '../../../../repositories/registrations/registration/registration.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { campContactOf } from '../../../camps/camp/camp-contact.ts';
@@ -28,6 +29,7 @@ export class GuardianRegistrationService {
     private readonly camps: CampRepository,
     private readonly organisations: OrganisationRepository,
     private readonly ledgers: LedgerService,
+    private readonly invoiceRequests: InvoiceRequestRepository,
     private readonly files: FileService,
     private readonly unitOfWork: UnitOfWork,
     config: ConfigService<Env, true>,
@@ -103,6 +105,7 @@ export class GuardianRegistrationService {
         ...campContactOf(camp, organisation),
         consents: camp.modules.includes('consents'),
         documents: camp.modules.includes('documents'),
+        invoiceRequests: camp.modules.includes('invoiceRequests'),
       },
       turnus: {
         id: turnus.id,
@@ -130,6 +133,7 @@ export class GuardianRegistrationService {
       status: ledger.status,
       overdue: ledger.overdue,
       payment: await this.ledgers.paymentInstructionsOf(registration.id),
+      invoiceRequest: (await this.invoiceRequests.getByRegistration(registration.id))?.toDto() ?? null,
     };
   }
 }

@@ -4,6 +4,7 @@ import { paymentInstructionsOf, type PaymentInstructions } from '@repo/schema/pa
 
 import type { CampEntity } from '../../../repositories/camps/camp/camp.entity.ts';
 import type { OrganisationEntity } from '../../../repositories/organisations/organisation/organisation.entity.ts';
+import type { InvoiceRequestEntity } from '../../../repositories/registrations/invoice-request/invoice-request.entity.ts';
 import type { RegistrationEntity } from '../../../repositories/registrations/registration/registration.entity.ts';
 
 // Error correction a printed or photographed QR platba still reads with.
@@ -11,8 +12,10 @@ const QR_OPTIONS = { margin: 2, errorCorrectionLevel: 'M' } as const;
 
 /**
  * Tell how to pay a Registration, the same way on the Přihláška, in emails and in the portal: by its own
- * due dates, to its Organisation's account, with the Camp's name as the message.
- * @param of the Registration, its Camp and Organisation, its total and what is paid
+ * due dates, to its Organisation's account, with the Camp's name as the message, asking the guardian only for
+ * the part not invoiced to a company.
+ * @param of the Registration, its Camp and Organisation, its total, what the guardian paid and its Invoice
+ * request
  */
 export function registrationPaymentOf(of: {
   readonly registration: RegistrationEntity;
@@ -20,8 +23,13 @@ export function registrationPaymentOf(of: {
   readonly organisation: OrganisationEntity;
   readonly total: number;
   readonly paid: number;
+  readonly invoiceRequest: InvoiceRequestEntity | null;
 }): PaymentInstructions {
   return paymentInstructionsOf({
+    invoice:
+      of.invoiceRequest === null
+        ? null
+        : { companyName: of.invoiceRequest.companyName, amount: of.invoiceRequest.amount },
     total: of.total,
     depositTotal: of.registration.depositTotal,
     paid: of.paid,

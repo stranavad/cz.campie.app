@@ -86,7 +86,8 @@ export class CardPaymentService {
   }
 
   /**
-   * Start a card payment of one of the guardian's Registrations: the amount due now, or all outstanding.
+   * Start a card payment of one of the guardian's Registrations: the amount due now, or all outstanding of
+   * the guardian's share.
    * @param email the signed-in guardian's email
    * @param registrationId Registration id
    * @param body which amount
@@ -108,7 +109,7 @@ export class CardPaymentService {
 
     const balance = await this.ledger.balanceOf(registration.id);
 
-    return this.start(registration, body.amount === 'due_now' ? balance.amountDue.amount : balance.balance);
+    return this.start(registration, body.amount === 'due_now' ? balance.amountDue.amount : balance.guardian.balance);
   }
 
   /**

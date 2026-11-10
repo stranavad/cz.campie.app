@@ -5,6 +5,7 @@ import { answerValueSchema } from '@repo/schema/form-engine';
 import { PAYMENT_CHOICES } from '@repo/schema/pricing';
 import { defineEndpoint } from '@repo/schema/shared';
 
+import { invoiceRequestBodySchema } from '../invoice-request/invoice-request.resource.ts';
 import { registrationPaymentSchema } from '../registration-payment/registration-payment.resource.ts';
 
 const answersSchema = z.record(z.string().max(100), answerValueSchema);
@@ -19,6 +20,8 @@ export const submitRegistrationBodySchema = z.object({
   discountCode: z.string().trim().max(40).nullable(),
   // Each declaration of the form, ticked or not.
   declarations: z.array(z.object({ id: z.uuid(), accepted: z.boolean() })).max(50),
+  // Part or all of the price invoiced to a company, while the Camp offers it; null for none.
+  invoiceRequest: invoiceRequestBodySchema.nullable().default(null),
 });
 
 export type SubmitRegistrationBody = z.infer<typeof submitRegistrationBodySchema>;
@@ -52,7 +55,7 @@ export type SubmissionErrorCode = (typeof SUBMISSION_ERROR_CODES)[number];
 
 // Field-level codes a submission adds to the form engine's: more children than the Camp allows, a child
 // outside the age limits (at its birth date), an unticked mandatory declaration, and a code that cannot be
-// used (at the code field).
+// used (at the code field), and an Invoice request the Camp does not offer or above the total.
 export const SUBMISSION_FIELD_ERROR_CODES = [
   'participants_too_many',
   'participant_too_young',
@@ -62,6 +65,8 @@ export const SUBMISSION_FIELD_ERROR_CODES = [
   'discount_code_exhausted',
   'discount_code_inactive',
   'discount_code_unknown',
+  'invoice_request_unavailable',
+  'invoice_amount_above_total',
 ] as const;
 
 export type SubmissionFieldErrorCode = (typeof SUBMISSION_FIELD_ERROR_CODES)[number];

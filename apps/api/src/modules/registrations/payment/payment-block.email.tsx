@@ -42,6 +42,9 @@ export function PaymentBlock({ payment }: { payment: PaymentInstructions }) {
           <Row label="Nebo vše najednou">{czk(payment.balance.outstanding)}</Row>
         </>
       )}
+      {payment.invoiced === null ? null : (
+        <Row label={`Fakturováno firmě ${payment.invoiced.companyName}`}>{czk(payment.invoiced.amount)}</Row>
+      )}
       {payment.account === null ? (
         <p style={{ ...line, color: MUTED }}>Číslo účtu pro platbu pošle pořadatel tábora.</p>
       ) : null}

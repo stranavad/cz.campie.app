@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AMOUNT_DUE_PHASES, PAYMENT_STATUSES } from '@repo/schema/pricing';
+import { AMOUNT_DUE_PHASES, PAYERS, PAYMENT_STATUSES } from '@repo/schema/pricing';
 import { calendarDateSchema } from '@repo/schema/shared';
 
 // Where a ledger entry comes from: an admin's record of money received, the card gateway, or an admin's
@@ -16,6 +16,7 @@ export type RegistrationParams = z.infer<typeof registrationParamsSchema>;
 export const paymentEntrySchema = z.object({
   id: z.uuid(),
   source: z.enum(PAYMENT_SOURCES),
+  payer: z.enum(PAYERS),
   // Whole CZK, negative for a Correcting payment.
   amount: z.number().int(),
   paidOn: calendarDateSchema,
@@ -49,6 +50,9 @@ export const ledgerSchema = z.object({
     dueDate: calendarDateSchema.nullable(),
   }),
   overdue: z.boolean(),
+  // The guardian's share, which the amount due now follows, and what is left for the company to pay.
+  guardian: z.object({ share: z.number().int(), paid: z.number().int(), balance: z.number().int() }),
+  company: z.object({ invoiced: z.number().int(), paid: z.number().int(), balance: z.number().int() }).nullable(),
 });
 
 export type Ledger = z.infer<typeof ledgerSchema>;

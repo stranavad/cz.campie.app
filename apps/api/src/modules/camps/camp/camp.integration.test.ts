@@ -81,6 +81,7 @@ describe('camps', () => {
         campHealthLog: false,
         oddily: false,
         vedouci: false,
+        invoiceRequests: false,
       },
       siblingDiscountAmount: 0,
       siblingDiscountAppliesTo: 'every_child',
@@ -241,6 +242,7 @@ describe('camps', () => {
         logoUrl: null,
         photoUrl: null,
         cardPayments: false,
+        invoiceRequests: false,
         siblingDiscount: null,
       });
     }

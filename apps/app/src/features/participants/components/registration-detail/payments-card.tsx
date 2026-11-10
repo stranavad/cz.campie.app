@@ -42,7 +42,13 @@ export function PaymentsCard({ organisationId, registrationId, detail, canWrite 
       ) : null}
       <PriceLines detail={detail} />
       <PaymentLines ledger={ledger} />
-      {canWrite ? <LedgerForms organisationId={organisationId} registrationId={registrationId} /> : null}
+      {canWrite ? (
+        <LedgerForms
+          organisationId={organisationId}
+          registrationId={registrationId}
+          hasCompany={detail.ledger.company !== null}
+        />
+      ) : null}
     </Card>
   );
 }

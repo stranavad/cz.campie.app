@@ -11,6 +11,7 @@ const REGISTRATION = {
   account: '19-2000145399/0800',
   variableSymbol: '27123456',
   message: 'Letní tábor',
+  invoice: null,
 };
 
 describe('paymentInstructionsOf', () => {
@@ -28,6 +29,7 @@ describe('paymentInstructionsOf', () => {
         qrPlatba: 'SPD*1.0*ACC:CZ6508000000192000145399*AM:13300.00*CC:CZK*X-VS:27123456*DT:20270424*MSG:LETNI TABOR',
       },
       qrPlatba: 'SPD*1.0*ACC:CZ6508000000192000145399*AM:4000.00*CC:CZK*X-VS:27123456*DT:20270424*MSG:LETNI TABOR',
+      invoiced: null,
     });
   });
 
@@ -57,5 +59,23 @@ describe('paymentInstructionsOf', () => {
 
   it('offers no rest when the Deposits cover the whole price', () => {
     expect(paymentInstructionsOf({ ...REGISTRATION, total: 4000 }).balance).toBeNull();
+  });
+
+  it('asks the guardian for their share only, naming what is invoiced to the company', () => {
+    const invoice = { companyName: 'Fiktivní firma s.r.o.', amount: 10_000 };
+
+    expect(paymentInstructionsOf({ ...REGISTRATION, invoice })).toMatchObject({
+      kind: 'deposit',
+      amount: 3300,
+      balance: null,
+      qrPlatba: expect.stringContaining('*AM:3300.00*'),
+      invoiced: { companyName: 'Fiktivní firma s.r.o.', amount: 10_000 },
+    });
+    expect(paymentInstructionsOf({ ...REGISTRATION, invoice: { ...invoice, amount: 13_300 } })).toMatchObject({
+      amount: 0,
+      qrPlatba: null,
+      balance: null,
+      invoiced: { amount: 13_300 },
+    });
   });
 });

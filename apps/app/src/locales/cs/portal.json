@@ -208,5 +208,28 @@
   "left_one": "{{count}} zbývá",
   "left_few": "{{count}} zbývají",
   "left_other": "{{count}} zbývá",
-  "allDone": "hotovo"
+  "allDone": "hotovo",
+  "invoice": {
+    "title": "Platba fakturou",
+    "none": "Část ceny může zaplatit firma, například váš zaměstnavatel. Tábor jí vystaví fakturu a vy zaplatíte jen zbytek.",
+    "company": "Firma",
+    "ico": "IČO {{ico}}",
+    "amount": "Fakturovat",
+    "state": "Stav",
+    "toInvoice": "Čeká na vystavení faktury",
+    "invoiced": "Vyfakturováno {{date}}",
+    "invoicedNumber": "Vyfakturováno {{date}}, faktura {{number}}",
+    "locked": "Tábor už fakturu vystavil. Se změnou se prosím obraťte na tábor.",
+    "add": "Požádat o fakturu",
+    "change": "Upravit",
+    "remove": "Zrušit žádost",
+    "save": "Uložit",
+    "cancel": "Zrušit",
+    "failure": {
+      "invoice_request_unavailable": "Tábor platbu fakturou už nenabízí.",
+      "invoice_amount_above_total": "Fakturovat lze nejvýše celkovou cenu.",
+      "invoice_request_invoiced": "Tábor už fakturu vystavil, žádost nelze změnit.",
+      "unexpected": "Změnu se nepodařilo uložit. Zkuste to prosím znovu."
+    }
+  }
 }

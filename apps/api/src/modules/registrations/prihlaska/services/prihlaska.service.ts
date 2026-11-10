@@ -25,6 +25,7 @@ import { CampRepository } from '../../../../repositories/camps/camp/camp.reposit
 import { RegistrationFormRepository } from '../../../../repositories/camps/registration-form/registration-form.repository.ts';
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
+import { InvoiceRequestRepository } from '../../../../repositories/registrations/invoice-request/invoice-request.repository.ts';
 import type { ParticipantEntity } from '../../../../repositories/registrations/participant/participant.entity.ts';
 import { RegistrationRepository } from '../../../../repositories/registrations/registration/registration.repository.ts';
 import { effectiveBranding } from '../../../camps/camp-branding/services/camp-branding.service.ts';
@@ -63,6 +64,7 @@ export class PrihlaskaService {
     private readonly camps: CampRepository,
     private readonly forms: RegistrationFormRepository,
     private readonly organisations: OrganisationRepository,
+    private readonly invoiceRequests: InvoiceRequestRepository,
     private readonly documents: DocumentService,
     private readonly files: FileService,
     private readonly audit: AuditService,
@@ -174,7 +176,14 @@ export class PrihlaskaService {
 
     const total = lines.reduce((sum, { amount }) => sum + amount, 0);
     // A snapshot of the submission: nothing paid yet, whatever was paid since.
-    const instructions = registrationPaymentOf({ registration, camp, organisation, total, paid: 0 });
+    const instructions = registrationPaymentOf({
+      registration,
+      camp,
+      organisation,
+      total,
+      paid: 0,
+      invoiceRequest: await this.invoiceRequests.getByRegistration(registrationId),
+    });
     const payment: PrihlaskaPayment = {
       ...instructions,
       dueDate: optionalDate(instructions.dueDate),

@@ -5,6 +5,8 @@ import {
   createAdmin,
   createCamp,
   createOrganisation,
+  FAKE_INVOICE_REQUEST,
+  offerInvoiceRequests,
   submitRegistration,
   type RequestHeaders,
 } from '../../../testing/fixtures.ts';
@@ -93,6 +95,29 @@ describe('payment reminders', () => {
     await jobs().drain();
 
     expect(reminders()[0]?.html).toMatch(/4\s500\sKč/);
+  });
+
+  it("reminds the guardian of their share only, and not once it is paid while the company's is open", async () => {
+    await offerInvoiceRequests(app(), organisationId, campId);
+    const invoiced = await submitRegistration(app(), organisationId, campId, {
+      turnusId,
+      invoiceRequest: { ...FAKE_INVOICE_REQUEST, amount: 5000 },
+      answers: { guardianEmail: 'eva.fakturova@example.com' },
+    });
+
+    expect((await preview()).body).toMatchObject({ withBalance: 3 });
+    expect((await send(false)).body).toEqual({ reminded: 3 });
+    await jobs().drain();
+    const toInvoiced = reminders().find(({ html }) => html.includes(invoiced.variableSymbol));
+    expect(toInvoiced?.html).toMatch(/1\s500\sKč/);
+    expect(toInvoiced?.html).toContain('Fakturováno firmě');
+
+    await http()
+      .post(`/api/registrations/${invoiced.id}/payments`)
+      .set(owner)
+      .send({ kind: 'payment', amount: 1500, paidOn: '2027-04-20', note: 'Převodem' });
+
+    expect((await preview()).body).toMatchObject({ withBalance: 2 });
   });
 
   it('sends nothing and says so when the Camp switched the reminder off', async () => {

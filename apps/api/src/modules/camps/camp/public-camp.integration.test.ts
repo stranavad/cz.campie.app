@@ -113,7 +113,7 @@ describe('public camp pages', () => {
 
   it('shows the public Camp and its card with exactly the fields guardians may see', async () => {
     const fields = ['id', 'name', 'slug', 'websiteUrl', 'description', 'contactName', 'contactEmail', 'contactPhone'];
-    const appearance = ['accentColour', 'logoUrl', 'photoUrl', 'cardPayments', 'siblingDiscount'];
+    const appearance = ['accentColour', 'logoUrl', 'photoUrl', 'cardPayments', 'invoiceRequests', 'siblingDiscount'];
 
     const camp = (await http().get('/api/public-camps/letni-tabor').set(host)).body;
     const [card] = (await http().get('/api/public-camps').set(host)).body;

@@ -11,6 +11,8 @@ export const CAMP_MODULES = [
   'campHealthLog',
   'oddily',
   'vedouci',
+  // "Platba fakturou": offers guardians an Invoice request on the form and in the portal.
+  'invoiceRequests',
 ] as const;
 
 export type CampModule = (typeof CAMP_MODULES)[number];

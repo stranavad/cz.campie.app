@@ -75,6 +75,10 @@
   },
   "validation": {
     "ico_invalid": "Zadejte platné IČO, osm číslic.",
+    "postcode_invalid": "Zadejte PSČ, pět číslic.",
+    "invoice_field_required": "Vyplňte prosím.",
+    "invoice_amount_zero": "Zadejte částku větší než nula.",
+    "invoice_amount_above_total": "Fakturovat lze nejvýše celkovou cenu.",
     "vat_id_invalid": "Zadejte DIČ ve tvaru CZ12345678, nebo pole nechte prázdné.",
     "phone_invalid": "Zadejte telefon, například +420 123 456 789.",
     "bank_account_invalid": "Zadejte platné číslo účtu ve tvaru 123456789/0100, případně s předčíslím 19-123456789/0100.",
@@ -475,6 +479,18 @@
       "write": "upravit"
     }
   },
+  "invoiceRequest": {
+    "companyName": "Název firmy",
+    "ico": "IČO",
+    "dic": "DIČ (nepovinné)",
+    "street": "Ulice a číslo",
+    "city": "Město",
+    "postcode": "PSČ",
+    "email": "Fakturační e-mail (nepovinné)",
+    "note": "Poznámka nebo číslo objednávky (nepovinné)",
+    "amount": "Částka k fakturaci v Kč",
+    "amountHint": "Zbytek ceny zaplatíte vy. Fakturu vystaví tábor."
+  },
   "transfer": {
     "howToPay": "Jak zaplatit",
     "depositNow": "Záloha k úhradě",
@@ -487,6 +503,7 @@
     "variableSymbolLabel": "Variabilní symbol",
     "noAccount": "Číslo účtu pro platbu pošle pořadatel tábora.",
     "qrFor": "{{label}}: {{amount}}",
-    "qr": "QR platba"
+    "qr": "QR platba",
+    "invoiced": "Fakturováno firmě {{company}}"
   }
 }

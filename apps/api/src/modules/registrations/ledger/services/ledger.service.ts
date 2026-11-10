@@ -1,6 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { createElement } from 'react';
 
+import type { PaymentInstructions } from '@repo/schema/payments';
 import { balanceOf, type Balance } from '@repo/schema/pricing';
 import type {
   AddPriceAdjustmentBody,
@@ -24,6 +25,8 @@ import type { TurnusEntity } from '../../../../repositories/camps/turnus/turnus.
 import { TurnusRepository } from '../../../../repositories/camps/turnus/turnus.repository.ts';
 import { OrganisationRepository } from '../../../../repositories/organisations/organisation/organisation.repository.ts';
 import { PaymentGatewayAccountRepository } from '../../../../repositories/organisations/payment-gateway-account/payment-gateway-account.repository.ts';
+import type { InvoiceRequestEntity } from '../../../../repositories/registrations/invoice-request/invoice-request.entity.ts';
+import { InvoiceRequestRepository } from '../../../../repositories/registrations/invoice-request/invoice-request.repository.ts';
 import type { PaymentEntity } from '../../../../repositories/registrations/payment/payment.entity.ts';
 import { PaymentRepository } from '../../../../repositories/registrations/payment/payment.repository.ts';
 import type { PriceAdjustmentEntity } from '../../../../repositories/registrations/price-adjustment/price-adjustment.entity.ts';
@@ -41,6 +44,7 @@ interface Books {
   readonly turnus: TurnusEntity;
   readonly payments: readonly PaymentEntity[];
   readonly adjustments: readonly PriceAdjustmentEntity[];
+  readonly invoiceRequest: InvoiceRequestEntity | null;
   readonly balance: Balance;
 }
 
@@ -52,6 +56,7 @@ export class LedgerService {
     private readonly registrations: RegistrationRepository,
     private readonly payments: PaymentRepository,
     private readonly adjustments: PriceAdjustmentRepository,
+    private readonly invoiceRequests: InvoiceRequestRepository,
     private readonly turnusy: TurnusRepository,
     private readonly camps: CampRepository,
     private readonly organisations: OrganisationRepository,
@@ -81,21 +86,13 @@ export class LedgerService {
 
   /**
    * Tell a guardian how to pay a Registration now, the one way the portal, the submitted page and a card
-   * payment that did not go through show it: the amount due now with its date and QR platba, the rest after
-   * the Deposits, and whether a card may pay.
+   * payment that did not go through show it: the amount due now of the guardian's share with its date and
+   * QR platba, the rest after the Deposits, what is invoiced to a company, and whether a card may pay.
    * @param registrationId Registration id
    */
   public async paymentInstructionsOf(registrationId: string): Promise<RegistrationPayment> {
     const books = await this.booksOf(registrationId);
-    const camp = await this.camps.getByIdOrThrow(books.turnus.campId);
-    const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
-    const instructions = registrationPaymentOf({
-      registration: books.registration,
-      camp,
-      organisation,
-      total: books.balance.total,
-      paid: books.balance.paid,
-    });
+    const instructions = await this.instructionsOf(books);
 
     return {
       account: instructions.account,
@@ -105,29 +102,53 @@ export class LedgerService {
       dueDate: instructions.dueDate,
       qrPlatba: instructions.qrPlatba,
       balance: instructions.balance,
+      invoiced: instructions.invoiced,
     };
   }
 
   /**
-   * Record a payment received, or a Correcting payment taking an amount back, audited. A payment received
-   * is emailed to both guardians. The Registration stays locked meanwhile, so two corrections never take
-   * back the same money.
+   * Tell how to pay the guardian's share of a Registration by transfer, as emails show it.
+   * @param registrationId Registration id
+   */
+  public async transferInstructionsOf(registrationId: string): Promise<PaymentInstructions> {
+    return this.instructionsOf(await this.booksOf(registrationId));
+  }
+
+  /**
+   * Record a payment received, or a Correcting payment taking an amount back, from the guardian or the
+   * company an Invoice request names, audited. A payment received is emailed to both guardians. The
+   * Registration stays locked meanwhile, so two corrections never take back the same money.
    * @param actor who records it
    * @param registrationId Registration id
-   * @param body the kind, amount, date and note
-   * @throws {ConflictException} correction_exceeds_paid when a correction takes back more than was paid
+   * @param body the kind, amount, date, note and payer
+   * @throws {ConflictException} company_payment_unavailable when a company pays a Registration without an
+   * Invoice request; correction_exceeds_paid when a correction takes back more than the payer paid
    */
   public async recordPayment(actor: Actor, registrationId: string, body: RecordPaymentBody): Promise<Ledger> {
     await this.registrations.lockByIdOrThrow(registrationId);
 
-    if (body.kind === 'correction' && body.amount > (await this.balanceOf(registrationId)).paid) {
+    const { balance } = await this.booksOf(registrationId);
+
+    if (body.payer === 'company' && balance.company === null) {
+      const code: RecordPaymentErrorCode = 'company_payment_unavailable';
+
+      throw new ConflictException({
+        code,
+        message: 'Only a Registration with an Invoice request has a company to pay',
+      });
+    }
+
+    const paidByPayer = body.payer === 'company' ? (balance.company?.paid ?? 0) : balance.guardian.paid;
+
+    if (body.kind === 'correction' && body.amount > paidByPayer) {
       const code: RecordPaymentErrorCode = 'correction_exceeds_paid';
 
-      throw new ConflictException({ code, message: 'A correction takes back at most what was paid' });
+      throw new ConflictException({ code, message: 'A correction takes back at most what the payer paid' });
     }
 
     const payment = await this.payments.create({
       registrationId,
+      payer: body.payer,
       source: body.kind === 'correction' ? 'correction' : 'manual',
       amount: body.kind === 'correction' ? -body.amount : body.amount,
       paidOn: body.paidOn,
@@ -268,6 +289,7 @@ export class LedgerService {
     const lines = await this.registrations.sumPriceLinesOf(ids);
     const paid = await this.payments.sumOf(ids);
     const adjusted = await this.adjustments.sumOf(ids);
+    const invoiced = await this.invoiceRequests.listByRegistrations(ids);
     const today = pragueDateOf(this.clock.now());
 
     return new Map(
@@ -277,7 +299,8 @@ export class LedgerService {
           {
             lines: [{ amount: lines.get(registration.id) ?? 0 }],
             adjustments: [{ amount: adjusted.get(registration.id) ?? 0 }],
-            payments: [{ amount: paid.get(registration.id) ?? 0 }],
+            payments: paid.get(registration.id) ?? [],
+            invoiced: invoiced.get(registration.id)?.amount ?? null,
             depositTotal: registration.depositTotal,
             depositDueDate: registration.depositDueDate,
             balanceDueDate: registration.balanceDueDate,
@@ -314,14 +337,7 @@ export class LedgerService {
       ({ status }) => type === 'payment_received' || status === 'registered',
     );
     const camp = await this.camps.getByIdOrThrow(books.turnus.campId);
-    const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
-    const instructions = registrationPaymentOf({
-      registration: books.registration,
-      camp,
-      organisation,
-      total: books.balance.total,
-      paid: books.balance.paid,
-    });
+    const instructions = await this.instructionsOf(books);
 
     if (amount === null && (instructions.amount === 0 || participants.length === 0)) {
       return;
@@ -365,11 +381,13 @@ export class LedgerService {
     const lines = await this.registrations.listPriceLines(registrationId);
     const payments = await this.payments.listByRegistration(registrationId);
     const adjustments = await this.adjustments.listByRegistration(registrationId);
+    const invoiceRequest = await this.invoiceRequests.getByRegistration(registrationId);
     const balance = balanceOf(
       {
         lines,
         adjustments,
         payments,
+        invoiced: invoiceRequest?.amount ?? null,
         depositTotal: registration.depositTotal,
         depositDueDate: registration.depositDueDate,
         balanceDueDate: registration.balanceDueDate,
@@ -377,7 +395,22 @@ export class LedgerService {
       pragueDateOf(this.clock.now()),
     );
 
-    return { registration, turnus, payments, adjustments, balance };
+    return { registration, turnus, payments, adjustments, invoiceRequest, balance };
+  }
+
+  /**
+   * Tell how to pay the guardian's share of a Registration's books by transfer.
+   * @param books the books
+   */
+  private async instructionsOf(books: Books): Promise<PaymentInstructions> {
+    return registrationPaymentOf({
+      registration: books.registration,
+      camp: await this.camps.getByIdOrThrow(books.turnus.campId),
+      organisation: await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId),
+      total: books.balance.total,
+      paid: books.balance.guardian.paid,
+      invoiceRequest: books.invoiceRequest,
+    });
   }
 }
 

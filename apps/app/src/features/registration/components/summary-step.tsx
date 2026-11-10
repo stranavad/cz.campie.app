@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import { DeclarationsSection } from '@/features/registration/components/declarations-section';
+import { InvoiceRequestSection } from '@/features/registration/components/invoice-request-section';
 import { PaymentSection } from '@/features/registration/components/payment-section';
 import { RegistrationReview } from '@/features/registration/components/registration-review';
 import type { RegistrationPageState } from '@/features/registration/components/use-registration-page.hook';
@@ -34,6 +35,12 @@ export function SummaryStep({ page }: SummaryStepProps) {
         byCard={page.byCard}
         onByCard={page.setByCard}
       />
+      {page.invoice === null ? null : (
+        <InvoiceRequestSection
+          invoice={page.invoice}
+          refusal={page.messageAt(['invoiceRequest', 'amount']) ?? page.messageAt(['invoiceRequest'])}
+        />
+      )}
       {page.form === undefined ? null : (
         <DeclarationsSection
           declarations={page.form.declarations}
