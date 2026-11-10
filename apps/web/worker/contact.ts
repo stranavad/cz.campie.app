@@ -1,4 +1,4 @@
-import { contactSchema, type ContactMessage } from './contact.schema.ts';
+import { contactSchema, honeypotField, type ContactMessage } from './contact.schema.ts';
 import type { Env } from './env.ts';
 
 export type ContactError = 'forbidden' | 'invalid' | 'rate_limited' | 'captcha' | 'send_failed';
@@ -9,8 +9,6 @@ export interface ContactDeps {
 
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const RESEND_URL = 'https://api.resend.com/emails';
-// The honeypot field: hidden from people, so only a bot fills it in.
-const TRAP_FIELD = 'web';
 
 const STATUS = { forbidden: 403, invalid: 400, rate_limited: 429, captcha: 400, send_failed: 502 } satisfies Record<
   ContactError,
@@ -86,7 +84,7 @@ export async function handleContact(request: Request, env: Env, deps: ContactDep
   }
 
   // A bot gets the same answer as a person, so it learns nothing.
-  const trap = form.get(TRAP_FIELD);
+  const trap = form.get(honeypotField);
   if (typeof trap === 'string' && trap !== '') {
     return reply(request, null);
   }

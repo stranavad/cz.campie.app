@@ -23,4 +23,8 @@ export const isIndexable = siteEnv === 'production';
 
 export const appUrl = siteEnv === 'production' ? site.appUrl.production : site.appUrl.dev;
 
+if (siteEnv !== 'local' && site.turnstileSiteKey === '') {
+  throw new Error('site.turnstileSiteKey is empty: a deployed build would ship a contact form that never sends');
+}
+
 export const turnstileSiteKey = siteEnv === 'local' ? TURNSTILE_TEST_SITE_KEY : site.turnstileSiteKey;

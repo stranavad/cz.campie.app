@@ -1,4 +1,5 @@
 ---
+import { contactLimits, honeypotField } from '../../worker/contact.schema.ts';
 import { contact } from '../content/contact.ts';
 import Base from '../layouts/Base.astro';
 import { turnstileSiteKey } from '../lib/site-env.ts';
@@ -40,15 +41,35 @@ const input =
         >
           <label class={field}>
             {contact.form.name}
-            <input name="name" type="text" autocomplete="name" required maxlength="100" class={input} />
+            <input
+              name="name"
+              type="text"
+              autocomplete="name"
+              required
+              maxlength={contactLimits.name.max}
+              class={input}
+            />
           </label>
           <label class={field}>
             {contact.form.organisation}
-            <input name="organisation" type="text" autocomplete="organization" maxlength="150" class={input} />
+            <input
+              name="organisation"
+              type="text"
+              autocomplete="organization"
+              maxlength={contactLimits.organisation.max}
+              class={input}
+            />
           </label>
           <label class={field}>
             {contact.form.email}
-            <input name="email" type="email" autocomplete="email" required maxlength="254" class={input} />
+            <input
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              maxlength={contactLimits.email.max}
+              class={input}
+            />
           </label>
           <label class={field}>
             {contact.form.message}
@@ -56,15 +77,15 @@ const input =
               name="message"
               rows="5"
               required
-              minlength="10"
-              maxlength="5000"
+              minlength={contactLimits.message.min}
+              maxlength={contactLimits.message.max}
               class:list={[input, 'h-[132px] resize-y py-3']}
             ></textarea>
           </label>
           <div aria-hidden="true" class="absolute -left-[9999px] size-px overflow-hidden">
             <label>
               {contact.form.trap}
-              <input name="web" type="text" tabindex="-1" autocomplete="off" />
+              <input name={honeypotField} type="text" tabindex="-1" autocomplete="off" />
             </label>
           </div>
           <div

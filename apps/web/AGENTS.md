@@ -52,7 +52,7 @@ In `apps/web`, or from the root `pnpm --filter web <script>`.
 Nothing here is automated; the repository holds no Cloudflare credentials.
 
 1. DNS: the `campie.cz` zone on Cloudflare. The Worker's custom domains (`campie.cz`, `dev.campie.cz`) create their records on the first deploy. A Redirect Rule sends `www.campie.cz` to `https://campie.cz`. The platform's records (`app`, `*`, `staging`, `*.staging`) keep pointing at the server.
-2. Workers Builds (or a manual `pnpm deploy:*`): root directory `apps/web`, build variables `NODE_VERSION` (26) and `PNPM_VERSION` (from `packageManager`), watch paths `apps/web/**` and `pnpm-lock.yaml`.
+2. Workers Builds (or a manual `pnpm deploy:*`): two projects, `campie-web` on branch `main` with deploy command `pnpm run deploy:production` and `campie-web-dev` on branch `dev` with `pnpm run deploy:dev`, build command empty (the deploy scripts build with the right `SITE_ENV`; Cloudflare's default `wrangler deploy` would ship a noindex build). Root directory `apps/web`, build variables `NODE_VERSION` (26) and `PNPM_VERSION` (from `packageManager`), watch paths `apps/web/**` and `pnpm-lock.yaml`.
 3. Turnstile: a widget for `campie.cz` and `dev.campie.cz`; its site key replaces the placeholder in `src/content/site.ts`, its secret goes in with `wrangler secret put TURNSTILE_SECRET_KEY` (and `--env dev`).
 4. Resend: a sending key for `posta.campie.cz`, set with `wrangler secret put RESEND_API_KEY` per environment.
 5. Zone settings off: Block AI bots, Managed robots.txt, Rocket Loader, Email Address Obfuscation (each rewrites what this site serves).
