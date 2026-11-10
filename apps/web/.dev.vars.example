@@ -1,0 +1,5 @@
+# Local secrets for `pnpm preview` (wrangler dev): copy to .dev.vars, which git ignores.
+# Cloudflare's Turnstile test secret that always passes, matching the test site key local builds use.
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+# Not a real key: Resend rejects it, so a local submission ends on the error page without sending mail.
+RESEND_API_KEY=re_local_not_a_real_key
