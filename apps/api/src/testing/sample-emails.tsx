@@ -18,12 +18,7 @@ export const SampleNoticeEmail = defineEmail<{ text: string; values: Record<stri
   stream: 'notification',
   subject: () => 'Ukázkové oznámení',
   render: ({ brand, text, values }) => (
-    <EmailLayout
-      brand={brand}
-      title="Ukázkové oznámení"
-      preview="Ukázka oznámení z tábora."
-      payment={<p>Platební údaje</p>}
-    >
+    <EmailLayout brand={brand} title="Ukázkové oznámení" preview="Ukázka oznámení z tábora.">
       <EmailText text={text} values={values} />
     </EmailLayout>
   ),

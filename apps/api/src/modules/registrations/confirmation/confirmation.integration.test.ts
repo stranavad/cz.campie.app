@@ -137,8 +137,8 @@ describe('registration confirmation', () => {
     expect(own?.text).toContain('Díky za přihlášku na Turnus 1.');
     expect(own?.text).toContain(variableSymbol);
     expect(own?.text).toContain('19-2000145399/0800');
-    expect(own?.text).toContain('Záloha k úhradě: 4 000 Kč');
-    expect(own?.text).toContain('Splatnost: 24. 4. 2027');
+    expect(own?.text).toMatch(/Záloha k úhradě\s+4\s000\sKč/u);
+    expect(own?.text).toContain('Splatnost 24. 4. 2027');
     expect(own?.text).toContain('Doplatek: 9 000 Kč, splatnost 15. 6. 2027');
     expect(own?.text).toContain('Nebo vše najednou: 13 000 Kč');
   });

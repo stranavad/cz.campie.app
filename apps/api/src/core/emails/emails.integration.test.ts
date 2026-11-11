@@ -75,7 +75,6 @@ describe('emails', () => {
     });
     expect(sent?.html).toContain('Letní tábor Pokus');
     expect(sent?.html).toContain('#2a6f4e');
-    expect(sent?.html).toContain('Platební údaje');
     expect(sent?.text).toContain('variabilní symbol: 26123456.');
     expect(sent?.text).not.toContain('Ukázka oznámení z tábora.');
   });
@@ -108,15 +107,15 @@ describe('emails', () => {
   it.each([
     ['#ffd60a', 'background-color:#ffd60a', 'color:#000000'],
     ['#1d3557', 'background-color:#1d3557', 'color:#ffffff'],
-  ])('puts the button in the accent colour %s with text that reads on it', async (accentColour, background, text) => {
+  ])('puts the header in the accent colour %s with text that reads on it', async (accentColour, background, text) => {
     const organisation = await createOrganisation(app(), { accentColour });
 
     await requestEmail(organisation, { email: 'login' });
     await jobs().drain();
 
-    const button = /<td style="[^"]*">\s*<a href="https:\/\/pokus[^>]*>/.exec(mail().sent[0]?.html ?? '')?.[0] ?? '';
-    expect(button).toContain(background);
-    expect(button).toContain(text);
+    const header = /<td class="e-accent" style="[^"]*">/.exec(mail().sent[0]?.html ?? '')?.[0] ?? '';
+    expect(header).toContain(background);
+    expect(header).toContain(text);
   });
 
   it('attaches stored files by id, decrypted, under their names', async () => {

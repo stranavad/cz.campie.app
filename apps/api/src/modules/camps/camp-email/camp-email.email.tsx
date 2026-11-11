@@ -7,7 +7,8 @@ export interface CampEmailProps {
   readonly subject: string;
   readonly text: string;
   readonly values: Readonly<Record<string, string>>;
-  // The platform's fixed parts: the button's link (a login link), and the payment block with its QR code.
+  // The platform's fixed parts, in this order below the text: the payment block with its QR code, and the
+  // button's link (a login link).
   readonly actionHref?: string;
   readonly payment?: ReactNode;
   // A platform-worded list below the text, such as what is still open per child.
@@ -27,8 +28,9 @@ function campEmail(stream: 'auth' | 'notification'): EmailTemplate<CampEmailProp
     stream,
     subject: ({ subject }) => subject,
     render: ({ brand, subject, text, values, actionHref, payment, details }) => (
-      <EmailLayout brand={brand} title={subject} preview={subject} payment={payment}>
+      <EmailLayout brand={brand} title={subject} preview={subject}>
         <EmailText text={text} values={values} />
+        {payment}
         {details}
         {actionHref === undefined ? null : <EmailAction href={actionHref} label={ACTION_LABELS[stream]} />}
       </EmailLayout>

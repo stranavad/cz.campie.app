@@ -299,7 +299,7 @@ describe('an Invoice request at submission', () => {
     await jobs().drain();
     const confirmation = mail().sent.find(({ to }) => to.includes(JANA));
 
-    expect(confirmation?.text).toMatch(/Záloha k úhradě: 3\s000\sKč/);
+    expect(confirmation?.text).toMatch(/Záloha k úhradě\s+3\s000\sKč/u);
     expect(confirmation?.text).toMatch(/Fakturováno firmě Fiktivní firma s\.r\.o\.: 10\s000\sKč/);
   });
 

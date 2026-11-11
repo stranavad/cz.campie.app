@@ -1,8 +1,6 @@
-import { EmailLayout } from '../../../core/emails/email-layout.tsx';
+import { EmailLayout, EMAIL_FACT as fact } from '../../../core/emails/email-layout.tsx';
 import { defineEmail } from '../../../core/emails/email.service.ts';
 import type { OrganisationEntity } from '../../../repositories/organisations/organisation/organisation.entity.ts';
-
-const fact = { margin: '0 0 6px', fontFamily: 'Arial, Helvetica, sans-serif', fontSize: '15px', lineHeight: '22px' };
 
 // Tells the Platform operator a new Organisation waits for review. Facts follow their labels, so the
 // wording needs no declension.

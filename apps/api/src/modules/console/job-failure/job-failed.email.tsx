@@ -1,7 +1,5 @@
-import { EmailLayout } from '../../../core/emails/email-layout.tsx';
+import { EmailLayout, EMAIL_FACT as fact } from '../../../core/emails/email-layout.tsx';
 import { defineEmail } from '../../../core/emails/email.service.ts';
-
-const fact = { margin: '0 0 6px', fontFamily: 'Arial, Helvetica, sans-serif', fontSize: '15px', lineHeight: '22px' };
 
 export interface JobFailedProps {
   readonly job: string;

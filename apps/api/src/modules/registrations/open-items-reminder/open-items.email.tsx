@@ -1,5 +1,7 @@
 import type { ChecklistItem } from '@repo/schema/checklist';
 
+import { EmailSteps } from '../../../core/emails/email-layout.tsx';
+
 // The platform's names of the items a child has one of; a Consent or requirement goes by its own name.
 const KIND_NAMES = {
   payment: 'Platba',
@@ -30,20 +32,9 @@ function itemText(item: ChecklistItem): string {
     : `${name}: ${item.label}`;
 }
 
-// What is still open for each child, below the Camp's own text.
+// What is still open for each child, below the Camp's own text: the child's name over its numbered items.
 export function OpenItemsBlock({ participants }: { participants: readonly OpenItemsChild[] }) {
-  return (
-    <div style={{ margin: '12px 0' }}>
-      {participants.map((child) => (
-        <div key={child.name} style={{ marginBottom: '10px' }}>
-          <strong>{child.name}</strong>
-          <ul style={{ margin: '4px 0 0', paddingLeft: '20px' }}>
-            {child.items.map((item) => (
-              <li key={`${item.kind}-${item.key ?? ''}`}>{itemText(item)}</li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  );
+  return participants.map((child) => (
+    <EmailSteps key={child.name} title={child.name} steps={child.items.map(itemText)} />
+  ));
 }

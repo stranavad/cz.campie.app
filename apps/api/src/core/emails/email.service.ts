@@ -107,7 +107,7 @@ export class EmailService {
       return;
     }
 
-    const brand: EmailBrand = { name: sender.name, contact: sender.replyTo, accentColour: organisation.accentColour };
+    const brand = this.campBrand(sender, organisation);
 
     await this.deliver(template, props, brand, {
       to: recipients,
@@ -159,7 +159,7 @@ export class EmailService {
     await this.deliver(
       template,
       props,
-      { name, contact: null, accentColour: DEFAULT_ACCENT_COLOUR },
+      { name, contact: null, accentColour: DEFAULT_ACCENT_COLOUR, productName: name },
       { to, attachments: [] },
     );
   }
@@ -176,11 +176,25 @@ export class EmailService {
     sender: EmailSender,
   ): Promise<{ subject: string; html: string }> {
     const organisation = await this.organisations.getByIdOrThrow(this.unitOfWork.organisationId);
-    const brand: EmailBrand = { name: sender.name, contact: sender.replyTo, accentColour: organisation.accentColour };
+    const brand = this.campBrand(sender, organisation);
 
     return {
       subject: oneLine(template.subject(props)),
       html: await render(createElement(template.render, { ...props, brand })),
+    };
+  }
+
+  /**
+   * The brand of a Camp's email: its name and contact, the Organisation's accent colour, and the product.
+   * @param sender the Camp's name and contact
+   * @param organisation the Organisation sending it
+   */
+  private campBrand(sender: EmailSender, organisation: OrganisationEntity): EmailBrand {
+    return {
+      name: sender.name,
+      contact: sender.replyTo,
+      accentColour: organisation.accentColour,
+      productName: this.config.get('PRODUCT_NAME', { infer: true }),
     };
   }
 
