@@ -18,6 +18,7 @@ import { Route as PlatformHistorieRouteImport } from './routes/platform/historie
 import { Route as PlatformKonzoleRouteImport } from './routes/platform/konzole'
 import { Route as PlatformNastaveniRouteImport } from './routes/platform/nastaveni'
 import { Route as PlatformNoveHesloRouteImport } from './routes/platform/nove-heslo'
+import { Route as PlatformOchranaUdajuRouteImport } from './routes/platform/ochrana-udaju'
 import { Route as PlatformOvereniEmailuRouteImport } from './routes/platform/overeni-emailu'
 import { Route as PlatformPodminkyRouteImport } from './routes/platform/podminky'
 import { Route as PlatformPozvankaRouteImport } from './routes/platform/pozvanka'
@@ -88,6 +89,11 @@ const PlatformNastaveniRoute = PlatformNastaveniRouteImport.update({
 const PlatformNoveHesloRoute = PlatformNoveHesloRouteImport.update({
   id: '/nove-heslo',
   path: '/nove-heslo',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformOchranaUdajuRoute = PlatformOchranaUdajuRouteImport.update({
+  id: '/ochrana-udaju',
+  path: '/ochrana-udaju',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
 const PlatformOvereniEmailuRoute = PlatformOvereniEmailuRouteImport.update({
@@ -239,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
+  '/platform/ochrana-udaju': typeof PlatformOchranaUdajuRoute
   '/platform/overeni-emailu': typeof PlatformOvereniEmailuRoute
   '/platform/podminky': typeof PlatformPodminkyRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
@@ -274,6 +281,7 @@ export interface FileRoutesByTo {
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
+  '/platform/ochrana-udaju': typeof PlatformOchranaUdajuRoute
   '/platform/overeni-emailu': typeof PlatformOvereniEmailuRoute
   '/platform/podminky': typeof PlatformPodminkyRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
@@ -312,6 +320,7 @@ export interface FileRoutesById {
   '/platform/konzole': typeof PlatformKonzoleRoute
   '/platform/nastaveni': typeof PlatformNastaveniRoute
   '/platform/nove-heslo': typeof PlatformNoveHesloRoute
+  '/platform/ochrana-udaju': typeof PlatformOchranaUdajuRoute
   '/platform/overeni-emailu': typeof PlatformOvereniEmailuRoute
   '/platform/podminky': typeof PlatformPodminkyRoute
   '/platform/pozvanka': typeof PlatformPozvankaRoute
@@ -351,6 +360,7 @@ export interface FileRouteTypes {
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
+    | '/platform/ochrana-udaju'
     | '/platform/overeni-emailu'
     | '/platform/podminky'
     | '/platform/pozvanka'
@@ -386,6 +396,7 @@ export interface FileRouteTypes {
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
+    | '/platform/ochrana-udaju'
     | '/platform/overeni-emailu'
     | '/platform/podminky'
     | '/platform/pozvanka'
@@ -423,6 +434,7 @@ export interface FileRouteTypes {
     | '/platform/konzole'
     | '/platform/nastaveni'
     | '/platform/nove-heslo'
+    | '/platform/ochrana-udaju'
     | '/platform/overeni-emailu'
     | '/platform/podminky'
     | '/platform/pozvanka'
@@ -522,6 +534,13 @@ declare module '@tanstack/react-router' {
       path: '/nove-heslo'
       fullPath: '/platform/nove-heslo'
       preLoaderRoute: typeof PlatformNoveHesloRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/ochrana-udaju': {
+      id: '/platform/ochrana-udaju'
+      path: '/ochrana-udaju'
+      fullPath: '/platform/ochrana-udaju'
+      preLoaderRoute: typeof PlatformOchranaUdajuRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
     '/platform/overeni-emailu': {
@@ -746,6 +765,7 @@ interface PlatformRouteRouteChildren {
   PlatformKonzoleRoute: typeof PlatformKonzoleRoute
   PlatformNastaveniRoute: typeof PlatformNastaveniRoute
   PlatformNoveHesloRoute: typeof PlatformNoveHesloRoute
+  PlatformOchranaUdajuRoute: typeof PlatformOchranaUdajuRoute
   PlatformOvereniEmailuRoute: typeof PlatformOvereniEmailuRoute
   PlatformPodminkyRoute: typeof PlatformPodminkyRoute
   PlatformPozvankaRoute: typeof PlatformPozvankaRoute
@@ -771,6 +791,7 @@ const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformKonzoleRoute: PlatformKonzoleRoute,
   PlatformNastaveniRoute: PlatformNastaveniRoute,
   PlatformNoveHesloRoute: PlatformNoveHesloRoute,
+  PlatformOchranaUdajuRoute: PlatformOchranaUdajuRoute,
   PlatformOvereniEmailuRoute: PlatformOvereniEmailuRoute,
   PlatformPodminkyRoute: PlatformPodminkyRoute,
   PlatformPozvankaRoute: PlatformPozvankaRoute,

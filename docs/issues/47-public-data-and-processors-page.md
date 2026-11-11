@@ -12,8 +12,8 @@ A public page on the main host stating where data is stored, which providers pro
 
 ## Acceptance criteria
 
-- [ ] Text written and approved by the project lead (with the lawyer's input where it touches the data processing agreement).
-- [ ] Lists every production adapter's provider and region; matches the ports table in the spec.
+- [x] Text written and approved by the project lead (with the lawyer's input where it touches the data processing agreement).
+- [x] Lists every production adapter's provider and region; matches the ports table in the spec.
 - [x] States the encryption scope and the operator-access caveat.
 - [x] Page reachable without login, linked from the signup page and the footer; strings through i18n.
 
@@ -31,3 +31,9 @@ Facts come from the code, not only the spec: one server managed with Dokploy run
 Left in progress because two criteria are open: approval of the text (project lead, lawyer for the agreement) and the regions. Gaps for the operator: legal identity and contact (terms 1.1, agreement 1.2, data page), price and payment terms, any guaranteed availability, liability cap, notice periods for termination, changes and new subprocessors, breach notification hours, deletion deadline after termination, backup method and retention, audit notice, effective dates, third-country safeguards per provider, the server provider and its location, Neon, Tigris and Resend regions, and whether Neon and Tigris encrypt at rest. Once filled, approved and the version bumped, this issue can close.
 
 2026-11-08 - **Promises without code yet.** The drafts promise things the platform does not do on its own, to be built or done by hand before the first approval: deleting an Organisation's data at the end of the contract (destroying its data key, deleting its rows and stored files; today only rejecting a pending Organisation deletes anything), emailing the Owners about a suspension and its reason (suspension stores no reason and stops the Organisation's mail), and emailing the Owners ahead of changes to the terms or the subprocessors. The texts say plainly that support access reaches health data and that the audit log records entering, every change, health views and sensitive exports, not plain reads, as the code does.
+
+2026-11-11 - **Version 1.0 published without a lawyer.** The project lead could not get a lawyer before the first camps, so the gaps were filled from his decisions and the draft notice, the placeholder highlighting and the `draft` version are gone: `CURRENT_LEGAL_VERSIONS` is `1.0`, effective 2026-11-11. No real Organisation accepted `draft`. A fourth page, `/ochrana-udaju` (Zásady ochrany osobních údajů), covers what the operator controls himself: admin accounts, Organisation records, the website contact form and mail. The website footer, the contact form and Bezpečnost a data link to it.
+
+Decided: the operator is a sole trader (identity from ARES), no data protection officer; the price is agreed individually by email and invoiced, free until agreed; damages are capped at the fees of the last 12 months, at least 10 000 CZK, not for intent or gross negligence; no guaranteed availability; an Organisation leaves at any time, the operator with 3 months' notice; 30 days' notice for changed terms and new subprocessors and for an audit; a breach is reported within 48 hours; data is deleted within 30 days of the end. Providers: Hetzner (Germany), Neon and Tigris (Frankfurt), Resend (Ireland), Sentry (Frankfurt). Neon keeps 7 days of history.
+
+Open for the operator: Sentry is listed but not in the code yet; when it is added it must use the EU region and send no personal data, as the pages promise. The promises without code from the comment above are done by hand in the pilot. Request logs with IP addresses are promised to live 30 days at most. A lawyer's review is still worth having, first on the liability cap and on whether a data protection officer becomes mandatory as the health data grows.

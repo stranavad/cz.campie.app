@@ -5,6 +5,7 @@ import { contactLimits, honeypotField } from '../../worker/contact.schema.ts';
 import photo from '../assets/dejv.jpg';
 import { contact } from '../content/contact.ts';
 import Base from '../layouts/Base.astro';
+import { toHtml } from '../lib/inline.ts';
 import { turnstileSiteKey } from '../lib/site-env.ts';
 
 const field = 'flex flex-col gap-1.5 text-sm font-semibold';
@@ -122,6 +123,7 @@ const input =
             </button>
             <p data-status role="status" aria-live="polite" class="m-0 text-[15px] font-semibold"></p>
           </div>
+          <p class="m-0 text-sm text-muted" set:html={toHtml(contact.form.privacy)} />
         </form>
       </div>
     </div>

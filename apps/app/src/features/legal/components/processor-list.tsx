@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LegalText } from '@/features/legal/components/legal-document/legal-text';
 
 // Each provider that stores or processes data, what for, which data and where.
 export function ProcessorList() {
@@ -23,18 +22,10 @@ export function ProcessorList() {
         <TableBody>
           {rows.map((row) => (
             <TableRow key={row.name}>
-              <TableCell className="w-44 align-top font-semibold">
-                <LegalText text={row.name} />
-              </TableCell>
-              <TableCell className="align-top">
-                <LegalText text={row.purpose} />
-              </TableCell>
-              <TableCell className="align-top">
-                <LegalText text={row.data} />
-              </TableCell>
-              <TableCell className="w-40 align-top text-muted-foreground">
-                <LegalText text={row.location} />
-              </TableCell>
+              <TableCell className="w-44 align-top font-semibold">{row.name}</TableCell>
+              <TableCell className="align-top">{row.purpose}</TableCell>
+              <TableCell className="align-top">{row.data}</TableCell>
+              <TableCell className="w-40 align-top text-muted-foreground">{row.location}</TableCell>
             </TableRow>
           ))}
         </TableBody>

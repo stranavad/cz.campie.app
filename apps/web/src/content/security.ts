@@ -40,7 +40,7 @@ export const security = {
     },
     {
       title: 'Osobní údaje (GDPR)',
-      text: 'Tábor je správce údajů, Campie zpracovatel. Smlouvu o zpracování přijímáte při registraci. Kde jsou data uložena a kdo je zpracovává, najdete na stránce [Zpracování dat](app:/zpracovani-dat).',
+      text: 'Tábor je správce údajů, Campie zpracovatel. Smlouvu o zpracování přijímáte při registraci. Kde jsou data uložena a kdo je zpracovává, najdete na stránce [Zpracování dat](app:/zpracovani-dat). Co děláme s údaji vašeho týmu, popisují [Zásady ochrany osobních údajů](app:/ochrana-udaju).',
     },
     {
       title: 'Otevřený kód',

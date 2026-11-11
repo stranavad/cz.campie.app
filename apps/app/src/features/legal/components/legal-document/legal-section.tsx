@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next';
 
-import { LegalText } from '@/features/legal/components/legal-document/legal-text';
-
 interface LegalSectionProps {
   // The table of contents links here.
   id: string;
@@ -28,7 +26,7 @@ export function LegalSection({ id, number, heading, paragraphs }: LegalSectionPr
               {t('paragraphNumber', { article: number, paragraph: index + 1 })}
             </span>
           ) : null}
-          <LegalText text={paragraph} />
+          {paragraph}
         </p>
       ))}
     </section>

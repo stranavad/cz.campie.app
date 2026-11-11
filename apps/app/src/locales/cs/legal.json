@@ -1,15 +1,8 @@
 {
-  "draftNotice": {
-    "title": "Návrh - čeká na právní kontrolu",
-    "description": "Tento text je pracovní návrh. Před schválením první organizace ho zkontroluje právník a jeho schválené znění tuto verzi nahradí. Údaje v hranatých závorkách doplní provozovatel."
-  },
   "numberedHeading": "{{number}}. {{heading}}",
   "paragraphNumber": "{{article}}.{{paragraph}}",
   "toc": "Obsah",
-  "version": "Verze: {{version}}",
-  "versions": {
-    "draft": "pracovní návrh"
-  },
+  "version": "Verze {{version}}",
   "terms": {
     "title": "Obchodní podmínky platformy {{productName}}",
     "intro": [
@@ -19,7 +12,7 @@
       {
         "heading": "Úvodní ustanovení",
         "paragraphs": [
-          "Provozovatelem platformy {{productName}} dostupné na adrese {{platformDomain}} je [doplní provozovatel: název nebo jméno, IČO, sídlo, zápis v rejstříku, kontaktní e-mail] (dále jen „provozovatel“).",
+          "Provozovatelem platformy {{productName}} dostupné na adrese {{platformDomain}} je David Stráňava, IČO 21766941, se sídlem V korytech 2894/6, Záběhlice, 106 00 Praha 10, fyzická osoba podnikající podle živnostenského zákona, zapsaná v živnostenském rejstříku, kontaktní e-mail info@campie.cz (dále jen „provozovatel“).",
           "Organizací se rozumí právnická osoba nebo podnikající fyzická osoba, která se na platformě zaregistrovala, aby přes ni přijímala přihlášky na své tábory (dále jen „organizace“). Organizace jedná při užívání platformy v rámci své podnikatelské nebo jiné samostatné činnosti, nikoli jako spotřebitel.",
           "Vlastníkem se rozumí uživatel organizace s plným oprávněním včetně nastavení organizace, správy uživatelů, platebních klíčů, přístupu podpory a výmazu přihlášek. Správcem se rozumí každý uživatel organizace, kterého organizace na platformu pozvala.",
           "Nedílnou součástí smlouvy podle těchto podmínek je Smlouva o zpracování osobních údajů, kterou organizace přijímá spolu s nimi."
@@ -46,7 +39,10 @@
       {
         "heading": "Cena a platební podmínky",
         "paragraphs": [
-          "[doplní provozovatel: cena služby, zda se liší podle modulů nebo počtu dětí, zkušební nebo pilotní období, fakturace na fakturační e-mail organizace, splatnost, důsledky prodlení]."
+          "Cena za užívání platformy se sjednává individuálně mezi provozovatelem a organizací, a to písemně; postačí e-mail. Jednotný ceník provozovatel nevydává.",
+          "Dokud cena není sjednána, je užívání platformy bezplatné. Sjednaná cena se neuplatní zpětně za dobu před dohodou.",
+          "Sjednanou cenu provozovatel vyúčtuje fakturou zaslanou na fakturační e-mail organizace. Faktura je splatná do 14 dní od vystavení, pokud se strany nedohodnou jinak. Provozovatel není plátcem DPH.",
+          "Je-li organizace v prodlení s úhradou déle než 30 dní po písemné upomínce, může ji provozovatel pozastavit, dokud dluh neuhradí, ne však během probíhajícího turnusu organizace."
         ]
       },
       {
@@ -62,8 +58,8 @@
       {
         "heading": "Povinnosti a práva provozovatele",
         "paragraphs": [
-          "Provozovatel provozuje platformu s odbornou péčí a usiluje o její nepřetržitou dostupnost. Nezaručuje však dostupnost bez přerušení; plánovanou údržbu provádí pokud možno mimo dobu zvýšeného provozu. [doplní provozovatel: případná garantovaná dostupnost]",
-          "Provozovatel může organizaci pozastavit, pokud organizace hrubě porušuje tyto podmínky, jde zjevně o falešnou organizaci nebo platformu zneužívá. Pozastavením přestanou být dostupné veřejné stránky organizace a platforma za ni přestane odesílat e-maily; data se tím nemažou. O pozastavení a jeho důvodu provozovatel vlastníky informuje e-mailem.",
+          "Provozovatel provozuje platformu s odbornou péčí a usiluje o její nepřetržitou dostupnost. Nezaručuje však dostupnost bez přerušení ani žádnou konkrétní úroveň dostupnosti; plánovanou údržbu provádí pokud možno mimo dobu zvýšeného provozu.",
+          "Provozovatel může organizaci pozastavit, pokud organizace hrubě porušuje tyto podmínky, jde zjevně o falešnou organizaci, platformu zneužívá nebo je v prodlení s úhradou podle článku Cena a platební podmínky. Pozastavením přestanou být dostupné veřejné stránky organizace a platforma za ni přestane odesílat e-maily; data se tím nemažou. O pozastavení a jeho důvodu provozovatel vlastníky informuje e-mailem.",
           "Provozovatel posílá vlastníkům a správcům provozní e-maily týkající se služby, například o změnách podmínek nebo dalších zpracovatelů."
         ]
       },
@@ -79,14 +75,16 @@
         "heading": "Ochrana osobních údajů",
         "paragraphs": [
           "Osobní údaje dětí, rodičů a dalších osob, které organizace na platformě zpracovává, zpracovává provozovatel jako zpracovatel pro organizaci jako správce, podle Smlouvy o zpracování osobních údajů.",
-          "Osobní údaje uživatelů organizace (jméno, e-mail, přihlašovací údaje) a kontaktní a fakturační údaje organizace zpracovává provozovatel jako správce za účelem poskytování služby, její fakturace a zabezpečení. [doplní provozovatel: odkaz na informace o zpracování osobních údajů uživatelů]"
+          "Osobní údaje uživatelů organizace (jméno, e-mail, přihlašovací údaje) a kontaktní a fakturační údaje organizace zpracovává provozovatel jako správce za účelem poskytování služby, její fakturace a zabezpečení. Podrobnosti obsahují Zásady ochrany osobních údajů na adrese app.{{platformDomain}}/ochrana-udaju."
         ]
       },
       {
         "heading": "Odpovědnost",
         "paragraphs": [
           "Provozovatel neodpovídá za obsah, který na platformě vytváří organizace, za vztahy mezi organizací a rodiči ani za služby třetích stran, které si organizace sama zvolila, zejména platební brány a banky.",
-          "Provozovatel neodpovídá za škodu způsobenou výpadkem služby, který nezavinil, ani za ušlý zisk. [doplní provozovatel po konzultaci s právníkem: omezení výše náhrady škody, například na cenu zaplacenou za posledních 12 měsíců]",
+          "Provozovatel neodpovídá za škodu způsobenou výpadkem služby, který nezavinil, ani za ušlý zisk.",
+          "Celková povinnost provozovatele nahradit organizaci škodu vzniklou v souvislosti se smlouvou je omezena částkou, kterou organizace provozovateli zaplatila za užívání platformy za 12 měsíců před vznikem škody, nejméně však částkou 10 000 Kč.",
+          "Omezení podle tohoto článku se nepoužije na škodu způsobenou úmyslně nebo z hrubé nedbalosti, na újmu na přirozených právech člověka ani v dalších případech, kdy je zákon nepřipouští.",
           "Organizace odpovídá provozovateli za škodu, kterou mu způsobí porušením těchto podmínek nebo zpracováním údajů bez právního titulu."
         ]
       },
@@ -102,15 +100,15 @@
         "heading": "Trvání a ukončení smlouvy",
         "paragraphs": [
           "Smlouva se uzavírá na dobu neurčitou.",
-          "Organizace může smlouvu kdykoli vypovědět e-mailem z kontaktního e-mailu organizace nebo e-mailem vlastníka. [doplní provozovatel: výpovědní doba, vztah k zaplacené ceně]",
-          "Provozovatel může smlouvu vypovědět s výpovědní dobou [doplní provozovatel: délka, například 3 měsíce], která nesmí skončit během probíhajícího turnusu organizace. Při hrubém porušení podmínek může provozovatel od smlouvy odstoupit s okamžitou účinností.",
+          "Organizace může smlouvu kdykoli vypovědět e-mailem z kontaktního e-mailu organizace nebo e-mailem vlastníka, bez výpovědní doby. Vypořádání již zaplacené ceny se řídí dohodou o ceně.",
+          "Provozovatel může smlouvu vypovědět s výpovědní dobou 3 měsíce, která nesmí skončit během probíhajícího turnusu organizace. Při hrubém porušení podmínek může provozovatel od smlouvy odstoupit s okamžitou účinností.",
           "Před koncem smlouvy si organizace stáhne data, která potřebuje. Po skončení smlouvy provozovatel data organizace smaže postupem a ve lhůtách podle Smlouvy o zpracování osobních údajů."
         ]
       },
       {
         "heading": "Změny podmínek",
         "paragraphs": [
-          "Provozovatel může tyto podmínky měnit. Změnu oznámí vlastníkům e-mailem nejméně [doplní provozovatel: počet] dní předem. Pokud organizace se změnou nesouhlasí, může smlouvu před účinností změny vypovědět; jinak platí, že změnu přijala.",
+          "Provozovatel může tyto podmínky měnit. Změnu oznámí vlastníkům e-mailem nejméně 30 dní předem. Pokud organizace se změnou nesouhlasí, může smlouvu před účinností změny vypovědět; jinak platí, že změnu přijala.",
           "Platforma eviduje, kterou verzi podmínek organizace přijala."
         ]
       },
@@ -119,7 +117,7 @@
         "paragraphs": [
           "Smlouva se řídí právem České republiky. Spory rozhodují obecné soudy České republiky.",
           "Pokud se některé ustanovení ukáže jako neplatné, ostatní ustanovení zůstávají v platnosti.",
-          "Tyto podmínky jsou účinné od [doplní provozovatel: datum účinnosti]."
+          "Tyto podmínky jsou účinné od 11. 11. 2026."
         ]
       }
     ]
@@ -134,7 +132,7 @@
         "heading": "Smluvní strany",
         "paragraphs": [
           "Správcem je organizace, jejíž identifikační údaje (název, IČO, sídlo a statutární zástupce) byly zadány při registraci organizace na platformě (dále jen „správce“).",
-          "Zpracovatelem je provozovatel platformy {{productName}}: [doplní provozovatel: název nebo jméno, IČO, sídlo, kontaktní e-mail pro ochranu osobních údajů] (dále jen „zpracovatel“).",
+          "Zpracovatelem je provozovatel platformy {{productName}}: David Stráňava, IČO 21766941, se sídlem V korytech 2894/6, Záběhlice, 106 00 Praha 10, fyzická osoba podnikající podle živnostenského zákona, zapsaná v živnostenském rejstříku (dále jen „zpracovatel“). Kontaktní e-mail pro ochranu osobních údajů je info@campie.cz. Zpracovatel nejmenoval pověřence pro ochranu osobních údajů.",
           "Smlouva se uzavírá tím, že osoba oprávněná jednat za správce ji přijme při registraci organizace. Platforma ukládá, kdo, kdy a kterou verzi smlouvy přijal."
         ]
       },
@@ -180,14 +178,14 @@
           "Hesla se ukládají jen jako otisk algoritmem Argon2id, počet chybných přihlášení je omezen a platforma podporuje dvoufázové přihlášení, které je pro provozovatele povinné. Přihlášení je v zabezpečených cookies dostupných jen serveru, změny jsou chráněny proti CSRF a veškerá komunikace probíhá šifrovaně přes HTTPS.",
           "Soubory se stahují jen přes aplikaci odkazem s krátkou platností, po ověření oprávnění; adresa v úložišti se nikdy nezveřejňuje.",
           "Platforma vede historii změn, do které nelze zpětně zasahovat. Zaznamenává, kdo, kdy, z jaké IP adresy a co změnil; u šifrovaných údajů jen to, které údaje se změnily, nikoli jejich hodnoty.",
-          "Zálohy databáze zajišťuje poskytovatel databáze. [doplní provozovatel: způsob a doba uchování záloh]"
+          "Zálohy databáze zajišťuje poskytovatel databáze jako průběžnou historii změn, ze které lze databázi obnovit k libovolnému okamžiku. Historie se uchovává 7 dní; zpracovatel ji může prodloužit nejvýše na 30 dní."
         ]
       },
       {
         "heading": "Další zpracovatelé",
         "paragraphs": [
           "Správce uděluje zpracovateli obecné povolení zapojit další zpracovatele. Jejich aktuální seznam s účelem a místem zpracování je zveřejněn na stránce o zpracování dat na adrese app.{{platformDomain}}/zpracovani-dat.",
-          "O zamýšleném přidání nebo nahrazení dalšího zpracovatele zpracovatel informuje vlastníky správce e-mailem nejméně [doplní provozovatel: počet] dní předem. Správce může proti změně vznést námitku; pokud se strany nedohodnou, může správce smlouvu vypovědět.",
+          "O zamýšleném přidání nebo nahrazení dalšího zpracovatele zpracovatel informuje vlastníky správce e-mailem nejméně 30 dní předem. Správce může proti změně vznést námitku; pokud se strany nedohodnou, může správce smlouvu vypovědět.",
           "Zpracovatel s každým dalším zpracovatelem uzavře smlouvu, která mu ukládá stejné povinnosti ochrany osobních údajů, a odpovídá za jejich plnění.",
           "Platební brána Comgate není dalším zpracovatelem zpracovatele: správce s ní uzavírá vlastní smlouvu a platforma jí na pokyn správce předává údaje nutné k platbě kartou."
         ]
@@ -195,7 +193,9 @@
       {
         "heading": "Předávání do třetích zemí",
         "paragraphs": [
-          "Pokud další zpracovatel zpracovává osobní údaje mimo Evropský hospodářský prostor nebo jde o společnost ze třetí země, zajistí zpracovatel předání na základě rozhodnutí o odpovídající ochraně (například rámce EU-USA pro ochranu osobních údajů) nebo standardních smluvních doložek. [doplní provozovatel po konzultaci s právníkem: konkrétní záruky pro každého dalšího zpracovatele]"
+          "Zpracovatel ukládá osobní údaje v Evropské unii: server aplikace, databáze i úložiště souborů jsou v Německu. Místo zpracování u každého dalšího zpracovatele uvádí stránka o zpracování dat.",
+          "Někteří další zpracovatelé (Neon, Tigris, Resend a Sentry) jsou společnosti se sídlem ve Spojených státech amerických a k osobním údajům mohou při poskytování své služby přistoupit i odtud; služba Resend může provozní záznamy o odeslaných e-mailech zpracovávat i ve Spojených státech. Takové předání se opírá o rozhodnutí o odpovídající ochraně (rámec EU-USA pro ochranu osobních údajů), je-li v něm poskytovatel certifikován, jinak o standardní smluvní doložky Evropské komise, které jsou součástí smlouvy o zpracování s poskytovatelem.",
+          "Do jiných třetích zemí zpracovatel osobní údaje nepředává."
         ]
       },
       {
@@ -209,7 +209,7 @@
       {
         "heading": "Porušení zabezpečení osobních údajů",
         "paragraphs": [
-          "Zpracovatel oznámí správci porušení zabezpečení osobních údajů bez zbytečného odkladu, nejpozději do [doplní provozovatel: počet, například 48] hodin poté, co se o něm dozvěděl, e-mailem vlastníkům a na kontaktní e-mail organizace.",
+          "Zpracovatel oznámí správci porušení zabezpečení osobních údajů bez zbytečného odkladu, nejpozději do 48 hodin poté, co se o něm dozvěděl, e-mailem vlastníkům a na kontaktní e-mail organizace.",
           "Oznámení obsahuje v rozsahu, v jakém jsou informace dostupné: popis porušení, kategorie a přibližný počet dotčených subjektů údajů a záznamů, pravděpodobné důsledky, přijatá a navržená opatření a kontakt pro další informace. Informace, které nejsou k dispozici hned, zpracovatel doplní postupně.",
           "Ohlášení Úřadu pro ochranu osobních údajů a oznámení subjektům údajů je povinností správce; zpracovatel mu k tomu poskytne potřebnou součinnost."
         ]
@@ -225,8 +225,8 @@
         "heading": "Ukončení a výmaz",
         "paragraphs": [
           "Před skončením smlouvy si správce stáhne údaje, které potřebuje, pomocí exportů na platformě.",
-          "Do [doplní provozovatel: počet] dní po skončení smlouvy zpracovatel smaže všechny osobní údaje správce: zničí datový klíč organizace, čímž se všechna šifrovaná data organizace stanou nečitelnými všude včetně záloh, a smaže záznamy v databázi a soubory v úložišti.",
-          "Nešifrované údaje mohou do vypršení přetrvat v zálohách databáze, nejdéle [doplní provozovatel: doba uchování záloh]; zálohy se nepoužívají k jinému účelu než k obnově po havárii.",
+          "Do 30 dní po skončení smlouvy zpracovatel smaže všechny osobní údaje správce: zničí datový klíč organizace, čímž se všechna šifrovaná data organizace stanou nečitelnými všude včetně záloh, a smaže záznamy v databázi a soubory v úložišti.",
+          "Nešifrované údaje mohou do vypršení přetrvat v zálohách databáze, nejdéle 30 dní po výmazu; zálohy se nepoužívají k jinému účelu než k obnově po havárii.",
           "Zpracovatel neuchová kopie osobních údajů, ledaže to vyžaduje právní předpis. Na žádost správce výmaz písemně potvrdí."
         ]
       },
@@ -234,7 +234,7 @@
         "heading": "Audit a kontrola",
         "paragraphs": [
           "Zpracovatel poskytne správci informace potřebné k doložení plnění povinností podle čl. 28 GDPR. Vlastník správce má na platformě k dispozici historii změn včetně akcí provozovatele v režimu podpory.",
-          "Správce nebo jím pověřený auditor vázaný mlčenlivostí může provést audit nebo kontrolu po oznámení nejméně [doplní provozovatel: počet] dní předem, v přiměřeném rozsahu a na náklady správce. Audit nesmí ohrozit data jiných organizací."
+          "Správce nebo jím pověřený auditor vázaný mlčenlivostí může provést audit nebo kontrolu po oznámení nejméně 30 dní předem, v přiměřeném rozsahu a na náklady správce. Audit nesmí ohrozit data jiných organizací."
         ]
       },
       {
@@ -242,7 +242,7 @@
         "paragraphs": [
           "Ve věcech ochrany osobních údajů má tato smlouva přednost před Obchodními podmínkami.",
           "Změny této smlouvy se řídí stejným postupem jako změny Obchodních podmínek. Platforma eviduje, kterou verzi správce přijal.",
-          "Smlouva se řídí právem České republiky a je účinná od [doplní provozovatel: datum účinnosti]."
+          "Smlouva se řídí právem České republiky a je účinná od 11. 11. 2026."
         ]
       }
     ]
@@ -259,7 +259,7 @@
           "Každá organizace má vlastní datový klíč. Ten je uložen zašifrovaný hlavním klíčem, který není v databázi, ale v tajných údajích nasazení. Šifruje se algoritmem AES-256-GCM.",
           "Šifrované jsou všechny nahrané a vytvořené soubory včetně jejich názvů: dokumenty od rodičů, přihlášky v PDF, podepsané souhlasy a exporty. Úložiště souborů tak drží jen šifrovaná data a soubory se stahují jen přes aplikaci, po ověření oprávnění. Šifrované jsou i přístupové klíče organizace k platební bráně Comgate.",
           "Rodné číslo a zdravotní údaje dětí platforma zatím nesbírá. Až je přihlašovací formulář a zdravotní záznam umožní, budou uloženy šifrovaně stejným klíčem.",
-          "Jména, e-maily, adresy a platby šifrované datovým klíčem nejsou, protože podle nich správci vyhledávají a párují platby. Chrání je oddělení dat organizací v databázi, oprávnění uživatelů a šifrované spojení přes HTTPS. [doplní provozovatel: zda poskytovatelé databáze a úložiště šifrují data na disku]",
+          "Jména, e-maily, adresy a platby šifrované datovým klíčem nejsou, protože podle nich správci vyhledávají a párují platby. Chrání je oddělení dat organizací v databázi, oprávnění uživatelů a šifrované spojení přes HTTPS. Poskytovatelé databáze a úložiště navíc šifrují data na svých discích.",
           "Když se datový klíč organizace zničí, její šifrovaná data se stanou nečitelnými všude, i v zálohách."
         ]
       },
@@ -281,15 +281,86 @@
       {
         "heading": "Cookies a měření",
         "paragraphs": [
-          "Platforma používá jen cookies nezbytné pro přihlášení správců a rodičů. Nepoužívá analytické, reklamní ani jiné sledovací nástroje třetích stran."
+          "Platforma používá jen cookies nezbytné pro přihlášení správců a rodičů. Nepoužívá analytické ani reklamní nástroje třetích stran.",
+          "Technické chyby aplikace hlásí službě Sentry. Hlášení jsou nastavena tak, aby neobsahovala osobní údaje dětí ani rodičů."
         ]
       },
       {
         "heading": "Kdo je za data odpovědný",
         "paragraphs": [
           "Za údaje o dětech, rodičích a dalších osobách odpovídá jako správce organizace, která tábor pořádá. S dotazy a žádostmi o přístup, opravu nebo výmaz se obracejte na ni.",
-          "Za údaje o uživatelích organizací a o organizacích samotných odpovídá jako správce provozovatel platformy: [doplní provozovatel: název nebo jméno, IČO, sídlo, kontaktní e-mail].",
+          "Za údaje o uživatelích organizací a o organizacích samotných odpovídá jako správce provozovatel platformy: David Stráňava, IČO 21766941, se sídlem V korytech 2894/6, Záběhlice, 106 00 Praha 10, fyzická osoba podnikající podle živnostenského zákona, zapsaná v živnostenském rejstříku, info@campie.cz. Podrobnosti obsahují Zásady ochrany osobních údajů.",
           "Změny v seznamu poskytovatelů oznamuje provozovatel vlastníkům organizací e-mailem předem, jak stanoví Smlouva o zpracování osobních údajů."
+        ]
+      }
+    ]
+  },
+  "privacy": {
+    "title": "Zásady ochrany osobních údajů",
+    "intro": [
+      "Tyto zásady popisují, jak provozovatel platformy {{productName}} zpracovává osobní údaje, u kterých je sám správcem: údaje lidí, kteří platformu používají za organizaci, údaje o organizacích a údaje lidí, kteří provozovateli napíšou. Informace podle čl. 13 nařízení (EU) 2016/679 (GDPR)."
+    ],
+    "sections": [
+      {
+        "heading": "Kdo je správce",
+        "paragraphs": [
+          "Správcem je David Stráňava, IČO 21766941, se sídlem V korytech 2894/6, Záběhlice, 106 00 Praha 10, fyzická osoba podnikající podle živnostenského zákona, zapsaná v živnostenském rejstříku (dále jen „provozovatel“).",
+          "S dotazy a žádostmi k osobním údajům pište na info@campie.cz. Provozovatel nejmenoval pověřence pro ochranu osobních údajů."
+        ]
+      },
+      {
+        "heading": "Na co se tyto zásady nevztahují",
+        "paragraphs": [
+          "Údaje o dětech, rodičích a dalších osobách v přihláškách spravuje organizace, která tábor pořádá. Ta je jejich správcem a provozovatel je pro ni jen zpracovává podle Smlouvy o zpracování osobních údajů. Jste-li rodič, obracejte se s dotazy a žádostmi na svůj tábor; žádost, která přijde provozovateli, provozovatel táboru předá."
+        ]
+      },
+      {
+        "heading": "Jaké údaje zpracováváme a proč",
+        "paragraphs": [
+          "Uživatelé organizací (vlastníci a správci): jméno, e-mail, otisk hesla, nastavení dvoufázového přihlášení, časy a IP adresy přihlášení a záznamy o úkonech na platformě. Účelem je poskytovat platformu organizaci a chránit účty. Právním titulem je plnění smlouvy s organizací a oprávněný zájem provozovatele a organizace na bezpečném provozu (čl. 6 odst. 1 písm. b) a f) GDPR).",
+          "Organizace: název, IČO, sídlo, statutární zástupce, kontaktní a fakturační údaje, bankovní účet a záznam o tom, kdo, kdy a kterou verzi smluvních dokumentů přijal. Účelem je uzavření a plnění smlouvy, schvalování organizací a fakturace. Právním titulem je plnění smlouvy a plnění zákonných povinností v účetnictví a daních (čl. 6 odst. 1 písm. b) a c) GDPR).",
+          "Lidé, kteří provozovateli napíšou kontaktním formulářem na webu, e-mailem nebo zpětnou vazbou z aplikace: jméno, e-mail, název tábora, text zprávy a u zpětné vazby z aplikace také organizace, uživatel a stránka, ze které byla odeslána. Účelem je odpovědět a vyřešit požadavek. Právním titulem je jednání o smlouvě a oprávněný zájem na vyřízení dotazu (čl. 6 odst. 1 písm. b) a f) GDPR).",
+          "Provozní a bezpečnostní záznamy: IP adresa, čas a adresa požadavku a počítadla, která omezují počet pokusů o přihlášení a odeslání formulářů. Kontaktní formulář chrání proti robotům služba Cloudflare Turnstile, která k tomu zpracuje technické údaje o prohlížeči a IP adresu. Právním titulem je oprávněný zájem na zabezpečení služby (čl. 6 odst. 1 písm. f) GDPR).",
+          "Provozovatel údaje nepoužívá k reklamě ani profilování, neprodává je a neposílá obchodní sdělení. Uživatelům posílá jen provozní e-maily ke službě. Neprovádí automatizované rozhodování."
+        ]
+      },
+      {
+        "heading": "Jak dlouho údaje uchováváme",
+        "paragraphs": [
+          "Účty uživatelů a údaje organizace po dobu trvání smlouvy s organizací a nejdéle 30 dní po jejím skončení. Účet uživatele, kterému organizace přístup odebrala nebo který si jej zrušil, bez zbytečného odkladu.",
+          "Faktury a účetní doklady 10 let od konce roku, kterého se týkají, jak ukládají právní předpisy.",
+          "Zprávy z kontaktního formuláře a e-mailovou komunikaci 3 roky od poslední zprávy.",
+          "Provozní a bezpečnostní záznamy s IP adresami nejdéle 30 dní. Záznamy o změnách v historii organizace jsou součástí dat organizace a uchovávají se s nimi."
+        ]
+      },
+      {
+        "heading": "Komu údaje předáváme",
+        "paragraphs": [
+          "Poskytovatelům, bez kterých platforma neběží: Hetzner Online (server, Německo), Neon (databáze, Německo), Tigris (úložiště souborů, Německo), Resend (odesílání e-mailů, Irsko) a Sentry (hlášení chyb, Německo). Jejich seznam s účelem a místem zpracování je na stránce o zpracování dat na adrese app.{{platformDomain}}/zpracovani-dat.",
+          "Web {{platformDomain}} a jeho kontaktní formulář běží u společnosti Cloudflare. Zprávu z formuláře doručí služba Resend do e-mailové schránky provozovatele u společnosti Proton AG ve Švýcarsku, pro které platí rozhodnutí Evropské komise o odpovídající ochraně.",
+          "Poskytovatelé se sídlem ve Spojených státech amerických (Cloudflare, Neon, Tigris, Resend, Sentry) mohou k údajům přistoupit i odtud. Předání se opírá o rámec EU-USA pro ochranu osobních údajů, je-li v něm poskytovatel certifikován, jinak o standardní smluvní doložky Evropské komise.",
+          "Orgánům veřejné moci provozovatel údaje předá jen tehdy, když mu to ukládá zákon."
+        ]
+      },
+      {
+        "heading": "Cookies",
+        "paragraphs": [
+          "Aplikace používá jen cookies nezbytné pro přihlášení. Web {{platformDomain}} vlastní cookies neukládá a neměří návštěvnost nástroji třetích stran. Ochrana kontaktního formuláře proti robotům (Cloudflare Turnstile) si může do prohlížeče uložit technické údaje nezbytné k ověření. K žádnému z toho není potřeba souhlas, a proto se nezobrazuje cookie lišta."
+        ]
+      },
+      {
+        "heading": "Vaše práva",
+        "paragraphs": [
+          "Máte právo na přístup ke svým osobním údajům, na jejich opravu, výmaz, omezení zpracování a přenositelnost. Proti zpracování založenému na oprávněném zájmu můžete vznést námitku.",
+          "Práva uplatníte e-mailem na info@campie.cz. Provozovatel odpoví bez zbytečného odkladu, nejpozději do jednoho měsíce.",
+          "Máte právo podat stížnost u Úřadu pro ochranu osobních údajů, Pplk. Sochora 27, 170 00 Praha 7, uoou.gov.cz."
+        ]
+      },
+      {
+        "heading": "Změny zásad",
+        "paragraphs": [
+          "Provozovatel může tyto zásady upravit, když se změní zpracování nebo právní předpisy. Podstatné změny oznámí uživatelům e-mailem předem.",
+          "Tyto zásady jsou účinné od 11. 11. 2026."
         ]
       }
     ]
@@ -302,28 +373,34 @@
     "location": "Kde",
     "rows": [
       {
-        "name": "Server aplikace: [doplní provozovatel: poskytovatel serveru]",
+        "name": "Hetzner Online (server aplikace)",
         "purpose": "Běh aplikace, webových stránek a fronty úloh na jednom serveru spravovaném nástrojem Dokploy. Na stejném serveru běží Gotenberg, který z přihlášek a souhlasů vytváří PDF; data se kvůli tomu nikam dál neposílají.",
         "data": "Všechna data procházejí serverem při zpracování. Trvale se zde neukládají; krátkodobě zde zůstává fronta úloh a počítadla pro omezení počtu požadavků podle IP adresy a e-mailu.",
-        "location": "[doplní provozovatel: stát a datové centrum]"
+        "location": "Německo"
       },
       {
         "name": "Neon (databáze PostgreSQL)",
         "purpose": "Ukládání všech záznamů platformy a jejich záloh.",
         "data": "Organizace, tábory, turnusy, přihlášky, děti, rodiče, platby, souhlasy, historie změn. Šifrované údaje jen jako šifrovaný text.",
-        "location": "[doplní provozovatel: region, například EU (Frankfurt)]"
+        "location": "Německo, Frankfurt (AWS eu-central-1)"
       },
       {
         "name": "Tigris (úložiště souborů)",
         "purpose": "Ukládání souborů.",
         "data": "Jen šifrované soubory: dokumenty od rodičů, přihlášky v PDF, podepsané souhlasy, exporty, loga.",
-        "location": "[doplní provozovatel: region úložiště a zda je omezen na EU]"
+        "location": "Německo, Frankfurt"
       },
       {
         "name": "Resend (odesílání e-mailů)",
         "purpose": "Doručování e-mailů rodičům a správcům a hlášení nedoručitelných adres.",
         "data": "Adresa příjemce, předmět a text e-mailu, přílohy (například přihláška v PDF nebo kopie podepsaného souhlasu).",
-        "location": "[doplní provozovatel: region odesílání]"
+        "location": "Odesílání z Irska; provozní záznamy o e-mailech může Resend zpracovávat i v USA"
+      },
+      {
+        "name": "Sentry (hlášení chyb)",
+        "purpose": "Zachycení technických chyb aplikace, aby je provozovatel mohl opravit.",
+        "data": "Technické údaje o chybě: druh chyby, místo v kódu, typ prohlížeče. Hlášení jsou nastavena tak, aby neobsahovala osobní údaje dětí ani rodičů.",
+        "location": "Německo, Frankfurt"
       },
       {
         "name": "Comgate (platby kartou)",
