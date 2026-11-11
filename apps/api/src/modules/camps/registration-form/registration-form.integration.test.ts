@@ -113,6 +113,24 @@ describe('registration form', () => {
     ]);
   });
 
+  it('tells whether the draft holds anything the latest version does not', async () => {
+    const draftChanged = async () => (await form(owner.headers(organisationId))).body.draftChanged;
+
+    expect(await draftChanged()).toBe(true);
+
+    await publish(owner.headers(organisationId));
+
+    expect(await draftChanged()).toBe(false);
+
+    await saveDraft(owner.headers(organisationId), { standard: PRESET_STANDARD, custom: [TSHIRT] }, 4);
+
+    expect(await draftChanged()).toBe(true);
+
+    await publish(owner.headers(organisationId));
+
+    expect(await draftChanged()).toBe(false);
+  });
+
   it('serves guardians the last published version until the next publish, and keeps every version as it was', async () => {
     await publish(owner.headers(organisationId));
     await saveDraft(owner.headers(organisationId), { standard: [], custom: [TSHIRT] });

@@ -23,13 +23,14 @@ export const registrationFormVersionSchema = z.object({
 export type RegistrationFormVersion = z.infer<typeof registrationFormVersionSchema>;
 
 // A Camp's registration form as the builder shows it: the draft an admin edits, and the latest published
-// version guardians see.
+// version guardians see, and whether the draft holds anything that version does not.
 export const registrationFormSchema = z.object({
   campId: z.uuid(),
   draft: formDefinitionShape,
   maxParticipants: z.number().int(),
   declarations: z.array(shownDeclarationSchema),
   latest: registrationFormVersionSchema.pick({ version: true, maxParticipants: true, publishedAt: true }).nullable(),
+  draftChanged: z.boolean(),
 });
 
 export type RegistrationForm = z.infer<typeof registrationFormSchema>;

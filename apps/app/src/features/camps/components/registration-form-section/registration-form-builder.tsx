@@ -26,6 +26,7 @@ export function RegistrationFormBuilder({ organisationId, campId, form, canWrite
     <div className="flex flex-col gap-4">
       <PublishBar
         latest={form.latest}
+        hasChanges={builder.hasChanges}
         status={builder.status}
         canWrite={canWrite}
         isSaving={builder.isSaving}

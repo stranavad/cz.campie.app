@@ -199,6 +199,7 @@
     "title": "Přihláška",
     "unpublished": "Přihláška zatím nebyla zveřejněna.",
     "latest": "Upravujete koncept. Rodiče zatím vidí zveřejněnou verzi {{version}} z {{date}}.",
+    "upToDate": "Rodiče vidí zveřejněnou verzi {{version}} z {{date}}, koncept se od ní neliší.",
     "maxParticipants": "Nejvíce dětí na jedné přihlášce",
     "groups": {
       "registration": "Rodiče",

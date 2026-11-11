@@ -19,6 +19,7 @@ import {
   useSaveRegistrationFormMutation,
 } from '@/features/camps/api/camps.queries';
 import { newCustomField } from '@/features/camps/components/registration-form-section/custom-field.helper';
+import type { DeclarationsUpdate } from '@/features/camps/components/registration-form-section/use-declarations-editor.hook';
 import { HttpError } from '@/lib/api';
 
 export type BuilderStatus =
@@ -47,15 +48,29 @@ function storedDeclaration({ file, ...declaration }: ShownDeclaration): Declarat
 export function useRegistrationFormBuilder(organisationId: string, campId: string, form: RegistrationForm) {
   const save = useSaveRegistrationFormMutation(organisationId, campId);
   const discard = useDiscardRegistrationFormDraftMutation(organisationId, campId);
-  const [definition, setDefinition] = useState<FormDefinition>(form.draft);
-  const [maxParticipants, setMaxParticipants] = useState(form.maxParticipants);
-  const [declarations, setDeclarations] = useState<readonly ShownDeclaration[]>(form.declarations);
+  const [definition, setStoredDefinition] = useState<FormDefinition>(form.draft);
+  const [maxParticipants, setStoredMaxParticipants] = useState(form.maxParticipants);
+  const [declarations, setStoredDeclarations] = useState<readonly ShownDeclaration[]>(form.declarations);
+  // Edits here not saved yet; the saved draft's own difference from the published version is the API's.
+  const [isEdited, setEdited] = useState(false);
   const [status, setStatus] = useState<BuilderStatus>(null);
   // The custom field open in the editor, by id.
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newType, setNewType] = useState<CustomFieldType>('short_text');
   const [isPreviewing, setPreviewing] = useState(false);
 
+  const setDefinition = (changed: FormDefinition) => {
+    setStoredDefinition(changed);
+    setEdited(true);
+  };
+  const setMaxParticipants = (changed: number) => {
+    setStoredMaxParticipants(changed);
+    setEdited(true);
+  };
+  const setDeclarations: DeclarationsUpdate = (changed) => {
+    setStoredDeclarations(changed);
+    setEdited(true);
+  };
   const setCustom = (custom: CustomField[]) => setDefinition({ ...definition, custom });
 
   const submit = (publish: boolean) => {
@@ -73,7 +88,10 @@ export function useRegistrationFormBuilder(organisationId: string, campId: strin
     save.mutate(
       { draft, publish },
       {
-        onSuccess: () => setStatus(publish ? 'published' : 'saved'),
+        onSuccess: () => {
+          setEdited(false);
+          setStatus(publish ? 'published' : 'saved');
+        },
         onError: (error) => {
           const code = error instanceof HttpError ? error.code : undefined;
 
@@ -105,6 +123,8 @@ export function useRegistrationFormBuilder(organisationId: string, campId: strin
     declarations,
     setDeclarations,
     status,
+    // Anything guardians would not see yet: unsaved edits, or a saved draft unlike the published version.
+    hasChanges: isEdited || form.draftChanged,
     isSaving: save.isPending || discard.isPending,
     setMaxParticipants,
     // A field keeps its place among the standard fields; a new one joins at the end.
@@ -158,9 +178,10 @@ export function useRegistrationFormBuilder(organisationId: string, campId: strin
       setStatus(null);
       discard.mutate(form.latest.version, {
         onSuccess: (saved) => {
-          setDefinition(saved.draft);
-          setMaxParticipants(saved.maxParticipants);
-          setDeclarations(saved.declarations);
+          setStoredDefinition(saved.draft);
+          setStoredMaxParticipants(saved.maxParticipants);
+          setStoredDeclarations(saved.declarations);
+          setEdited(false);
           setSelectedId(null);
           setStatus('discarded');
         },

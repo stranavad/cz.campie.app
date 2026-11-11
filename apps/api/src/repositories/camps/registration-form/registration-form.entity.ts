@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import type { InferSelectModel } from 'drizzle-orm';
 
 import type { Declaration, RegistrationForm, RegistrationFormVersion, ShownDeclaration } from '@repo/schema/camps';
@@ -28,6 +29,13 @@ export class RegistrationFormDraftEntity {
       maxParticipants: this.maxParticipants,
       declarations,
       latest: latest === null ? null : latest.toSummaryDto(),
+      // Compared by value, not text: jsonb keeps its own key order.
+      draftChanged:
+        latest === null ||
+        !isDeepStrictEqual(
+          { definition: this.draft, maxParticipants: this.maxParticipants, declarations: this.declarations },
+          { definition: latest.definition, maxParticipants: latest.maxParticipants, declarations: latest.declarations },
+        ),
     };
   }
 }
