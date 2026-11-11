@@ -1,9 +1,10 @@
 import { Navigate } from '@tanstack/react-router';
-import { CalendarXIcon, LockIcon } from 'lucide-react';
+import { CalendarXIcon, CircleAlertIcon, LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
+import { Alert } from '@/components/ui/alert';
 import { ParticipantFilters } from '@/features/participants/components/participant-list/participant-filters';
 import { ParticipantList } from '@/features/participants/components/participant-list/participant-list';
 import { ParticipantsActions } from '@/features/participants/components/participant-list/participants-actions';
@@ -47,6 +48,12 @@ export function ParticipantsPage({ search, onSearch }: ParticipantsPageProps) {
           />
         }
       />
+      {page.isTurnusError ? (
+        <Alert variant="danger" role="alert">
+          <CircleAlertIcon aria-hidden="true" />
+          {t('error')}
+        </Alert>
+      ) : null}
       {page.hasNoTurnusy ? <EmptyState icon={<CalendarXIcon />} title={t('noTurnusy')} /> : null}
       {page.turnusId === null ? null : (
         <>

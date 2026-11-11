@@ -12,6 +12,8 @@ export function useSelectedTurnus() {
 
   return {
     isPending: canRead && selected.isPending,
+    // Failed with nothing to show; a failed refetch keeps the Turnusy it had.
+    isError: canRead && selected.isError && selected.data === undefined,
     turnusy: selected.data?.turnusy ?? [],
     turnusId: selected.data?.turnusId ?? selected.data?.turnusy[0]?.id ?? null,
     selectTurnus: (turnusId: string) => select.mutate(turnusId),

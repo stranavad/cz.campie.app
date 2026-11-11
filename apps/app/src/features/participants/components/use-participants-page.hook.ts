@@ -36,7 +36,7 @@ export function useParticipantsPage(search: ParticipantsSearch, onSearch: (searc
   const canRead = membershipAllows(membership, 'registrations', 'read');
   const canWrite = membershipAllows(membership, 'registrations', 'write');
   // The Turnus comes from the switcher in the page header.
-  const { turnusId, turnusy, isPending: isTurnusPending } = useSelectedTurnus();
+  const { turnusId, turnusy, isPending: isTurnusPending, isError: isTurnusError } = useSelectedTurnus();
   const [text, setText] = useState('');
   const tab = search.platba ?? 'all';
   const checks = search.kontrola ?? [];
@@ -60,7 +60,8 @@ export function useParticipantsPage(search: ParticipantsSearch, onSearch: (searc
     hasNoAccess: hasNoMembership || !canRead,
     organisationId,
     canWrite,
-    hasNoTurnusy: turnusy.length === 0,
+    isTurnusError,
+    hasNoTurnusy: !isTurnusError && turnusy.length === 0,
     turnusId,
     campId: turnusy.find(({ id }) => id === turnusId)?.campId ?? null,
     panel,
