@@ -1,3 +1,4 @@
+import { useMatchRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
@@ -5,14 +6,16 @@ import { useAccountQuery, useCurrentMembership, useRequestEmailVerificationMutat
 import { HttpError } from '@/lib/api';
 
 // Asks an admin who has not verified their email to do so, on every page until they do: until then
-// whoever is invited under that email takes the account over.
+// whoever is invited under that email takes the account over. Not on the page that verifies it, which the
+// link in the email opens.
 export function EmailVerificationBanner() {
   const { t } = useTranslation();
   const account = useAccountQuery();
   const { membership } = useCurrentMembership();
   const resend = useRequestEmailVerificationMutation();
+  const isVerificationPage = useMatchRoute()({ to: '/platform/overeni-emailu' }) !== false;
 
-  if (account.data === undefined || account.data.emailVerified || membership === undefined) {
+  if (isVerificationPage || account.data === undefined || account.data.emailVerified || membership === undefined) {
     return null;
   }
 

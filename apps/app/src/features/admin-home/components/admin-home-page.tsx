@@ -61,7 +61,7 @@ export function AdminHomePage() {
         actions={
           <>
             <TurnusSwitcher />
-            {page.canWrite ? (
+            {page.canWrite && page.turnus !== undefined ? (
               <Link to="/platform/prihlasky/nova" className={buttonVariants()}>
                 <PlusIcon aria-hidden="true" />
                 {t('newRegistration')}

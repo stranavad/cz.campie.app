@@ -20,7 +20,8 @@ interface CalendarProps {
   unavailableHint?: string;
 }
 
-// One month of days, Monday first, between the previous and next month arrows.
+// One month of days, Monday first, between the previous and next month arrows; always six weeks tall, so the
+// arrows stay put while clicking through months.
 export function Calendar({ selected, onSelect, min, max, yearSelect = false, unavailableHint }: CalendarProps) {
   const { t } = useTranslation();
   const calendar = useCalendar({ selected, onSelect, min, max });
@@ -80,6 +81,7 @@ export function Calendar({ selected, onSelect, min, max, yearSelect = false, una
         locale={cs}
         weekStartsOn={1}
         showOutsideDays
+        fixedWeeks
         hideNavigation
         selected={selected}
         onSelect={calendar.select}

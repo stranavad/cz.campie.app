@@ -13,7 +13,8 @@ interface ParticipantsActionsProps {
   onToggle: (panel: ParticipantsPanel) => void;
 }
 
-// The list's header actions: the Turnus, the tools that open under the header, and a new Registration.
+// The list's header actions: the Turnus, the tools that open under the header, and a new Registration, all
+// once the Organisation has a Turnus.
 export function ParticipantsActions({ canWrite, hasTurnus, panel, onToggle }: ParticipantsActionsProps) {
   const { t } = useTranslation('participants');
   const tool = (name: ParticipantsPanel) => ({
@@ -29,7 +30,7 @@ export function ParticipantsActions({ canWrite, hasTurnus, panel, onToggle }: Pa
       {hasTurnus && canWrite ? <Button {...tool('reminders')}>{t('actions.remind')}</Button> : null}
       {hasTurnus ? <Button {...tool('export')}>{t('actions.export')}</Button> : null}
       {hasTurnus ? <Button {...tool('consents')}>{t('consents.title')}</Button> : null}
-      {canWrite ? (
+      {hasTurnus && canWrite ? (
         <Link to="/platform/prihlasky/nova" className={buttonVariants()}>
           <PlusIcon aria-hidden="true" />
           {t('create.open')}
