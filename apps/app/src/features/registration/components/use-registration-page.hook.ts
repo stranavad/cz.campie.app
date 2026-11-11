@@ -17,6 +17,7 @@ import {
 import { firstChildOf, stepNumberOf, stepOfPath } from '@/features/registration/components/registration-step.helper';
 import { askedAnswers, samePath } from '@/features/registration/components/submission.helper';
 import { useInvoiceRequest } from '@/features/registration/components/use-invoice-request.hook';
+import { useLeaveGuard } from '@/features/registration/components/use-leave-guard.hook';
 import { useLivePrice } from '@/features/registration/components/use-live-price.hook';
 import { useRegistrationAnswers } from '@/features/registration/components/use-registration-answers.hook';
 import { useRegistrationSteps } from '@/features/registration/components/use-registration-steps.hook';
@@ -65,6 +66,14 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
     participants: answers.participants.map((participant) => askedAnswers(participant, participantFields)),
   };
   const price = useLivePrice(slug, definition, turnus, submission);
+  // Something typed and not yet sent; once the Registration is in, or on its way to the card gateway,
+  // nothing is lost by leaving.
+  const hasUnsentAnswers =
+    submit.submitted === undefined &&
+    !submit.isSending &&
+    (Object.keys(answers.registration).length > 0 ||
+      answers.participants.some((child) => Object.keys(child).length > 0));
+  const leave = useLeaveGuard(hasUnsentAnswers);
   const invoice = useInvoiceRequest(price.price?.total, submit.markEdited);
   const invoiceOffered = camp.data?.invoiceRequests === true;
   // A company paying everything leaves no Deposit to offer.
@@ -110,6 +119,7 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
       (camp.isError && camp.data === undefined) ||
       (turnusy.isError && turnusy.data === undefined) ||
       (form.isError && form.data === undefined && !(form.error instanceof HttpError)),
+    leave,
     camp: camp.data,
     // Per child, shown on the way to add a sibling.
     siblingDiscount: camp.data?.siblingDiscount?.amount ?? null,

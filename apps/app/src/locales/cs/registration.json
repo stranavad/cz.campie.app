@@ -38,6 +38,12 @@
   },
   "noForm": "Tábor zatím nezveřejnil přihlášku.",
   "error": "Přihlášku se nepodařilo načíst. Zkuste stránku načíst znovu.",
+  "leave": {
+    "title": "Odejít z přihlášky?",
+    "description": "Vyplněné údaje jsme ještě neodeslali a po odchodu se ztratí.",
+    "stay": "Zůstat a pokračovat",
+    "confirm": "Odejít"
+  },
   "turnus": "Turnus",
   "pickTurnus": "Vyberte turnus",
   "turnusRequired": "Vyberte turnus, na který dítě přihlašujete.",

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { ChildrenStep } from '@/features/registration/components/children-step';
 import { GuardiansStep } from '@/features/registration/components/guardians-step';
+import { LeaveDialog } from '@/features/registration/components/leave-dialog';
 import { PriceBar } from '@/features/registration/components/price-bar';
 import { QuestionsSection } from '@/features/registration/components/questions-section';
 import { RegistrationHeader } from '@/features/registration/components/registration-header';
@@ -74,6 +75,11 @@ export function RegistrationPage({ campSlug, turnusId, step }: RegistrationPageP
           {page.refusalMessage ?? t('refused.fields')}
         </Alert>
       )}
+      <LeaveDialog
+        open={page.leave.status === 'blocked'}
+        onStay={() => page.leave.reset?.()}
+        onLeave={() => page.leave.proceed?.()}
+      />
       <PriceBar
         price={page.price}
         isStale={page.isPriceStale}
