@@ -7,6 +7,7 @@
     <title></title>
     <script>
       // Applies the theme before the first paint, so a dark page never flashes light (src/lib/theme).
+      // Its hash is in the Content-Security-Policy of docker/caddy/Caddyfile: change both together.
       (function () {
         var theme = null;
         try {
