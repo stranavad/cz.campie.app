@@ -7,5 +7,6 @@ export {
 } from '@/core/account/api/account.queries';
 export { useCurrentMembership } from '@/core/account/hooks/use-current-membership.hook';
 export { usePermissionSummary } from '@/core/account/hooks/use-permission-summary.hook';
+export { LoginRedirect } from '@/core/account/login-redirect';
 export { membershipAllows } from '@/core/account/helpers/membership-allows.helper';
 export { personName, personNameWithEmail } from '@/core/account/helpers/person-name.helper';

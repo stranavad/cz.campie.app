@@ -1,4 +1,3 @@
-import { Navigate } from '@tanstack/react-router';
 import { HistoryIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,6 +6,7 @@ import { PageHeader } from '@/components/page-header';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LoginRedirect } from '@/core/account';
 import { AuditLogEntryRow } from '@/features/organisation-settings/components/audit-log/audit-log-entry-row';
 import { AuditLogFilters } from '@/features/organisation-settings/components/audit-log/audit-log-filters';
 import { useAuditLogPage } from '@/features/organisation-settings/components/audit-log/use-audit-log-page.hook';
@@ -17,7 +17,7 @@ export function AuditLogPage() {
   const page = useAuditLogPage();
 
   if (page.isSignedOut) {
-    return <Navigate to="/platform/prihlaseni" replace />;
+    return <LoginRedirect />;
   }
 
   if (page.isLoading) {

@@ -1,9 +1,10 @@
-import { Link, Navigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { ChevronLeftIcon, EyeIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Alert, AlertContent } from '@/components/ui/alert';
 import { buttonVariants } from '@/components/ui/button';
+import { LoginRedirect } from '@/core/account';
 import { CampPageView } from '@/core/camp-page';
 import { useCampPreviewPage } from '@/features/camps/components/use-camp-preview-page.hook';
 
@@ -17,7 +18,7 @@ export function CampPreviewPage({ campId }: CampPreviewPageProps) {
   const page = useCampPreviewPage(campId);
 
   if (page.isSignedOut) {
-    return <Navigate to="/platform/prihlaseni" replace />;
+    return <LoginRedirect />;
   }
 
   if (page.isLoading) {

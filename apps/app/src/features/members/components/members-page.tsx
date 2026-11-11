@@ -1,8 +1,8 @@
-import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { PageHeader } from '@/components/page-header';
 import { Alert } from '@/components/ui/alert';
+import { LoginRedirect } from '@/core/account';
 import { InvitationList } from '@/features/members/components/invitation-list/invitation-list';
 import { InviteDialog } from '@/features/members/components/invite-form/invite-dialog';
 import { MemberTable } from '@/features/members/components/member-table/member-table';
@@ -14,7 +14,7 @@ export function MembersPage() {
   const page = useMembersPage();
 
   if (page.isSignedOut) {
-    return <Navigate to="/platform/prihlaseni" replace />;
+    return <LoginRedirect />;
   }
 
   if (page.isLoading) {

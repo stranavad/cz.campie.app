@@ -1,9 +1,9 @@
-import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { PageHeader } from '@/components/page-header';
 import { SettingsSection } from '@/components/settings-section';
 import { Alert } from '@/components/ui/alert';
+import { LoginRedirect } from '@/core/account';
 import { LogoField } from '@/core/branding';
 import { BrandingForm } from '@/features/organisation-settings/components/branding-form/branding-form';
 import { IdentityForm } from '@/features/organisation-settings/components/identity-form/identity-form';
@@ -19,7 +19,7 @@ export function OrganisationSettingsPage() {
   const page = useOrganisationSettingsPage();
 
   if (page.isSignedOut) {
-    return <Navigate to="/platform/prihlaseni" replace />;
+    return <LoginRedirect />;
   }
 
   if (page.isLoading) {

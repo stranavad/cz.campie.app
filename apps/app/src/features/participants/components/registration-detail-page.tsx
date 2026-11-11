@@ -1,4 +1,3 @@
-import { Navigate } from '@tanstack/react-router';
 import { CircleAlertIcon, LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,6 +8,7 @@ import { PageHeader } from '@/components/page-header';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoginRedirect } from '@/core/account';
 import { PaymentStatusBadge } from '@/core/participant-list';
 import { RegistrationDocuments } from '@/features/participants/components/documents/registration-documents';
 import { AdminActions } from '@/features/participants/components/editing/admin-actions';
@@ -35,7 +35,7 @@ export function RegistrationDetailPage({ registrationId }: RegistrationDetailPag
   const page = useRegistrationDetailPage(registrationId);
 
   if (page.isSignedOut) {
-    return <Navigate to="/platform/prihlaseni" replace />;
+    return <LoginRedirect />;
   }
 
   if (page.isLoading) {

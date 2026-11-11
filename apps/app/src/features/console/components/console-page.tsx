@@ -1,8 +1,8 @@
-import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { PageHeader } from '@/components/page-header';
 import { Alert } from '@/components/ui/alert';
+import { LoginRedirect } from '@/core/account';
 import { TotpEnrolment } from '@/core/two-step';
 import type { ConsoleSection } from '@/features/console/components/console-section.constant';
 import { ConsoleTabs } from '@/features/console/components/console-tabs';
@@ -23,7 +23,7 @@ export function ConsolePage({ section }: ConsolePageProps) {
   const page = useConsolePage();
 
   if (page.isSignedOut) {
-    return <Navigate to="/platform/prihlaseni" replace />;
+    return <LoginRedirect />;
   }
 
   const header = <PageHeader title={t('title')} />;

@@ -4,9 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { useLoginForm } from '@/features/login/components/login-form/use-login-form.hook';
 
-export function LoginForm() {
+interface LoginFormProps {
+  returnTo: string | undefined;
+}
+
+export function LoginForm({ returnTo }: LoginFormProps) {
   const { t } = useTranslation('login');
-  const { form, failure } = useLoginForm();
+  const { form, failure } = useLoginForm(returnTo);
 
   return (
     <form

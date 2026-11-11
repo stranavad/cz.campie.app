@@ -1,4 +1,4 @@
-import { Link, Navigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { LayoutDashboardIcon, PlusIcon, ShieldCheckIcon, UserRoundXIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { Alert } from '@/components/ui/alert';
 import { buttonVariants } from '@/components/ui/button';
+import { LoginRedirect } from '@/core/account';
 import { TurnusSwitcher } from '@/core/selected-turnus';
 import { OccupancyHero } from '@/features/admin-home/components/occupancy-hero';
 import { OrganisationStatusNotice } from '@/features/admin-home/components/organisation-status-notice';
@@ -25,7 +26,7 @@ export function AdminHomePage() {
   }
 
   if (page.isSignedOut) {
-    return <Navigate to="/platform/prihlaseni" replace />;
+    return <LoginRedirect />;
   }
 
   // The Platform operator usually belongs to no Organisation; the console is their home.

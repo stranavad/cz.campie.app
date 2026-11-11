@@ -1,11 +1,10 @@
-import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { PageHeader } from '@/components/page-header';
 import { SettingsSection } from '@/components/settings-section';
 import { Alert } from '@/components/ui/alert';
 import { DescriptionItem, DescriptionList } from '@/components/ui/description-list';
-import { useAccountQuery } from '@/core/account';
+import { LoginRedirect, useAccountQuery } from '@/core/account';
 import { AccountEmailForm } from '@/features/account-settings/components/account-email-form/account-email-form';
 import { AccountMemberships } from '@/features/account-settings/components/account-memberships';
 import { AccountNameForm } from '@/features/account-settings/components/account-name-form/account-name-form';
@@ -19,7 +18,7 @@ export function AccountSettingsPage() {
   const account = useAccountQuery();
 
   if (account.error instanceof HttpError && account.error.status === 401) {
-    return <Navigate to="/platform/prihlaseni" replace />;
+    return <LoginRedirect />;
   }
 
   if (account.isPending) {

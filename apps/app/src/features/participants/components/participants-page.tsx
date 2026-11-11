@@ -1,10 +1,10 @@
-import { Navigate } from '@tanstack/react-router';
 import { CalendarXIcon, CircleAlertIcon, LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { Alert } from '@/components/ui/alert';
+import { LoginRedirect } from '@/core/account';
 import { ParticipantFilters } from '@/features/participants/components/participant-list/participant-filters';
 import { ParticipantList } from '@/features/participants/components/participant-list/participant-list';
 import { ParticipantsActions } from '@/features/participants/components/participant-list/participants-actions';
@@ -24,7 +24,7 @@ export function ParticipantsPage({ search, onSearch }: ParticipantsPageProps) {
   const page = useParticipantsPage(search, onSearch);
 
   if (page.isSignedOut) {
-    return <Navigate to="/platform/prihlaseni" replace />;
+    return <LoginRedirect />;
   }
 
   if (page.isLoading) {

@@ -1,7 +1,7 @@
-import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { Alert } from '@/components/ui/alert';
+import { LoginRedirect } from '@/core/account';
 import { CampSettingsHeader } from '@/features/camps/components/camp-settings/camp-settings-header';
 import { CampSettingsSection } from '@/features/camps/components/camp-settings/camp-settings-section';
 import type { CampSettingsSection as Section } from '@/features/camps/components/camp-settings/camp-settings-section.constant';
@@ -21,7 +21,7 @@ export function CampsPage({ campId, section }: CampsPageProps) {
   const page = useCampsPage(campId);
 
   if (page.isSignedOut) {
-    return <Navigate to="/platform/prihlaseni" replace />;
+    return <LoginRedirect />;
   }
 
   if (page.isLoading) {

@@ -1,4 +1,3 @@
-import { Navigate } from '@tanstack/react-router';
 import { LockIcon, PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,6 +5,7 @@ import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LoginRedirect } from '@/core/account';
 import { CampQuestions } from '@/features/participants/components/create/camp-questions';
 import { CreateDeclarations } from '@/features/participants/components/create/create-declarations';
 import { CreateSummary } from '@/features/participants/components/create/create-summary';
@@ -20,7 +20,7 @@ export function CreateRegistrationPage() {
   const page = useCreateRegistrationPage();
 
   if (page.isSignedOut) {
-    return <Navigate to="/platform/prihlaseni" replace />;
+    return <LoginRedirect />;
   }
 
   if (page.isLoading) {
