@@ -29,6 +29,16 @@
 		@notFromEdge not header X-Edge-Secret {$EDGE_SECRET}
 		respond @notFromEdge 403
 
+		# Lists and form definitions are JSON that shrinks to a fraction; downloads and images are
+		# compressed formats already and pass through as they are.
+		encode {
+			zstd
+			gzip
+			match {
+				header Content-Type application/json*
+			}
+		}
+
 		# The API under its deployment's own name: this container also sits on Dokploy's shared network,
 		# where another project's service could be called plain `api`.
 		reverse_proxy {$API_UPSTREAM} {
