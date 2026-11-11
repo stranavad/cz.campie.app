@@ -15,6 +15,7 @@ export function usePaymentGatewayForm(organisationId: string) {
   const save = useSetPaymentGatewayKeysMutation(organisationId);
   const remove = useRemovePaymentGatewayKeysMutation(organisationId);
   const [status, setStatus] = useState<'saved' | 'removed' | 'failed' | null>(null);
+  const [isAskingRemoval, setAskingRemoval] = useState(false);
 
   const form = useAppForm({
     defaultValues: { merchantId: '', secret: '' },
@@ -38,11 +39,19 @@ export function usePaymentGatewayForm(organisationId: string) {
     merchantId: current.data?.merchantId ?? null,
     isLoading: current.isPending,
     isRemoving: remove.isPending,
+    isAskingRemoval,
+    setAskingRemoval,
     removeKeys: () => {
       setStatus(null);
       remove.mutate(undefined, {
-        onSuccess: () => setStatus('removed'),
-        onError: () => setStatus('failed'),
+        onSuccess: () => {
+          setAskingRemoval(false);
+          setStatus('removed');
+        },
+        onError: () => {
+          setAskingRemoval(false);
+          setStatus('failed');
+        },
       });
     },
   };

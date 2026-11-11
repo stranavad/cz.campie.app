@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { IconTile } from '@/components/icon-tile';
 import { Button } from '@/components/ui/button';
 import { FormMessage } from '@/features/organisation-settings/components/form-message';
+import { PaymentGatewayRemovalDialog } from '@/features/organisation-settings/components/payment-gateway-form/payment-gateway-removal-dialog';
 import { usePaymentGatewayForm } from '@/features/organisation-settings/components/payment-gateway-form/use-payment-gateway-form.hook';
 
 // The Organisation's own Comgate account for card payments, inside the Platby section; without it, bank
@@ -36,13 +37,19 @@ export function PaymentGatewayForm({ organisationId }: { organisationId: string 
               variant="outline"
               className="text-danger-foreground"
               disabled={gateway.isRemoving}
-              onClick={gateway.removeKeys}
+              onClick={() => gateway.setAskingRemoval(true)}
             >
               {t('paymentGateway.remove')}
             </Button>
           ) : null}
         </div>
       )}
+      <PaymentGatewayRemovalDialog
+        open={gateway.isAskingRemoval}
+        onOpenChange={gateway.setAskingRemoval}
+        isRemoving={gateway.isRemoving}
+        onConfirm={gateway.removeKeys}
+      />
       <form
         noValidate
         className="flex flex-col gap-5"

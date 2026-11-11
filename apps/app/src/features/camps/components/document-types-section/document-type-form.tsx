@@ -84,8 +84,22 @@ export function DocumentTypeForm({ organisationId, campId, type, canWrite, onDon
           </Alert>
         ) : null}
         <CardFooter>
-          {type === null ? null : (
-            <Button type="button" variant="outline" onClick={() => form.remove(onDone)}>
+          {type === null ? null : form.isConfirmingRemoval ? (
+            <>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={form.isRemoving}
+                onClick={() => form.remove(onDone)}
+              >
+                {t('documentTypes.confirmRemove')}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => form.setConfirmingRemoval(false)}>
+                {t('documentTypes.keep')}
+              </Button>
+            </>
+          ) : (
+            <Button type="button" variant="outline" onClick={() => form.setConfirmingRemoval(true)}>
               {t('documentTypes.remove')}
             </Button>
           )}

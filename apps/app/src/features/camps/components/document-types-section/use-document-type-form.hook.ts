@@ -13,6 +13,7 @@ export function useDocumentTypeForm(organisationId: string, campId: string, type
   const [name, setName] = useState(type?.name ?? '');
   const [description, setDescription] = useState(type?.description ?? '');
   const [dueDate, setDueDate] = useState(type?.dueDate ?? '');
+  const [isConfirmingRemoval, setConfirmingRemoval] = useState(false);
   const [turnusIds, setTurnusIds] = useState<readonly string[]>(type?.turnusIds ?? []);
   // A Turnus removed since is dropped, so saving never names one the Camp no longer has.
   const existing = new Set((turnusy.data ?? []).map(({ id }) => id));
@@ -49,6 +50,9 @@ export function useDocumentTypeForm(organisationId: string, campId: string, type
         mutations.remove.mutate(type.id, { onSuccess: onDone });
       }
     },
+    isConfirmingRemoval,
+    setConfirmingRemoval,
+    isRemoving: mutations.remove.isPending,
     saveFailed: mutations.save.isError || mutations.remove.isError,
   };
 }
