@@ -1,15 +1,13 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { DraftNotice } from '@/features/legal/components/legal-document/draft-notice';
 import { LegalSection } from '@/features/legal/components/legal-document/legal-section';
-import { LegalText } from '@/features/legal/components/legal-document/legal-text';
 import { LegalToc } from '@/features/legal/components/legal-document/legal-toc';
 import { LEGAL_VERSION_OF } from '@/features/legal/components/legal-document/legal-version.constant';
 import { sectionAnchor } from '@/features/legal/components/legal-document/section-anchor.helper';
 
 interface LegalDocumentViewProps {
-  document: 'terms' | 'dataProcessingAgreement' | 'dataPage';
+  document: 'terms' | 'dataProcessingAgreement' | 'dataPage' | 'privacy';
   // Contract articles are numbered (1., 1.1); an explanatory page is not.
   numbered?: boolean;
   // Shown between the introduction and the sections.
@@ -33,16 +31,13 @@ export function LegalDocumentView({ document, numbered = false, children }: Lega
           <h1 className="font-display text-4xl leading-[1.05] font-extrabold tracking-[-0.03em] sm:text-5xl">
             {t(`${document}.title`)}
           </h1>
-          {version === null ? null : (
-            <p className="text-sm text-muted-foreground">{t('version', { version: t(`versions.${version}`) })}</p>
-          )}
+          {version === null ? null : <p className="text-sm text-muted-foreground">{t('version', { version })}</p>}
           {intro.map((paragraph) => (
             <p key={paragraph} className="text-nav-foreground">
-              <LegalText text={paragraph} />
+              {paragraph}
             </p>
           ))}
         </header>
-        <DraftNotice />
         {children}
         {sections.map((section, index) => (
           <LegalSection

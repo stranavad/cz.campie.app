@@ -30,7 +30,9 @@
       "terms": "Obchodní podmínky",
       "dataProcessingAgreement": "Zpracovatelská smlouva",
       "dataPage": "Kde jsou data a kdo je zpracovává",
-      "dataPageShort": "Zpracování dat"
+      "dataPageShort": "Zpracování dat",
+      "privacy": "Zásady ochrany osobních údajů",
+      "privacyShort": "Ochrana údajů"
     },
     "public": {
       "hasAccount": "Už máte účet?",

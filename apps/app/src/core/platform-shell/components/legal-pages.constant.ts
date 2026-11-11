@@ -12,4 +12,5 @@ export const LEGAL_PAGES = [
     label: 'platformShell.legal.dataPage',
     tabLabel: 'platformShell.legal.dataPageShort',
   },
+  { to: '/platform/ochrana-udaju', label: 'platformShell.legal.privacy', tabLabel: 'platformShell.legal.privacyShort' },
 ] as const;

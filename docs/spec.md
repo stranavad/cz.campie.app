@@ -607,7 +607,7 @@ The new platform needs its own CONTEXT.md and ADRs. Until it has them, these are
 ### Dependencies that are not code
 
 - **Pilot camps.** Two overnight camps, with a paper exercise mapping their přihláška, consent texts, price list and document list onto this design. It must finish before the standard field catalogue and the pricing rules are frozen; its result may change them.
-- **Legal texts.** Terms and the data processing agreement, written by a lawyer, are needed before the first Organisation is approved.
+- **Legal texts.** Terms, the data processing agreement, the data page and the privacy policy were written by the project lead without a lawyer (version 1.0, effective 2026-11-11). A lawyer's review stays desirable and replaces them with a new version.
 - **Starter Consent texts.** Confirm that the author of Domino's texts agrees to their publication under an open licence.
 - **Contribution policy.** Decide how outside contributions are accepted before the first one arrives.
 

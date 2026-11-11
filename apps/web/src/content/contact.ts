@@ -27,6 +27,8 @@ export const contact = {
     // The honeypot: hidden from people, filled in by bots.
     trap: 'Tohle pole nechte prázdné',
     submit: 'Odeslat zprávu',
+    privacy:
+      'Údaje z formuláře použijeme jen k odpovědi na vaši zprávu. Podrobnosti jsou v [Zásadách ochrany osobních údajů](app:/ochrana-udaju).',
     noscript: `Formulář potřebuje zapnutý JavaScript kvůli ochraně proti spamu. Napište nám rovnou na ${site.email}.`,
   },
 } as const;

@@ -59,7 +59,8 @@ export const footer = {
   links: [
     { label: 'Bezpečnost a data', href: '/bezpecnost' },
     { label: 'Obchodní podmínky', href: 'app:/podminky' },
-    { label: 'Zpracování osobních údajů', href: 'app:/zpracovani-dat' },
+    { label: 'Ochrana osobních údajů', href: 'app:/ochrana-udaju' },
+    { label: 'Zpracování dat', href: 'app:/zpracovani-dat' },
     { label: 'Zdrojový kód', href: site.repoUrl },
     contact,
   ],
