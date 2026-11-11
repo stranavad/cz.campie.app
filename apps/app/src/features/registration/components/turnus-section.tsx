@@ -14,10 +14,12 @@ interface TurnusSectionProps {
   onSelect: (id: string) => void;
   // Sending was tried without a Turnus.
   isMissing: boolean;
+  // Why the chosen Turnus takes no Registrations now.
+  closedMessage: string | null;
 }
 
 // The Turnus the Registration is for; only open ones can be picked.
-export function TurnusSection({ turnus, turnusy, onSelect, isMissing }: TurnusSectionProps) {
+export function TurnusSection({ turnus, turnusy, onSelect, isMissing, closedMessage }: TurnusSectionProps) {
   const { t } = useTranslation('registration');
   const id = useId();
   const errorId = useId();
@@ -33,8 +35,8 @@ export function TurnusSection({ turnus, turnusy, onSelect, isMissing }: TurnusSe
           value={turnus?.id ?? null}
           placeholder={t('pickTurnus')}
           onValueChange={onSelect}
-          aria-invalid={isMissing}
-          aria-describedby={isMissing ? errorId : undefined}
+          aria-invalid={isMissing || closedMessage !== null}
+          aria-describedby={isMissing || closedMessage !== null ? errorId : undefined}
           options={turnusy.map((option) => ({
             value: option.id,
             disabled: option.availability !== 'open',
@@ -46,6 +48,7 @@ export function TurnusSection({ turnus, turnusy, onSelect, isMissing }: TurnusSe
           }))}
         />
         {isMissing ? <FieldError id={errorId}>{t('turnusRequired')}</FieldError> : null}
+        {closedMessage === null ? null : <FieldError id={errorId}>{closedMessage}</FieldError>}
       </Field>
     </Card>
   );

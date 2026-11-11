@@ -25,6 +25,14 @@ import { HttpError } from '@/lib/api';
 
 type Path = readonly (string | number)[];
 
+// Why the Turnus the address names takes no Registrations now, in the words of the server's refusal.
+const CLOSED_TURNUS_KEYS = {
+  not_yet_open: 'turnus_not_yet_open',
+  closed_by_window: 'turnus_window_closed',
+  closed_manually: 'turnus_closed_manually',
+  full: 'turnus_full',
+} as const;
+
 // The public form as the guardian fills it in, step by step: the guardians (and the Turnus when the link
 // carries none), the children, the Registration's own questions, then a summary with the payment and the
 // declarations. Each step is checked before the next opens; the live price follows every step.
@@ -46,6 +54,8 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
   const { step } = steps;
   const definition = form.data?.definition;
   const turnus = turnusy.data?.find(({ id }) => id === turnusId);
+  const closedTurnus =
+    turnus === undefined || turnus.availability === 'open' ? null : CLOSED_TURNUS_KEYS[turnus.availability];
   const participantFields =
     definition === undefined ? [] : formFields(definition, REGISTRATION_FIELD_CATALOGUE, 'participant');
   const registrationFields =
@@ -75,7 +85,7 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
   const outOfAge = submission.participants.findIndex((participant) => ageProblemOf(participant) !== null);
   // The steps something is wrong at, by what this form can tell; the server checks it all again.
   const problemSteps = [
-    ...(turnus === undefined ? [stepNumberOf('guardians')] : []),
+    ...(turnus === undefined || closedTurnus !== null ? [stepNumberOf('guardians')] : []),
     ...localErrors.map(({ path }) => stepOfPath(path)),
     ...(outOfAge === -1 ? [] : [stepNumberOf('children')]),
     ...(missingDeclarations.length === 0 ? [] : [stepNumberOf('summary')]),
@@ -116,7 +126,8 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
     },
     turnusy: turnusy.data ?? [],
     turnus,
-    asksTurnus: asksTurnus || turnus === undefined,
+    asksTurnus: asksTurnus || turnus === undefined || closedTurnus !== null,
+    turnusClosedMessage: closedTurnus === null ? null : t(`refused.${closedTurnus}`),
     isTurnusMissing: steps.isChecked('guardians') && turnus === undefined,
     selectTurnus: (id: string) => {
       submit.markEdited();

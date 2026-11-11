@@ -16,6 +16,7 @@ export function GuardiansStep({ page }: GuardiansStepProps) {
           turnusy={page.turnusy}
           onSelect={page.selectTurnus}
           isMissing={page.isTurnusMissing}
+          closedMessage={page.turnusClosedMessage}
         />
       ) : null}
       <GuardianSection
