@@ -163,8 +163,8 @@ describe('payment ledger', () => {
       ['jana.testovaci@example.com'],
       ['petr.testovaci@example.com'],
     ]);
-    expect(paymentMails()[0]?.text).toContain('Částka k úhradě: 4 500 Kč');
-    expect(paymentMails()[0]?.text).toContain('Splatnost: 15. 6. 2027');
+    expect(paymentMails()[0]?.text).toMatch(/Částka k úhradě\s+4\s500\sKč/u);
+    expect(paymentMails()[0]?.text).toContain('Splatnost 15. 6. 2027');
 
     await pay({ kind: 'correction', amount: 2000 });
     await jobs().drain();
