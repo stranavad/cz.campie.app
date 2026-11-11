@@ -1,4 +1,3 @@
-import { Navigate } from '@tanstack/react-router';
 import { FileTextIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -11,6 +10,7 @@ import { useDocumentsPage } from '@/features/portal/components/documents/use-doc
 import { ParticipantSwitch } from '@/features/portal/components/shared/participant-switch';
 import { PortalBackHeader } from '@/features/portal/components/shared/portal-back-header';
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
+import { PortalLoginRedirect } from '@/features/portal/components/shared/portal-login-redirect';
 import { HttpError } from '@/lib/api';
 
 interface DocumentsPageProps {
@@ -25,7 +25,7 @@ export function DocumentsPage({ registrationId }: DocumentsPageProps) {
   const { documents, selected } = page;
 
   if (documents.error instanceof HttpError && documents.error.status === 401) {
-    return <Navigate to="/organisation/portal/prihlaseni" replace />;
+    return <PortalLoginRedirect />;
   }
 
   if (documents.isPending) {

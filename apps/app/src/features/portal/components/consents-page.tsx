@@ -1,4 +1,3 @@
-import { Navigate } from '@tanstack/react-router';
 import { FileSignatureIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,6 +8,7 @@ import { useConsentsPage } from '@/features/portal/components/consents/use-conse
 import { ParticipantSwitch } from '@/features/portal/components/shared/participant-switch';
 import { PortalBackHeader } from '@/features/portal/components/shared/portal-back-header';
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
+import { PortalLoginRedirect } from '@/features/portal/components/shared/portal-login-redirect';
 import { HttpError } from '@/lib/api';
 
 interface ConsentsPageProps {
@@ -22,7 +22,7 @@ export function ConsentsPage({ registrationId }: ConsentsPageProps) {
   const { consents, selected } = page;
 
   if (consents.error instanceof HttpError && consents.error.status === 401) {
-    return <Navigate to="/organisation/portal/prihlaseni" replace />;
+    return <PortalLoginRedirect />;
   }
 
   if (consents.isPending) {

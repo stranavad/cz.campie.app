@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouter } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { useGuardianSignInMutation } from '@/features/portal/api/portal.queries';
 import { LoginForm } from '@/features/portal/components/login-form/login-form';
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
+import { takePortalReturn } from '@/features/portal/components/shared/portal-return.helper';
 import { StatusMessage } from '@/features/portal/components/shared/status-message';
 
 interface LoginPageProps {
@@ -19,6 +20,7 @@ interface LoginPageProps {
 export function LoginPage({ token }: LoginPageProps) {
   const { t } = useTranslation('portal');
   const navigate = useNavigate();
+  const router = useRouter();
   const signIn = useGuardianSignInMutation();
 
   return (
@@ -38,7 +40,17 @@ export function LoginPage({ token }: LoginPageProps) {
             onClick={() =>
               signIn.mutate(
                 { token },
-                { onSuccess: () => void navigate({ to: '/organisation/portal', replace: true }) },
+                {
+                  onSuccess: () => {
+                    const back = takePortalReturn();
+
+                    if (back === null) {
+                      void navigate({ to: '/organisation/portal', replace: true });
+                    } else {
+                      router.history.replace(back);
+                    }
+                  },
+                },
               )
             }
           >

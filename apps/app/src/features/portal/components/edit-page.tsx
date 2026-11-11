@@ -1,4 +1,3 @@
-import { Navigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { Alert } from '@/components/ui/alert';
@@ -6,6 +5,7 @@ import { useGuardianEditQuery } from '@/features/portal/api/portal.queries';
 import { EditForm } from '@/features/portal/components/edit/edit-form';
 import { PortalBackHeader } from '@/features/portal/components/shared/portal-back-header';
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
+import { PortalLoginRedirect } from '@/features/portal/components/shared/portal-login-redirect';
 import { HttpError } from '@/lib/api';
 
 interface EditPageProps {
@@ -18,7 +18,7 @@ export function EditPage({ registrationId }: EditPageProps) {
   const edit = useGuardianEditQuery(registrationId);
 
   if (edit.error instanceof HttpError && edit.error.status === 401) {
-    return <Navigate to="/organisation/portal/prihlaseni" replace />;
+    return <PortalLoginRedirect />;
   }
 
   if (edit.isPending) {

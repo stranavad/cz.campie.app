@@ -1,4 +1,3 @@
-import { Navigate } from '@tanstack/react-router';
 import { InboxIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,6 +6,7 @@ import { Alert } from '@/components/ui/alert';
 import { RegistrationCard } from '@/features/portal/components/home/registration-card';
 import { usePortalPage } from '@/features/portal/components/home/use-portal-page.hook';
 import { PortalColumn } from '@/features/portal/components/shared/portal-column';
+import { PortalLoginRedirect } from '@/features/portal/components/shared/portal-login-redirect';
 
 // The signed-in guardian's Registrations in the subdomain's Organisation, past ones included. Signing out
 // sits in the shell's header.
@@ -15,7 +15,7 @@ export function PortalPage() {
   const { portal, isSignedOut, greetingName } = usePortalPage();
 
   if (isSignedOut) {
-    return <Navigate to="/organisation/portal/prihlaseni" replace />;
+    return <PortalLoginRedirect />;
   }
 
   if (portal.isPending) {
