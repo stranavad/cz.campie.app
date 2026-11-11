@@ -1,6 +1,6 @@
 # 81 - Invoice request and payment shares
 
-Status: in-progress
+Status: done
 Stage: 1a
 Episode: E4 Money
 Blocked by: 49, 50, 78

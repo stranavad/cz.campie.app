@@ -1,6 +1,6 @@
 # 82 - Admin Invoice requests and invoice files
 
-Status: in-progress
+Status: done
 Stage: 1a
 Episode: E6 Admin Registrations
 Blocked by: 81
