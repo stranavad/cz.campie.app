@@ -19,7 +19,7 @@ export function useCampsPage(selectedId: string | undefined) {
     isSignedOut,
     hasNoAccess: hasNoMembership || (membership !== undefined && !canRead),
     isLoading: isLoading || (canRead && camps.isPending),
-    isError: isError || camps.isError,
+    isError: isError || (camps.isError && camps.data === undefined),
     canWrite,
     camps: list,
     selected,

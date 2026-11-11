@@ -46,7 +46,7 @@ export function RegistrationDetailPage({ registrationId }: RegistrationDetailPag
     return <EmptyState icon={<LockIcon />} title={t('noAccess')} />;
   }
 
-  if (page.isError || page.detail === undefined) {
+  if (page.detail === undefined) {
     return (
       <div className="flex flex-col gap-4">
         <BackToList />

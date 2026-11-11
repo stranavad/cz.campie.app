@@ -96,7 +96,10 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
   return {
     isLoading: camp.isPending || form.isPending || turnusy.isPending,
     hasNoForm: form.error instanceof HttpError && form.error.status === 404,
-    isError: camp.isError || turnusy.isError || (form.isError && !(form.error instanceof HttpError)),
+    isError:
+      (camp.isError && camp.data === undefined) ||
+      (turnusy.isError && turnusy.data === undefined) ||
+      (form.isError && form.data === undefined && !(form.error instanceof HttpError)),
     camp: camp.data,
     // Per child, shown on the way to add a sibling.
     siblingDiscount: camp.data?.siblingDiscount?.amount ?? null,

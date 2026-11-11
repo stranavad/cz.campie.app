@@ -28,7 +28,7 @@ export function EditPage({ registrationId }: EditPageProps) {
   return (
     <PortalColumn className="gap-3">
       <PortalBackHeader title={t('edit.title')} />
-      {edit.isError ? (
+      {edit.data === undefined ? (
         <Alert variant="danger" role="alert">
           {t('error')}
         </Alert>

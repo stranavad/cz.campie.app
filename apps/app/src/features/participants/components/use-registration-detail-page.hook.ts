@@ -33,7 +33,6 @@ export function useRegistrationDetailPage(registrationId: string) {
     isSignedOut,
     isLoading: isLoading || (canRead && detail.isPending),
     hasNoAccess: hasNoMembership || !canRead,
-    isError: detail.isError,
     canWrite: membershipAllows(membership, 'registrations', 'write'),
     canWriteHealth: membershipAllows(membership, 'health', 'write'),
     // Erasure is the Owner's, while there is anything left to erase.

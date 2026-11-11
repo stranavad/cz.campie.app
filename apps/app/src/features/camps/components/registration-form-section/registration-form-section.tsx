@@ -19,7 +19,7 @@ export function RegistrationFormSection({ organisationId, campId, canWrite }: Re
     return <p className="text-muted-foreground">{t('loading')}</p>;
   }
 
-  if (form.isError) {
+  if (form.data === undefined) {
     return <Alert variant="danger">{t('error')}</Alert>;
   }
 
