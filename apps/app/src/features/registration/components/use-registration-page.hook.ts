@@ -66,9 +66,19 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
     participants: answers.participants.map((participant) => askedAnswers(participant, participantFields)),
   };
   const price = useLivePrice(slug, definition, turnus, submission);
+  const hasNoForm = form.error instanceof HttpError && form.error.status === 404;
+  const isError =
+    (camp.isError && camp.data === undefined) ||
+    (turnusy.isError && turnusy.data === undefined) ||
+    (form.isError && form.data === undefined && !(form.error instanceof HttpError));
   // Something typed and not yet sent; once the Registration is in, or on its way to the card gateway,
-  // nothing is lost by leaving.
+  // nothing is lost by leaving. The question is asked on the form, so the guard holds only while the form
+  // is shown.
   const hasUnsentAnswers =
+    !hasNoForm &&
+    !isError &&
+    camp.data !== undefined &&
+    form.data !== undefined &&
     submit.submitted === undefined &&
     !submit.isSending &&
     (Object.keys(answers.registration).length > 0 ||
@@ -114,11 +124,8 @@ export function useRegistrationPage(slug: string, turnusId: string | undefined, 
 
   return {
     isLoading: camp.isPending || form.isPending || turnusy.isPending,
-    hasNoForm: form.error instanceof HttpError && form.error.status === 404,
-    isError:
-      (camp.isError && camp.data === undefined) ||
-      (turnusy.isError && turnusy.data === undefined) ||
-      (form.isError && form.data === undefined && !(form.error instanceof HttpError)),
+    hasNoForm,
+    isError,
     leave,
     camp: camp.data,
     // Per child, shown on the way to add a sibling.
