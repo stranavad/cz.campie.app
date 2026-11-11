@@ -4,6 +4,7 @@ import {
   createAdmin,
   createCamp,
   createOrganisation,
+  FAKE_INVOICE_REQUEST,
   submitRegistration,
   type RequestHeaders,
 } from '../../../testing/fixtures.ts';
@@ -123,6 +124,27 @@ describe('participant list', () => {
     expect(await names({ paymentStatus: 'unpaid' })).toEqual(['Ida', 'Adam', 'Žofie']);
     expect(await names({ unverifiedClaimedDiscount: 'true' }, otherTurnusId)).toEqual(['Petr']);
     expect(await names({ unverifiedClaimedDiscount: 'true' })).toEqual([]);
+  });
+
+  it('filters by whether a Registration has an Invoice request and whether it is invoiced', async () => {
+    const other = await submitRegistration(app(), organisationId, campId, {
+      children: [{ firstName: 'Petr', lastName: 'Vrátný', birthDate: '2015-01-01' }],
+    });
+    const otherTurnusId =
+      (await query<{ turnus_id: string }>('SELECT turnus_id FROM registrations WHERE id = $1', [other.id]))[0]
+        ?.turnus_id ?? '';
+    await http()
+      .put(`/api/registrations/${other.id}/invoice-request`)
+      .set(owner)
+      .send({ ...FAKE_INVOICE_REQUEST, invoicedOn: null, invoiceNumber: null });
+
+    const names = async (search: Record<string, string>, id = turnusId) =>
+      ((await list(search, owner, id)).body as { firstName: string }[]).map(({ firstName }) => firstName);
+
+    expect(await names({ invoice: 'none' })).toEqual(['Ida', 'Adam', 'Žofie']);
+    expect(await names({ invoice: 'none' }, otherTurnusId)).toEqual([]);
+    expect(await names({ invoice: 'to_invoice' }, otherTurnusId)).toEqual(['Petr']);
+    expect(await names({ invoice: 'to_invoice' })).toEqual([]);
   });
 
   it('remembers the Selected Turnus per admin', async () => {

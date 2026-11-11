@@ -14,6 +14,7 @@ export const participantListService = {
       query: {
         ...(filters.search === undefined ? {} : { search: filters.search }),
         ...(filters.paymentStatus === undefined ? {} : { paymentStatus: filters.paymentStatus }),
+        ...(filters.invoice === undefined ? {} : { invoice: filters.invoice }),
         ...(filters.unverifiedClaimedDiscount === true ? { unverifiedClaimedDiscount: 'true' as const } : {}),
         ...(filters.overdue === true ? { overdue: 'true' as const } : {}),
         ...(filters.unsignedConsent === true ? { unsignedConsent: 'true' as const } : {}),
