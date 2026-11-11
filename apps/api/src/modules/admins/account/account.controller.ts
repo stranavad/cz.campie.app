@@ -23,7 +23,7 @@ export class AccountController {
   @Endpoint(getAccountEndpoint)
   public get(
     @RequestAdminId() adminId: string,
-    @RequestAdminSession() session: { secondFactor: boolean },
+    @RequestAdminSession() session: { id: string; secondFactor: boolean },
   ): Promise<Account> {
     return this.accounts.get(adminId, session);
   }

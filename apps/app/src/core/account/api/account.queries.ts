@@ -25,3 +25,14 @@ export const useLogOutMutation = () => {
 
 export const useRequestEmailVerificationMutation = () =>
   useMutation({ mutationFn: accountService.requestEmailVerification });
+
+// Ends the Platform operator's visit to an Organisation under its support grant; the account then shows it
+// left, and the admin pages fall back to the admin's own Organisation, if any.
+export const useLeaveSupportMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: accountService.leaveSupport,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: accountKeys.all }),
+  });
+};

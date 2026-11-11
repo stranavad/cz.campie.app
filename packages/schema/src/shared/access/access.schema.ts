@@ -23,6 +23,8 @@ export const ACCESS_ERROR_CODES = [
   'totp_setup_required',
   // The Platform operator under a support grant has not entered the Organisation from the console yet.
   'support_entry_required',
+  // The Platform operator entering an Organisation while still in another under its support grant.
+  'support_visit_open',
 ] as const;
 
 export type AccessErrorCode = (typeof ACCESS_ERROR_CODES)[number];

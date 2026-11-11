@@ -137,10 +137,16 @@ The redesign canvas ("Campie - návrhy designu") is implemented frontend-first; 
 
 A guardian asks for part of the price to be invoiced to a company; the camp invoices in its own program and uploads the invoices.
 
-| #   | Issue                                    | Episode | Status      | Blocked by |
-| --- | ---------------------------------------- | ------- | ----------- | ---------- |
-| 81  | Invoice request and payment shares       | E4      | in-progress | 49, 50, 78 |
-| 82  | Admin Invoice requests and invoice files | E6      | in-progress | 81         |
+| #   | Issue                                    | Episode | Status | Blocked by |
+| --- | ---------------------------------------- | ------- | ------ | ---------- |
+| 81  | Invoice request and payment shares       | E4      | done   | 49, 50, 78 |
+| 82  | Admin Invoice requests and invoice files | E6      | done   | 81         |
+
+## Support access follow-up (stage 1b)
+
+| #   | Issue                                               | Episode  | Status      | Blocked by |
+| --- | --------------------------------------------------- | -------- | ----------- | ---------- |
+| 83  | Support access: switching Organisations and leaving | E9 Trust | in-progress | 63         |
 
 ## Stage 2 - around May 2027 (to be broken down)
 

@@ -1,6 +1,7 @@
 export { accountKeys } from '@/core/account/api/account.keys';
 export {
   useAccountQuery,
+  useLeaveSupportMutation,
   useLogOutMutation,
   useRequestEmailVerificationMutation,
 } from '@/core/account/api/account.queries';

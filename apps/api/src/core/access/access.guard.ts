@@ -77,8 +77,8 @@ export class AccessGuard implements CanActivate {
   }
 
   /**
-   * Refuse the Platform operator under a support grant anything before entering, and any change under a
-   * read-only grant, but for entering itself.
+   * Refuse the Platform operator under a support grant anything while not in the Organisation, and any
+   * change under a read-only grant, but for entering and leaving.
    * @param context the route being called
    * @param request the request
    * @param member the membership the request acts through
@@ -88,7 +88,7 @@ export class AccessGuard implements CanActivate {
     const readOnly = member.support !== undefined && !member.support.allowWrites;
     const entering = this.reflector.get(SupportEntry, context.getHandler()) === true;
 
-    // Every stay under a grant starts with its entry, so the Organisation's log shows each one.
+    // Every visit under a grant starts with its entry, so the Organisation's log shows each one.
     if (member.support !== undefined && !member.support.entered && !entering) {
       const code: AccessErrorCode = 'support_entry_required';
 

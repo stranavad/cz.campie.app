@@ -129,6 +129,7 @@
     "support_access": {
       "enter": "Vstup podpory platformy",
       "grant": "Udělení přístupu podpoře platformy",
+      "leave": "Odchod podpory platformy",
       "revoke": "Odebrání přístupu podpoře platformy"
     },
     "turnus": { "create": "Založení turnusu", "remove": "Smazání turnusu", "update": "Úprava turnusu" },

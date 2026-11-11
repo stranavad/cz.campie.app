@@ -56,7 +56,14 @@ export const revokeSupportAccessEndpoint = defineEndpoint({
 });
 
 // The Platform operator entering the Organisation under a grant, audited in its log; any member's route.
+// Refused with support_visit_open while they are still in another Organisation.
 export const enterSupportAccessEndpoint = defineEndpoint({
   method: 'POST',
   path: '/support-access/enter',
+});
+
+// The Platform operator leaving the Organisation they entered, audited in its log; any member's route.
+export const leaveSupportAccessEndpoint = defineEndpoint({
+  method: 'POST',
+  path: '/support-access/leave',
 });

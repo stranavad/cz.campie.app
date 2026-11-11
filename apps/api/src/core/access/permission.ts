@@ -19,7 +19,8 @@ export interface MemberAccess {
   readonly owner: boolean;
   readonly permissions: Permissions;
   // Set when the Platform operator acts under a support grant: whether it allows changes, the grant and the
-  // session, and whether the session entered under it (recorded in the Organisation's log).
+  // session, and whether the session is in the Organisation now: entered under the grant and not left since,
+  // each recorded in the Organisation's log.
   readonly support?: {
     readonly allowWrites: boolean;
     readonly grantId: string;
@@ -50,8 +51,8 @@ export function Requires(
   return RequirePermission(requirement[0] === 'owner' ? { owner: true } : { member: true });
 }
 
-// Marks the one change the Platform operator makes under a read-only support grant: recording that they
-// entered.
+// Marks the changes the Platform operator makes under a read-only support grant, and before entering:
+// entering and leaving.
 export const SupportEntry = Reflector.createDecorator<true>();
 
 /**

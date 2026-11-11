@@ -208,7 +208,7 @@ export class AccessService {
             allowWrites: grant.allowWrites,
             grantId: grant.id,
             sessionId: session.id,
-            entered: await this.supportGrants.hasEntered(grant.id, session.id),
+            entered: await this.supportGrants.hasOpenVisit(grant.id, session.id),
           },
         },
       },

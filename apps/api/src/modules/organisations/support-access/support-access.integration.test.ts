@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import type { Account } from '@repo/schema/admins';
 import { ACCESS_HEADERS } from '@repo/schema/shared';
 
 import { createAdmin, createCamp, createOrganisation, type RequestHeaders } from '../../../testing/fixtures.ts';
@@ -22,6 +23,28 @@ describe('support access', () => {
   const asOperator = () => ({ ...operator, [ACCESS_HEADERS.organisation]: organisationId });
   const read = () => http().get(`/api/camps/${campId}`).set(asOperator());
   const enter = () => http().post('/api/support-access/enter').set(asOperator());
+  const leave = (headers: RequestHeaders = asOperator()) => http().post('/api/support-access/leave').set(headers);
+  const supportLog = async (inOrganisation: string) =>
+    (
+      await query<{ action: string; actor_kind: string }>(
+        `SELECT action, actor_kind FROM audit_entries WHERE organisation_id = $1 AND action LIKE 'support_access.%' ORDER BY occurred_at, id`,
+        [inOrganisation],
+      )
+    ).map(({ action, actor_kind }) => `${action} ${actor_kind}`);
+  const entered = async () =>
+    Object.fromEntries(
+      ((await http().get('/api/account').set(operator)).body.memberships as Account['memberships']).map(
+        ({ organisation, support }) => [organisation.id, support?.entered],
+      ),
+    );
+  // Another Organisation with a grant in force for two hours, as the operator acts in it.
+  const another = async () => {
+    const id = await createOrganisation(app());
+    const anotherOwner = (await createAdmin(app(), { memberOf: [id], owner: true })).headers(id);
+    await http().post('/api/support-access').set(anotherOwner).send({ hours: 2 });
+
+    return { id, owner: anotherOwner, asOperator: { ...operator, [ACCESS_HEADERS.organisation]: id } };
+  };
   const write = () => http().patch(`/api/camps/${campId}`).set(asOperator()).send({ name: 'Upraveno podporou' });
 
   beforeEach(async () => {
@@ -37,7 +60,7 @@ describe('support access', () => {
     expect((await http().post('/api/support-access/enter').set(asOperator())).status).toBe(403);
   });
 
-  it('lets the operator in only after entering, recorded once per session and grant', async () => {
+  it('lets the operator in only after entering, and entering again while in records nothing', async () => {
     await grant({ hours: 2 });
 
     const refused = await read();
@@ -68,10 +91,11 @@ describe('support access', () => {
       expect.objectContaining({
         organisation: expect.objectContaining({ id: organisationId }),
         owner: false,
-        support: { allowWrites: true, expiresAt: '2027-04-10T12:00:00.000Z' },
+        support: { allowWrites: true, expiresAt: '2027-04-10T12:00:00.000Z', entered: false },
       }),
     ]);
     expect((await http().post('/api/support-access/enter').set(asOperator())).status).toBe(204);
+    expect((await http().get('/api/account').set(operator)).body.memberships[0].support.entered).toBe(true);
     expect((await write()).status).toBe(200);
     expect(
       await query(
@@ -114,6 +138,95 @@ describe('support access', () => {
       'support_access.enter',
       'support_access.revoke',
     ]);
+  });
+
+  it('ends access when the operator leaves, though the grant runs on', async () => {
+    await grant({ hours: 2 });
+    await enter();
+
+    expect((await leave()).status).toBe(204);
+
+    const refused = await read();
+    expect(refused.status).toBe(403);
+    expect(refused.body.code).toBe('support_entry_required');
+  });
+
+  it('records leaving once, as the operator, under a read-only grant', async () => {
+    await grant({ hours: 2 });
+    await enter();
+
+    expect((await leave()).status).toBe(204);
+    expect((await leave()).status).toBe(204);
+
+    expect(await supportLog(organisationId)).toEqual([
+      'support_access.grant admin',
+      'support_access.enter operator',
+      'support_access.leave operator',
+    ]);
+  });
+
+  it('opens a new visit on entering again after leaving', async () => {
+    await grant({ hours: 2 });
+    await enter();
+    await leave();
+
+    expect((await enter()).status).toBe(204);
+
+    expect((await read()).status).toBe(200);
+    expect(await supportLog(organisationId)).toEqual([
+      'support_access.grant admin',
+      'support_access.enter operator',
+      'support_access.leave operator',
+      'support_access.enter operator',
+    ]);
+  });
+
+  it('keeps the operator in one Organisation at a time, each logging only its own visits', async () => {
+    await grant({ hours: 2 });
+    const second = await another();
+    await enter();
+
+    const refused = await http().post('/api/support-access/enter').set(second.asOperator);
+    expect(refused.status).toBe(409);
+    expect(refused.body.code).toBe('support_visit_open');
+    expect(await entered()).toEqual({ [organisationId]: true, [second.id]: false });
+
+    await leave();
+    expect((await http().post('/api/support-access/enter').set(second.asOperator)).status).toBe(204);
+
+    expect(await entered()).toEqual({ [organisationId]: false, [second.id]: true });
+    expect(await supportLog(organisationId)).toEqual([
+      'support_access.grant admin',
+      'support_access.enter operator',
+      'support_access.leave operator',
+    ]);
+    expect(await supportLog(second.id)).toEqual(['support_access.grant admin', 'support_access.enter operator']);
+  });
+
+  it('lets a visit under a revoked grant not keep the operator from another Organisation', async () => {
+    await grant({ hours: 2 });
+    const second = await another();
+    await enter();
+    const [active] = (await http().get('/api/support-access').set(owner)).body as { id: string }[];
+    await http().delete(`/api/support-access/${active?.id}`).set(owner);
+
+    expect((await http().post('/api/support-access/enter').set(second.asOperator)).status).toBe(204);
+  });
+
+  it('lets a visit under an expired grant not keep the operator from another Organisation', async () => {
+    await grant({ hours: 1 });
+    const second = await another();
+    await enter();
+    clock().set(new Date('2027-04-10T11:00:01Z'));
+
+    expect((await http().post('/api/support-access/enter').set(second.asOperator)).status).toBe(204);
+    expect(await entered()).toEqual({ [second.id]: true });
+  });
+
+  it('refuses leaving to members', async () => {
+    await grant({ hours: 2 });
+
+    expect((await leave(owner)).status).toBe(403);
   });
 
   it('lists each grant, newest first, with the Owner who granted it, and none of another Organisation', async () => {

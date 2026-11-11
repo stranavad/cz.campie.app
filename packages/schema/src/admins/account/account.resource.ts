@@ -39,8 +39,9 @@ export const accountSchema = z.object({
         // Brands the admin interface while the admin works in it.
         accentColour: z.string(),
       }),
-      // For the Platform operator only: an Organisation entered under its support grant, not a membership.
-      support: z.object({ allowWrites: z.boolean(), expiresAt: z.iso.datetime() }).nullable(),
+      // For the Platform operator only: an Organisation under its support grant, not a membership, and
+      // whether this session entered it, which the access guard requires before anything else.
+      support: z.object({ allowWrites: z.boolean(), expiresAt: z.iso.datetime(), entered: z.boolean() }).nullable(),
     }),
   ),
 });

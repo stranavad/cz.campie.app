@@ -3,6 +3,7 @@ import { Controller } from '@nestjs/common';
 import {
   enterSupportAccessEndpoint,
   grantSupportAccessEndpoint,
+  leaveSupportAccessEndpoint,
   listSupportGrantsEndpoint,
   revokeSupportAccessEndpoint,
   type GrantSupportAccessBody,
@@ -51,5 +52,12 @@ export class SupportAccessController {
   @SupportEntry(true)
   public enter(@RequestActor() actor: Actor, @RequestMember() member: MemberAccess): Promise<void> {
     return this.support.enter(actor, member);
+  }
+
+  @Endpoint(leaveSupportAccessEndpoint)
+  @Requires('member')
+  @SupportEntry(true)
+  public leave(@RequestActor() actor: Actor, @RequestMember() member: MemberAccess): Promise<void> {
+    return this.support.leave(actor, member);
   }
 }

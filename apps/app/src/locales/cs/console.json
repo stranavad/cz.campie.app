@@ -79,7 +79,10 @@
     "readOnly": "jen čtení, do {{until}}",
     "writes": "změny povoleny, do {{until}}",
     "enter": "Vstoupit",
-    "failed": "Vstup se nepodařil. Přístup mohl mezitím skončit."
+    "leave": "Opustit",
+    "current": "Teď jste zde",
+    "failed": "Vstup se nepodařil. Přístup mohl mezitím skončit.",
+    "leaveFailed": "Odchod se nepodařil. Zkuste to prosím znovu."
   },
   "reports": {
     "title": "Zpětná vazba a hlášení problémů",

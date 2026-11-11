@@ -104,6 +104,7 @@ export const AUDIT_ACTIONS = {
   'registration_guardian.update': { area: 'registrations', targets: ['registration'] },
   'support_access.enter': { area: 'organisation', targets: ['organisation'] },
   'support_access.grant': { area: 'organisation', targets: ['organisation'] },
+  'support_access.leave': { area: 'organisation', targets: ['organisation'] },
   'support_access.revoke': { area: 'organisation', targets: ['organisation'] },
   'turnus.create': { area: 'turnusy', targets: ['turnus'] },
   'turnus.remove': { area: 'turnusy', targets: ['turnus'] },

@@ -1,7 +1,7 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
 import type { GrantSupportAccessBody, SupportGrant } from '@repo/schema/organisations';
-import type { Person } from '@repo/schema/shared';
+import type { AccessErrorCode, Person } from '@repo/schema/shared';
 
 import type { MemberAccess } from '../../../../core/access/permission.ts';
 import type { Actor } from '../../../../core/audit/actor.ts';
@@ -18,8 +18,8 @@ import { AdminService } from '../../../admins/admin/services/admin.service.ts';
 const HOUR_MS = 60 * 60 * 1000;
 
 // Owners letting the Platform operator in for support, for a while and read-only unless they allow
-// changes; every grant, revocation and entry is in the Organisation's audit log. Permission (Owners, or
-// the operator entering) is the route's.
+// changes; every grant, revocation, entry and leave is in the Organisation's audit log. Permission
+// (Owners, or the operator entering and leaving) is the route's.
 @Injectable()
 export class SupportAccessService {
   constructor(
@@ -98,20 +98,46 @@ export class SupportAccessService {
   }
 
   /**
-   * Record that the Platform operator's session entered the Organisation under its grant, in the
-   * Organisation's log once per session and grant; the access guard lets nothing else through before it.
+   * Open a visit of the Platform operator's session to the Organisation under its grant, audited; the access
+   * guard lets nothing else through before it. Entering again while in the Organisation changes nothing.
    * @param actor the operator
    * @param member their access under the grant
-   * @throws {ForbiddenException} when a member, not the operator under a grant, calls it
+   * @throws {ConflictException} support_visit_open, while the session is in another Organisation
    */
   public async enter(actor: Actor, member: MemberAccess): Promise<void> {
-    if (actor.kind !== 'operator' || member.support === undefined) {
-      throw new ForbiddenException();
+    const { grantId, sessionId } = supportOf(actor, member);
+    const now = this.clock.now();
+
+    // A visit under a grant that ended no longer counts, so it never keeps the operator from another.
+    await this.grants.closeEndedVisits(sessionId, now);
+
+    if (!(await this.grants.openVisit(grantId, sessionId, now))) {
+      if ((await this.grants.getOpenVisitGrantId(sessionId)) === grantId) {
+        return;
+      }
+
+      const code: AccessErrorCode = 'support_visit_open';
+
+      throw new ConflictException({ code, message: 'Leave the other Organisation first' });
     }
 
-    if (await this.grants.recordEntry(member.support.grantId, member.support.sessionId, this.clock.now())) {
+    await this.audit.record(actor, {
+      action: 'support_access.enter',
+      target: { type: 'organisation', id: this.unitOfWork.organisationId },
+    });
+  }
+
+  /**
+   * End the Platform operator's session's visit to the Organisation, audited; without one, nothing happens.
+   * @param actor the operator
+   * @param member their access under the grant
+   */
+  public async leave(actor: Actor, member: MemberAccess): Promise<void> {
+    const { grantId, sessionId } = supportOf(actor, member);
+
+    if (await this.grants.leaveVisit(grantId, sessionId, this.clock.now())) {
       await this.audit.record(actor, {
-        action: 'support_access.enter',
+        action: 'support_access.leave',
         target: { type: 'organisation', id: this.unitOfWork.organisationId },
       });
     }
@@ -153,6 +179,20 @@ export class SupportAccessService {
   private async showOne(grant: SupportGrantRow, now: Date): Promise<SupportGrant> {
     return present(grant, now, await this.admins.getPersonById(grant.grantedByAdminId));
   }
+}
+
+/**
+ * The Platform operator's grant and session, for entering and leaving.
+ * @param actor who calls
+ * @param member their access
+ * @throws {ForbiddenException} when a member, not the operator under a grant, calls
+ */
+function supportOf(actor: Actor, member: MemberAccess): { grantId: string; sessionId: string } {
+  if (actor.kind !== 'operator' || member.support === undefined) {
+    throw new ForbiddenException();
+  }
+
+  return member.support;
 }
 
 /**

@@ -1,13 +1,15 @@
+import { sql } from 'drizzle-orm';
 import * as p from 'drizzle-orm/pg-core';
 
+import { id } from '../helpers/ids.ts';
 import { adminSessions } from '../sessions/admin-sessions.ts';
 import { supportGrants } from './support-grants.ts';
 
-// A platform table: that the Platform operator's session entered an Organisation under a grant, which the
-// access guard requires before anything else, so every stay under a grant is in the Organisation's log.
+// A platform table: each visit of the Platform operator's session under a grant, open until left.
 export const supportEntries = p.snakeCase.table(
   'support_entries',
   {
+    id: id(),
     grantId: p
       .uuid()
       .notNull()
@@ -17,6 +19,13 @@ export const supportEntries = p.snakeCase.table(
       .notNull()
       .references(() => adminSessions.id, { onDelete: 'cascade' }),
     enteredAt: p.timestamp({ withTimezone: true }).notNull(),
+    leftAt: p.timestamp({ withTimezone: true }),
   },
-  (table) => [p.primaryKey({ name: 'support_entries_pkey', columns: [table.grantId, table.sessionId] })],
+  (table) => [
+    p
+      .uniqueIndex('support_entries_open_session_id_key')
+      .on(table.sessionId)
+      .where(sql`${table.leftAt} IS NULL`),
+    p.index('support_entries_grant_id_idx').on(table.grantId),
+  ],
 );

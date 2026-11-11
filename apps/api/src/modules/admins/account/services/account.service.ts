@@ -48,7 +48,10 @@ export class AccountService {
    * @param adminId the signed-in admin
    * @param session their session
    */
-  public async get(adminId: string, session: { readonly secondFactor: boolean }): Promise<Account> {
+  public async get(
+    adminId: string,
+    session: { readonly id: string; readonly secondFactor: boolean },
+  ): Promise<Account> {
     const admin = await this.admins.getByIdOrThrow(adminId);
 
     const rows = await this.unitOfWork.db
@@ -87,7 +90,7 @@ export class AccountService {
           support: null,
         })),
         // The access guard lets the operator in only with a TOTP code, so the account offers them only then.
-        ...(operator && session.secondFactor ? await this.supported() : []),
+        ...(operator && session.secondFactor ? await this.supported(session.id) : []),
       ],
     };
   }
@@ -150,10 +153,13 @@ export class AccountService {
   }
 
   /**
-   * List the Organisations with a support grant in force, as the operator enters them.
+   * List the Organisations with a support grant in force, as the operator enters them, each with whether
+   * this session is in it now.
+   * @param sessionId the operator's session
    */
-  private async supported(): Promise<Account['memberships']> {
+  private async supported(sessionId: string): Promise<Account['memberships']> {
     const grants = await this.supportGrants.listActive(this.clock.now());
+    const entered = await this.supportGrants.getOpenVisitGrantId(sessionId);
     const organisationsById = new Map(
       (grants.length === 0
         ? []
@@ -189,7 +195,11 @@ export class AccountService {
                 PERMISSION_AREAS.map((area) => [area, level]),
               ) as Account['memberships'][number]['permissions'],
               organisation,
-              support: { allowWrites: grant.allowWrites, expiresAt: grant.expiresAt.toISOString() },
+              support: {
+                allowWrites: grant.allowWrites,
+                expiresAt: grant.expiresAt.toISOString(),
+                entered: grant.id === entered,
+              },
             },
           ];
     });

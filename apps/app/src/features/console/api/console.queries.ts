@@ -2,6 +2,7 @@ import { queryOptions, skipToken, useMutation, useQuery, useQueryClient } from '
 
 import type { RenameOrganisationSubdomainBody } from '@repo/schema/console';
 
+import { accountKeys } from '@/core/account';
 import { consoleKeys } from '@/features/console/api/console.keys';
 import { consoleService } from '@/features/console/api/console.service';
 
@@ -47,9 +48,16 @@ export const useRenameOrganisationMutation = () =>
 export const useResetOwnerTotpMutation = (organisationId: string) =>
   useMutation({ mutationFn: (email: string) => consoleService.resetOwnerTotp(organisationId, email) });
 
-// Records the entry in the Organisation's log; the admin pages then act in it under the grant.
-export const useEnterSupportMutation = () =>
-  useMutation({ mutationFn: (organisationId: string) => consoleService.enterSupport(organisationId) });
+// Records the entry in the Organisation's log; the account then shows it entered, and the admin pages act
+// in it under the grant.
+export const useEnterSupportMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (organisationId: string) => consoleService.enterSupport(organisationId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: accountKeys.all }),
+  });
+};
 
 const problemReportsKey = ['console', 'problem-reports'] as const;
 
