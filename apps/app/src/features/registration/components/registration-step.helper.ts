@@ -1,4 +1,4 @@
-import { CORE_FIELDS } from '@repo/schema/form-engine';
+import { isGuardianFieldKey } from '@repo/schema/camps';
 
 import {
   REGISTRATION_STEPS,
@@ -14,8 +14,8 @@ export function stepNumberOf(name: RegistrationStep): number {
 }
 
 /**
- * Tell on which step (1-based) an answer is asked, by the path its error carries: the guardians' core
- * fields first, the children second, the Registration's own questions third; the rest (the code, the
+ * Tell on which step (1-based) an answer is asked, by the path its error carries: the guardians' fields
+ * first, the children second, the Registration's own questions third; the rest (the code, the
  * declarations) on the summary.
  * @param path the error's path, as the form engine and the server give it
  */
@@ -25,7 +25,7 @@ export function stepOfPath(path: readonly (string | number)[]): number {
   }
 
   if (path[0] === 'registration') {
-    return stepNumberOf(CORE_FIELDS.some(({ key }) => key === path[1]) ? 'guardians' : 'questions');
+    return stepNumberOf(typeof path[1] === 'string' && isGuardianFieldKey(path[1]) ? 'guardians' : 'questions');
   }
 
   return stepNumberOf('summary');

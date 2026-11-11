@@ -61,18 +61,18 @@ describe('Přihláška PDF', () => {
 
   const query = <T>(sql: string, values: unknown[] = []) =>
     withClient(database().ownerUrl, async (client) => (await client.query(sql, values)).rows as T[]);
-  const publish = async (label: string) => {
+  const publish = async (label: string, standard: { key: string; state: string }[] = []) => {
     await http()
       .put(`/api/camps/${campId}/registration-form/draft`)
       .set(owner)
       .send({
-        definition: { standard: [], custom: [transport(label)] },
+        definition: { standard, custom: [transport(label)] },
         maxParticipants: 3,
         declarations: [{ id: RULES, text: 'Souhlasím s táborovým řádem.', mandatory: true, url: null, fileId: null }],
       });
     await http().post(`/api/camps/${campId}/registration-form/versions`).set(owner);
   };
-  const submit = async (paymentChoice = 'deposit') =>
+  const submit = async (paymentChoice = 'deposit', registrationAnswers: Record<string, string> = {}) =>
     (
       await http()
         .post('/api/public-camps/letni-tabor/registrations')
@@ -86,6 +86,7 @@ describe('Přihláška PDF', () => {
               guardianLastName: 'Testovací',
               guardianEmail: 'jana.testovaci@example.com',
               guardianPhone: '+420 123 456 789',
+              ...registrationAnswers,
             },
             participants: [
               { firstName: 'Ema', lastName: 'Testovací', birthDate: '2016-05-01', [TRANSPORT]: 'bus' },
@@ -192,6 +193,20 @@ describe('Přihláška PDF', () => {
     // The amount due now is all outstanding, so one QR platba says it all.
     expect(pdfs().rendered[0]?.match(/<svg/g)).toHaveLength(1);
     expect(pdfs().rendered[0]).not.toContain('Vše najednou');
+  });
+
+  it("prints the guardian's address with the guardians and the Registration's other answers apart", async () => {
+    await publish('Doprava', [
+      { key: 'guardianAddress', state: 'optional' },
+      { key: 'howDidYouHear', state: 'optional' },
+    ]);
+
+    await submit('deposit', { guardianAddress: 'Testovací 1, Pokusov', howDidYouHear: 'friends' });
+    await jobs().drain();
+
+    expect(pdfs().rendered[0]).toMatch(
+      /Zákonní zástupci.*jana\.testovaci@example\.com.*Testovací 1, Pokusov.*Další údaje.*Od známých nebo kamarádů/s,
+    );
   });
 
   it('labels the answers as the form version the Registration was submitted under did', async () => {

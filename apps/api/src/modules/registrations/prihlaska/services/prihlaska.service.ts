@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
+import { isGuardianFieldKey, REGISTRATION_FIELD_CATALOGUE } from '@repo/schema/camps';
 import {
   fieldSensitivity,
   formFields,
@@ -173,6 +173,7 @@ export class PrihlaskaService {
     const lines = await this.registrations.listPriceLines(registrationId);
     const answered = await this.registrations.listDeclarationAnswers(registrationId);
     const cipher = await this.encryption.cipher();
+    const opened = openAnswers(cipher, registration);
 
     const total = lines.reduce((sum, { amount }) => sum + amount, 0);
     // A snapshot of the submission: nothing paid yet, whatever was paid since.
@@ -210,7 +211,8 @@ export class PrihlaskaService {
           email,
           phone,
         })),
-        registrationAnswers: rowsOf(form.definition, 'registration', openAnswers(cipher, registration)),
+        guardianAnswers: rowsOf(form.definition, 'registration', opened, isGuardianFieldKey),
+        registrationAnswers: rowsOf(form.definition, 'registration', opened, (key) => !isGuardianFieldKey(key)),
         lines: lines.map(({ kind, label, participant, amount }) => ({
           kind,
           label,
@@ -240,10 +242,16 @@ export class PrihlaskaService {
  * @param definition the form version's definition
  * @param scope per child or per Registration
  * @param answers the answers, the encrypted ones opened
+ * @param includes which fields to list, by key; all of them when left out
  */
-function rowsOf(definition: FormDefinition, scope: FieldScope, answers: Answers): PrihlaskaRow[] {
+function rowsOf(
+  definition: FormDefinition,
+  scope: FieldScope,
+  answers: Answers,
+  includes: (key: string) => boolean = () => true,
+): PrihlaskaRow[] {
   return formFields(definition, REGISTRATION_FIELD_CATALOGUE, scope)
-    .filter((field) => field.tier !== 'core' && fieldSensitivity(field) !== 'health')
+    .filter((field) => field.tier !== 'core' && fieldSensitivity(field) !== 'health' && includes(field.key))
     .flatMap((field) => {
       const answer = answers[field.key];
       const value =

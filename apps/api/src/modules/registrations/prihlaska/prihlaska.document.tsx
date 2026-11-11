@@ -43,6 +43,8 @@ export interface PrihlaskaProps {
   };
   readonly otherParticipants: readonly string[];
   readonly guardians: readonly { readonly name: string; readonly email: string; readonly phone: string | null }[];
+  // The Registration's answers about its guardians, such as their address, and its other answers.
+  readonly guardianAnswers: readonly PrihlaskaRow[];
   readonly registrationAnswers: readonly PrihlaskaRow[];
   readonly lines: readonly PrihlaskaLine[];
   readonly total: number;
@@ -242,9 +244,14 @@ export const PrihlaskaDocument: DocumentTemplate<PrihlaskaProps> = ({ letterhead
               {guardian.phone === null ? null : <Fact label="Telefon">{guardian.phone}</Fact>}
             </div>
           ))}
-          <Rows rows={props.registrationAnswers} />
+          <Rows rows={props.guardianAnswers} />
         </Section>
       </div>
+      {props.registrationAnswers.length === 0 ? null : (
+        <Section title="Další údaje">
+          <Rows rows={props.registrationAnswers} />
+        </Section>
+      )}
       {props.declarations.length === 0 ? null : (
         <Section title="Prohlášení">
           <div className="declarations">

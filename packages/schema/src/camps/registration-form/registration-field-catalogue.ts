@@ -1,11 +1,12 @@
 import { z } from 'zod';
 
-import type {
-  Answers,
-  AnswerValue,
-  FormAnswerErrorCode,
-  PlatformOption,
-  StandardFieldCatalogue,
+import {
+  CORE_FIELDS,
+  type Answers,
+  type AnswerValue,
+  type FormAnswerErrorCode,
+  type PlatformOption,
+  type StandardFieldCatalogue,
 } from '@repo/schema/form-engine';
 
 import { parseBirthNumber } from './birth-number.ts';
@@ -139,4 +140,19 @@ export type RegistrationFieldKey = keyof typeof REGISTRATION_FIELD_CATALOGUE;
  */
 export function isRegistrationFieldKey(key: string): key is RegistrationFieldKey {
   return Object.hasOwn(REGISTRATION_FIELD_CATALOGUE, key);
+}
+
+// The Registration's answers about its guardians, shown with them wherever answers are shown, not among the
+// other questions: their core contact and the guardian's standard fields.
+const GUARDIAN_FIELD_KEYS: ReadonlySet<string> = new Set([
+  ...CORE_FIELDS.filter(({ scope }) => scope === 'registration').map(({ key }) => key),
+  ...(['guardianAddress'] as const satisfies readonly RegistrationFieldKey[]),
+]);
+
+/**
+ * Tell whether a Registration's answer is about its guardians.
+ * @param key the answer's key
+ */
+export function isGuardianFieldKey(key: string): boolean {
+  return GUARDIAN_FIELD_KEYS.has(key);
 }

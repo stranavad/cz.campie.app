@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { isGuardianFieldKey } from '@repo/schema/camps';
 import type { RegistrationDetail } from '@repo/schema/registrations';
 
 import { Card, CardTitle } from '@/components/ui/card';
@@ -18,14 +19,26 @@ interface GuardiansCardProps {
   canWrite: boolean;
 }
 
-// The guardians and how to reach them, the other addresses with portal access, and the answers given for
-// the whole Registration.
+// The guardians and how to reach them, the other addresses with portal access, the answers about the
+// guardians (their address), and the other answers given for the whole Registration.
 export function GuardiansCard({ organisationId, registrationId, detail, canWrite }: GuardiansCardProps) {
   const { t } = useTranslation('participants');
   const { answerText, answerLabel } = useAnswerText();
   const removeGuardian = useRemoveGuardianMutation(organisationId, registrationId);
   // Registrations write; a Registration keeps at least one guardian.
   const canRemove = canWrite && detail.guardians.length > 1;
+  const guardianAnswers = detail.registrationAnswers.filter(({ key }) => isGuardianFieldKey(key));
+  const otherAnswers = detail.registrationAnswers.filter(({ key }) => !isGuardianFieldKey(key));
+  const answerList = (rows: typeof otherAnswers, className?: string) =>
+    rows.length === 0 ? null : (
+      <DescriptionList className={className}>
+        {rows.map((row) => (
+          <DescriptionItem key={row.key} label={answerLabel(row)}>
+            {answerText(row)}
+          </DescriptionItem>
+        ))}
+      </DescriptionList>
+    );
 
   return (
     <Card>
@@ -77,16 +90,9 @@ export function GuardiansCard({ organisationId, registrationId, detail, canWrite
           />
         ))}
       </ul>
+      {answerList(guardianAnswers)}
       {canWrite ? <AccessEmailForm organisationId={organisationId} registrationId={registrationId} /> : null}
-      {detail.registrationAnswers.length === 0 ? null : (
-        <DescriptionList className="border-t border-border-subtle pt-4">
-          {detail.registrationAnswers.map((row) => (
-            <DescriptionItem key={row.key} label={answerLabel(row)}>
-              {answerText(row)}
-            </DescriptionItem>
-          ))}
-        </DescriptionList>
-      )}
+      {answerList(otherAnswers, 'border-t border-border-subtle pt-4')}
     </Card>
   );
 }

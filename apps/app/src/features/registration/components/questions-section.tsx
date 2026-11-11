@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { isGuardianFieldKey } from '@repo/schema/camps';
 import type { Answers, AnswerValue, FormField } from '@repo/schema/form-engine';
 
 import { Card } from '@/components/ui/card';
@@ -12,10 +13,11 @@ interface QuestionsSectionProps {
   messageAt: (path: readonly (string | number)[]) => string | null;
 }
 
-// The Registration's own questions, asked once for all the children; a form without any says so.
+// The Registration's own questions beyond the guardians, asked once for all the children; a form without any
+// says so.
 export function QuestionsSection({ fields, answers, onChange, messageAt }: QuestionsSectionProps) {
   const { t } = useTranslation('registration');
-  const questions = fields.filter(({ tier }) => tier !== 'core');
+  const questions = fields.filter(({ key }) => !isGuardianFieldKey(key));
 
   if (questions.length === 0) {
     return <p className="px-1 text-muted-foreground">{t('steps.questions.none')}</p>;

@@ -1,11 +1,12 @@
 import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { SECOND_GUARDIAN_FIELDS, type Answers, type AnswerValue, type FormField } from '@repo/schema/form-engine';
+import type { Answers, AnswerValue, FormField } from '@repo/schema/form-engine';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { RegistrationField } from '@/core/registration-form';
+import { guardianFields } from '@/features/registration/components/guardian-fields.helper';
 
 interface GuardianSectionProps {
   fields: readonly FormField[];
@@ -16,9 +17,8 @@ interface GuardianSectionProps {
   messageAt: (path: readonly (string | number)[]) => string | null;
 }
 
-const isSecondGuardian = (key: string) => (SECOND_GUARDIAN_FIELDS as readonly string[]).includes(key);
-
-// The guardian and an optional second one: the core fields asked once per Registration.
+// The guardian and an optional second one: their contact and the guardian's standard fields, asked once per
+// Registration.
 export function GuardianSection({
   fields,
   answers,
@@ -37,14 +37,14 @@ export function GuardianSection({
       message={messageAt(['registration', shown.key])}
     />
   );
-  const core = fields.filter(({ tier }) => tier === 'core');
+  const { first, second } = guardianFields(fields);
 
   return (
     <Card>
       <CardTitle>{t('guardian')}</CardTitle>
-      {core.filter(({ key }) => !isSecondGuardian(key)).map(field)}
+      {first.map(field)}
       {hasSecondGuardian ? (
-        core.filter(({ key }) => isSecondGuardian(key)).map(field)
+        second.map(field)
       ) : (
         <Button type="button" variant="dashed" onClick={() => onSecondGuardian(true)}>
           <PlusIcon aria-hidden="true" />

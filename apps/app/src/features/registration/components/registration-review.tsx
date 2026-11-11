@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next';
 
+import { isGuardianFieldKey } from '@repo/schema/camps';
 import type { Answers, FormField } from '@repo/schema/form-engine';
 
 import { useAnswerText, useFieldLabel } from '@/core/registration-form';
+import { guardianFields } from '@/features/registration/components/guardian-fields.helper';
 import type { RegistrationStep } from '@/features/registration/components/registration-step.constant';
 import { ReviewCard, type ReviewRow } from '@/features/registration/components/review-card';
 
@@ -26,8 +28,9 @@ export function RegistrationReview(props: RegistrationReviewProps) {
 
       return text === null ? [] : [{ key: field.key, label: labelOf(field), text }];
     });
+  const guardians = guardianFields(props.registrationFields);
   const questions = rowsOf(
-    props.registrationFields.filter(({ tier }) => tier !== 'core'),
+    props.registrationFields.filter(({ key }) => !isGuardianFieldKey(key)),
     props.registration,
   );
 
@@ -35,10 +38,7 @@ export function RegistrationReview(props: RegistrationReviewProps) {
     <>
       <ReviewCard
         title={t('steps.guardians.name')}
-        rows={rowsOf(
-          props.registrationFields.filter(({ tier }) => tier === 'core'),
-          props.registration,
-        )}
+        rows={rowsOf([...guardians.first, ...guardians.second], props.registration)}
         onEdit={() => props.onEdit('guardians')}
       />
       {props.participants.map((answers, index) => (
