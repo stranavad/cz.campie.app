@@ -24,6 +24,11 @@ export const site = {
   // The Turnstile widget's site key for campie.cz and dev.campie.cz (public; the secret lives in the
   // Worker). Local builds use Cloudflare's test key instead (lib/site-env.ts).
   turnstileSiteKey: '0x4AAAAAAF7zqIpjfDkS6doX',
+  // Umami, cookieless visit counting; only production builds load it (lib/site-env.ts).
+  umami: {
+    origin: 'https://umami.h.gandalfthegray.dev',
+    websiteId: 'f4bd75b1-af44-4412-942a-459e832b35f6',
+  },
   themeColor: {
     light: '#163A2B',
     dark: '#12291E',

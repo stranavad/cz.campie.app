@@ -1,5 +1,6 @@
 ---
 import { ctaBand } from '../content/site.ts';
+import { linkEvent } from '../lib/analytics.ts';
 import { href } from '../lib/href.ts';
 import ArrowLink from './ArrowLink.astro';
 ---
@@ -13,7 +14,7 @@ import ArrowLink from './ArrowLink.astro';
       <div class="flex flex-[1_1_320px] flex-col gap-[18px]">
         <p class="m-0 text-[17px] text-muted">{ctaBand.text}</p>
         <div class="flex flex-wrap items-center gap-x-[22px] gap-y-2.5">
-          <a href={href(ctaBand.primary.href)} class="btn">
+          <a href={href(ctaBand.primary.href)} class="btn" {...linkEvent(ctaBand.primary.href, 'cta-band')}>
             {ctaBand.primary.label}
           </a>
           <ArrowLink cta={ctaBand.secondary} class="text-ink" />

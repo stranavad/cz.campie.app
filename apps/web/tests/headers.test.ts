@@ -5,6 +5,17 @@ import { buildHeaders, buildRobots } from '../src/lib/headers.ts';
 // The headers for every path: the block under "/*".
 const allPaths = (headers: string) => headers.split('\n/')[0] ?? '';
 
+describe('analytics per deployment', () => {
+  it('lets only production load and report to Umami', () => {
+    const csp = (env: 'production' | 'dev' | 'local') =>
+      /Content-Security-Policy: (.*)/.exec(buildHeaders(env))?.[1] ?? '';
+    expect(csp('production')).toMatch(/script-src [^;]*https:\/\/umami\.h\.gandalfthegray\.dev/);
+    expect(csp('production')).toMatch(/connect-src [^;]*https:\/\/umami\.h\.gandalfthegray\.dev/);
+    expect(csp('dev')).not.toContain('umami');
+    expect(csp('local')).not.toContain('umami');
+  });
+});
+
 describe('indexing per deployment', () => {
   it('lets production be indexed', () => {
     expect(allPaths(buildHeaders('production'))).not.toContain('X-Robots-Tag');

@@ -3,21 +3,25 @@ import type { SiteEnv } from './site-env.ts';
 
 const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
 
-// The only scripts are this site's two modules, the speculation rules and Turnstile on /kontakt; JSON-LD
-// is a data block, which script-src does not govern.
-const CONTENT_SECURITY_POLICY = [
-  "default-src 'self'",
-  `script-src 'self' 'inline-speculation-rules' ${TURNSTILE_ORIGIN}`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
-  "font-src 'self'",
-  "connect-src 'self'",
-  `frame-src ${TURNSTILE_ORIGIN}`,
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'none'",
-].join('; ');
+// The only scripts are this site's two modules, the speculation rules, Turnstile on /kontakt and, in
+// production, Umami, which also posts its events to its own origin. JSON-LD is a data block, which
+// script-src does not govern.
+function contentSecurityPolicy(env: SiteEnv): string {
+  const analytics = env === 'production' ? ` ${site.umami.origin}` : '';
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'inline-speculation-rules' ${TURNSTILE_ORIGIN}${analytics}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    "font-src 'self'",
+    `connect-src 'self'${analytics}`,
+    `frame-src ${TURNSTILE_ORIGIN}`,
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+  ].join('; ');
+}
 
 // Cloudflare's _headers file for the static assets. HSTS leaves out includeSubDomains on purpose: the
 // platform's subdomains are served elsewhere and decide for themselves.
@@ -27,7 +31,7 @@ export function buildHeaders(env: SiteEnv): string {
     'X-Content-Type-Options: nosniff',
     'Referrer-Policy: strict-origin-when-cross-origin',
     'Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()',
-    `Content-Security-Policy: ${CONTENT_SECURITY_POLICY}`,
+    `Content-Security-Policy: ${contentSecurityPolicy(env)}`,
     ...(env === 'production' ? [] : ['X-Robots-Tag: noindex, nofollow']),
   ];
   const rules: [string, string[]][] = [

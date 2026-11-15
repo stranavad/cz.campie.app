@@ -37,12 +37,13 @@ In `apps/web`, or from the root `pnpm --filter web <script>`.
 - `src/lib/`: the logic, all typed: links, JSON-LD, the Markdown twins and `llms.txt`, `_headers`, `robots.txt`, images.
 - `src/pages/`: thin pages and the generated files (`robots.txt`, `llms.txt`, `llms-full.txt`, `/<page>.md`, `/og/<page>.png`, icons).
 - `src/scripts/`: the only client JavaScript: closing the mobile menu, and sending the contact form in place.
+- Analytics: self-hosted Umami, cookieless, loaded only by production builds (`umami` in `src/lib/site-env.ts`). Click events are `data-umami-event` attributes from `linkEvent` in `src/lib/analytics.ts`; script events go through `trackEvent`. Events: `signup` and `login` (property `place`), `contact-sent`.
 
 ## What we deliberately do not do
 
 - **No logic in `.astro` files.** `astro check` needs TypeScript 5 or 6 (ADR-0003 uses 7), so `.astro` frontmatter is not type checked. Templates import content and map over it; anything that computes lives in a `.ts` module.
-- **No inline scripts and no `style=` attributes.** The Content-Security-Policy allows only this site's script files, the speculation rules and Turnstile. JSON-LD is a data block.
-- **No client framework, no analytics, no third party** except Turnstile on `/kontakt`.
+- **No inline scripts and no `style=` attributes.** The Content-Security-Policy allows only this site's script files, the speculation rules, Turnstile and, in production, Umami. JSON-LD is a data block.
+- **No client framework, no third party** except Turnstile on `/kontakt` and the self-hosted Umami. No analytics that set cookies or need consent.
 - **No raw colours in components.** Only the tokens of `global.css`, which carry both themes.
 - **No text outside `src/content/`**, apart from demo values in illustrations. Hyphen "-", never an em-dash.
 - **No screenshots of the platform.** The screens are HTML, so they follow the theme and stay sharp.

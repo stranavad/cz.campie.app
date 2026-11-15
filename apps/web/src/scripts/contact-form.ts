@@ -1,4 +1,5 @@
 import { contactStatus } from '../content/contact.ts';
+import { trackEvent } from '../lib/analytics.ts';
 
 // Sends the contact form without leaving the page and says how it went. Without this script the form
 // still posts and the Worker redirects to a result page.
@@ -22,6 +23,7 @@ async function send(target: HTMLFormElement): Promise<string> {
     const result = (await response.json()) as { ok: boolean; error?: string };
     if (result.ok) {
       target.reset();
+      trackEvent('contact-sent');
       return contactStatus.sent;
     }
     const errors: Record<string, string> = contactStatus.errors;

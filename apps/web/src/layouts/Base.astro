@@ -10,6 +10,7 @@ import Header from '../components/Header.astro';
 import type { PageKey } from '../content/seo.ts';
 import { header, site } from '../content/site.ts';
 import { OG_IMAGE_SIZE, pageMeta, pagePath, speculationRules } from '../lib/seo.ts';
+import { umami } from '../lib/site-env.ts';
 
 interface Props {
   page: PageKey;
@@ -49,6 +50,7 @@ const meta = pageMeta(page);
     <meta name="twitter:card" content="summary_large_image" />
     {meta.jsonLd && <script type="application/ld+json" is:inline set:html={meta.jsonLd} />}
     <script type="speculationrules" is:inline set:html={speculationRules} />
+    {umami && <script is:inline defer src={umami.scriptUrl} data-website-id={umami.websiteId} />}
     <slot name="head" />
   </head>
   <body>

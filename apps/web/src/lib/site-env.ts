@@ -24,3 +24,7 @@ export const isIndexable = siteEnv === 'production';
 export const appUrl = siteEnv === 'production' ? site.appUrl.production : site.appUrl.dev;
 
 export const turnstileSiteKey = siteEnv === 'local' ? TURNSTILE_TEST_SITE_KEY : site.turnstileSiteKey;
+
+// Only campie.cz is counted: the preview and local builds load no analytics.
+export const umami =
+  siteEnv === 'production' ? { scriptUrl: `${site.umami.origin}/script.js`, websiteId: site.umami.websiteId } : null;

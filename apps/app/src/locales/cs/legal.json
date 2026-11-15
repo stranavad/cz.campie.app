@@ -345,7 +345,7 @@
       {
         "heading": "Cookies",
         "paragraphs": [
-          "Aplikace používá jen cookies nezbytné pro přihlášení. Web {{platformDomain}} vlastní cookies neukládá a neměří návštěvnost nástroji třetích stran. Ochrana kontaktního formuláře proti robotům (Cloudflare Turnstile) si může do prohlížeče uložit technické údaje nezbytné k ověření. K žádnému z toho není potřeba souhlas, a proto se nezobrazuje cookie lišta."
+          "Aplikace používá jen cookies nezbytné pro přihlášení. Web {{platformDomain}} vlastní cookies neukládá. Návštěvnost měří nástrojem Umami provozovaným provozovatelem, který cookies nepoužívá, neukládá IP adresy a nesbírá údaje, podle kterých by šlo návštěvníka rozpoznat. Ochrana kontaktního formuláře proti robotům (Cloudflare Turnstile) si může do prohlížeče uložit technické údaje nezbytné k ověření. K žádnému z toho není potřeba souhlas, a proto se nezobrazuje cookie lišta."
         ]
       },
       {

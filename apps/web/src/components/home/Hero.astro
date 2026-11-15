@@ -1,5 +1,6 @@
 ---
 import { home } from '../../content/home.ts';
+import { linkEvent } from '../../lib/analytics.ts';
 import { href } from '../../lib/href.ts';
 import ArrowLink from '../ArrowLink.astro';
 import ChildChecklist from '../illustrations/ChildChecklist.astro';
@@ -19,7 +20,7 @@ const { hero } = home;
     </h1>
     <p class="m-0 max-w-[48ch] text-[clamp(18px,1.6cqw,22px)]">{hero.lead}</p>
     <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5">
-      <a href={href(hero.primary.href)} class="btn">
+      <a href={href(hero.primary.href)} class="btn" {...linkEvent(hero.primary.href, 'hero')}>
         {hero.primary.label}
       </a>
       <ArrowLink cta={hero.secondary} class="text-cream" />
