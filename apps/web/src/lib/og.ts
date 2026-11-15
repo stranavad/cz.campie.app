@@ -142,6 +142,7 @@ export async function ogImage(eyebrow: string, title: string): Promise<Buffer> {
       flexDirection: 'column',
       justifyContent: 'space-between',
       padding: 72,
+      boxSizing: 'border-box',
       background: FOREST,
     },
     [
