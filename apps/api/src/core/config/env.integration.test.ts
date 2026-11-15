@@ -38,25 +38,25 @@ describe('configuration', () => {
     );
   });
 
-  it('refuses to boot staging with live payments', async () => {
-    await expect(bootApp({ env: { ...PRODUCTION_ENV, APP_ENV: 'staging' } })).rejects.toThrow(
-      /COMGATE_TEST_PAYMENTS: staging takes no live payments/,
+  it('refuses to boot dev with live payments', async () => {
+    await expect(bootApp({ env: { ...PRODUCTION_ENV, APP_ENV: 'dev' } })).rejects.toThrow(
+      /COMGATE_TEST_PAYMENTS: dev takes no live payments/,
     );
   });
 
   it.each([{ COMGATE_TEST_PAYMENTS: 'true' }, { PAYMENT_GATEWAY_ADAPTER: 'fake' }])(
-    'boots staging with %o',
+    'boots dev with %o',
     async (payments) => {
-      const app = await bootApp({ env: { ...PRODUCTION_ENV, APP_ENV: 'staging', ...payments } });
+      const app = await bootApp({ env: { ...PRODUCTION_ENV, APP_ENV: 'dev', ...payments } });
 
       await expect(app.close()).resolves.toBeUndefined();
     },
   );
 
-  it('refuses to boot staging with a local adapter, as production does', async () => {
+  it('refuses to boot dev with a local adapter, as production does', async () => {
     await expect(
-      bootApp({ env: { ...PRODUCTION_ENV, APP_ENV: 'staging', COMGATE_TEST_PAYMENTS: 'true', MAIL_ADAPTER: 'log' } }),
-    ).rejects.toThrow(/MAIL_ADAPTER: log is a local adapter; staging requires resend/);
+      bootApp({ env: { ...PRODUCTION_ENV, APP_ENV: 'dev', COMGATE_TEST_PAYMENTS: 'true', MAIL_ADAPTER: 'log' } }),
+    ).rejects.toThrow(/MAIL_ADAPTER: log is a local adapter; dev requires resend/);
   });
 
   it('refuses to boot a deployment without the proxy secret, or with a short one', async () => {

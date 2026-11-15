@@ -1,4 +1,4 @@
-# Production and staging on Dokploy: the same file, deployed twice with a different environment
+# Production and dev on Dokploy: the same file, deployed twice with a different environment
 # (`.env.example` next to it lists every variable). Dokploy's Traefik terminates TLS and routes the main host
 # and every Organisation subdomain to `app`, which serves the frontend and proxies /api to `api`; nothing
 # else is reachable from outside. PostgreSQL (Neon) and file storage (Tigris) are managed services.
@@ -37,8 +37,8 @@ services:
       - traefik.docker.network=dokploy-network
       - traefik.http.services.${DEPLOYMENT_NAME:?}.loadbalancer.server.port=80
       # The main host and every single label below the platform domain, taken literally (\Q...\E); the API
-      # answers an unknown subdomain with 404. A label holds no dot, so production never routes a staging
-      # host, and `dev` and `staging` are reserved subdomains.
+      # answers an unknown subdomain with 404. A label holds no dot, so production never routes a dev host
+      # (app.dev.campie.cz), and `dev` is a reserved subdomain.
       - traefik.http.routers.${DEPLOYMENT_NAME}.rule=Host(`app.${PLATFORM_DOMAIN}`) || HostRegexp(`^[a-z0-9-]+\.\Q${PLATFORM_DOMAIN}\E$$`)
       - traefik.http.routers.${DEPLOYMENT_NAME}.entrypoints=websecure
       - traefik.http.routers.${DEPLOYMENT_NAME}.service=${DEPLOYMENT_NAME}
@@ -57,9 +57,9 @@ services:
       - traefik.http.middlewares.${DEPLOYMENT_NAME}-https.redirectscheme.scheme=https
       - traefik.http.middlewares.${DEPLOYMENT_NAME}-https.redirectscheme.permanent=true
       # The bare platform domain only redirects to the main host, for a deployment whose bare domain points
-      # here: campie.cz's DNS points at the marketing website on Cloudflare (apps/web) instead, so in
-      # production this serves only a request that reaches the server by other means. The explicit priority
-      # beats production's subdomain rule, which also matches a deployment's bare domain (staging.campie.cz)
+      # here: campie.cz's and dev.campie.cz's DNS point at the marketing website on Cloudflare (apps/web)
+      # instead, so this serves only a request that reaches the server by other means. The explicit priority
+      # beats production's subdomain rule, which also matches a deployment's bare domain (dev.campie.cz)
       # and is longer.
       - traefik.http.routers.${DEPLOYMENT_NAME}-bare.rule=Host(`${PLATFORM_DOMAIN}`)
       - traefik.http.routers.${DEPLOYMENT_NAME}-bare.priority=1000

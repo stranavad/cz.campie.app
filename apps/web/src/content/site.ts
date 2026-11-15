@@ -12,10 +12,10 @@ export const site = {
   license: 'AGPL-3.0',
   licenseUrl: 'https://www.gnu.org/licenses/agpl-3.0.html',
   // The platform (signup, login, legal pages) per build: SITE_ENV=production links the live platform,
-  // every other build the staging one.
+  // every other build the dev one.
   appUrl: {
     production: 'https://app.campie.cz',
-    dev: 'https://app.staging.campie.cz',
+    dev: 'https://app.dev.campie.cz',
   },
   operator: {
     name: 'David Stráňava',

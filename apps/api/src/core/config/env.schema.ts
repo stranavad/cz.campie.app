@@ -109,7 +109,7 @@ const paymentGateway = z
   .discriminatedUnion('PAYMENT_GATEWAY_ADAPTER', [
     z.object({
       PAYMENT_GATEWAY_ADAPTER: z.literal('comgate'),
-      // Comgate test payments, for a staging deployment against Organisations' test accounts.
+      // Comgate test payments, for the dev deployment against Organisations' test accounts.
       COMGATE_TEST_PAYMENTS: z.enum(['true', 'false']).default('false'),
     }),
     z.object({ PAYMENT_GATEWAY_ADAPTER: z.literal('fake') }),
@@ -264,14 +264,14 @@ const requestLimits = z
  * Tell whether an environment is deployed: it reads no env file and needs every production adapter.
  * @param appEnv the value of APP_ENV
  */
-export function isDeployment(appEnv: string | undefined): appEnv is 'staging' | 'production' {
-  return appEnv === 'staging' || appEnv === 'production';
+export function isDeployment(appEnv: string | undefined): appEnv is 'dev' | 'production' {
+  return appEnv === 'dev' || appEnv === 'production';
 }
 
 export const envSchema = z
   .object({
-    // staging is a deployed copy of production that takes no live payments.
-    APP_ENV: z.enum(['local', 'test', 'staging', 'production']),
+    // dev is a deployed copy of production that takes no live payments.
+    APP_ENV: z.enum(['local', 'test', 'dev', 'production']),
     // The registrable domain the platform runs on: app.<domain> is the main host, every other single
     // label below it an Organisation's subdomain.
     PLATFORM_DOMAIN: z.string().regex(/^[a-z0-9-]+(\.[a-z0-9-]+)*$/, 'must be a bare lowercase hostname'),
@@ -344,7 +344,7 @@ export const envSchema = z
       { variable: 'FILE_STORAGE_ADAPTER', chosen: env.fileStorage.adapter, required: 'tigris' },
       { variable: 'PDF_RENDERER_ADAPTER', chosen: env.pdfRenderer.adapter, required: 'gotenberg' },
       { variable: 'KEY_PROVIDER_ADAPTER', chosen: env.keyProvider.adapter, required: 'secret' },
-      // Production takes only live card payments and staging never does: a staging copy tests with the
+      // Production takes only live card payments and dev never does: the dev deployment tests with the
       // fake gateway or Comgate's test payments, so nobody pays real money there.
       ...(deployment === 'production'
         ? [{ variable: 'PAYMENT_GATEWAY_ADAPTER', chosen: env.paymentGateway.adapter, required: 'comgate' }]
@@ -367,15 +367,15 @@ export const envSchema = z
       context.addIssue({
         code: 'custom',
         path: ['COMGATE_TEST_PAYMENTS'],
-        message: 'production takes only live payments; test payments are for staging',
+        message: 'production takes only live payments; test payments are for dev',
       });
     }
 
-    if (deployment === 'staging' && payments.adapter === 'comgate' && !payments.testPayments) {
+    if (deployment === 'dev' && payments.adapter === 'comgate' && !payments.testPayments) {
       context.addIssue({
         code: 'custom',
         path: ['COMGATE_TEST_PAYMENTS'],
-        message: 'staging takes no live payments; set it to true or use the fake adapter',
+        message: 'dev takes no live payments; set it to true or use the fake adapter',
       });
     }
   });

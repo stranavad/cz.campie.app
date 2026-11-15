@@ -17,7 +17,7 @@ In `apps/web`, or from the root `pnpm --filter web <script>`.
 | `pnpm deploy:production` | builds with `SITE_ENV=production` and deploys `campie.cz`                         |
 | `pnpm deploy:dev`        | builds with `SITE_ENV=dev` and deploys the preview on `dev.campie.cz`             |
 
-`SITE_ENV` decides indexing and links: `production` is indexable and links `app.campie.cz`; `dev` and unset (local) send `noindex` everywhere and link `app.staging.campie.cz`. Canonical URLs always name `https://campie.cz`. Local builds use Turnstile's test key; `pnpm preview` needs `.dev.vars` (copy `.dev.vars.example`).
+`SITE_ENV` decides indexing and links: `production` is indexable and links `app.campie.cz`; `dev` and unset (local) send `noindex` everywhere and link `app.dev.campie.cz`. Canonical URLs always name `https://campie.cz`. Local builds use Turnstile's test key; `pnpm preview` needs `.dev.vars` (copy `.dev.vars.example`).
 
 ## Stack
 
@@ -52,7 +52,7 @@ In `apps/web`, or from the root `pnpm --filter web <script>`.
 
 Nothing here is automated; the repository holds no Cloudflare credentials.
 
-1. DNS: the `campie.cz` zone on Cloudflare. The Worker's custom domains (`campie.cz`, `dev.campie.cz`) create their records on the first deploy. A Redirect Rule sends `www.campie.cz` to `https://campie.cz`. The platform's records (`app`, `*`, `staging`, `*.staging`) keep pointing at the server.
+1. DNS: the `campie.cz` zone on Cloudflare. The Worker's custom domains (`campie.cz`, `dev.campie.cz`) create their records on the first deploy. A Redirect Rule sends `www.campie.cz` to `https://campie.cz`. The platform's records (`app`, `*`, `app.dev`, `*.dev`) keep pointing at the server.
 2. Workers Builds (or a manual `pnpm deploy:*`): two projects, `campie-web` on branch `main` with deploy command `pnpm run deploy:production` and `campie-web-dev` on branch `dev` with `pnpm run deploy:dev`, build command `pnpm install --frozen-lockfile --filter web...` (the deploy scripts build with the right `SITE_ENV`; Cloudflare's default `wrangler deploy` would ship a noindex build). Root directory `apps/web`, build variables `NODE_VERSION` (26) and `PNPM_VERSION` (from `packageManager`), watch paths `apps/web/*` and `pnpm-lock.yaml`, non-production branch builds off.
 3. Turnstile: a widget for `campie.cz` and `dev.campie.cz`; its site key replaces the placeholder in `src/content/site.ts`, its secret goes in with `wrangler secret put TURNSTILE_SECRET_KEY` (and `--env dev`).
 4. Resend: a sending key for `posta.campie.cz`, set with `wrangler secret put RESEND_API_KEY` per environment.

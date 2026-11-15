@@ -11,7 +11,7 @@ describe('inline markup', () => {
 
   it('points platform links at the app of the build', () => {
     expect(toHtml('[Zpracování dat](app:/zpracovani-dat)')).toBe(
-      '<a href="https://app.staging.campie.cz/zpracovani-dat">Zpracování dat</a>',
+      '<a href="https://app.dev.campie.cz/zpracovani-dat">Zpracování dat</a>',
     );
   });
 

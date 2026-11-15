@@ -64,7 +64,7 @@ USER node
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
 
-# The frontend's settings are baked in at build time; staging builds with its own domain.
+# The frontend's settings are baked in at build time; dev builds with its own domain.
 FROM deps AS app-build
 
 ARG VITE_PLATFORM_DOMAIN=campie.cz
