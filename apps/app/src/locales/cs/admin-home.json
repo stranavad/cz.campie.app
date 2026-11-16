@@ -41,6 +41,28 @@
     "overpaid": "Přeplaceno",
     "overdue": "Přihlášky po splatnosti"
   },
+  "setup": {
+    "title": "První kroky",
+    "progress": "Hotovo {{done}} z {{total}}",
+    "done": "Hotovo: ",
+    "missing": "Zbývá: ",
+    "ownerOnly": "Nastaví vlastník organizace.",
+    "bankAccount": {
+      "title": "Doplňte bankovní účet",
+      "detail": "Rodiče na něj budou posílat platby za tábor.",
+      "action": "Doplnit účet"
+    },
+    "turnus": {
+      "title": "Přidejte první turnus",
+      "detail": "Termín, místo, kapacita a cena.",
+      "action": "Přidat turnus"
+    },
+    "registrationForm": {
+      "title": "Zveřejněte přihlašovací formulář",
+      "detail": "Dokud není zveřejněný, rodiče se nemohou přihlásit.",
+      "action": "Otevřít formulář"
+    }
+  },
   "waiting": {
     "title": "Čeká na vás",
     "error": "Seznam se nepodařilo načíst. Zkuste stránku načíst znovu.",

@@ -18,3 +18,4 @@ export * from './organisation-settings/require-totp.contract.ts';
 export * from './payment-gateway/payment-gateway.contracts.ts';
 export * from './support-access/support-access.contracts.ts';
 export * from './audit-log/audit-log.contracts.ts';
+export * from './setup-progress/get-setup-progress.contract.ts';

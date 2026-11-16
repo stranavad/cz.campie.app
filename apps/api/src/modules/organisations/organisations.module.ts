@@ -15,6 +15,8 @@ import { PublicOrganisationController } from './organisation/public-organisation
 import { OrganisationService } from './organisation/services/organisation.service.ts';
 import { PaymentGatewayController } from './payment-gateway/payment-gateway.controller.ts';
 import { PaymentGatewayService } from './payment-gateway/services/payment-gateway.service.ts';
+import { SetupProgressService } from './setup-progress/services/setup-progress.service.ts';
+import { SetupProgressController } from './setup-progress/setup-progress.controller.ts';
 import { SupportAccessService } from './support-access/services/support-access.service.ts';
 import { SupportAccessController } from './support-access/support-access.controller.ts';
 
@@ -26,6 +28,7 @@ import { SupportAccessController } from './support-access/support-access.control
     OrganisationSettingsController,
     PublicLogoController,
     PaymentGatewayController,
+    SetupProgressController,
     SupportAccessController,
     AuditLogController,
   ],
@@ -33,6 +36,7 @@ import { SupportAccessController } from './support-access/support-access.control
     OrganisationService,
     OrganisationSettingsService,
     PaymentGatewayService,
+    SetupProgressService,
     SupportAccessService,
     AuditLogService,
     AuditEntryService,

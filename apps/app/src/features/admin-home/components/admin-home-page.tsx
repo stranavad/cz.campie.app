@@ -11,12 +11,13 @@ import { TurnusSwitcher } from '@/core/selected-turnus';
 import { OccupancyHero } from '@/features/admin-home/components/occupancy-hero';
 import { OrganisationStatusNotice } from '@/features/admin-home/components/organisation-status-notice';
 import { RecentRegistrations } from '@/features/admin-home/components/recent-registrations';
+import { SetupSteps } from '@/features/admin-home/components/setup-steps';
 import { TurnusyOccupancy } from '@/features/admin-home/components/turnusy-occupancy';
 import { useAdminHome } from '@/features/admin-home/components/use-admin-home.hook';
 import { WaitingList } from '@/features/admin-home/components/waiting-list';
 
-// The admin's start of the day: how full the Selected Turnus is, what waits for them, the newest
-// Registrations, and every Turnus.
+// The admin's start of the day: what a new Organisation has yet to set up, how full the Selected Turnus
+// is, what waits for them, the newest Registrations, and every Turnus.
 export function AdminHomePage() {
   const { t } = useTranslation('adminHome');
   const page = useAdminHome();
@@ -72,6 +73,7 @@ export function AdminHomePage() {
         }
       />
       <OrganisationStatusNotice organisation={page.organisation} />
+      {page.canReadCamps ? <SetupSteps organisationId={page.organisationId} isOwner={page.isOwner} /> : null}
       {page.turnus === undefined ? null : (
         <>
           <OccupancyHero organisationId={page.organisationId} turnus={page.turnus} />

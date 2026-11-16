@@ -148,6 +148,12 @@ A guardian asks for part of the price to be invoiced to a company; the camp invo
 | --- | --------------------------------------------------- | -------- | ----------- | ---------- |
 | 83  | Support access: switching Organisations and leaving | E9 Trust | in-progress | 63         |
 
+## First setup (stage 1b)
+
+| #   | Issue                         | Episode       | Status      | Blocked by     |
+| --- | ----------------------------- | ------------- | ----------- | -------------- |
+| 84  | Setup steps on the admin home | E2 Camp setup | in-progress | 23, 25, 30, 73 |
+
 ## Stage 2 - around May 2027 (to be broken down)
 
 - **E10 Health record**: preset via form engine with medications, per-Camp config, complete-by date, guardian fill and states, admin read/write/reopen/on paper, view audit, Health gating, health note behaviour.

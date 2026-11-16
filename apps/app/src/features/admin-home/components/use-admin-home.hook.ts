@@ -24,6 +24,7 @@ export function useAdminHome() {
     // The Selected Turnus's panels need Registrations read and a Turnus.
     turnus: canReadRegistrations ? turnusy.find(({ id }) => id === turnusId) : undefined,
     canReadCamps,
+    isOwner: membership?.owner === true,
     hasNothingToShow: !canReadRegistrations && !canReadCamps,
   };
 }
