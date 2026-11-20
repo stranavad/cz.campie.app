@@ -154,6 +154,27 @@ A guardian asks for part of the price to be invoiced to a company; the camp invo
 | --- | ----------------------------- | ------------- | ----------- | -------------- |
 | 84  | Setup steps on the admin home | E2 Camp setup | in-progress | 23, 25, 30, 73 |
 
+## Website starter kit (outside the stages)
+
+A free starter kit for camp organisers on the marketing website (`apps/web`): guides to what the law asks of a children's camp, every statement with its source, and document templates an organiser adapts in the browser. It brings organisers from search and shows what Campie replaces. It touches nothing of the platform and blocks no stage.
+
+| #   | Issue                                                 | Episode         | Status          | Blocked by |
+| --- | ----------------------------------------------------- | --------------- | --------------- | ---------- |
+| 85  | Content model, sources and guide texts                | W1 Starter kit  | in-progress     | -          |
+| 86  | Guide pages, hub and SEO plumbing                     | W1              | in-progress     | 85         |
+| 87  | Document templates, their pages and static PDFs       | W1              | in-progress     | 86         |
+| 88  | Configurator                                          | W1              | in-progress     | 87         |
+| 89  | Texts of the four document templates                  | W1              | in-progress     | 85         |
+| 90  | Legal review and launch checklist                     | W1              | ready-for-human | 86, 87, 88 |
+| 91  | More document templates                               | W1              | needs-triage    | 88         |
+| 92  | "What applies to my camp" and the deadline calculator | W1              | needs-triage    | 86         |
+| 93  | Keeping it current, and getting it found              | W1              | needs-triage    | 90         |
+| 94  | One header, section bar, footer, links between parts  | W2 Kit redesign | in-progress     | 86         |
+| 95  | The hub as designed, with the deadline calculator     | W2              | in-progress     | 94, 96     |
+| 96  | Claim row, guide page and the list of templates       | W2              | in-progress     | 86         |
+| 97  | Template page and configurator as designed            | W2              | in-progress     | 94, 96     |
+| 98  | The page Weby pro tábory with its form                | W2              | in-progress     | -          |
+
 ## Stage 2 - around May 2027 (to be broken down)
 
 - **E10 Health record**: preset via form engine with medications, per-Camp config, complete-by date, guardian fill and states, admin read/write/reopen/on paper, view audit, Health gating, health note behaviour.
