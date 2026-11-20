@@ -1,0 +1,207 @@
+---
+import Icon from '../components/Icon.astro';
+import WebyDrawing from '../components/weby/WebyDrawing.astro';
+import WebyForm from '../components/weby/WebyForm.astro';
+import { weby } from '../content/weby.ts';
+import Base from '../layouts/Base.astro';
+import { href } from '../lib/href.ts';
+import { toHtml } from '../lib/inline.ts';
+import { czk } from '../lib/weby.ts';
+
+const { hero, steps, gets, price, rules, faq, end } = weby;
+const section = 'py-24 phone:py-14';
+const head = 'mb-12 flex flex-col gap-3.5 phone:mb-7';
+const lead = 'm-0 max-w-[46ch] text-[19px] phone:text-[17px]';
+const h3 = 'm-0 font-display font-extrabold';
+---
+
+<Base page="weby">
+  <script slot="head" is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <section class="bg-paper pt-8 pb-20 text-ink phone:pt-4 phone:pb-12">
+    <div class="wrap grid grid-cols-2 items-center gap-14 phone:grid-cols-1 phone:gap-8">
+      <div class="flex min-w-0 flex-col gap-4 phone:gap-3">
+        <span class="weby-tag">{hero.eyebrow}</span>
+        <h1 class="m-0 font-display text-[58px] leading-[1.02] font-extrabold tracking-[-0.035em] text-balance phone:text-[34px]">
+          {hero.title}
+        </h1>
+        <p class:list={[lead, 'text-muted']}>{hero.lead}</p>
+        <div class="mt-2.5 max-w-[520px] phone:mt-1.5">
+          <WebyForm n={1} heading="h2" />
+        </div>
+      </div>
+      <WebyDrawing />
+    </div>
+  </section>
+
+  <section class:list={[section, 'bg-paper pt-0 text-ink phone:pt-0']}>
+    <div class="wrap">
+      <div class={head}>
+        <span class="weby-tag">{steps.eyebrow}</span>
+        <h2 class="weby-h2">{steps.title}</h2>
+      </div>
+      <ol class="m-0 grid list-none grid-cols-6 gap-5 p-0 phone:grid-cols-1 phone:gap-0">
+        {steps.items.map((step, index) => (
+          <li class="relative flex flex-col gap-3.5 text-base leading-[1.4] font-semibold before:absolute before:top-[21px] before:-right-5 before:left-11 before:h-0.5 before:bg-line1 last:before:hidden phone:flex-row phone:items-start phone:gap-4 phone:pb-[22px] phone:text-[17px] phone:before:top-11 phone:before:right-auto phone:before:bottom-0 phone:before:left-[21px] phone:before:h-auto phone:before:w-0.5">
+            <span
+              class:list={[
+                'relative flex size-11 flex-none items-center justify-center rounded-full border-2 border-mark font-mono text-[17px] font-semibold',
+                step.free ? 'bg-mark text-mark-fg' : 'bg-card text-mark',
+              ]}
+            >
+              {index + 1}
+            </span>
+            <div class="phone:pt-[9px]">
+              {step.text}
+              {step.free && (
+                <small class="mt-1.5 block font-mono text-[12.5px] font-medium tracking-[0.04em] text-muted uppercase">
+                  {steps.free}
+                </small>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class:list={[section, 'on-forest bg-forest text-cream']}>
+    <div class="wrap">
+      <div class={head}>
+        <span class="weby-tag">{gets.eyebrow}</span>
+        <h2 class="weby-h2">{gets.title}</h2>
+      </div>
+      <div class="grid grid-cols-2 gap-x-16 gap-y-10 phone:grid-cols-1 phone:gap-7">
+        {gets.items.map((item) => (
+          <div class="flex items-start gap-[18px]">
+            <span class="flex size-[52px] flex-none items-center justify-center rounded-2xl bg-cream/10 text-camp">
+              <Icon name={item.icon} size={26} />
+            </span>
+            <div>
+              <h3
+                class:list={[
+                  h3,
+                  'mb-1.5 text-2xl leading-[1.15] tracking-[-0.025em] phone:text-[21px] [&_a]:text-cream [&_a]:underline [&_a]:decoration-camp [&_a]:decoration-2 [&_a]:underline-offset-4',
+                ]}
+                set:html={toHtml(item.title)}
+              />
+              <p class="m-0 max-w-[44ch] text-sage">{item.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class:list={[section, 'bg-paper text-ink']}>
+    <div class="wrap">
+      <div class={head}>
+        <span class="weby-tag">{price.eyebrow}</span>
+        <h2 class="weby-h2">{price.title}</h2>
+      </div>
+      <div class="grid grid-cols-[minmax(0,5fr)_minmax(0,6fr)] overflow-hidden rounded-[28px] border-2 border-mark bg-card phone:grid-cols-1">
+        <div class="flex flex-col items-start gap-[18px] border-r border-line1 p-10 phone:border-r-0 phone:border-b phone:p-6">
+          <h3 class:list={[h3, 'text-[26px] tracking-[-0.025em]']}>{price.name}</h3>
+          <div>
+            <div class="font-mono text-[54px] leading-none font-semibold tracking-[-0.03em] whitespace-nowrap phone:text-[44px]">
+              {czk(price.oneOff.amount)}
+            </div>
+            <div class="text-[15px] text-muted">{price.oneOff.label}</div>
+          </div>
+          <div>
+            <div class="font-mono text-[22px] font-semibold whitespace-nowrap">
+              {price.monthly.prefix}
+              {czk(price.monthly.amount)}
+              {price.monthly.suffix}
+            </div>
+            <div class="text-[15px] text-muted">{price.monthly.label}</div>
+          </div>
+          <a href={href(price.cta.href)} class="weby-btn">
+            {price.cta.label}
+          </a>
+        </div>
+        <div class="flex flex-col gap-3.5 p-10 phone:p-6">
+          {[price.included, price.monthlyIncluded].map((group, index) => (
+            <>
+              <h4
+                class:list={[
+                  'm-0 font-mono text-[13px] font-semibold tracking-[0.04em] text-muted uppercase',
+                  index > 0 && 'mt-2.5',
+                ]}
+              >
+                {group.title}
+              </h4>
+              <ul class="m-0 flex list-none flex-col gap-3 p-0">
+                {group.items.map((item) => (
+                  <li class="flex items-start gap-3">
+                    <span class="mt-px flex size-6 flex-none items-center justify-center rounded-full bg-mark text-mark-fg">
+                      <Icon name="tick" size={14} stroke={3.2} />
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class:list={[section, 'bg-paper pt-0 text-ink phone:pt-0']}>
+    <div class="wrap">
+      <div class={head}>
+        <span class="weby-tag">{rules.eyebrow}</span>
+        <h2 class="weby-h2">{rules.title}</h2>
+      </div>
+      <div class="grid grid-cols-3 border-t-2 border-ink phone:grid-cols-1">
+        {rules.items.map((rule) => (
+          <div class="flex flex-col gap-2 pt-7 pr-8 not-first:border-l not-first:border-line1 not-first:pl-8 phone:border-b phone:border-line1 phone:px-0 phone:py-[22px] phone:not-first:border-l-0 phone:not-first:pl-0">
+            <h3 class:list={[h3, 'text-[26px] leading-[1.1] tracking-[-0.025em] phone:text-[22px]']}>{rule.title}</h3>
+            <p class="m-0 text-muted">{rule.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class:list={[section, 'bg-paper pt-0 text-ink phone:pt-0']}>
+    <div class="wrap grid grid-cols-[minmax(0,4fr)_minmax(0,7fr)] items-start gap-14 phone:grid-cols-1 phone:gap-8">
+      <div class="flex flex-col gap-3.5">
+        <span class="weby-tag">{faq.eyebrow}</span>
+        <h2 class="weby-h2">{faq.title}</h2>
+      </div>
+      <div class="flex flex-col gap-2.5">
+        {faq.items.map((item, index) => (
+          <details
+            class="group rounded-[18px] border border-line1 bg-card px-[22px] text-ink phone:px-4"
+            open={index === 0}
+          >
+            <summary class="flex min-h-[60px] cursor-pointer items-center justify-between gap-4 text-lg font-bold phone:text-[17px]">
+              {item.question}
+              <span class="flex flex-none transition-[rotate] duration-200 group-open:rotate-180 motion-reduce:transition-none">
+                <Icon name="chevron" size={18} stroke={2.5} />
+              </span>
+            </summary>
+            <p class="m-0 max-w-[60ch] pb-5 text-muted" set:html={toHtml(item.answer)} />
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id={end.id} class:list={[section, 'on-forest bg-forest text-cream']}>
+    <div class="wrap grid grid-cols-[minmax(0,1fr)_minmax(0,480px)] items-center gap-16 phone:grid-cols-1 phone:gap-8">
+      <div class="flex flex-col gap-3.5">
+        <span class="weby-tag">{end.eyebrow}</span>
+        <h2 class="weby-h2">{end.title}</h2>
+        <p class:list={[lead, 'text-sage']}>{end.lead}</p>
+      </div>
+      <WebyForm n={2} heading="h3" />
+    </div>
+  </section>
+</Base>
+
+<script>
+  import '../scripts/weby-form.ts';
+</script>

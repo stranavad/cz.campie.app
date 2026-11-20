@@ -1,0 +1,30 @@
+---
+// The citations of a statement, in mono and secondary to it, each a link to the paragraph it rests on.
+// `prefix` goes before them ("vychází z" for our own advice). `inline` runs them on one line, as in the
+// hub's timeline, instead of one under another.
+import type { CiteLink } from '../../lib/kit/facts.ts';
+
+interface Props {
+  cites: readonly CiteLink[];
+  prefix?: string | null;
+  inline?: boolean;
+}
+
+const { cites, prefix = null, inline = false } = Astro.props;
+---
+
+<p
+  data-inline={inline ? '' : undefined}
+  class="m-0 font-mono text-[12.5px] leading-[1.45] text-muted data-inline:flex data-inline:flex-wrap data-inline:gap-x-3 data-inline:gap-y-0.5"
+>
+  {prefix && <span class="block">{prefix}</span>}
+  {cites.map((cite) => (
+    <a
+      href={cite.href}
+      rel="noopener"
+      class="block text-muted underline decoration-line2 underline-offset-[3px] hover:text-ink hover:decoration-current"
+    >
+      {cite.label}
+    </a>
+  ))}
+</p>

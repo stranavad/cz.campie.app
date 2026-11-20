@@ -1,0 +1,63 @@
+---
+// The contents of a guide: its sections, numbered, each with its count of rules. Sticky beside the text
+// on a wide screen, a closed `details` on a phone. Entries carry `data-rule-group` and `data-small` for
+// the small-event filter.
+import Icon from '../Icon.astro';
+
+interface Entry {
+  number: string;
+  label: string;
+  href: string;
+  count: string;
+  hasSmall: boolean;
+}
+
+interface Props {
+  title: string;
+  items: readonly Entry[];
+}
+
+const { title, items } = Astro.props;
+---
+
+<nav aria-label={title} class="lg:sticky lg:top-6 lg:max-h-[calc(100dvh-48px)] lg:self-start lg:overflow-y-auto">
+  <details class="group card rounded-[18px] lg:hidden">
+    <summary class="flex min-h-12 cursor-pointer items-center justify-between gap-3 px-4 font-mono text-[12.5px] font-semibold tracking-[0.06em] text-muted uppercase">
+      {title}
+      <Icon name="chevron" size={16} class="transition-transform group-open:rotate-180" />
+    </summary>
+    <ol class="m-0 flex list-none flex-col border-t border-line p-0 px-2 py-2">
+      {items.map((item) => (
+        <li data-rule-group data-small={item.hasSmall ? '' : undefined}>
+          <a
+            href={item.href}
+            class="flex min-h-11 items-baseline gap-3 rounded-lg px-2 py-2 text-[15.5px] leading-snug text-ink no-underline hover:bg-chip"
+          >
+            <span class="font-mono text-[12px] font-semibold text-muted">{item.number}</span>
+            {item.label}
+          </a>
+        </li>
+      ))}
+    </ol>
+  </details>
+
+  <div class="hidden lg:block">
+    <p class="m-0 mb-3 font-mono text-[12.5px] font-semibold tracking-[0.06em] text-muted uppercase">{title}</p>
+    <ol class="m-0 flex list-none flex-col border-l border-line2 p-0">
+      {items.map((item) => (
+        <li data-rule-group data-small={item.hasSmall ? '' : undefined}>
+          <a
+            href={item.href}
+            class="group/entry -ml-px grid grid-cols-[26px_minmax(0,1fr)] gap-x-1 border-l-2 border-transparent py-2 pr-2 pl-4 text-ink no-underline hover:border-ink"
+          >
+            <span class="pt-[3px] font-mono text-[12px] font-semibold text-muted">{item.number}</span>
+            <span class="text-[15px] leading-snug font-semibold group-hover/entry:underline group-hover/entry:underline-offset-4">
+              {item.label}
+            </span>
+            <span class="col-start-2 font-mono text-[12px] text-muted">{item.count}</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </div>
+</nav>

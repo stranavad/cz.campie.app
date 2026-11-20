@@ -8,12 +8,15 @@ export interface ContactDeps {
 }
 
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-const RESEND_URL = 'https://api.resend.com/emails';
+export const RESEND_URL = 'https://api.resend.com/emails';
 
-const STATUS = { forbidden: 403, invalid: 400, rate_limited: 429, captcha: 400, send_failed: 502 } satisfies Record<
-  ContactError,
-  number
->;
+export const STATUS = {
+  forbidden: 403,
+  invalid: 400,
+  rate_limited: 429,
+  captcha: 400,
+  send_failed: 502,
+} satisfies Record<ContactError, number>;
 
 // The form's answer: JSON for the enhancement script, otherwise a redirect to a result page, so the form
 // also works as a plain HTML form.
@@ -27,7 +30,7 @@ function reply(request: Request, error: ContactError | null): Response {
   return Response.redirect(target.toString(), 303);
 }
 
-async function verifyTurnstile(token: string, ip: string, env: Env, deps: ContactDeps): Promise<boolean> {
+export async function verifyTurnstile(token: string, ip: string, env: Env, deps: ContactDeps): Promise<boolean> {
   const body = new FormData();
   body.set('secret', env.TURNSTILE_SECRET_KEY);
   body.set('response', token);
@@ -50,7 +53,7 @@ async function verifyTurnstile(token: string, ip: string, env: Env, deps: Contac
 }
 
 // Header values come from the visitor: no line breaks or other control characters.
-const singleLine = (text: string) => text.replace(/\p{Cc}+/gu, ' ').trim();
+export const singleLine = (text: string) => text.replace(/\p{Cc}+/gu, ' ').trim();
 
 async function send(message: ContactMessage, env: Env, deps: ContactDeps): Promise<boolean> {
   const organisation = message.organisation === '' ? '' : ` (${message.organisation})`;

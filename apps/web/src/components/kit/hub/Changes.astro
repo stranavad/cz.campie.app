@@ -1,0 +1,63 @@
+---
+// "Co se změnilo": the newest date's changes (the first as the dark "Zpráva roku" card), every older
+// date folded in a `details` (in the HTML, open or not), then what is only proposed, dashed.
+import type { HubPage } from '../../../lib/kit/pages.ts';
+import Icon from '../../Icon.astro';
+import ClaimCard from './ClaimCard.astro';
+import SectionHead from './SectionHead.astro';
+
+interface Props {
+  changes: HubPage['changes'];
+  disclaimer: string;
+}
+
+const { changes, disclaimer } = Astro.props;
+const label = 'm-0 font-mono text-[12.5px] font-semibold tracking-[0.06em] text-muted uppercase';
+---
+
+<section id="novinky" aria-labelledby="novinky-nadpis" class="pb-[72px] @max-[900px]:pb-12">
+  <div class="wrap">
+    <SectionHead id="novinky" eyebrow={changes.eyebrow} title={changes.title} lead={changes.lead} class="mb-8" />
+    <div class="grid grid-cols-2 items-start gap-8 @max-[900px]:grid-cols-1">
+      {changes.latest && (
+        <div class="flex flex-col gap-3">
+          <h3 class={label}>{changes.latest.title}</h3>
+          {changes.latest.changes.map((change, index) => (
+            <ClaimCard
+              fact={change.fact}
+              origins={change.origins}
+              tone={index === 0 ? 'headline' : 'plain'}
+              label={index === 0 ? changes.latest.headlineLabel : null}
+            />
+          ))}
+        </div>
+      )}
+      <div class="flex flex-col gap-3">
+        {changes.older.map((group) => (
+          <>
+            <h3 class={label}>{group.title}</h3>
+            <details class="group card rounded-[14px] px-4 py-3">
+              <summary class="inline-flex min-h-8 cursor-pointer items-center gap-1.5 font-bold">
+                {group.show}
+                <Icon name="chevron" size={14} class="transition-transform group-open:rotate-180" />
+              </summary>
+              <div class="mt-2 flex flex-col">
+                {group.changes.map((change) => (
+                  <ClaimCard fact={change.fact} origins={change.origins} tone="row" />
+                ))}
+              </div>
+            </details>
+          </>
+        ))}
+        <h3 class:list={[label, 'mt-3.5']}>{changes.pending.title}</h3>
+        {changes.pending.facts.map((fact) => (
+          <ClaimCard fact={fact} tone="pending" />
+        ))}
+      </div>
+    </div>
+    <p
+      class="m-0 mt-10 max-w-[70ch] text-[14px] leading-normal text-muted [&_a]:text-ink [&_a]:underline"
+      set:html={disclaimer}
+    />
+  </div>
+</section>

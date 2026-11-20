@@ -2,43 +2,57 @@
 import { header } from '../content/site.ts';
 import { linkEvent } from '../lib/analytics.ts';
 import { href } from '../lib/href.ts';
+import type { HeaderNav } from '../lib/nav.ts';
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
+import SearchForm from './SearchForm.astro';
 
 interface Props {
-  // The path of the page shown, to mark its navigation link.
-  current: string | null;
+  nav: HeaderNav;
 }
 
-const { current } = Astro.props;
-const linkClass =
-  'flex h-11 items-center whitespace-nowrap px-2.5 text-[15px] font-semibold text-cream no-underline underline-offset-[6px] hover:underline aria-[current=page]:underline';
+const { nav } = Astro.props;
+const itemClass =
+  'flex h-11 items-center whitespace-nowrap px-2 xl:px-3 text-[15px] font-semibold text-cream no-underline decoration-fire decoration-2 underline-offset-8 hover:underline aria-[current=page]:underline';
 ---
 
-<header class="on-forest relative bg-forest text-cream">
-  <div class="wrap flex items-center gap-2 py-3.5">
+<header class="on-forest relative z-20 bg-forest text-cream">
+  <div class="wrap flex min-h-15 items-center gap-1 lg:min-h-18">
     <Logo />
-    <nav aria-label={header.navLabel} class="ml-5 hidden items-center lg:flex">
-      {header.nav.map((item) => (
-        <a href={item.href} aria-current={item.href === current ? 'page' : undefined} class={linkClass}>
+    <nav aria-label={header.navLabel} class="ml-3 hidden items-center lg:flex xl:ml-5">
+      {nav.items.map((item) => (
+        <a href={item.href} aria-current={item.current ? 'page' : undefined} class={itemClass}>
           {item.label}
         </a>
       ))}
     </nav>
     <span class="flex-1"></span>
+    {nav.search && (
+      <button
+        type="button"
+        data-search-open
+        hidden
+        aria-controls="hledat"
+        aria-expanded="false"
+        aria-label={header.search.label}
+        class="flex size-11 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-cream hover:bg-cream/10"
+      >
+        <Icon name="search" size={20} stroke={2.2} />
+      </button>
+    )}
     <a
       href={href(header.login.href)}
-      class:list={[linkClass, 'hidden lg:flex']}
+      class:list={[itemClass, 'hidden lg:flex']}
       {...linkEvent(header.login.href, 'header')}
     >
       {header.login.label}
     </a>
     <a
-      href={href(header.signup.href)}
-      class="btn hidden h-10 px-4 text-[15px] lg:inline-flex"
-      {...linkEvent(header.signup.href, 'header')}
+      href={href(nav.action.href)}
+      class:list={['btn ml-1.5 hidden h-10 px-4 text-[15px] lg:inline-flex', nav.quiet && 'btn-quiet']}
+      {...linkEvent(nav.action.href, 'header')}
     >
-      {header.signup.label}
+      {nav.action.label}
     </a>
     <details data-menu class="group lg:hidden">
       <summary
@@ -48,27 +62,56 @@ const linkClass =
         <Icon name="menu" size={24} class="group-open:hidden" />
         <Icon name="close" size={24} class="hidden group-open:block" />
       </summary>
-      <div class="absolute inset-x-0 top-full z-20 border-t border-cream/15 bg-forest shadow-lg">
-        <nav aria-label={header.navLabel} class="wrap flex flex-col pt-2 pb-5">
-          {[...header.nav, ...header.menuExtras].map((item) => (
-            <a
-              href={href(item.href)}
-              aria-current={item.href === current ? 'page' : undefined}
-              {...linkEvent(item.href, 'menu')}
-              class="flex min-h-12 items-center border-b border-cream/15 text-[17px] font-semibold text-cream no-underline underline-offset-[6px] aria-[current=page]:underline"
-            >
+      <div class="absolute inset-x-0 top-full max-h-[calc(100dvh-60px)] overflow-y-auto border-t border-line2 bg-card text-ink shadow-lg on-card">
+        <nav aria-label={header.navLabel} class="wrap flex flex-col pt-2">
+          {nav.items.map((item) => (
+            <a href={item.href} aria-current={item.current ? 'page' : undefined} class="drawer-item">
               {item.label}
+              <Icon name="arrow" size={18} />
             </a>
           ))}
-          <a href={href(header.signup.href)} class="btn mt-4 self-start" {...linkEvent(header.signup.href, 'menu')}>
-            {header.signup.label}
-          </a>
         </nav>
+        {nav.search && (
+          <div class="wrap pt-4">
+            <SearchForm />
+          </div>
+        )}
+        <div class="wrap mt-4 flex flex-col gap-2.5 border-t border-line pt-4 pb-5">
+          <a
+            href={href(header.drawerSignup.href)}
+            class="btn justify-center"
+            {...linkEvent(header.drawerSignup.href, 'menu')}
+          >
+            {header.drawerSignup.label}
+          </a>
+          <a
+            href={href(header.login.href)}
+            class="btn btn-ghost justify-center"
+            {...linkEvent(header.login.href, 'menu')}
+          >
+            {header.login.label}
+          </a>
+        </div>
       </div>
     </details>
   </div>
+  {nav.search && (
+    <div
+      id="hledat"
+      data-search-panel
+      hidden
+      class="on-card absolute inset-x-0 top-full border-b border-line2 bg-card text-ink shadow-lg"
+    >
+      <div class="wrap py-4">
+        <div class="ml-auto max-w-[640px]">
+          <SearchForm />
+        </div>
+      </div>
+    </div>
+  )}
 </header>
 
 <script>
   import '../scripts/menu.ts';
+  import '../scripts/search.ts';
 </script>

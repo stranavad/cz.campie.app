@@ -1,0 +1,51 @@
+---
+// One statement of the kit as the design's claim row: the basis mark, then the statement with the
+// regulation's words on request and its tags, then the citations in mono. Three columns where the row
+// has room (640px of its own width), one on a phone. The row draws no border; `Claims` lists rows.
+import { kitLabels } from '../../content/kit/hub.ts';
+import type { FactView } from '../../lib/kit/facts.ts';
+import Icon from '../Icon.astro';
+import BasisBadge from './BasisBadge.astro';
+import CiteLinks from './CiteLinks.astro';
+import Tag from './Tag.astro';
+
+interface Props {
+  fact: FactView;
+}
+
+const { fact } = Astro.props;
+---
+
+<div class="@container">
+  <div class="grid grid-cols-1 gap-2 @min-[640px]:grid-cols-[128px_minmax(0,1fr)_232px] @min-[640px]:gap-x-6 @min-[640px]:gap-y-1.5">
+    <div class="flex items-start @min-[640px]:pt-[3px]">
+      <BasisBadge basis={fact.basis} label={fact.basisLabel} mark={fact.mark} />
+    </div>
+    <div class="min-w-0">
+      <p
+        class="m-0 max-w-[68ch] text-[16.5px] leading-normal text-ink @min-[640px]:text-[17px] [&_a]:underline [&_a]:underline-offset-4"
+        set:html={fact.html}
+      />
+      {fact.quote && (
+        <details class="group mt-2 text-[15px]">
+          <summary class="inline-flex min-h-8 cursor-pointer items-center gap-1.5 font-semibold text-muted hover:text-ink">
+            {kitLabels.quoteLabel}
+            <Icon name="chevron" size={14} class="transition-transform group-open:rotate-180" />
+          </summary>
+          <blockquote class="m-0 mt-1.5 max-w-[68ch] rounded-r-[10px] border-l-[3px] border-line2 bg-card px-3.5 py-2.5 leading-relaxed text-muted italic">
+            {fact.quote}
+          </blockquote>
+        </details>
+      )}
+      {(fact.smallToo || fact.sinceTag) && (
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          {fact.smallToo && <Tag label={fact.smallToo} />}
+          {fact.sinceTag && <Tag label={fact.sinceTag} tone={fact.isNew ? 'new' : 'plain'} />}
+        </div>
+      )}
+    </div>
+    <div class="@min-[640px]:pt-[3px]">
+      <CiteLinks cites={fact.cites} prefix={fact.citesPrefix} />
+    </div>
+  </div>
+</div>

@@ -5,19 +5,28 @@ import bricolageLatinExt from '@fontsource-variable/bricolage-grotesque/files/br
 import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wdth-normal.woff2?url';
 import figtreeLatin from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
 
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
+import KitAbout from '../components/KitAbout.astro';
 import type { PageKey } from '../content/seo.ts';
 import { header, site } from '../content/site.ts';
-import { OG_IMAGE_SIZE, pageMeta, pagePath, speculationRules } from '../lib/seo.ts';
+import { pageFrame } from '../lib/nav.ts';
+import { OG_IMAGE_SIZE, pageMeta, speculationRules } from '../lib/seo.ts';
 import { umami } from '../lib/site-env.ts';
 
 interface Props {
   page: PageKey;
+  // A wider column (1340px instead of 1200px), header and footer included: the template pages, where
+  // the configurator and the A4 preview stand side by side.
+  wide?: boolean;
 }
 
-const { page } = Astro.props;
+const { page, wide = false } = Astro.props;
 const meta = pageMeta(page);
+// The page's path marks the header's link; its part (product, kit, Weby) decides the header's button, the
+// search and the block above the footer; the breadcrumbs come from the page registry.
+const frame = pageFrame(page);
 ---
 
 <!doctype html>
@@ -60,11 +69,13 @@ const meta = pageMeta(page);
     >
       {header.skipLink}
     </a>
-    <div class="flex min-h-dvh flex-col @container">
-      <Header current={pagePath(page)} />
+    <div class="flex min-h-dvh flex-col @container" data-wide={wide ? '' : undefined}>
+      <Header nav={frame.header} />
       <main id="obsah" class="bg-paper">
+        {frame.breadcrumbs && <Breadcrumbs trail={frame.breadcrumbs} />}
         <slot />
       </main>
+      {frame.kitAbout && <KitAbout />}
       <Footer />
     </div>
   </body>

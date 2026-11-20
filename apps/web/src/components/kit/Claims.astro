@@ -1,0 +1,24 @@
+---
+// A list of claim rows, divided by hairlines. Each row carries `data-rule`, and `data-small` when it also
+// binds a smaller event, for the guide page's small-event filter.
+import type { FactView } from '../../lib/kit/facts.ts';
+import Fact from './Fact.astro';
+
+interface Props {
+  facts: readonly FactView[];
+}
+
+const { facts } = Astro.props;
+---
+
+<ul class="m-0 flex list-none flex-col p-0">
+  {facts.map((fact) => (
+    <li
+      data-rule
+      data-small={fact.smallToo ? '' : undefined}
+      class="border-t border-line py-4 first:border-t-0 first:pt-1 @min-[640px]:py-[18px]"
+    >
+      <Fact fact={fact} />
+    </li>
+  ))}
+</ul>

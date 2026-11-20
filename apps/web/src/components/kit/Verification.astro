@@ -1,0 +1,31 @@
+---
+// The verification line at the top of a kit page: the season, the day it was checked, the legal state.
+// The hub leaves the season out.
+import type { Verification } from '../../lib/kit/facts.ts';
+
+interface Props {
+  verification: Verification;
+  season?: boolean;
+  class?: string;
+}
+
+const { verification, season = true, class: className } = Astro.props;
+---
+
+<p
+  class:list={[
+    'm-0 flex flex-wrap items-center gap-x-3.5 gap-y-1.5 font-mono text-[13px] font-medium text-muted',
+    className,
+  ]}
+>
+  {season && (
+    <span class="inline-flex h-6 items-center rounded-full border-[1.5px] border-ink px-[9px] font-semibold text-ink">
+      {verification.season}
+    </span>
+  )}
+  <span>{verification.verified}</span>
+  <span aria-hidden="true" class="max-sm:hidden">
+    ·
+  </span>
+  <span>{verification.legalState}</span>
+</p>

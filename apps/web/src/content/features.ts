@@ -1,4 +1,4 @@
-import type { Feature, PageHero } from './types.ts';
+import type { Feature, Inline, PageHero } from './types.ts';
 
 // "Co umí": what Campie does today, in three groups.
 export const features = {
@@ -12,6 +12,9 @@ export const features = {
     {
       title: 'Než otevřete přihlášky',
       lead: 'Nastavení tábora zvládnete za jedno odpoledne.',
+      // The one sentence that leads from the product to Weby pro tábory.
+      bridge:
+        'Turnusy, ceny a volná místa se mohou ukazovat i na vašem webu. Starý web? [Weby pro tábory](/weby-pro-tabory)',
       illustration: {
         kind: 'setup',
         label: 'Ilustrace: výběr barvy tábora a pole přihlášky, která jde zapnout a vypnout',
@@ -140,6 +143,7 @@ export const features = {
     title: string;
     lead: string;
     illustration: { kind: string; label: string };
+    bridge?: Inline;
     items: readonly Feature[];
   }[];
 };

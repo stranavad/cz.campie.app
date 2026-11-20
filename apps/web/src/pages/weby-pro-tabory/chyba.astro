@@ -1,0 +1,11 @@
+---
+import PageHero from '../../components/PageHero.astro';
+import ResultActions from '../../components/ResultActions.astro';
+import { webyFailed } from '../../content/weby.ts';
+import Base from '../../layouts/Base.astro';
+---
+
+<Base page="webyFailed">
+  <PageHero hero={webyFailed.hero} />
+  <ResultActions cta={webyFailed.back} />
+</Base>

@@ -14,10 +14,12 @@
     "erasableSyntaxOnly": true,
     "noEmit": true,
     "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
 
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "worker", "tests", "astro.config.ts", "oxlint.config.ts"]
+  "include": ["src", "worker", "tests", "scripts", "astro.config.ts", "oxlint.config.ts"]
 }

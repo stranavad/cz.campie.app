@@ -1,0 +1,27 @@
+---
+// A guide or a template as a card: the whole card is the link.
+import type { KitCard } from '../../lib/kit/links.ts';
+import Icon from '../Icon.astro';
+
+interface Props {
+  card: KitCard;
+  heading: 'h2' | 'h3';
+}
+
+const { card, heading: Heading } = Astro.props;
+---
+
+<a
+  href={card.href}
+  class="card group flex h-full flex-col gap-2 px-5 py-5 text-ink no-underline transition-colors hover:border-line2"
+>
+  {card.tag && (
+    <span class="font-mono text-[12px] font-semibold tracking-[0.04em] text-muted uppercase">{card.tag}</span>
+  )}
+  <Heading class="m-0 text-[18px] leading-snug font-bold text-balance">{card.title}</Heading>
+  <p class="m-0 flex-1 text-[15px] leading-normal text-muted">{card.summary}</p>
+  <span class="mt-1 inline-flex items-center gap-2 text-[15px] font-semibold underline-offset-4 group-hover:underline">
+    {card.action}
+    <Icon name="arrow" />
+  </span>
+</a>

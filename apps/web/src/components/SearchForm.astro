@@ -1,0 +1,29 @@
+---
+// The kit's search field with its results under it: in the header's search panel and in the phone's
+// drawer. Hidden without JavaScript; src/scripts/search.ts shows it and fills the results.
+import { header } from '../content/site.ts';
+import { SEARCH_INDEX_PATH } from '../lib/search.ts';
+import Icon from './Icon.astro';
+
+const { search } = header;
+---
+
+<form data-search={SEARCH_INDEX_PATH} role="search" hidden class="flex flex-col gap-1.5">
+  <label class="flex h-12 items-center gap-2.5 rounded-[14px] border-[1.5px] border-line2 bg-card px-3.5 text-muted focus-within:border-ink">
+    <Icon name="search" size={18} stroke={2.2} />
+    <span class="sr-only">{search.label}</span>
+    <input
+      type="search"
+      name="q"
+      autocomplete="off"
+      placeholder={search.placeholder}
+      class="h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] text-ink outline-none placeholder:text-muted"
+    />
+  </label>
+  <div data-search-results hidden aria-label={search.results} class="max-h-[60vh] overflow-y-auto">
+    <ul class="m-0 flex list-none flex-col p-0" aria-live="polite"></ul>
+    <p data-search-empty hidden class="m-0 px-3 py-2.5 text-[14.5px] text-muted">
+      {search.empty}
+    </p>
+  </div>
+</form>

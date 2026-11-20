@@ -1,0 +1,43 @@
+---
+// The guides in their four groups on the card-coloured band: the group's number and name beside its
+// cards, which leave out their one line. A group of four is a 2x2 grid, the others three in a row.
+import type { HubPage } from '../../../lib/kit/pages.ts';
+import GuideCard from '../GuideCard.astro';
+import SectionHead from './SectionHead.astro';
+
+interface Props {
+  guides: HubPage['guides'];
+}
+
+const { guides } = Astro.props;
+---
+
+<section
+  id="pruvodci"
+  aria-labelledby="pruvodci-nadpis"
+  class="border-y border-line bg-card py-[72px] @max-[900px]:py-12"
+>
+  <div class="wrap">
+    <SectionHead id="pruvodci" eyebrow={guides.eyebrow} title={guides.title} class="mb-8" />
+    <div class="flex flex-col gap-9">
+      {guides.groups.map((group) => (
+        <div class="grid grid-cols-[220px_minmax(0,1fr)] gap-7 border-t border-line2 pt-6 @max-[900px]:grid-cols-1 @max-[900px]:gap-3.5">
+          <div class="flex flex-col gap-1.5">
+            <span class="font-mono text-[13px] font-semibold text-muted">{group.number}</span>
+            <h3 class="h-card text-[26px] leading-[1.05] tracking-[-0.03em] @max-[900px]:text-[22px]">{group.title}</h3>
+          </div>
+          <ul
+            data-columns={group.columns}
+            class="m-0 grid list-none grid-cols-3 gap-3.5 p-0 data-[columns=2]:grid-cols-2 @max-[900px]:grid-cols-1 @max-[900px]:data-[columns=2]:grid-cols-1"
+          >
+            {group.cards.map((card) => (
+              <li>
+                <GuideCard card={card} heading="h4" surface="paper" summary={false} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

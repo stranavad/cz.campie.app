@@ -1,5 +1,6 @@
 import { handleContact } from './contact.ts';
 import type { Env } from './env.ts';
+import { handleWeby } from './weby.ts';
 
 // Runs only for /api/* (assets.run_worker_first); every other path is a static file from dist/.
 export default {
@@ -8,6 +9,9 @@ export default {
     if (pathname === '/api/kontakt' && request.method === 'POST') {
       // Wrapped: Workers reject a fetch called with another `this`.
       return handleContact(request, env, { fetch: (input, init) => fetch(input, init) });
+    }
+    if (pathname === '/api/weby' && request.method === 'POST') {
+      return handleWeby(request, env, { fetch: (input, init) => fetch(input, init) });
     }
     return new Response('Not found', { status: 404 });
   },

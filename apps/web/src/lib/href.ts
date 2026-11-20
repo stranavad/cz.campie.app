@@ -19,3 +19,8 @@ export function absoluteHref(target: Href): string {
 export function pageUrl(path: string): string {
   return path === '/' ? `${site.url}/` : site.url + path;
 }
+
+// The Open Graph image of an indexed page, by the page's slug (/og/<slug>.png).
+export function ogImageUrl(slug: string): string {
+  return `${site.url}/og/${slug}.png`;
+}

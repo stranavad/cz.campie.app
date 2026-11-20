@@ -3,9 +3,9 @@ import type { SiteEnv } from './site-env.ts';
 
 const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
 
-// The only scripts are this site's two modules, the speculation rules, Turnstile on /kontakt and, in
-// production, Umami, which also posts its events to its own origin. JSON-LD is a data block, which
-// script-src does not govern.
+// The only scripts are this site's own modules (src/scripts/ and the chunks they load), the speculation
+// rules, Turnstile on /kontakt and, in production, Umami, which also posts its events to its own origin.
+// JSON-LD is a data block, which script-src does not govern. No worker-src: no worker is ever started.
 function contentSecurityPolicy(env: SiteEnv): string {
   const analytics = env === 'production' ? ` ${site.umami.origin}` : '';
   return [

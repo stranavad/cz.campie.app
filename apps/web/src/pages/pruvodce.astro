@@ -1,0 +1,27 @@
+---
+import Changes from '../components/kit/hub/Changes.astro';
+import Decision from '../components/kit/hub/Decision.astro';
+import GuideGroups from '../components/kit/hub/GuideGroups.astro';
+import Hero from '../components/kit/hub/Hero.astro';
+import Templates from '../components/kit/hub/Templates.astro';
+import Timeline from '../components/kit/hub/Timeline.astro';
+import Base from '../layouts/Base.astro';
+import { hubPage } from '../lib/kit/pages.ts';
+
+const page = hubPage();
+---
+
+<Base page="kit">
+  <div class="bg-paper text-ink">
+    <Hero page={page} />
+    <Decision decision={page.decision} />
+    <Timeline timeline={page.timeline} />
+    <GuideGroups guides={page.guides} />
+    <Templates documents={page.documents} />
+    <Changes changes={page.changes} disclaimer={page.disclaimer} />
+  </div>
+</Base>
+
+<script>
+  import '../scripts/deadlines.ts';
+</script>

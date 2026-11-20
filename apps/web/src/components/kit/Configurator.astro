@@ -1,0 +1,25 @@
+---
+// The configurator's place on a customisable template's page. It stays empty and hidden until the
+// script mounts the Preact form into it; without JavaScript the page shows the preset preview and the
+// blank PDF only. The blank PDF is what the form offers when a custom one cannot be made.
+import type { DocumentSlug } from '../../content/kit/types.ts';
+
+interface Props {
+  slug: DocumentSlug;
+  blank: { href: string; download: string };
+}
+
+const { slug, blank } = Astro.props;
+---
+
+<div
+  data-configurator={slug}
+  data-blank={blank.href}
+  data-download={blank.download}
+  hidden
+  class="min-w-0 max-xl:group-data-[tab=preview]/cfg:hidden"
+></div>
+
+<script>
+  import '../../scripts/configurator.tsx';
+</script>

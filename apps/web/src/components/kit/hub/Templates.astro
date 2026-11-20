@@ -1,0 +1,29 @@
+---
+// The four templates as cards with the drawn sheet and their kind, and the link to all of them.
+import type { HubPage } from '../../../lib/kit/pages.ts';
+import ArrowLink from '../../ArrowLink.astro';
+import TemplateCard from '../TemplateCard.astro';
+import SectionHead from './SectionHead.astro';
+
+interface Props {
+  documents: HubPage['documents'];
+}
+
+const { documents } = Astro.props;
+---
+
+<section id="vzory" aria-labelledby="vzory-nadpis" class="py-[72px] @max-[900px]:py-12">
+  <div class="wrap">
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-2">
+      <SectionHead id="vzory" eyebrow={documents.eyebrow} title={documents.title} />
+      <ArrowLink cta={documents.all} class="text-ink" />
+    </div>
+    <ul class="m-0 grid list-none grid-cols-4 gap-3.5 p-0 @max-[900px]:grid-cols-1">
+      {documents.cards.map((card) => (
+        <li>
+          <TemplateCard card={card} heading="h3" />
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

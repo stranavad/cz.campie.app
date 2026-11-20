@@ -1,0 +1,37 @@
+---
+// "Zdarma pro všechny pořadatele": the starter kit's three most searched places, from the home page.
+import { freeKitBand } from '../../lib/nav.ts';
+import ArrowLink from '../ArrowLink.astro';
+import Icon from '../Icon.astro';
+
+const band = freeKitBand();
+---
+
+<section class="section-air bg-paper text-ink">
+  <div class="wrap">
+    <div class="on-forest flex flex-col gap-6 rounded-[clamp(24px,3cqw,32px)] bg-forest px-[clamp(20px,3.4cqw,44px)] py-[clamp(24px,3.4cqw,44px)] text-cream">
+      <div class="flex flex-col gap-3">
+        <span class="font-mono text-[12.5px] font-semibold tracking-[0.06em] text-sage uppercase">{band.label}</span>
+        <h2 class="h-card max-w-[22ch] text-[clamp(28px,3.2cqw,44px)] leading-[1.04] text-balance">{band.title}</h2>
+        <p class="m-0 max-w-[62ch] text-[17px] text-sage">{band.lead}</p>
+      </div>
+      <ul class="m-0 grid list-none gap-3 p-0 md:grid-cols-3">
+        {band.tiles.map((tile) => (
+          <li>
+            <a
+              href={tile.href}
+              class="flex h-full items-center justify-between gap-3 rounded-2xl border border-cream/15 bg-cream/8 px-4 py-3.5 text-cream no-underline hover:border-cream/40"
+            >
+              <span class="flex flex-col gap-0.5">
+                <b class="text-[17px] leading-tight">{tile.label}</b>
+                <small class="text-[13.5px] text-sage">{tile.note}</small>
+              </span>
+              <Icon name="arrow" size={18} />
+            </a>
+          </li>
+        ))}
+      </ul>
+      <ArrowLink cta={band.all} class="self-start text-cream" />
+    </div>
+  </div>
+</section>

@@ -1,0 +1,23 @@
+---
+// The head of a hub section: the mono label, the h2 (its id is the section's id with "-nadpis") and a lead.
+interface Props {
+  id: string;
+  eyebrow: string;
+  title: string;
+  lead?: string | null;
+  class?: string;
+}
+
+const { id, eyebrow, title, lead = null, class: className } = Astro.props;
+---
+
+<div class:list={['flex flex-col gap-2.5', className]}>
+  <span class="font-mono text-[12.5px] font-semibold tracking-[0.06em] text-muted uppercase">{eyebrow}</span>
+  <h2
+    id={`${id}-nadpis`}
+    class="h-card text-[40px] leading-[1.05] tracking-[-0.03em] text-balance @max-[900px]:text-[30px]"
+  >
+    {title}
+  </h2>
+  {lead && <p class="m-0 max-w-[60ch] text-muted">{lead}</p>}
+</div>

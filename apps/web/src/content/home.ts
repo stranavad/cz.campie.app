@@ -153,6 +153,19 @@ export const home = {
     ],
   },
 
+  // "Zdarma pro všechny pořadatele": the band that leads from the product to the starter kit.
+  freeKit: {
+    label: 'Zdarma, bez registrace',
+    title: 'Průvodce zákonem a vzory dokumentů',
+    lead: 'Co musí pořadatel dětského tábora zařídit, s odkazem na paragraf u každého údaje. Pro všechny pořadatele, ať Campie používají, nebo ne.',
+    tiles: [
+      { label: 'Jaká akce to je?', note: 'Rozcestník', href: '/pruvodce#akce' },
+      { label: 'Prohlášení o bezinfekčnosti', note: 'Vzor 2027', document: 'prohlaseni-o-bezinfekcnosti' },
+      { label: 'Výpis z rejstříku', note: 'Novinka 2027', guide: 'vypis-z-rejstriku-trestu-pro-praci-s-detmi' },
+    ],
+    all: { label: 'Všichni průvodci a vzory', href: '/pruvodce' },
+  },
+
   roadmap: {
     id: 'chystame',
     eyebrow: '06 / Co chystáme',

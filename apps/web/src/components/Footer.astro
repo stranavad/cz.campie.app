@@ -1,25 +1,83 @@
 ---
 import { footer } from '../content/site.ts';
 import { href } from '../lib/href.ts';
+import { footerNav } from '../lib/nav.ts';
 import Logo from './Logo.astro';
+
+const nav = footerNav();
+const columnTitle = 'm-0 mb-3 font-mono text-xs font-semibold tracking-[0.06em] text-sage uppercase';
+const linkClass =
+  'inline-flex min-h-8 items-center text-[15px] text-cream no-underline underline-offset-4 hover:underline';
+const kitLink =
+  'inline-flex min-h-7 items-center py-0.5 text-[14.5px] text-cream no-underline underline-offset-4 hover:underline';
 ---
 
-<footer class="on-forest flex-[1_0_auto] bg-forest pt-9 pb-11 text-cream">
-  <div class="wrap flex flex-wrap items-start gap-x-14 gap-y-5">
-    <div class="flex flex-[1_1_260px] flex-col gap-2">
+<footer class="on-forest flex-[1_0_auto] bg-forest pt-10 pb-9 text-cream">
+  <div class="wrap grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.1fr_0.8fr_2.3fr_0.8fr]">
+    <div class="flex flex-col gap-2.5 text-sm text-sage">
       <Logo />
-      <span class="text-sm text-sage">{footer.license}</span>
-      <span class="text-sm text-sage">{footer.contactLine}</span>
+      <span>{footer.brand}</span>
+      <span>{footer.contactLine}</span>
     </div>
-    <nav aria-label={footer.navLabel} class="flex flex-[2_1_420px] flex-wrap gap-x-6">
-      {footer.links.map((item) => (
-        <a
-          href={href(item.href)}
-          class="inline-flex min-h-11 items-center text-[15px] text-cream underline underline-offset-4"
-        >
-          {item.label}
+    <nav aria-label={nav.product.title}>
+      <p class={columnTitle}>{nav.product.title}</p>
+      <ul class="m-0 flex list-none flex-col gap-0.5 p-0">
+        {nav.product.links.map((link) => (
+          <li>
+            <a href={href(link.href)} class={linkClass}>
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <nav aria-label={nav.kit.title} class="sm:col-span-2 lg:col-span-1">
+      <p class={columnTitle}>{nav.kit.title}</p>
+      <div class="grid gap-x-6 gap-y-5 sm:grid-cols-[1fr_1.2fr]">
+        {nav.kit.lists.map((list) => (
+          <div>
+            <p class="m-0 mb-1.5 text-[13px] font-semibold text-sage">{list.title}</p>
+            <ul class="m-0 flex list-none flex-col p-0">
+              {list.links.map((link) => (
+                <li>
+                  <a href={link.href} class={kitLink}>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+              <li>
+                <a href={list.all.href} class:list={[kitLink, 'font-semibold underline']}>
+                  {list.all.label}
+                </a>
+              </li>
+            </ul>
+          </div>
+        ))}
+      </div>
+    </nav>
+    <nav aria-label={nav.camps.title}>
+      <p class={columnTitle}>{nav.camps.title}</p>
+      <ul class="m-0 flex list-none flex-col gap-0.5 p-0">
+        {nav.camps.links.map((link) => (
+          <li>
+            <a href={href(link.href)} class={linkClass}>
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+  <div class="wrap mt-7">
+    <div class="flex flex-wrap gap-x-6 gap-y-1.5 border-t border-cream/15 pt-4 text-[13.5px] text-sage">
+      <a href={footer.license.href} class="inline-flex min-h-8 items-center text-sage underline-offset-4">
+        {footer.license.label}
+      </a>
+      {footer.legal.map((link) => (
+        <a href={href(link.href)} class="inline-flex min-h-8 items-center text-sage underline-offset-4">
+          {link.label}
         </a>
       ))}
-    </nav>
+    </div>
   </div>
 </footer>

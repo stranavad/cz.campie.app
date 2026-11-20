@@ -1,0 +1,17 @@
+---
+// A small tag of the kit: "I menší akce", "Platí od 1. 1. 2026", a template's kind. `new` is the fire
+// tag of a novelty, `outline` the official form's tag.
+interface Props {
+  label: string;
+  tone?: 'plain' | 'new' | 'outline';
+}
+
+const { label, tone = 'plain' } = Astro.props;
+---
+
+<span
+  data-tone={tone}
+  class="inline-flex h-6 flex-none items-center self-start rounded-full bg-chip px-[9px] font-mono text-[11.5px] leading-none font-semibold tracking-[0.03em] whitespace-nowrap text-ink data-[tone=new]:bg-fire-soft data-[tone=new]:text-night data-[tone=outline]:border-[1.5px] data-[tone=outline]:border-ink data-[tone=outline]:bg-transparent"
+>
+  {label}
+</span>

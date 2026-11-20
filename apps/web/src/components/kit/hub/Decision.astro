@@ -1,0 +1,80 @@
+---
+// Step 1 "Jaká akce to je?": the two kinds of event side by side, each with its rule and source, an
+// example, what follows from it and how many rules bind it; then the two notes and the whole guide.
+import { kitLabels } from '../../../content/kit/hub.ts';
+import type { HubPage } from '../../../lib/kit/pages.ts';
+import ArrowLink from '../../ArrowLink.astro';
+import BasisBadge from '../BasisBadge.astro';
+import CiteLinks from '../CiteLinks.astro';
+import Tag from '../Tag.astro';
+import SectionHead from './SectionHead.astro';
+
+interface Props {
+  decision: HubPage['decision'];
+}
+
+const { decision } = Astro.props;
+const label = 'font-mono text-[12.5px] font-semibold tracking-[0.06em] text-muted uppercase';
+---
+
+<section id="akce" aria-labelledby="akce-nadpis" class="pt-2 pb-[72px] @max-[900px]:pb-12">
+  <div class="wrap">
+    <SectionHead id="akce" eyebrow={decision.eyebrow} title={decision.title} lead={decision.lead} class="mb-8" />
+    <div class="grid grid-cols-2 gap-4 @max-[900px]:grid-cols-1">
+      {decision.columns.map((column) => (
+        <article
+          data-strong={column.strong ? '' : undefined}
+          class="card group/col flex flex-col gap-3 rounded-[22px] px-[30px] py-7 data-strong:border-2 data-strong:border-ink @max-[900px]:p-5"
+        >
+          <span class={label}>{column.label}</span>
+          <h3 class="h-card text-[36px] leading-[1.05] tracking-[-0.03em] @max-[900px]:text-[28px]">{column.title}</h3>
+          <p class="m-0 text-[22px] leading-[1.3] @max-[900px]:text-[19px]">
+            <span set:html={column.rule.first} /> <span class="text-muted">{column.rule.join}</span>{' '}
+            <span set:html={column.rule.second} />
+          </p>
+          <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1">
+            <BasisBadge basis="law" label={kitLabels.basis.law} />
+            <CiteLinks cites={column.cites} inline />
+          </div>
+          <p class="m-0 flex flex-col gap-1 rounded-[14px] bg-chip px-4 py-3.5 text-[17px] font-semibold">
+            <span class={label}>{column.examplesLabel}</span>
+            {column.examples.map((example) => (
+              <span>{example}</span>
+            ))}
+          </p>
+          <p class:list={[label, 'm-0 mt-1.5']}>{decision.pointsTitle}</p>
+          <ul class="m-0 -mt-0.5 flex list-none flex-col gap-2 p-0">
+            {column.points.map((point) => (
+              <li class="relative pl-6 text-[16px] leading-[1.45] before:absolute before:top-[0.5em] before:left-[3px] before:size-[9px] before:rounded-full before:border-2 before:border-ink group-data-strong/col:before:bg-ink">
+                {point}
+              </li>
+            ))}
+          </ul>
+          <p class="m-0 mt-auto border-t border-line pt-3.5 text-[15.5px] leading-[1.6] text-muted">
+            <b class="mr-1 font-mono text-[20px] text-ink">{column.count.number}</b>
+            {column.count.text}
+            {column.tag && <Tag label={column.tag} />}
+          </p>
+        </article>
+      ))}
+    </div>
+    <div class="mt-4 mb-2 grid grid-cols-2 gap-4 @max-[900px]:grid-cols-1">
+      {decision.notes.map((note) => (
+        <div
+          data-warn={note.warn ? '' : undefined}
+          class="flex flex-col gap-1.5 rounded-2xl border-[1.5px] border-dashed border-line2 px-[18px] py-4 text-[16px] data-warn:border-solid data-warn:border-peachline data-warn:bg-peach"
+        >
+          <span class={label}>{note.label}</span>
+          <span set:html={note.html} />
+          <CiteLinks cites={note.cites} inline />
+          {note.link && (
+            <a href={note.link.href} class="font-bold text-ink underline-offset-[3px]">
+              {note.link.label}
+            </a>
+          )}
+        </div>
+      ))}
+    </div>
+    <ArrowLink cta={decision.link} class="text-ink" />
+  </div>
+</section>

@@ -1,0 +1,169 @@
+---
+import Icon from '../../components/Icon.astro';
+import Claims from '../../components/kit/Claims.astro';
+import ContentsList from '../../components/kit/ContentsList.astro';
+import GuideCard from '../../components/kit/GuideCard.astro';
+import Legend from '../../components/kit/Legend.astro';
+import TemplateCard from '../../components/kit/TemplateCard.astro';
+import Verification from '../../components/kit/Verification.astro';
+import { kitLabels } from '../../content/kit/hub.ts';
+import type { GuideSlug } from '../../content/kit/types.ts';
+import { guideKey } from '../../content/seo.ts';
+import Base from '../../layouts/Base.astro';
+import { guidePage, guideStaticPaths } from '../../lib/kit/pages.ts';
+
+export const getStaticPaths = guideStaticPaths;
+
+interface Props {
+  slug: GuideSlug;
+}
+
+const { slug } = Astro.props;
+const page = guidePage(slug);
+---
+
+<Base page={guideKey(slug)} wide>
+  <div data-kit-filter class="bg-paper text-ink">
+    <header class="wrap flex flex-col gap-4 pt-4 pb-[clamp(24px,3cqw,40px)]">
+      <Verification verification={page.verification} />
+      <h1 class="h-card max-w-[22ch] text-[clamp(34px,4.4cqw,60px)] leading-[1.04] text-balance">{page.title}</h1>
+      <p class="lead max-w-[60ch] text-muted [&_a]:text-ink [&_a]:underline" set:html={page.lead} />
+      <p class="m-0 flex flex-wrap items-baseline gap-x-3 gap-y-1 font-mono text-[13px] text-muted">
+        <strong class="text-[15px] font-semibold text-ink">{page.counts.total}</strong>
+        {page.counts.small && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span>{page.counts.small}</span>
+          </>
+        )}
+      </p>
+    </header>
+
+    <div class="wrap grid gap-x-14 gap-y-6 border-t border-line pt-[clamp(20px,2.6cqw,36px)] pb-[clamp(48px,5cqw,72px)] lg:grid-cols-[250px_minmax(0,1fr)]">
+      <ContentsList title={page.contentsTitle} items={page.contents} />
+
+      <div class="flex min-w-0 flex-col gap-[clamp(44px,4.4cqw,64px)]">
+        <div class="flex flex-col gap-3">
+          <Legend />
+          {page.filter && (
+            <label class="inline-flex min-h-11 cursor-pointer items-center gap-3 self-start">
+              <input type="checkbox" data-small-filter class="peer sr-only" />
+              <span
+                aria-hidden="true"
+                class="relative h-6 w-10 flex-none rounded-full bg-toggle transition-colors peer-checked:bg-ink peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-fire after:absolute after:top-[3px] after:left-[3px] after:size-[18px] after:rounded-full after:bg-card after:transition-transform peer-checked:after:translate-x-4"
+              ></span>
+              <span class="flex flex-col">
+                <span class="text-[15.5px] font-semibold">{page.filter.label}</span>
+                <span class="text-[13.5px] leading-snug text-muted">{page.filter.hint}</span>
+              </span>
+            </label>
+          )}
+        </div>
+
+        {page.sections.map((section) => (
+          <section
+            aria-labelledby={section.id}
+            data-rule-group
+            data-small={section.hasSmall ? '' : undefined}
+            class="flex flex-col gap-4"
+          >
+            <div class="flex flex-col gap-2">
+              <span class="font-mono text-[12.5px] font-semibold tracking-[0.06em] text-muted uppercase">
+                {section.number} · {section.count}
+              </span>
+              <h2 id={section.id} class="h-card text-[clamp(26px,2.6cqw,36px)] leading-[1.06] text-balance">
+                {section.title}
+              </h2>
+              {section.intro && (
+                <p
+                  class="m-0 max-w-[68ch] text-[17px] text-muted [&_a]:text-ink [&_a]:underline"
+                  set:html={section.intro}
+                />
+              )}
+            </div>
+            <Claims facts={section.facts} />
+          </section>
+        ))}
+
+        {page.relatedDocuments.length > 0 && (
+          <section aria-labelledby="vzory" class="flex flex-col gap-4">
+            <h2 id="vzory" class="h-card text-[clamp(24px,2.2cqw,30px)] leading-[1.1]">
+              {kitLabels.relatedDocuments}
+            </h2>
+            <ul class="m-0 grid list-none gap-3.5 p-0 sm:grid-cols-2 xl:grid-cols-3">
+              {page.relatedDocuments.map((card) => (
+                <li>
+                  <TemplateCard card={card} heading="h3" />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {page.relatedGuides.length > 0 && (
+          <section aria-labelledby="souvisejici" class="flex flex-col gap-4">
+            <h2 id="souvisejici" class="h-card text-[clamp(24px,2.2cqw,30px)] leading-[1.1]">
+              {kitLabels.relatedGuides}
+            </h2>
+            <ul class="m-0 grid list-none gap-3.5 p-0 sm:grid-cols-2 xl:grid-cols-3">
+              {page.relatedGuides.map((card) => (
+                <li>
+                  <GuideCard card={card} heading="h3" />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <section aria-labelledby="zdroje" class="flex max-w-[70ch] flex-col gap-4">
+          <h2 id="zdroje" class="h-card text-[clamp(24px,2.2cqw,30px)] leading-[1.1]">
+            {kitLabels.sourcesTitle}
+          </h2>
+          {page.sources.map((group) => (
+            <div class="flex flex-col gap-2">
+              <h3 class="m-0 font-mono text-[12.5px] font-semibold tracking-[0.06em] text-muted uppercase">
+                {group.title}
+              </h3>
+              <ul class="m-0 flex list-disc flex-col gap-1.5 pl-5 text-[15px] leading-snug marker:text-line2">
+                {group.sources.map((source) => (
+                  <li>
+                    <a
+                      href={source.href}
+                      rel="noopener"
+                      class="text-ink underline decoration-line2 underline-offset-[3px] hover:decoration-current"
+                    >
+                      {source.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <p
+            class="m-0 mt-2 border-t border-line pt-5 text-[14px] leading-normal text-muted [&_a]:text-ink [&_a]:underline"
+            set:html={page.disclaimer}
+          />
+        </section>
+
+        <nav aria-label={page.pager.label} class="grid gap-3.5 sm:grid-cols-2">
+          {page.pager.links.map((item) => (
+            <a
+              href={item.href}
+              data-side={item.side}
+              class="card group flex flex-col gap-1 rounded-[20px] px-5 py-4 text-ink no-underline transition-colors hover:border-ink data-[side=next]:items-end data-[side=next]:text-right sm:data-[side=next]:col-start-2"
+            >
+              <span class="inline-flex items-center gap-1.5 font-mono text-[12px] font-semibold tracking-[0.06em] text-muted uppercase">
+                <Icon name="arrow" size={14} class="rotate-180 group-data-[side=next]:hidden" />
+                {item.label}
+                <Icon name="arrow" size={14} class="group-data-[side=previous]:hidden" />
+              </span>
+              <span class="h-card text-[20px] leading-[1.15] tracking-[-0.02em] group-hover:underline group-hover:underline-offset-4">
+                {item.title}
+              </span>
+            </a>
+          ))}
+        </nav>
+      </div>
+    </div>
+  </div>
+</Base>

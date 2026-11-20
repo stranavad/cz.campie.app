@@ -1,0 +1,139 @@
+---
+// The hero's drawing: a camp's old website, and three new proposals A, B and C under a NÁVRH watermark.
+// Demo values: the camp, its dates and the old site's look, in fixed colours as screenshots would be.
+import { weby } from '../../content/weby.ts';
+
+const { drawing } = weby;
+const card =
+  'absolute flex h-[250px] w-[176px] flex-col overflow-hidden rounded-xl border border-[#16201a2e] shadow-[0_18px_34px_-20px_#16201a8c]';
+const letter =
+  'absolute top-2 left-2 z-[2] size-[22px] rounded-full bg-[#16201a] text-center font-mono text-xs leading-[22px] font-semibold text-[#f6f0e1]';
+---
+
+<div class="flex justify-center phone:h-[270px]">
+  <div role="img" aria-label={drawing.label} class="relative mx-auto h-[430px] w-[560px] flex-none phone:[zoom:0.625]">
+    <span class="absolute top-[28px] left-[18px] -rotate-4 font-hand text-[26px] leading-none font-semibold text-muted">
+      {drawing.today}
+    </span>
+    <span class="absolute top-[2px] left-[290px] rotate-2 font-hand text-[26px] leading-none font-semibold text-muted">
+      {drawing.proposals}
+    </span>
+
+    <div class="absolute top-[70px] left-0 h-[292px] w-[226px] -rotate-3 overflow-hidden rounded-md border border-[#9a9a9a] bg-white font-['Times_New_Roman',Times,serif] text-[#222] shadow-[0_14px_30px_-18px_#16201a80]">
+      <div class="flex h-[22px] items-center gap-1 border-b border-[#9a9a9a] bg-[#d9d9d9] px-1.5">
+        <i class="size-[7px] rounded-full bg-[#a8a8a8]"></i>
+        <i class="size-[7px] rounded-full bg-[#a8a8a8]"></i>
+        <i class="size-[7px] rounded-full bg-[#a8a8a8]"></i>
+        <span class="ml-1 h-[13px] flex-1 overflow-hidden rounded-[2px] border border-[#b5b5b5] bg-white px-1 font-mono text-[8px] leading-[11px] font-medium whitespace-nowrap text-[#555]">
+          www.tabor-priklad.cz
+        </span>
+      </div>
+      <div class="h-full bg-[#e8e8e8] px-2.5 py-2">
+        <div class="border-2 [border-style:outset] border-[#9db3c9] bg-[#4a6b8a] px-1 py-[7px] text-center text-[13px] font-bold text-white">
+          LETNÍ TÁBOR PŘÍKLAD
+        </div>
+        <div class="my-1.5 text-center text-[9.5px] text-[#0000cc] underline">
+          Úvod | O nás | Fotky | Přihláška | Kontakt
+        </div>
+        <div class="flex gap-[7px]">
+          <div class="h-[56px] w-[74px] flex-none border border-[#777] bg-[#b9b9b9]">
+            <svg viewBox="0 0 74 56" width="74" height="56" aria-hidden="true">
+              <rect width="74" height="56" fill="#c4c4c4"></rect>
+              <path d="M0 40 22 22l14 12 12-16 26 24v14H0z" fill="#8f8f8f"></path>
+              <circle cx="58" cy="14" r="6" fill="#e6e6e6"></circle>
+            </svg>
+          </div>
+          <div class="text-[9.5px] leading-[1.3]">
+            <b>Vítejte na stránkách našeho tábora!</b>
+            <br />
+            Přihlášku si stáhněte
+            <span class="text-[#0000cc] underline">ZDE (DOC)</span>, vytiskněte a pošlete poštou.
+          </div>
+        </div>
+        <div class="mt-2 border border-[#888] text-[9px]">
+          <div class="border-b border-[#888] bg-[#cfcfcf] px-[5px] py-[2px] font-bold">Termíny</div>
+          <div class="border-b border-[#bbb] px-[5px] py-[2px]">1. turnus - viz přihláška</div>
+          <div class="px-[5px] py-[2px]">2. turnus - viz přihláška</div>
+        </div>
+        <div class="mt-[9px] text-center text-[8.5px] text-[#555]">
+          Optimalizováno pro rozlišení 1024 × 768
+          <br />
+          Počítadlo návštěv: 004 512
+        </div>
+      </div>
+    </div>
+
+    <div class:list={[card, 'top-[92px] left-[244px] -rotate-5 bg-[#fffdf6]']}>
+      <span class={letter}>A</span>
+      <div class="bg-[#163a2b] px-3 pt-[34px] pb-3 text-[#f6f0e1]">
+        <div class="font-display text-[17px] leading-[1.05] font-extrabold tracking-[-0.02em]">Tábor Příklad</div>
+        <div class="mt-[5px] font-mono text-[8.5px] leading-[1.3] font-medium text-[#c9d3c4]">
+          12.-25. 7. · volná místa
+        </div>
+      </div>
+      <svg viewBox="0 0 176 84" width="176" height="84" aria-hidden="true" class="block flex-none">
+        <rect width="176" height="84" fill="#dfe8d6"></rect>
+        <circle cx="140" cy="22" r="11" fill="#f4b63f"></circle>
+        <path d="M0 58 44 30l34 22 30-26 68 40v18H0z" fill="#3d6b52"></path>
+        <path d="M0 70 60 52l50 14 66-10v28H0z" fill="#163a2b"></path>
+        <path d="M52 70 64 50l12 20z" fill="#fffdf6"></path>
+        <path d="M82 72 92 56l10 16z" fill="#f4b63f"></path>
+      </svg>
+      <div class="flex flex-col gap-1.5 px-3 py-2.5">
+        <div class="h-[5px] w-[90%] rounded-[3px] bg-[#ddd2ba]"></div>
+        <div class="h-[5px] w-[70%] rounded-[3px] bg-[#ddd2ba]"></div>
+        <div class="mt-1 self-start rounded-full bg-[#163a2b] px-2.5 font-sans text-[8.5px] leading-[20px] font-bold text-[#f6f0e1]">
+          Přihlásit dítě
+        </div>
+      </div>
+    </div>
+
+    <div class:list={[card, 'top-[132px] left-[322px] z-[2] rotate-1 bg-[#f4b63f]']}>
+      <span class={letter}>B</span>
+      <div class="px-3 pt-9 text-[#16201a]">
+        <div class="-rotate-3 font-display text-[23px] leading-[0.95] font-extrabold tracking-[-0.03em]">
+          Hurá na tábor!
+        </div>
+        <div class="mt-2.5 inline-block rotate-2 rounded-full bg-[#16201a] px-2 font-mono text-[8.5px] leading-[18px] font-semibold text-[#f4b63f]">
+          12.-25. 7.
+        </div>
+      </div>
+      <svg viewBox="0 0 176 96" width="176" height="96" aria-hidden="true" class="mt-auto block flex-none">
+        <path d="M0 60c30-22 60-22 90 0s60 18 86-4v40H0z" fill="#e2562b"></path>
+        <path d="M0 78c40-16 70-10 100 2s50 6 76-6v22H0z" fill="#163a2b"></path>
+        <path d="M40 78 58 44l18 34z" fill="#fffdf6"></path>
+        <path d="M52 78l6-14 6 14z" fill="#16201a"></path>
+        <path d="M118 80c-5-8 2-12 1-19 6 4 10 11 6 19z" fill="#f4b63f"></path>
+      </svg>
+    </div>
+
+    <div class:list={[card, 'top-[60px] left-[366px] z-[1] rotate-6 bg-[#24384a]']}>
+      <span class={letter}>C</span>
+      <svg viewBox="0 0 176 250" width="176" height="250" aria-hidden="true" class="absolute inset-0">
+        <defs>
+          <linearGradient id="weby-sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#22344c"></stop>
+            <stop offset=".6" stop-color="#c8734a"></stop>
+            <stop offset="1" stop-color="#f1b36a"></stop>
+          </linearGradient>
+        </defs>
+        <rect width="176" height="250" fill="url(#weby-sky)"></rect>
+        <path d="M0 170 40 120l30 34 34-48 72 70v74H0z" fill="#1d3a30"></path>
+        <path d="M0 206 70 180l50 20 56-14v64H0z" fill="#0f241c"></path>
+        <path d="M26 206l4-26 4 26zM40 204l5-32 5 32zM138 198l5-30 5 30z" fill="#0f241c"></path>
+        <path d="M78 214 92 190l14 24z" fill="#f6f0e1"></path>
+        <path d="M116 216c-4-7 2-10 1-16 5 3 8 9 5 16z" fill="#f4b63f"></path>
+      </svg>
+      <div class="relative mt-auto px-3 pb-3.5 text-white">
+        <div class="font-display text-[20px] leading-none font-extrabold tracking-[-0.02em]">Léto v lese</div>
+      </div>
+    </div>
+
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute top-[150px] left-[196px] z-[5] w-[360px] -rotate-20 text-center font-mono text-[76px] font-semibold tracking-[0.12em] text-ink/35"
+    >
+      {drawing.watermark}
+    </div>
+  </div>
+</div>

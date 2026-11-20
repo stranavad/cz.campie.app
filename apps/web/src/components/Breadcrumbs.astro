@@ -1,0 +1,26 @@
+---
+// The page's place in the site, from the page registry (lib/nav.ts): the first quiet line of the page's
+// top block, no band of its own. Base.astro renders it; its BreadcrumbList is in the page's JSON-LD.
+import { breadcrumbs } from '../content/site.ts';
+import type { Cta } from '../content/types.ts';
+
+interface Props {
+  trail: { links: Cta[]; current: string };
+}
+
+const { trail } = Astro.props;
+---
+
+<nav data-breadcrumbs aria-label={breadcrumbs.label} class="text-muted">
+  <ol class="wrap m-0 flex list-none flex-wrap gap-x-1.5 gap-y-0.5 pt-5 pb-0 text-sm">
+    {trail.links.map((link) => (
+      <li class="flex gap-1.5">
+        <a href={link.href} class="text-muted underline-offset-[3px]">
+          {link.label}
+        </a>
+        <span aria-hidden="true">›</span>
+      </li>
+    ))}
+    <li aria-current="page">{trail.current}</li>
+  </ol>
+</nav>

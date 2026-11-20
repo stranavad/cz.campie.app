@@ -1,0 +1,50 @@
+---
+// A Fact as the hub's compact card (the design's `.tl-i` and `.nw-i`): the statement, then one line of
+// its basis mark, tags and citations, and the guide sections it comes from. `headline` is the large
+// dark card of the year's news, `pending` a proposal that is not law yet (dashed), `row` a row inside
+// a folded list.
+import type { FactView } from '../../../lib/kit/facts.ts';
+import type { ChangeOrigin } from '../../../lib/kit/pages.ts';
+import BasisBadge from '../BasisBadge.astro';
+import CiteLinks from '../CiteLinks.astro';
+import Tag from '../Tag.astro';
+
+interface Props {
+  fact: FactView;
+  tone?: 'plain' | 'headline' | 'pending' | 'row';
+  // The label above the statement of a headline card.
+  label?: string | null;
+  origins?: readonly ChangeOrigin[];
+}
+
+const { fact, tone = 'plain', label = null, origins = [] } = Astro.props;
+---
+
+<div
+  data-tone={tone}
+  class="group/claim flex flex-col gap-2 rounded-[14px] border border-line bg-card px-4 py-3.5 text-ink data-[tone=headline]:rounded-[22px] data-[tone=headline]:border-0 data-[tone=headline]:bg-forest data-[tone=headline]:px-[18px] data-[tone=headline]:py-4 data-[tone=headline]:[--ink:var(--color-cream)] data-[tone=headline]:[--line2:var(--color-sage)] data-[tone=headline]:[--muted:var(--color-sage)] data-[tone=pending]:border-[1.5px] data-[tone=pending]:border-dashed data-[tone=pending]:border-line2 data-[tone=pending]:bg-transparent data-[tone=row]:rounded-none data-[tone=row]:border-0 data-[tone=row]:border-t data-[tone=row]:bg-transparent data-[tone=row]:px-0 data-[tone=row]:first:border-t-0"
+>
+  {label && <span class="font-mono text-[12.5px] font-semibold tracking-[0.06em] text-muted uppercase">{label}</span>}
+  <p
+    class="m-0 text-[16px] leading-[1.45] group-data-[tone=headline]/claim:font-display group-data-[tone=headline]/claim:text-[23px] group-data-[tone=headline]/claim:leading-[1.2] group-data-[tone=headline]/claim:font-extrabold group-data-[tone=headline]/claim:tracking-[-0.025em] [&_a]:underline [&_a]:underline-offset-[3px] @max-[900px]:group-data-[tone=headline]/claim:text-[20px]"
+    set:html={fact.html}
+  />
+  <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
+    <BasisBadge basis={fact.basis} label={fact.basisLabel} mark={fact.mark} />
+    {fact.smallToo && <Tag label={fact.smallToo} />}
+    {fact.sinceTag && <Tag label={fact.sinceTag} tone={fact.isNew ? 'new' : 'plain'} />}
+    <CiteLinks cites={fact.cites} prefix={fact.citesPrefix} inline />
+  </div>
+  {origins.length > 0 && (
+    <ul class="m-0 flex list-none flex-col gap-0.5 p-0">
+      {origins.map((origin) => (
+        <li>
+          <a href={origin.href} class="text-[14.5px] font-semibold text-ink underline underline-offset-[3px]">
+            {origin.guide}
+            <span class="font-normal text-muted"> · {origin.section}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</div>

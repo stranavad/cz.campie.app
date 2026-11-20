@@ -1,10 +1,12 @@
 ---
 import CtaBand from '../components/CtaBand.astro';
 import FeatureList from '../components/FeatureList.astro';
+import Icon from '../components/Icon.astro';
 import FeatureGroup from '../components/illustrations/FeatureGroup.astro';
 import PageHero from '../components/PageHero.astro';
 import { features } from '../content/features.ts';
 import Base from '../layouts/Base.astro';
+import { toHtml } from '../lib/inline.ts';
 ---
 
 <Base page="features">
@@ -19,6 +21,14 @@ import Base from '../layouts/Base.astro';
         </div>
         <div class="flex min-w-0 flex-[3_1_620px] flex-col gap-[18px]">
           <FeatureList items={group.items} heading="h3" />
+          {'bridge' in group && (
+            <p class="m-0 flex items-start gap-3 rounded-[14px] border border-line bg-card px-3.5 py-3 text-[15px] leading-snug [&_a]:font-bold [&_a]:text-ink [&_a]:underline-offset-[3px]">
+              <span class="flex size-[30px] flex-none items-center justify-center rounded-[9px] bg-forest text-cream">
+                <Icon name="browser" size={16} stroke={2.2} />
+              </span>
+              <span set:html={toHtml(group.bridge)} />
+            </p>
+          )}
         </div>
       </div>
     </section>

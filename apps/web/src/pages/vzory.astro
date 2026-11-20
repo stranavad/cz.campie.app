@@ -1,0 +1,74 @@
+---
+import ArrowLink from '../components/ArrowLink.astro';
+import Icon from '../components/Icon.astro';
+import GuideCard from '../components/kit/GuideCard.astro';
+import SheetDrawing from '../components/kit/SheetDrawing.astro';
+import Tag from '../components/kit/Tag.astro';
+import Verification from '../components/kit/Verification.astro';
+import Base from '../layouts/Base.astro';
+import { documentsIndexPage } from '../lib/kit/pages.ts';
+
+const page = documentsIndexPage();
+---
+
+<Base page="documents">
+  <div class="bg-paper text-ink">
+    <header class="wrap flex flex-col gap-4 pt-4 pb-[clamp(28px,3.2cqw,44px)]">
+      <Verification verification={page.verification} />
+      <h1 class="h-card max-w-[20ch] text-[clamp(34px,4.6cqw,60px)] leading-[1.04] text-balance">{page.hero.title}</h1>
+      <p class="lead max-w-[60ch] text-muted">{page.hero.lead}</p>
+    </header>
+
+    <section aria-label={page.hero.eyebrow} class="wrap pb-[clamp(48px,5cqw,72px)]">
+      <ul class="m-0 grid list-none gap-4 p-0 md:grid-cols-2">
+        {page.cards.map((card) => (
+          <li class="card flex flex-col gap-4 rounded-[22px] p-[clamp(18px,2cqw,26px)]">
+            <a href={card.href} tabindex="-1" aria-hidden="true" class="block max-sm:hidden">
+              <SheetDrawing size="lg" />
+            </a>
+            <Tag label={card.tag} tone={card.tagTone} />
+            <h2 class="h-card text-[clamp(22px,2cqw,28px)] leading-[1.12] tracking-[-0.025em] text-balance">
+              <a href={card.href} class="text-ink no-underline hover:underline hover:underline-offset-4">
+                {card.title}
+              </a>
+            </h2>
+            <p class="m-0 flex-1 text-[16px] leading-normal text-muted">{card.summary}</p>
+            <div class="flex flex-wrap gap-2.5">
+              <a href={card.customise.href} class="btn h-12 gap-2 px-5 text-[15px]">
+                {card.customise.label}
+                <Icon name="arrow" />
+              </a>
+              <a
+                href={card.blank.href}
+                download={card.blank.download}
+                {...card.blank.event}
+                class="inline-flex h-12 items-center rounded-full border-[1.5px] border-ink px-5 text-[15px] font-bold whitespace-nowrap text-ink no-underline hover:bg-chip"
+              >
+                {card.blank.label}
+              </a>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section aria-labelledby="pruvodci" class="border-t border-line bg-card py-[clamp(48px,5cqw,72px)]">
+      <div class="wrap flex flex-col gap-6">
+        <div class="flex flex-col gap-2.5">
+          <h2 id="pruvodci" class="h-card text-[clamp(28px,3cqw,40px)] leading-[1.05] text-balance">
+            {page.guidesSection.title}
+          </h2>
+          <p class="m-0 max-w-[60ch] text-[17px] text-muted">{page.guidesSection.lead}</p>
+        </div>
+        <ul class="m-0 grid list-none gap-3.5 p-0 sm:grid-cols-2 lg:grid-cols-3">
+          {page.guidesSection.cards.map((card) => (
+            <li>
+              <GuideCard card={card} heading="h3" surface="paper" />
+            </li>
+          ))}
+        </ul>
+        <ArrowLink cta={page.guides} class="text-ink" />
+      </div>
+    </section>
+  </div>
+</Base>

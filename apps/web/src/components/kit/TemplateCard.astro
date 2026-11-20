@@ -1,0 +1,29 @@
+---
+// A template as the design's template card: a drawn sheet, the name and what kind of template it is (an
+// official form is outlined). The whole card is the link.
+import type { TemplateCardView } from '../../lib/kit/links.ts';
+import SheetDrawing from './SheetDrawing.astro';
+import Tag from './Tag.astro';
+
+interface Props {
+  card: TemplateCardView;
+  heading: 'h2' | 'h3';
+}
+
+const { card, heading: Heading } = Astro.props;
+---
+
+<a
+  href={card.href}
+  class="card group flex h-full flex-col gap-2.5 rounded-[22px] p-[18px] text-ink no-underline transition-colors hover:border-ink"
+>
+  <span class="max-sm:hidden">
+    <SheetDrawing />
+  </span>
+  <Heading class="m-0 text-[17px] leading-[1.3] font-bold text-balance group-hover:underline group-hover:underline-offset-4">
+    {card.title}
+  </Heading>
+  <span class="mt-auto">
+    <Tag label={card.tag} tone={card.tagTone} />
+  </span>
+</a>

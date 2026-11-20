@@ -1,0 +1,60 @@
+---
+// A guide as the design's guide card: its drawing and a "Novinka 2027" tag, the name, one line (left out
+// on the hub), the key numbers and, at the foot, how many rules and templates it holds. The whole card is
+// the link.
+import type { GuideCardView } from '../../lib/kit/links.ts';
+import Tag from './Tag.astro';
+
+interface Props {
+  card: GuideCardView;
+  heading: 'h2' | 'h3' | 'h4';
+  // The card's own ground: `card` on the paper ground, `paper` on a card-coloured section.
+  surface?: 'card' | 'paper';
+  // The hub's cards leave the one line out.
+  summary?: boolean;
+}
+
+const { card, heading: Heading, surface = 'card', summary = true } = Astro.props;
+---
+
+<a
+  href={card.href}
+  data-surface={surface}
+  class="group flex h-full flex-col gap-2 rounded-[20px] border border-line bg-card px-5 py-[18px] text-ink no-underline transition-[border-color,translate,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-ink hover:shadow-[0_10px_24px_-16px_var(--color-night)] data-[surface=paper]:bg-paper motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+>
+  <span class="flex items-center justify-between gap-2">
+    <span class="flex size-[42px] items-center justify-center rounded-[13px] bg-forest text-cream">
+      <svg
+        aria-hidden="true"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.9"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d={card.icon}></path>
+      </svg>
+    </span>
+    {card.newTag && <Tag label={card.newTag} tone="new" />}
+  </span>
+  <Heading class="h-card mt-1 text-[21px] leading-[1.15] tracking-[-0.02em] text-balance">{card.title}</Heading>
+  {summary && <span class="text-[15px] leading-[1.4] text-muted">{card.summary}</span>}
+  {card.chips.length > 0 && (
+    <span class="flex flex-wrap gap-1.5">
+      {card.chips.map((chip) => (
+        <span class="inline-flex min-h-[26px] items-center rounded-lg bg-chip px-2.5 py-0.5 font-mono text-[12.5px] leading-[1.3] font-semibold">
+          {chip}
+        </span>
+      ))}
+    </span>
+  )}
+  <span class="mt-auto flex items-center justify-between border-t border-line pt-2.5 text-[13.5px] font-semibold text-muted">
+    <span>{card.count}</span>
+    <span aria-hidden="true" class="text-[18px] text-ink transition-transform group-hover:translate-x-[3px]">
+      →
+    </span>
+  </span>
+</a>

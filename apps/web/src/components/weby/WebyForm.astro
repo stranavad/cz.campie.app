@@ -1,0 +1,135 @@
+---
+// The form of Weby pro tábory, in a card: the address of the current website and an e-mail. The page
+// holds it twice; `n` keeps the ids apart. src/scripts/weby-form.ts sends it in place and shows its
+// states; without JavaScript it posts and the Worker redirects to a result page.
+import { honeypotField } from '../../../worker/contact.schema.ts';
+import { websitePatternAttribute, webyLimits } from '../../../worker/weby.fields.ts';
+import { weby } from '../../content/weby.ts';
+import { toHtml } from '../../lib/inline.ts';
+import { turnstileSiteKey } from '../../lib/site-env.ts';
+import Icon from '../Icon.astro';
+
+interface Props {
+  n: 1 | 2;
+  // The thank-you heading's level, so the page's headings stay in order.
+  heading: 'h2' | 'h3';
+}
+
+const { n, heading: Heading } = Astro.props;
+const { form } = weby;
+const field = 'flex flex-col gap-1.5';
+const label = 'text-sm font-bold';
+const input =
+  'box-border h-[52px] w-full rounded-[14px] border-[1.5px] border-line2 bg-card px-4 font-sans text-[17px] text-ink outline-none placeholder:text-muted/70 focus:border-mark focus:ring-[3px] focus:ring-mark/20 aria-[invalid=true]:border-err aria-[invalid=true]:bg-errbg';
+const error = 'm-0 text-sm font-semibold text-err';
+---
+
+<div
+  data-weby
+  class="card max-w-full p-6 text-ink [&_:focus-visible]:outline-fire shadow-[0_18px_40px_-28px] shadow-ink-fixed/45 phone:rounded-[20px] phone:p-4"
+>
+  <form
+    method="post"
+    action="/api/weby"
+    aria-label={form.label}
+    data-weby-form
+    class="flex flex-col gap-3.5 phone:gap-3"
+  >
+    <div
+      data-weby-alert
+      role="alert"
+      hidden
+      class="flex items-start gap-2.5 rounded-[14px] border border-peachline bg-errbg px-3.5 py-3 text-[15px] leading-[1.4] text-err [&_a]:text-err"
+    >
+      <Icon name="alert" size={20} stroke={2.2} class="mt-px flex-none" />
+      <span set:html={toHtml(form.failed)} />
+    </div>
+    <div class={field}>
+      <label for={`weby-url-${n}`} class={label}>
+        {form.url}
+      </label>
+      <input
+        id={`weby-url-${n}`}
+        name="url"
+        type="text"
+        inputmode="url"
+        autocomplete="url"
+        autocapitalize="off"
+        spellcheck="false"
+        required
+        maxlength={webyLimits.url.max}
+        pattern={websitePatternAttribute}
+        placeholder={form.urlPlaceholder}
+        aria-describedby={`weby-url-${n}-error`}
+        class={input}
+      />
+      <p id={`weby-url-${n}-error`} data-weby-error="url" hidden class={error}>
+        {form.urlError}
+      </p>
+    </div>
+    <div class={field}>
+      <label for={`weby-email-${n}`} class={label}>
+        {form.email}
+      </label>
+      <input
+        id={`weby-email-${n}`}
+        name="email"
+        type="email"
+        inputmode="email"
+        autocomplete="email"
+        required
+        maxlength={webyLimits.email.max}
+        placeholder={form.emailPlaceholder}
+        aria-describedby={`weby-email-${n}-error`}
+        class={input}
+      />
+      <p id={`weby-email-${n}-error`} data-weby-error="email" hidden class={error}>
+        {form.emailError}
+      </p>
+    </div>
+    <div aria-hidden="true" class="absolute -left-[9999px] size-px overflow-hidden">
+      <label>
+        {form.trap}
+        <input name={honeypotField} type="text" tabindex="-1" autocomplete="off" />
+      </label>
+    </div>
+    <div
+      class="cf-turnstile"
+      data-sitekey={turnstileSiteKey}
+      data-theme="auto"
+      data-language="cs"
+      data-size="flexible"
+      data-appearance="interaction-only"
+    ></div>
+    <noscript>
+      <p class="m-0 text-[15px] text-muted">{form.noscript}</p>
+    </noscript>
+    <button type="submit" class="weby-btn w-full disabled:cursor-wait disabled:opacity-70">
+      {form.submit}
+    </button>
+    <p class="m-0 text-center font-mono text-[13px] font-medium text-muted">{form.fine}</p>
+  </form>
+  <div data-weby-sent hidden class="flex flex-col items-start gap-2.5 px-1 py-2">
+    <span class="flex size-12 items-center justify-center rounded-full bg-mark text-mark-fg">
+      <Icon name="tick" size={26} stroke={2.6} />
+    </span>
+    <Heading
+      tabindex="-1"
+      class="m-0 font-display text-[26px] leading-[1.1] font-extrabold tracking-[-0.03em] outline-none"
+    >
+      {form.sent.title}
+    </Heading>
+    <p class="m-0 text-muted">
+      {form.sent.before}
+      <strong data-weby-sent-email class="text-ink"></strong>
+      {form.sent.after}
+    </p>
+    <button
+      type="button"
+      data-weby-again
+      class="min-h-11 cursor-pointer border-0 bg-transparent p-0 font-sans text-[17px] font-semibold text-ink underline underline-offset-4"
+    >
+      {form.sent.again}
+    </button>
+  </div>
+</div>

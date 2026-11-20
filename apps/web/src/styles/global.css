@@ -24,6 +24,10 @@
   --camp: #f4b63f;
   --ok: #dcfce7;
   --ok-fg: #14532d;
+  --peach: #fde6d6;
+  --peachline: #f3b58e;
+  --err: #a3311b;
+  --errbg: #fdf0ea;
 
   /* The small phone screens drawn on the page. */
   --scr: #fafaf9;
@@ -67,6 +71,18 @@
   --app-bad-fg: #991b1b;
   --app-neutral: #f5f5f4;
   --app-neutral-fg: #44403c;
+
+  /* A document of the starter kit is a sheet of paper: light in both themes, as it prints. Not
+     redefined for the dark theme. */
+  --sheet: #ffffff;
+  --sheet-ink: #1a1a1a;
+  --sheet-muted: #5c5c5c;
+  --sheet-rule: #7a7a7a;
+}
+
+/* A page that asks for it (Base.astro, `wide`) gets a wider column. */
+[data-wide] {
+  --wrap-max: 1340px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -87,6 +103,10 @@
     --camp: #b8862b;
     --ok: #173a26;
     --ok-fg: #8fe3ae;
+    --peach: #2e2019;
+    --peachline: #6b4330;
+    --err: #ff9b85;
+    --errbg: #2a1a15;
 
     --scr: #0f1613;
     --scr-card: #1a241f;
@@ -148,6 +168,14 @@
   --color-camp: var(--camp);
   --color-ok: var(--ok);
   --color-ok-fg: var(--ok-fg);
+  --color-peach: var(--peach);
+  --color-peachline: var(--peachline);
+  --color-err: var(--err);
+  --color-errbg: var(--errbg);
+  --color-sheet: var(--sheet);
+  --color-sheet-ink: var(--sheet-ink);
+  --color-sheet-muted: var(--sheet-muted);
+  --color-sheet-rule: var(--sheet-rule);
 
   --color-scr: var(--scr);
   --color-scr-card: var(--scr-card);
@@ -266,7 +294,7 @@
 
 @utility wrap {
   width: 100%;
-  max-width: 1200px;
+  max-width: var(--wrap-max, 1200px);
   margin-inline: auto;
   box-sizing: border-box;
   padding-inline: clamp(20px, 3.4cqw, 40px);
@@ -274,6 +302,11 @@
 
 @utility section-y {
   padding-block: clamp(44px, 3.6cqw, 52px);
+}
+
+/* The home page's sections stand further apart than the other pages'. */
+@utility section-air {
+  padding-block: clamp(64px, 6.6cqw, 96px);
 }
 
 @utility h-hero {
@@ -367,4 +400,234 @@
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+/*
+ * Printing a document page of the starter kit prints its A4 pages alone, one per sheet: everything but
+ * the pages and the elements that hold them is hidden, and those lose their own spacing and frame. The
+ * pages' own print rules are in the stylesheet lib/kit/sheet.ts writes.
+ */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body:has([data-print-sheet]) {
+    background: none;
+  }
+
+  body:has([data-print-sheet]) :not(:has([data-print-sheet]), [data-print-sheet], [data-print-sheet] *) {
+    display: none !important;
+  }
+
+  body :has([data-print-sheet]) {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+
+  [data-print-sheet] {
+    padding: 0 !important;
+  }
+}
+
+/*
+ * Weby pro tábory (/weby-pro-tabory). The design marks buttons, steps and ticks in forest green; in the
+ * dark theme the forest is a background, so the mark turns cream. The design's phone layout is its
+ * @container rule at 900px, here the `phone` variant.
+ */
+:root {
+  --mark: #163a2b;
+  --mark-fg: #f6f0e1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mark: #eee8da;
+    --mark-fg: #0d1411;
+  }
+}
+
+@theme inline {
+  --color-mark: var(--mark);
+  --color-mark-fg: var(--mark-fg);
+}
+
+@custom-variant phone {
+  @container (max-width: 900px) {
+    @slot;
+  }
+}
+
+@utility weby-tag {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--camp);
+  color: var(--color-ink-fixed);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@utility weby-h2 {
+  margin: 0;
+  max-width: 18ch;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 44px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+
+  @container (max-width: 900px) {
+    font-size: 30px;
+  }
+}
+
+@utility weby-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mark);
+  color: var(--mark-fg);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  @container (max-width: 900px) {
+    height: 52px;
+  }
+}
+
+/*
+ * Starter kit (issue 96): the guide page's filter "Jen pravidla pro menší akce", without JavaScript.
+ * Checking it hides every claim row that does not also bind a smaller event ([data-rule] without
+ * [data-small]), and the sections and contents entries left without one ([data-rule-group]). The rows
+ * stay in the HTML.
+ */
+[data-kit-filter]:has([data-small-filter]:checked) :is([data-rule], [data-rule-group]):not([data-small]) {
+  display: none;
+}
+
+/* The first row left in a list loses its hairline, as the first row does unfiltered. */
+[data-kit-filter]:has([data-small-filter]:checked) [data-rule][data-small]:not([data-small] ~ [data-small]) {
+  border-top-width: 0;
+  padding-top: 4px;
+}
+
+/*
+ * One site, three parts (issue 94): the breadcrumbs, the header's button on the kit's pages, the phone's
+ * drawer and the kit's search.
+ */
+/*
+ * The breadcrumbs are the first quiet line of the page's top block, no band of their own: over a forest
+ * hero (PageHero) they take its colour, and the hero starts right under them.
+ */
+[data-breadcrumbs]:has(+ .on-forest) {
+  background: var(--color-forest);
+
+  & :is(ol, a) {
+    color: var(--color-sage);
+  }
+}
+
+[data-breadcrumbs] + .on-forest {
+  padding-top: 16px;
+}
+
+/* The header's button on the kit's pages: outlined, quieter than the orange one. */
+@utility btn-quiet {
+  background: transparent;
+  color: var(--color-cream);
+  border: 1.5px solid color-mix(in srgb, var(--color-cream) 45%, transparent);
+}
+
+@utility btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+
+@utility drawer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  border-bottom: 1px solid var(--line);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+
+  &[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-color: var(--color-fire);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
+  }
+}
+
+/* A result of the kit's search, built by src/scripts/search.ts. */
+.kit-search-hit {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 15px;
+  line-height: 1.35;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--chip);
+  }
+
+  & small {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  & span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+}
+
+/* Light panels opened from the forest header keep the orange focus ring. */
+.on-forest .on-card :focus-visible {
+  outline-color: var(--color-fire);
 }
