@@ -21,6 +21,11 @@ export const site = {
     name: 'David Stráňava',
     ico: '21766941',
   },
+  // The camp whose own registration system Campie grew out of; the home page and the footer link it.
+  origin: {
+    name: 'Tábor Domino',
+    url: 'https://www.tabor-domino.cz',
+  },
   // The Turnstile widget's site key for campie.cz and dev.campie.cz (public; the secret lives in the
   // Worker). Local builds use Cloudflare's test key instead (lib/site-env.ts).
   turnstileSiteKey: '0x4AAAAAAF7zqIpjfDkS6doX',
@@ -107,6 +112,7 @@ export const footer = {
     documents: { title: 'Vzory', all: { label: 'Všechny vzory', href: documents.href } },
   },
   license: { label: `Campie je open source pod licencí ${site.license}`, href: site.licenseUrl },
+  origin: { label: 'Vzniklo na Táboře Domino', href: site.origin.url },
   // Off this site: llms.txt lists them as optional links.
   legal: [
     { label: 'Obchodní podmínky', href: 'app:/podminky' },

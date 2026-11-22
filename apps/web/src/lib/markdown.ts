@@ -68,8 +68,8 @@ function homeMarkdown(): string {
     `### ${roadmap.missing.title}`,
     `${roadmap.missing.text} ${link(roadmap.missing.cta)}`,
     `## ${testimonials.title}`,
-    testimonials.lead,
-    ...testimonials.items.map((item) => `> „${item.quote}“\n>\n> ${item.name}, ${item.role}`),
+    toMarkdown(testimonials.lead),
+    ...testimonials.items.map((item) => `> „${item.quote}“\n>\n> ${item.name}, ${toMarkdown(item.role)}`),
     `## ${dataSafety.title}`,
     list(dataSafety.points),
     link(dataSafety.link),
@@ -342,7 +342,7 @@ export function llmsTxt(): string {
     '## Stránky',
     indexedPageKeys.map((key) => `- [${llmsName(key)}](${markdownUrl(key)}): ${pages[key].description}`).join('\n'),
     '## Optional',
-    footer.legal.map((item) => `- ${link(item)}`).join('\n'),
+    [...footer.legal, footer.origin].map((item) => `- ${link(item)}`).join('\n'),
   ]);
 }
 

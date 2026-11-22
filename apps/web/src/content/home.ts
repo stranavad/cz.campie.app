@@ -1,4 +1,5 @@
 import { faq } from './faq.ts';
+import { site } from './site.ts';
 import type { Cta } from './types.ts';
 
 // The home page, section by section. Demo values inside the illustrations (names, prices, dates) live in
@@ -206,13 +207,13 @@ export const home = {
     id: 'tabory',
     eyebrow: '07 / Tábory s Campie',
     title: 'Tábory, které už papírování neřeší',
-    lead: 'Campie vzniklo na táboře, ne v kanceláři.',
+    lead: `Campie vzniklo na táboře, ne v kanceláři: vyrostlo z přihláškového systému, který si napsal [letní dětský tábor Domino u Plzně](${site.origin.url}).`,
     items: [
       {
         quote:
           'Campie nám před táborem ušetřilo desítky hodin se správou přihlášek a komunikací s rodiči. Během tábora jsem se jako hlavní vedoucí mohl naplno věnovat dětem a programu a neřešit, kdo co nezaplatil a komu chybí jaký papír.',
         name: 'David Stráňava',
-        role: 'hlavní vedoucí, Tábor Domino',
+        role: `hlavní vedoucí, [${site.origin.name}](${site.origin.url})`,
       },
     ],
   },

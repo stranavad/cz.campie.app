@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 
 import dejv from '../../assets/dejv-portrait.jpg';
 import { home } from '../../content/home.ts';
+import { toHtml } from '../../lib/inline.ts';
 
 const { testimonials } = home;
 // Each author's portrait, in the order of testimonials.items. The name sits beside it, so the alt is empty.
@@ -14,7 +15,7 @@ const photos = [dejv];
     <div class="flex flex-col gap-3.5">
       <span class="eyebrow">{testimonials.eyebrow}</span>
       <h2 class="h-section max-w-[18ch]">{testimonials.title}</h2>
-      <p class="lead max-w-[56ch] text-muted">{testimonials.lead}</p>
+      <p class="lead max-w-[56ch] text-muted [&_a]:text-ink [&_a]:underline" set:html={toHtml(testimonials.lead)} />
     </div>
     <div class="flex flex-wrap items-stretch gap-x-8 gap-y-7">
       {testimonials.items.map((item, i) => (
@@ -32,7 +33,7 @@ const photos = [dejv];
             />
             <span class="flex flex-col">
               <strong>{item.name}</strong>
-              <span class="text-muted">{item.role}</span>
+              <span class="text-muted [&_a]:text-ink [&_a]:underline" set:html={toHtml(item.role)} />
             </span>
           </figcaption>
         </figure>

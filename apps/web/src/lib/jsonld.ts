@@ -25,7 +25,11 @@ function graph(key: IndexedPageKey) {
       url: `${site.url}/`,
       logo: `${site.url}/apple-touch-icon.png`,
       email: site.email,
-      founder: { '@type': 'Person', name: site.operator.name },
+      founder: {
+        '@type': 'Person',
+        name: site.operator.name,
+        affiliation: { '@type': 'Organization', name: site.origin.name, url: site.origin.url },
+      },
       identifier: { '@type': 'PropertyValue', propertyID: 'IČO', value: site.operator.ico },
       sameAs: [site.repoUrl],
     },
